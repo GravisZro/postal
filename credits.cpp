@@ -167,7 +167,7 @@ public:
 		//--------------------------------------------------------
 	void Clear()
 		{
-		m_pimPrevBackground = m_pimNewBackground = NULL;
+		m_pimPrevBackground = m_pimNewBackground = nullptr;
 		m_szNewName[0] = 0;
 		m_bActive = false;
 		m_lActivationTime = m_lFadeOutTime = m_lBlackTime = m_lFadeInTime = 0;
@@ -218,13 +218,13 @@ public:
 	//------------------------------
 	CTextPhrase()
 		{
-		m_pNext = m_pPrev = NULL;
+		m_pNext = m_pPrev = nullptr;
 		m_sFontSize = 0;	// means use previous font size
 		}
 
 	~CTextPhrase()
 		{
-		m_pNext = m_pPrev = NULL;;
+		m_pNext = m_pPrev = nullptr;;
 		}
 	};
 
@@ -249,8 +249,8 @@ public:
 		m_tHead.m_pNext = &m_tTail;
 		m_tTail.m_pPrev = &m_tHead;
 		m_sGlobalBottomY = -1;
-		m_pimCache = NULL;
-		m_pChangeBackground = NULL;
+		m_pimCache = nullptr;
+		m_pChangeBackground = nullptr;
 		}
 
 	~CTextChunk()
@@ -266,7 +266,7 @@ public:
 		if (m_pimCache) 
 			{
 			delete m_pimCache;
-			m_pimCache = NULL;
+			m_pimCache = nullptr;
 			}
 		}
 	//--------------------------
@@ -287,7 +287,7 @@ public:
 		pGone->m_pPrev->m_pNext = pGone->m_pNext;
 		pGone->m_pNext->m_pPrev = pGone->m_pPrev;
 
-		pGone->m_pNext = pGone->m_pPrev = NULL;
+		pGone->m_pNext = pGone->m_pPrev = nullptr;
 		}
 	//------------------------------------
 	void	RenderChunk(int16_t sW,RPrint* pPrint)
@@ -365,7 +365,7 @@ public:
 		{
 		// Keep 'em for now...
 		if (m_pimCache) delete m_pimCache;
-		m_pimCache = NULL;
+		m_pimCache = nullptr;
 		}
 
 	};
@@ -401,15 +401,15 @@ public:
 		m_lGlobalHeight = 0;
 		m_lCurrentBottomY = 0;
 		m_lTotalChunks = 0;
-		m_pTopActiveChunk = NULL;
-		m_pBottomActiveChunk = NULL;
+		m_pTopActiveChunk = nullptr;
+		m_pBottomActiveChunk = nullptr;
 		m_lActivationTime = 0;
 		m_cHead.m_pNext = &m_cTail;
 		m_cTail.m_pPrev = &m_cHead;
 		m_rDisplay = RRect(0,40,wideScreenWidth,360);
 		m_dScrollRate = 0.1;	// 100 seconds per screen
 		m_sNumBackgrounds = 0;
-		m_pCurSceneChange = NULL;
+		m_pCurSceneChange = nullptr;
 		}
 
 	~CScrollMaster()
@@ -428,11 +428,11 @@ public:
 		for (i = 0; i < m_sNumBackgrounds;i++)
 			{
 			if (m_pimBackgrounds[i]) g_resmgrShell.Release(m_pimBackgrounds[i]);
-			m_pimBackgrounds[i] = NULL;
+			m_pimBackgrounds[i] = nullptr;
 			}
 		}
 
-	void	Configure(double dScrollRate,RRect* prWindow = NULL)
+	void	Configure(double dScrollRate,RRect* prWindow = nullptr)
 		{
 		if (dScrollRate > 0.0) m_dScrollRate = dScrollRate;
 		if (prWindow) m_rDisplay = *prWindow;
@@ -460,7 +460,7 @@ public:
 				!= SUCCESS)
 				{
 				TRACE("Couldn't load resource %s\n",m_szBackgroundNames[i]);
-				m_pimBackgrounds[i] = NULL;
+				m_pimBackgrounds[i] = nullptr;
 				}
 			}
 
@@ -544,7 +544,7 @@ public:
 		ASSERT(m_sNumBackgrounds < MAX_BACKGROUNDS);
 
 		strcpy(m_szBackgroundNames[m_sNumBackgrounds],pszName);
-		m_pimBackgrounds[m_sNumBackgrounds] = NULL;
+		m_pimBackgrounds[m_sNumBackgrounds] = nullptr;
 
 		return m_sNumBackgrounds++;
 		}
@@ -555,7 +555,7 @@ extern int16_t sLoaded;
 ////////////////////////////////////////////////////////////////////////////////
 // This is cheesy, but right now I'm using a global stream to load into.
 ////////////////////////////////////////////////////////////////////////////////
-//CScrollMaster*	gpCurStream = NULL;
+//CScrollMaster*	gpCurStream = nullptr;
 
 // For Res managing an ANSI file:
 class	CFileTextInput
@@ -566,7 +566,7 @@ public:
 	//-----------------------
 	CFileTextInput() 
 		{
-		m_pStream = NULL;
+		m_pStream = nullptr;
 		};
 
 	~CFileTextInput() 
@@ -636,7 +636,9 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
  
 	int16_t sCurFontSize = 0;
 	int16_t	sCurTabX = 0;
-	CTextPhrase::Justify eCurJust = CTextPhrase::Left;
+#ifdef UNUSED_VARIABLES
+   CTextPhrase::Justify eCurJust = CTextPhrase::Left;
+#endif
 	int16_t sCurColor = 255;
 
 	CTextChunk*	pChunk = new CTextChunk;
@@ -647,7 +649,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 
 	if (sLoaded) SetAll();
 
-	while ((pszToken = m_bf.NextToken()) != NULL)
+	while ((pszToken = m_bf.NextToken()) != nullptr)
 		{
 		//TRACE("TOKEN = '%s'\n",pszToken);
 
@@ -697,13 +699,16 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			{
 			pCurPhrase->m_sLocalX = sCurTabX = atoi(m_bf.NextToken());
 
-			switch	(*pszToken)
-				{
-				case 'l': eCurJust = pCurPhrase->m_eJust = CTextPhrase::Left; break;
-				case 'r': eCurJust = pCurPhrase->m_eJust = CTextPhrase::Right; break;
-				case 'c': eCurJust = pCurPhrase->m_eJust = CTextPhrase::Center; break;
-				}
-			continue;
+         switch	(*pszToken)
+            {
+           case 'l': pCurPhrase->m_eJust = CTextPhrase::Left; break;
+           case 'r': pCurPhrase->m_eJust = CTextPhrase::Right; break;
+           case 'c': pCurPhrase->m_eJust = CTextPhrase::Center; break;
+            }
+#ifdef UNUSED_VARIABLES
+         eCurJust = pCurPhrase->m_eJust;
+#endif
+         continue;
 			}
 		//-----------------------------------------------------
 		if (!strcmp(pszToken,";")) // means new line (& should benew phrase)
@@ -847,7 +852,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 	if (pCurPhrase)
 		{
 		delete pCurPhrase;
-		pCurPhrase = NULL;
+		pCurPhrase = nullptr;
 		}
 
 	return SUCCESS;
@@ -884,7 +889,7 @@ int16_t	ScrollPage(char* pszBackground,char* pszScrollScript,double dScrollRate,
 		}
 
 	// Set palette
-	ASSERT(pimBackground->m_pPalette != NULL);
+	ASSERT(pimBackground->m_pPalette != nullptr);
 	ASSERT(pimBackground->m_pPalette->m_type == RPal::PDIB);
 	rspSetPaletteEntries(
 		0, //10,
@@ -896,17 +901,17 @@ int16_t	ScrollPage(char* pszBackground,char* pszScrollScript,double dScrollRate,
 	rspUpdatePalette();
 
 	// Load text script:
-	CFileTextInput*	pScript = NULL;	// must free it myself!
+	CFileTextInput*	pScript = nullptr;	// must free it myself!
 
 	// Try to override with our own file, because I'm too lazy to figure out how to regenerate .sak files.
 	FILE *nonsak = fopen(FindCorrectFile("res/credits.txt", "rb"), "rb");
-	if (nonsak != NULL)
+	if (nonsak != nullptr)
 		{
 		pScript = new CFileTextInput;
 		pScript->Load(nonsak);
 		}
 
-	if (pScript == NULL)
+	if (pScript == nullptr)
 		{
 		sResult = rspGetResource(&g_resmgrShell, pszScrollScript, &pScript);
 		if (sResult != SUCCESS)
@@ -946,7 +951,7 @@ int16_t	ScrollPage(char* pszBackground,char* pszScrollScript,double dScrollRate,
 	int16_t sButtons = 0;
 	int16_t sJoyPress = 0;
 
-//******************  STATISTICAL ANALYSIS!
+// ******************  STATISTICAL ANALYSIS!
 /*
 long lTimeCount[256] = {0,}; // bucket sort
 */
@@ -974,7 +979,7 @@ lRunningTime = lPrevTime = rspGetMilliseconds();
 		UpdateSystem();
 
 		// Get key and mouse button inputs
-		rspGetMouse(NULL, NULL, &sButtons);
+		rspGetMouse(nullptr, nullptr, &sButtons);
 		rspGetKey(&lKey);
 		sJoyPress = IsXInputButtonPressed();
 
@@ -986,16 +991,16 @@ lRunningTime = lPrevTime = rspGetMilliseconds();
 			{
 			lRunningTime = rspGetMilliseconds();
 			}
-//*******************8 Update timing statistics:
+// *******************8 Update timing statistics:
 //lTimeCount[lRunningTime - lPrevTime]++;
 
 		lPrevTime = lRunningTime;
 		}
 
-//************* Report statistics
+// ************* Report statistics
 /*
 FILE* fp = fopen("speed.out","a");
-for (short i=0;i < 256;i++) fprintf(fp,"%hd = %ld\n",i,lTimeCount[i]);
+for (short i=0;i < 256;i++) fprintf(fp,"%hd = %i\n",i,lTimeCount[i]);
 */
 
 	//------------------------------------------------------------------------------
@@ -1005,7 +1010,7 @@ for (short i=0;i < 256;i++) fprintf(fp,"%hd = %ld\n",i,lTimeCount[i]);
 	// Free resources:
 	g_resmgrShell.Release(pimBackground);
 
-	if (nonsak != NULL)
+	if (nonsak != nullptr)
 		{
 		delete pScript;
 		fclose(nonsak);
@@ -1046,16 +1051,15 @@ int16_t Credits(SampleMasterID* pMusic,
 							char*	pszBackground,
 							char* pszCredits)					
 {
-	int16_t sResult = 0;
-
 #ifdef SHOW_EXIT_SCREEN
+   int16_t sResult = SUCCESS;
 	
 	RImage*	pimBackground;
 	sResult = rspGetResource(&g_resmgrShell, EXIT_BG, &pimBackground);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// Set palette
-		ASSERT(pimBackground->m_pPalette != NULL);
+		ASSERT(pimBackground->m_pPalette != nullptr);
 		ASSERT(pimBackground->m_pPalette->m_type == RPal::PDIB);
 		rspSetPaletteEntries(
 			0, //10,
@@ -1089,7 +1093,7 @@ int16_t Credits(SampleMasterID* pMusic,
 
 		// Get key and mouse button inputs
 		int16_t sButtons;
-		rspGetMouse(NULL, NULL, &sButtons);
+		rspGetMouse(nullptr, nullptr, &sButtons);
 		rspGetKey(&lKey);
 
 		// Clear mouse events to avoid overflowing the queue
@@ -1123,7 +1127,7 @@ int16_t Credits(SampleMasterID* pMusic,
 		SampleMaster::Unspecified,				// In:  Sound Volume Category for user adjustment
 		255,											// In:  Initial Sound Volume (0 - 255)
 		&ms_siMusak,								// Out: Handle for adjusting sound volume
-		NULL,											// Out: Sample duration in ms, if not NULL.
+		nullptr,											// Out: Sample duration in ms, if not nullptr.
 		MUSAK_START_TIME,							// In:  Where to loop back to in milliseconds.
 														//	-1 indicates no looping (unless m_sLoop is
 														// explicitly set).
@@ -1164,7 +1168,7 @@ int16_t Credits(SampleMasterID* pMusic,
 		SampleMaster::Unspecified,
 		0,
 		&siLaughter,
-		NULL,
+		nullptr,
 		0,
 		0,
 		true);

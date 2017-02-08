@@ -42,27 +42,27 @@
 #define SPECIAL_TYP_H
 // This currently depends only on "system.h"
 
-//*******************************************************************
-//*****  NOTE:  In the same convention as m_pData, 
-//*****  m_pSpecial points to the possibly aligned special
-//*****  data, and m_pSpecialMem refers EITHER to the 
-//*****  originally newed/calloced memory OR is NULL to 
-//*****  indicate that this Image is a COPY and should not free
-//*****  its own pSpecial.
-//*******************************************************************
+// *******************************************************************
+// *****  NOTE:  In the same convention as m_pData, 
+// *****  m_pSpecial points to the possibly aligned special
+// *****  data, and m_pSpecialMem refers EITHER to the 
+// *****  originally newed/calloced memory OR is nullptr to
+// *****  indicate that this Image is a COPY and should not free
+// *****  its own pSpecial.
+// *******************************************************************
 
 //===================================================================
 // Current Plug and Play list:
 //
-//(FSPR8,ConvertToFSPR8,ConvertFromFSPR8,LoadFSPR8,SaveFSPR8,NULL,DeleteFSPR8)
-//(FSPR1,ConvertToFSPR1,ConvertFromFSPR1,LoadFSPR1,SaveFSPR1,NULL,DeleteFSPR1)
+//(FSPR8,ConvertToFSPR8,ConvertFromFSPR8,LoadFSPR8,SaveFSPR8,nullptr,DeleteFSPR8)
+//(FSPR1,ConvertToFSPR1,ConvertFromFSPR1,LoadFSPR1,SaveFSPR1,nullptr,DeleteFSPR1)
 
 //===================================================================
 
-//*************************************************
-//******  FSPR1 => high speed monochrome **********
-//******  used for text and masks        **********
-//*************************************************
+// *************************************************
+// ******  FSPR1 => high speed monochrome **********
+// ******  used for text and masks        **********
+// *************************************************
 
 //------------- Installed RImage Plugins: -------------------------
 // ConvertTo:		YES => from any 8-bit
@@ -81,29 +81,29 @@ class	RSpecialFSPR1
 	{
 public:
 	uint8_t*	m_pCode;	// actual FSPR1 data
-	S32	m_lSize;		// actual size of FSPR1 data
-	U16	m_u16ASCII;	// allow extended character sets
-	S16	m_s16KernL;	// move left position
-	U16	m_u16Width;	// physical width of image, SHOULD = lWidth!
-	S16	m_s16KernR; // offset from right side
+	int32_t	m_lSize;		// actual size of FSPR1 data
+	uint16_t	m_u16ASCII;	// allow extended character sets
+	int16_t	m_s16KernL;	// move left position
+	uint16_t	m_u16Width;	// physical width of image, SHOULD = lWidth!
+	int16_t	m_s16KernR; // offset from right side
 	RImage::Type	m_OldType;// previous type
-	S16*	m_psKernList;// Used in printing only
+	int16_t*	m_psKernList;// Used in printing only
 	// When you implement m_psKernList, please augment the destructor!
 
 	RSpecialFSPR1()
 		{
-		m_pCode = NULL;
-		m_psKernList = NULL;
-		m_s16KernL = m_s16KernR = (S16)0;
-		m_u16ASCII = m_u16Width = (U16)0;
-		m_lSize = (S32)0;
+      m_pCode = nullptr;
+      m_psKernList = nullptr;
+      m_s16KernL = m_s16KernR = 0;
+      m_u16ASCII = m_u16Width = 0;
+      m_lSize = 0;
 		}
 
 	~RSpecialFSPR1()
 		{
 		// using calloc / free!!!
 		if (m_pCode) free (m_pCode);
-		m_pCode = NULL;
+      m_pCode = nullptr;
 		}
 	};
 
@@ -118,27 +118,27 @@ public:
 //
 extern void SetConvertToFSPR1
 	(	
-	U32	u32TransparentColor = 0, // Make transparent
-	S16	sX = -1,	// Convert only from this...
-	S16	sY = -1,	// rectangle.  Default values ...
-	S16	sW = -1,	// move to edges of image.
-	S16	sH = -1,	// Use (-1) to use image edge
+	uint32_t	u32TransparentColor = 0, // Make transparent
+	int16_t	sX = -1,	// Convert only from this...
+	int16_t	sY = -1,	// rectangle.  Default values ...
+	int16_t	sW = -1,	// move to edges of image.
+	int16_t	sH = -1,	// Use (-1) to use image edge
 	// If you make a copy, the original RImage will NOT be
 	// altered!  **pimCopy will 
-	RImage**	ppimCopy = NULL // To make a copy
+   RImage**	ppimCopy = nullptr // To make a copy
 	);
 
 extern	void SetConvertFromFSPR1
 	(
-	U32	u32ForeColor,				// Make it this color
-	S16	sTransparent = TRUE,		// 1 or 2 color?
-	U32	u32BackColor = (U32)0	// matters only if sTransparent = FALSE
+	uint32_t	u32ForeColor,				// Make it this color
+	int16_t	sTransparent = TRUE,		// 1 or 2 color?
+	uint32_t	u32BackColor = (uint32_t)0	// matters only if sTransparent = FALSE
 	);
 
-//*************************************************
-//******  FSPR8 => high speed color		  **********
-//******  used for sprites               **********
-//*************************************************
+// *************************************************
+// ******  FSPR8 => high speed color		  **********
+// ******  used for sprites               **********
+// *************************************************
 
 //------------- Installed RImage Plugins: -------------------------
 // ConvertTo:		YES => from any 8-bit
@@ -167,8 +167,8 @@ public:
 	RSpecialFSPR8()
 		{
 		m_usCompType = m_usSourceType = 0;
-		m_pCompBuf = m_pCompMem = m_pCodeBuf = NULL;
-		m_pBufArry = m_pCodeArry = NULL;
+      m_pCompBuf = m_pCompMem = m_pCodeBuf = nullptr;
+      m_pBufArry = m_pCodeArry = nullptr;
 		m_lBufSize = m_lCodeSize = 0;
 		}
 
@@ -187,10 +187,10 @@ public:
 
 // CURENTLY, NO EXTRA CONTROL IS GIVEN WITH FSPR8 CONVERSIONS
 
-//*************************************************
-//******  ROTBUF => texture buffer       **********
-//******  also used for rotation         **********
-//*************************************************
+// *************************************************
+// ******  ROTBUF => texture buffer       **********
+// ******  also used for rotation         **********
+// *************************************************
 // Curently, the normal extensions of Image are
 // being used for textures and such.
 

@@ -78,7 +78,7 @@ class CScoreboard
 	public:
 		
 		int16_t	m_asScores[Net::MaxNumIDs+1];			// Score for each player
-//		U16	m_au16PlayerIDs[Net::MaxNumIDs+1];	// ID of each player
+//		uint16_t	m_au16PlayerIDs[Net::MaxNumIDs+1];	// ID of each player
 		int32_t	m_lLastScoreDrawTime;						// Time since last update
 		int32_t	m_lLastStatusDrawTime;						// Time since last update
 
@@ -111,7 +111,7 @@ class CScoreboard
 	public:
 
 		// Return the indes of the player or -1 if not found
-//		short GetPlayerIndex(U16 uInstanceID)
+//		short GetPlayerIndex(uint16_t uInstanceID)
 //		{
 //			short sPlayerIndex = Net::MaxNumIDs;
  //
@@ -173,7 +173,7 @@ void ScoreReset(void);
 void ScoreResetDisplay(void);
 
 // Function called by Characters when they die
-void ScoreRegisterKill(CRealm* pRealm, U16 u16DeadGuy, U16 u16Killer);
+void ScoreRegisterKill(CRealm* pRealm, uint16_t u16DeadGuy, uint16_t u16Killer);
 
 // Function called by play to update the score display
 // Returns true, if pImage was updated; false otherwise.
@@ -192,7 +192,7 @@ void ScoreDisplayStatus(CRealm* pRealm);
 //	to enter their name if they beat one of the top scores.
 void ScoreDisplayHighScores(			// Returns nothing.
 	CRealm* pRealm,						// In:  Realm won.
-	CNetClient* pclient	= NULL,		// In:  Client ptr for MP mode, or NULL in SP mode.
+	CNetClient* pclient	= nullptr,		// In:  Client ptr for MP mode, or nullptr in SP mode.
 	int32_t lMaxTimeOut	= -1);			// In:  Max time on score screen (quits after this
 												// duration, if not -1).
 

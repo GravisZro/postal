@@ -78,7 +78,7 @@ class CMine : public CWeapon
 
 	typedef uint8_t MineType;
 
-	typedef enum
+   enum
 	{
 		ProximityMine = 3,
 		TimedMine,
@@ -161,11 +161,11 @@ class CMine : public CWeapon
 			CThing** ppNew,										// Out: Pointer to new object
 			ClassIDType id)										// In:  ID of mine to construct.
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CMine(pRealm, id);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CMine::Construct(): Couldn't construct CMine (that's a bad thing)\n");
 				}
 			return sResult;
@@ -210,7 +210,7 @@ class CMine : public CWeapon
 		// Resets members.
 		void Reset(void)
 			{
-			m_pImage = NULL;
+			m_pImage = nullptr;
 			m_sprite.m_pthing	= this;
 			m_lFuseTime = 0;
 			m_u16ShooterID = CIdBank::IdNil;

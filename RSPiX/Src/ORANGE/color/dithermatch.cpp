@@ -45,9 +45,9 @@ COLOR PALETTE INTO THE BMP IF DESIRED!
 
 /* This extension was eeded for analysis:
 					short	lClip = 256,  // JEFF DEBUGGING!
-					short* ppsSaveErrorR = NULL,  // JEFF DEBUGGING!
-					short* ppsSaveErrorG = NULL,  // JEFF DEBUGGING!
-					short* ppsSaveErrorB = NULL  // JEFF DEBUGGING!
+					short* ppsSaveErrorR = nullptr,  // JEFF DEBUGGING!
+					short* ppsSaveErrorG = nullptr,  // JEFF DEBUGGING!
+					short* ppsSaveErrorB = nullptr  // JEFF DEBUGGING!
 */
 
 
@@ -73,7 +73,7 @@ int16_t	rspDither(
 					int32_t	lInc,
 					// User interaction
 					PDitherCallBack func,
-					int32_t  lMilli // milliseconds per callback
+               uint32_t  lMilli // milliseconds per callback
 					)
 	{
 	ASSERT(pimSrc);
@@ -88,14 +88,14 @@ int16_t	rspDither(
 	ASSERT(lMilli > 0);
 	ASSERT(sStartMap >= 0);
 	ASSERT(sNumMap > 0);
-	ASSERT(pimDst->m_pData == NULL); // we create it!
+	ASSERT(pimDst->m_pData == nullptr); // we create it!
 
 #ifdef _DEBUG
 #endif
 
-	int16_t sRet = 0;
-	int32_t	lPalOffset = lInc * sStartMap;
-	int32_t	lLastTime = rspGetMilliseconds();
+   int16_t sResult = SUCCESS;
+//	int32_t	lPalOffset = lInc * sStartMap;
+   uint32_t	lLastTime = rspGetMilliseconds();
 
 	//--------- Set up receiving vessel:
 	if (pimDst->CreateImage(pimSrc->m_sWidth,pimSrc->m_sHeight,
@@ -117,7 +117,7 @@ int16_t	rspDither(
 		}
 
 	//--------- Begin:
-	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
+//	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
 
 	int16_t i,j;
 	int32_t lSrcP = pimSrc->m_lPitch;
@@ -295,7 +295,7 @@ int16_t	rspDither(
 		// Clear the upcoming error layer:
 		for (i=-1;i <= sW;i++)
 			{
-			psNextErrorR[i] = psNextErrorG[i] = psNextErrorB[i] = int16_t(0);
+         psNextErrorR[i] = psNextErrorG[i] = psNextErrorB[i] = 0;
 			}
 
 		// Give progress feedback
@@ -304,10 +304,10 @@ int16_t	rspDither(
 			if ((rspGetMilliseconds() - lLastTime) > lMilli)
 				{
 				lLastTime = rspGetMilliseconds();
-				if ((*func)(1.0 - double(j)/dH) == -1) // user abort
+            if ((*func)(1.0 - double(j)/dH) == FAILURE) // user abort
 					{
 					j = 0; // premature exit!
-					sRet = 1;
+               sResult = FAILURE;
 					}
 				}
 			}
@@ -317,7 +317,7 @@ int16_t	rspDither(
 	free(psErrorG);
 	free(psErrorB);
 
-	return sRet;
+   return sResult;
 	}
 
 //==============================================
@@ -340,7 +340,7 @@ int16_t	rspSimpleMap(
 					int32_t	lInc,
 					// User interaction
 					PDitherCallBack func,
-					int32_t  lMilli // milliseconds per callback
+               uint32_t  lMilli // milliseconds per callback
 					)
 	{
 	ASSERT(pimSrc);
@@ -355,14 +355,14 @@ int16_t	rspSimpleMap(
 	ASSERT(lMilli > 0);
 	ASSERT(sStartMap >= 0);
 	ASSERT(sNumMap > 0);
-	ASSERT(pimDst->m_pData == NULL); // we create it!
+	ASSERT(pimDst->m_pData == nullptr); // we create it!
 
 #ifdef _DEBUG
 #endif
 
-	int16_t sRet = 0;
-	int32_t	lPalOffset = lInc * sStartMap;
-	int32_t	lLastTime = rspGetMilliseconds();
+   int16_t sResult = SUCCESS;
+//	int32_t	lPalOffset = lInc * sStartMap;
+   uint32_t	lLastTime = rspGetMilliseconds();
 
 	//--------- Set up receiving vessel:
 	if (pimDst->CreateImage(pimSrc->m_sWidth,pimSrc->m_sHeight,
@@ -384,7 +384,7 @@ int16_t	rspSimpleMap(
 		}
 
 	//--------- Begin:
-	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
+//	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
 
 	int16_t i,j;
 	int32_t lSrcP = pimSrc->m_lPitch;
@@ -417,16 +417,16 @@ int16_t	rspSimpleMap(
 			if ((rspGetMilliseconds() - lLastTime) > lMilli)
 				{
 				lLastTime = rspGetMilliseconds();
-				if ((*func)(1.0 - double(j)/dH) == -1) // user abort
+            if ((*func)(1.0 - double(j)/dH) == FAILURE) // user abort
 					{
 					j = 0; // premature exit!
-					sRet = 1;
+               sResult = FAILURE;
 					}
 				}
 			}
 		}
 
-	return 0;
+   return sResult;
 	}
 
 					
@@ -456,7 +456,7 @@ int16_t	rspDither(
 					int32_t	lInc,
 					// User interaction
 					PDitherCallBack func,
-					int32_t  lMilli // milliseconds per callback
+               uint32_t  lMilli // milliseconds per callback
 					)
 	{
 	ASSERT(pimSrc);
@@ -471,14 +471,14 @@ int16_t	rspDither(
 	ASSERT(lMilli > 0);
 	ASSERT(sStartMap >= 0);
 	ASSERT(sNumMap > 0);
-	ASSERT(pimDst->m_pData == NULL); // we create it!
+	ASSERT(pimDst->m_pData == nullptr); // we create it!
 
 #ifdef _DEBUG
 #endif
 
-	int16_t sRet = 0;
-	int32_t	lPalOffset = lInc * sStartMap;
-	int32_t	lLastTime = rspGetMilliseconds();
+   int16_t sResult = SUCCESS;
+//	int32_t	lPalOffset = lInc * sStartMap;
+   uint32_t	lLastTime = rspGetMilliseconds();
 
 	//--------- Set up receiving vessel:
 	if (pimDst->CreateImage(pimSrc->m_sWidth,pimSrc->m_sHeight,
@@ -499,7 +499,7 @@ int16_t	rspDither(
 		(*func)(double(0.0));
 		}
 
-	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
+//	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
 
 	int16_t i,j;
 	int32_t lSrcP = pimSrc->m_lPitch;
@@ -687,7 +687,7 @@ int16_t	rspDither(
 		// Clear the upcoming error layer:
 		for (i=-1;i <= sW;i++)
 			{
-			psNextErrorR[i] = psNextErrorG[i] = psNextErrorB[i] = int16_t(0);
+         psNextErrorR[i] = psNextErrorG[i] = psNextErrorB[i] = 0;
 			}
 
 		// Give progress feedback
@@ -696,10 +696,10 @@ int16_t	rspDither(
 			if ((rspGetMilliseconds() - lLastTime) > lMilli)
 				{
 				lLastTime = rspGetMilliseconds();
-				if ((*func)(1.0 - double(j)/dH) == -1) // user abort
+            if ((*func)(1.0 - double(j)/dH) == FAILURE) // user abort
 					{
 					j = 0; // premature exit!
-					sRet = 1;
+               sResult = FAILURE;
 					}
 				}
 			}
@@ -710,23 +710,23 @@ int16_t	rspDither(
 	free(psErrorG);
 	free(psErrorB);
 
-	return sRet;
+   return sResult;
 	}
 
-//*************************************************************************
+// *************************************************************************
 //*  In 32-bit sourced versions of rspDither and rspDitherMatch,
 //*  this utilizes the concept of the alpha channel as representing 
 //*  transparency.  The user gives a value from 0-255 representing the 
 //*  most transparent pixel to dither.  Alpha values less than this
 //*  are considered the background, ,dithering will not occur, and the 
 //*  pixel will be mapped to the specified background index color.
-//*************************************************************************
+// *************************************************************************
 //*  Note that if dithering to background is DESIRED, setting the alpha
 //*  limit to zero prevents any of the image from being considered a 
 //*  background.
-//*************************************************************************
+// *************************************************************************
 
-//*************************************************************************
+// *************************************************************************
 //==============================================
 // You supply a general palette to match to, 
 // a SCREEN32_ARGB image as a TC source, and an 
@@ -753,7 +753,7 @@ int16_t	rspDither(
 					int32_t	lInc,
 					// User interaction
 					PDitherCallBack func,
-					int32_t  lMilli // milliseconds per callback
+               uint32_t  lMilli // milliseconds per callback
 					)
 	{
 	ASSERT(pimSrc);
@@ -768,14 +768,14 @@ int16_t	rspDither(
 	ASSERT(lMilli > 0);
 	ASSERT(sStartMap >= 0);
 	ASSERT(sNumMap > 0);
-	ASSERT(pimDst->m_pData == NULL); // we create it!
+	ASSERT(pimDst->m_pData == nullptr); // we create it!
 
 #ifdef _DEBUG
 #endif
 
-	int16_t sRet = 0;
-	int32_t	lPalOffset = lInc * sStartMap;
-	int32_t	lLastTime = rspGetMilliseconds();
+   int16_t sResult = SUCCESS;
+//	int32_t	lPalOffset = lInc * sStartMap;
+   uint32_t	lLastTime = rspGetMilliseconds();
 
 	//--------- Set up receiving vessel:
 	if (pimDst->CreateImage(pimSrc->m_sWidth,pimSrc->m_sHeight,
@@ -797,7 +797,7 @@ int16_t	rspDither(
 		}
 
 	//--------- Begin:
-	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
+//	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
 
 	int16_t i,j;
 	int32_t lSrcP = pimSrc->m_lPitch;
@@ -978,7 +978,7 @@ int16_t	rspDither(
 		// Clear the upcoming error layer:
 		for (i=-1;i <= sW;i++)
 			{
-			psNextErrorR[i] = psNextErrorG[i] = psNextErrorB[i] = int16_t(0);
+         psNextErrorR[i] = psNextErrorG[i] = psNextErrorB[i] = 0;
 			}
 
 		// Give progress feedback
@@ -987,10 +987,10 @@ int16_t	rspDither(
 			if ((rspGetMilliseconds() - lLastTime) > lMilli)
 				{
 				lLastTime = rspGetMilliseconds();
-				if ((*func)(1.0 - double(j)/dH) == -1) // user abort
+            if ((*func)(1.0 - double(j)/dH) == FAILURE) // user abort
 					{
 					j = 0; // premature exit!
-					sRet = 1;
+               sResult = FAILURE;
 					}
 				}
 			}
@@ -1000,11 +1000,11 @@ int16_t	rspDither(
 	free(psErrorG);
 	free(psErrorB);
 
-	return sRet;
+   return sResult;
 	}
 
 
-//*************************************************************************
+// *************************************************************************
 //==============================================
 // You supply a general palette to match to, 
 // a SCREEN32_ARGB image as a TC source, and an 
@@ -1034,7 +1034,7 @@ int16_t	rspSimpleMap(
 					int32_t	lInc,
 					// User interaction
 					PDitherCallBack func,
-					int32_t  lMilli // milliseconds per callback
+               uint32_t  lMilli // milliseconds per callback
 					)
 	{
 	ASSERT(pimSrc);
@@ -1049,14 +1049,14 @@ int16_t	rspSimpleMap(
 	ASSERT(lMilli > 0);
 	ASSERT(sStartMap >= 0);
 	ASSERT(sNumMap > 0);
-	ASSERT(pimDst->m_pData == NULL); // we create it!
+	ASSERT(pimDst->m_pData == nullptr); // we create it!
 
 #ifdef _DEBUG
 #endif
 
-	int16_t sRet = 0;
-	int32_t	lPalOffset = lInc * sStartMap;
-	int32_t	lLastTime = rspGetMilliseconds();
+   int16_t sResult = SUCCESS;
+//	int32_t	lPalOffset = lInc * sStartMap;
+   uint32_t	lLastTime = rspGetMilliseconds();
 
 	//--------- Set up receiving vessel:
 	if (pimDst->CreateImage(pimSrc->m_sWidth,pimSrc->m_sHeight,
@@ -1078,7 +1078,7 @@ int16_t	rspSimpleMap(
 		}
 
 	//--------- Begin:
-	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
+//	int32_t lErrorRed = 0,lErrorGreen = 0,lErrorBlue = 0;
 
 	int16_t i,j;
 	int32_t lSrcP = pimSrc->m_lPitch;
@@ -1118,21 +1118,21 @@ int16_t	rspSimpleMap(
 			if ((rspGetMilliseconds() - lLastTime) > lMilli)
 				{
 				lLastTime = rspGetMilliseconds();
-				if ((*func)(1.0 - double(j)/dH) == -1) // user abort
+            if ((*func)(1.0 - double(j)/dH) == FAILURE) // user abort
 					{
 					j = 0; // premature exit!
-					sRet = 1;
+               sResult = FAILURE;
 					}
 				}
 			}
 		}
 
-	return 0;
+   return sResult;
 	}
 
 					
 
-//*************************************************************************
+// *************************************************************************
 
 	
 

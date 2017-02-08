@@ -82,20 +82,20 @@ public:
 
 	//==========================================================
 	// scratch space for creating a command list for creation:
-	static U8 ms_r[256];
-	static U8 ms_g[256];
-	static U8 ms_b[256];
-	static U8 ms_a[256];
-	static U8 ms_f[256];
+	static uint8_t ms_r[256];
+	static uint8_t ms_g[256];
+	static uint8_t ms_b[256];
+	static uint8_t ms_a[256];
+	static uint8_t ms_f[256];
 
 	static int16_t ms_SetPalette(RImage* pimImage);
 	static int16_t ms_SetPalette(); // to system palette
 	static int16_t ms_IsPaletteSet;
 public:
 	// temporary storage for a master palette:
-	static U8 ms_red[256];
-	static U8 ms_green[256];
-	static U8 ms_blue[256];
+	static uint8_t ms_red[256];
+	static uint8_t ms_green[256];
+	static uint8_t ms_blue[256];
 	};
 
 // This concept will be refined later, but allows pixel selected alpha effects:
@@ -138,14 +138,14 @@ public:
 	// Find optimum # of alpha level for your cache
 	static int16_t QueryFastMultiAlpha(
 		int16_t sNumSrcCol, int16_t sNumDstCol,int32_t lTotMem, 
-		int32_t* plHeaderSize = NULL,int32_t* plDataSize = NULL);
+		int32_t* plHeaderSize = nullptr,int32_t* plDataSize = nullptr);
 
 	// Create a FastMultiAlpha which MUST be freed BY the USER
 	// USING the DeleteFastMultiAlpha command ising THIS MALPHA:
 	uint8_t*** pppucCreateFastMultiAlpha(
 		int16_t sStartSrc,int16_t sNumSrc,	// color indices
 		int16_t sStartDst,int16_t sNumDst,
-		int32_t*	plAlignedSize = NULL);
+		int32_t*	plAlignedSize = nullptr);
 
 	// USER MUST call this to free the fast multi alpha
 	static int16_t DeleteFastMultiAlpha(uint8_t ****pfmaDel);

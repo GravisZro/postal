@@ -86,7 +86,7 @@ class Net
 	// The primary reason for moving these into their own file was to get around
 	// some inter-dependancies that came up when they were part of other files.
 	//------------------------------------------------------------------------------
-	typedef enum
+   enum : uint16_t
 		{
 		// Maximum number of ID's.  Can't be more than 16 right now because
 		// some bit masks are hardwired to 16-bits, which is 1 bit per player.
@@ -253,7 +253,7 @@ class Net
 
 	// This MUST be unsigned to work properly!!!
 	// See above for an explanation of why 16-bits is a good choice.
-	typedef U16					SEQ;
+	typedef uint16_t					SEQ;
 
 	//------------------------------------------------------------------------------
 	// These are the various bandwidths we support
@@ -284,7 +284,7 @@ class Net
 
 	// Lookup tables associated with the NetBandwidth enums.
 	NETCRAPTHING int32_t	lBandwidthValues[Net::NumBandwidths];
-	NETCRAPTHING char* BandwidthText[Net::NumBandwidths];
+   NETCRAPTHING const char* BandwidthText[Net::NumBandwidths];
 	};
 
 

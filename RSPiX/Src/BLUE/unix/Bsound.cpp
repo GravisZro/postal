@@ -34,15 +34,15 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #include "Blue.h"
 
-// Only set value if not NULL.
-#define SET(ptr, val)		( ((ptr) != NULL) ? *(ptr) = (val) : 0)
+// Only set value if not nullptr.
+#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0)
 
 static uint32_t callback_data = 0;
 
-static void sdl_audio_callback(void *userdata, Uint8 *stream, int len)
+static void sdl_audio_callback(void *userdata, uint8_t *stream, int len)
 {
     RSP_SND_CALLBACK callback = (RSP_SND_CALLBACK) userdata;
     SDL_memset(stream, '\0', len);
@@ -61,7 +61,7 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
 	int32_t lCurBufferTime,							// In:  Current buffer time (in ms.)
 	int32_t lMaxBufferTime,							// In:  Maximum buffer time (in ms.)
 	RSP_SND_CALLBACK callback,					// In:  Callback function
-	uint32_t ulUser)									// In:  User-defined value to pass to callback
+   uintptr_t ulUser)									// In:  User-defined value to pass to callback
 {
     if (audio_opened)
         rspKillSoundOutMode();
@@ -71,7 +71,7 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
     if ((lChannels < 1) || (lChannels > 2))
     {
 		TRACE("rspSetSoundOutMode(): Must be 1 or 2 channels.\n");
-        return -1;
+        return FAILURE;
     }
 
     if (lBitsPerSample == 8)
@@ -81,7 +81,7 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
     else
     {
 		TRACE("rspSetSoundOutMode(): Format must be 8 or 16 bit.\n");
-        return -1;
+        return FAILURE;
     }
 
     // Fragment sizes I used for Serious Sam...seem to work well...
@@ -113,11 +113,11 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
 
     if (!SDL_WasInit(SDL_INIT_AUDIO))
     {
-        if (SDL_Init(SDL_INIT_AUDIO) == -1)
+        if (SDL_Init(SDL_INIT_AUDIO) == FAILURE)
             return BLU_ERR_NO_DEVICE;
     }
 
-    if (SDL_OpenAudio(&desired, NULL) == -1)
+    if (SDL_OpenAudio(&desired, nullptr) == FAILURE)
     {
 		TRACE("rspSetSoundOutMode(): SDL_OpenAudio failed: %s.\n", SDL_GetError());
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -127,22 +127,23 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
     SDL_PauseAudio(0);
 
     audio_opened = true;
-    return 0;
+    return SUCCESS;
 }
 
 extern int16_t rspGetSoundOutMode(				// Returns 0 if successfull, non-zero otherwise
-	int32_t* plSampleRate,							// Out: Sample rate or -1 (unless NULL)
-	int32_t* plBitsPerSample,				// Out: Bits per sample or -1 (unless NULL)
-	int32_t* plChannels,					// Out: Channels (mono=1, stereo=2) or -1 (unless NULL)
-	int32_t* plCurBufferTime,				// Out: Current buffer time or -1 (unless NULL)
-	int32_t* plMaxBufferTime)			// Out: Maximum buffer time or -1 (unless NULL)
+   int32_t* plSampleRate,							// Out: Sample rate or -1 (unless nullptr)
+   int32_t* plBitsPerSample,				// Out: Bits per sample or -1 (unless nullptr)
+   int32_t* plChannels,					// Out: Channels (mono=1, stereo=2) or -1 (unless nullptr)
+   int32_t* plCurBufferTime,				// Out: Current buffer time or -1 (unless nullptr)
+   int32_t* plMaxBufferTime)			// Out: Maximum buffer time or -1 (unless nullptr)
 {
+  UNUSED(plChannels);
     SET(plSampleRate, desired.freq);
     SET(plBitsPerSample, desired.format & 0x00FF);
     SET(plBitsPerSample, desired.channels);
     SET(plCurBufferTime, cur_buf_time);
     SET(plMaxBufferTime, max_buf_time);
-    return 0;
+    return SUCCESS;
 }
 
 extern void rspSetSoundOutBufferTime(
@@ -164,25 +165,25 @@ extern void rspKillSoundOutMode(void)		// Returns 0 if successfull, non-zero oth
 extern int16_t rspClearSoundOut(void)		// Returns 0 on success, non-zero otherwise
 {
     // no-op?
-    return 0;
+    return SUCCESS;
 }
 
 extern int16_t rspPauseSoundOut(void)		// Returns 0 on success, non-zero otherwise
 {
     if (!audio_opened)
-        return 0;
+        return SUCCESS;
 
     SDL_PauseAudio(1);
-    return 0;
+    return SUCCESS;
 }
 
 extern int16_t rspResumeSoundOut(void)		// Returns 0 on success, non-zero otherwise
 {
     if (!audio_opened)
-        return 0;
+        return SUCCESS;
 
     SDL_PauseAudio(0);
-    return 0;
+    return SUCCESS;
 }
 
 extern int16_t rspIsSoundOutPaused(void)	// Returns TRUE if paused, FALSE otherwise
@@ -195,19 +196,19 @@ extern int16_t rspIsSoundOutPaused(void)	// Returns TRUE if paused, FALSE otherw
 
 extern int32_t rspGetSoundOutPos(void)		// Returns sound output position in bytes
 {
-    return 0;
+    return SUCCESS;
 }
 
 extern int32_t rspGetSoundOutTime(void)		// Returns sound output position in time
 {
-    return 0;
+    return SUCCESS;
 }
 
 extern int32_t rspDoSound(void)
 {
     // no-op; in Soviet Russia, audio callback pumps YOU.
     //  seriously, the SDL audio callback runs in a seperate thread.
-    return 0;
+    return SUCCESS;
 }
 
 extern void rspLockSound(void)

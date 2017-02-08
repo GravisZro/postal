@@ -69,7 +69,7 @@ class CPylon : public CThing
 	public:
 		uint8_t	m_ucID;								// Pylon ID
 		GameMessage m_msg;						// Place for storing hint messages
-		U16	m_u16TargetDudeID;				// ID of dude you are supposed to attack;
+		uint16_t	m_u16TargetDudeID;				// ID of dude you are supposed to attack;
 
 	protected:
 		double m_dX;								// x coord
@@ -134,22 +134,22 @@ class CPylon : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			if (pRealm->m_sNumPylons < PYLON_MAX_PYLONS)
 			{
 				*ppNew = new CPylon(pRealm);
-				if (*ppNew == 0)
+            if (*ppNew == nullptr)
 				{
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("CPylon::Construct(): Couldn't construct CPylon (that's a bad thing)\n");
 				}
 			}
 			else
 			{
 				TRACE("CPylon::CPylon() - No more pylon ID's available\n");
-				*ppNew = NULL;
-				sResult = -1;
+				*ppNew = nullptr;
+				sResult = FAILURE;
 			}
 
 			return sResult;
@@ -243,7 +243,7 @@ class CPylon : public CThing
 
 		// Search the list of pylons and return the instance ID of the one with
 		// the given pylon id.
-		U16 GetPylonUniqueID(uint8_t ucPylonID);
+		uint16_t GetPylonUniqueID(uint8_t ucPylonID);
 
 		// Return true if the pylon was triggered in the last interation
 		inline bool Triggered(void)

@@ -15,6 +15,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
+
 #ifndef RTTIME_H
 #define RTTIME_H
 
@@ -40,7 +44,7 @@ class CRtTime
 		// Default constructor.
 		CRtTime()
 			{
-			m_fnTime			= NULL;
+			m_fnTime			= nullptr;
 			m_lOffset		= 0L;
 			m_sSuspended	= 0;
 			// Might as well start out at 0.
@@ -52,7 +56,7 @@ class CRtTime
 			{ }
 
 	public:		// Methods.
-		// Sets (or clears, if NULL) the timer override function.
+		// Sets (or clears, if nullptr) the timer override function.
 		void SetTimeFunc(RTTIMEFUNC fnTime)
 			{ m_fnTime = fnTime; }
 
@@ -97,7 +101,7 @@ class CRtTime
 		int32_t GetTime(void)
 			{
 			if (m_sSuspended == 0)
-				return (m_fnTime != NULL ? (*m_fnTime)() : Blu_GetTime()) + m_lOffset;
+				return (m_fnTime != nullptr ? (*m_fnTime)() : Blu_GetTime()) + m_lOffset;
 			else
 				return m_lSuspended;
 			}

@@ -175,7 +175,7 @@ inline T CLAMP(T val, T min,T max)
 //////////////////////////////////////////////////////////////////////////////
 
 // Player color descriptions.
-char*	CGameSettings::ms_apszPlayerColorDescriptions[CDude::MaxTextures + 1]	=
+const char*	CGameSettings::ms_apszPlayerColorDescriptions[CDude::MaxTextures + 1]	=
 	{
 	"Black",
 	"Green",
@@ -191,7 +191,7 @@ char*	CGameSettings::ms_apszPlayerColorDescriptions[CDude::MaxTextures + 1]	=
 	};
 
 // Number of color descriptions.
-const	int16_t CGameSettings::ms_sNumPlayerColorDescriptions	= NUM_ELEMENTS(ms_apszPlayerColorDescriptions) - 1;
+const	uint16_t CGameSettings::ms_sNumPlayerColorDescriptions	= NUM_ELEMENTS(ms_apszPlayerColorDescriptions) - 1;
 
 //////////////////////////////////////////////////////////////////////////////
 // Set settings to default values
@@ -297,7 +297,7 @@ CGameSettings::~CGameSettings()
 int16_t CGameSettings::LoadPrefs(
 	RPrefs* pPrefs)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	pPrefs->GetVal("Paths", "CD", "", m_pszCDPath);
 #if defined(PANDORA) || defined(ODROID)
@@ -305,7 +305,7 @@ int16_t CGameSettings::LoadPrefs(
 #endif
 
 	sResult = (strlen(m_pszCDPath) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_pszCDPath, sizeof(m_pszCDPath));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadCDPath_s_s, "CD", "Paths");
@@ -315,7 +315,7 @@ int16_t CGameSettings::LoadPrefs(
 	strcpy(m_pszHDPath, ".");
 #endif
 	sResult = (strlen(m_pszHDPath) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_pszHDPath, sizeof(m_pszHDPath));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "HD", "Paths");
@@ -325,7 +325,7 @@ int16_t CGameSettings::LoadPrefs(
 	strcpy(m_pszVDPath, ".");
 #endif
 	sResult = (strlen(m_pszVDPath) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_pszVDPath, sizeof(m_pszVDPath));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "VD", "Paths");
@@ -335,7 +335,7 @@ int16_t CGameSettings::LoadPrefs(
 	strcpy(m_pszSoundPath, ".");
 #endif
 	sResult = (strlen(m_pszSoundPath) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_pszSoundPath, sizeof(m_pszSoundPath));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "Sound", "Paths");
@@ -345,7 +345,7 @@ int16_t CGameSettings::LoadPrefs(
 	strcpy(m_pszGamePath, ".");
 #endif
 	sResult = (strlen(m_pszGamePath) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_pszGamePath, sizeof(m_pszGamePath));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "Game", "Paths");
@@ -355,14 +355,14 @@ int16_t CGameSettings::LoadPrefs(
 	strcpy(m_pszHoodsPath, ".");
 #endif
 	sResult = (strlen(m_pszHoodsPath) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_pszHoodsPath, sizeof(m_pszHoodsPath));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "Hoods", "Paths");
 
 	pPrefs->GetVal("Paths", "NoSakDir", "", m_szNoSakDir);
 	sResult = (strlen(m_szNoSakDir) + 1) <= RSP_MAX_PATH ? 0 : -1;
-	if (sResult == 0)
+   if (sResult == SUCCESS)
 		sResult = CorrectifyBasePath(m_szNoSakDir, sizeof(m_szNoSakDir));
 	if (sResult)
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "NoSakDir", "Paths");
@@ -370,23 +370,19 @@ int16_t CGameSettings::LoadPrefs(
 	pPrefs->GetVal("Realms", "File", "", m_pszRealmPrefsFile);
 	if (strlen(m_pszRealmPrefsFile) == 0)
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "File", "Realms");
 		}
 	else if ((strlen(m_pszRealmPrefsFile) + 1) >= RSP_MAX_PATH)
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "File", "Realms");
 		}
 
 	pPrefs->GetVal("Game", "RecentDifficulty", m_sDifficulty, &m_sDifficulty);
-	if (m_sDifficulty < 0)
-		m_sDifficulty = 0;
 	if (m_sDifficulty > 11)
 		m_sDifficulty = 11;
 	pPrefs->GetVal("Game", "RecentViolence", m_sViolence, &m_sViolence);
-	if (m_sViolence < 0)
-		m_sViolence = 0;
 	if (m_sViolence > 11)
 		m_sViolence = 11;
 	pPrefs->GetVal("Game", "UseCrossHair", m_sCrossHair, &m_sCrossHair);
@@ -399,10 +395,8 @@ int16_t CGameSettings::LoadPrefs(
 	pPrefs->GetVal("Multiplayer", "Name", m_szPlayerName, m_szPlayerName);
 	pPrefs->GetVal("Multiplayer", "Color", m_sPlayerColorIndex, &m_sPlayerColorIndex);
 	pPrefs->GetVal("Multiplayer", "Bandwidth", m_sNetBandwidth, &m_sNetBandwidth);
-	if (m_sNetBandwidth < 0) m_sNetBandwidth = 0;
 	if (m_sNetBandwidth >= Net::NumBandwidths) m_sNetBandwidth = Net::NumBandwidths - 1;
 	pPrefs->GetVal("Multiplayer", "HostMinBandwidth", m_sHostMinBandwidth, &m_sHostMinBandwidth);
-	if (m_sHostMinBandwidth < 0) m_sHostMinBandwidth = 0;
 	if (m_sHostMinBandwidth >= Net::NumBandwidths) m_sHostMinBandwidth = Net::NumBandwidths - 1;
 	pPrefs->GetVal("Multiplayer", "HostMaxPlayers", m_sHostMaxPlayers, &m_sHostMaxPlayers);
 	if (m_sHostMaxPlayers > Net::MaxNumIDs)
@@ -418,9 +412,9 @@ int16_t CGameSettings::LoadPrefs(
 	pPrefs->GetVal("Multiplayer", "GetInputInterval", m_sNetGetInputInterval, &m_sNetGetInputInterval);
 	pPrefs->GetVal("Multiplayer", "SendInputInterval", m_sNetSendInputInterval, &m_sNetSendInputInterval);
 	pPrefs->GetVal("Multiplayer", "MaxFrameLag", m_sNetMaxFrameLag, &m_sNetMaxFrameLag);
-	m_sNetMaxFrameLag = CLAMP(m_sNetMaxFrameLag, (int16_t)0, (int16_t)Net::MaxAheadSeq);
+   m_sNetMaxFrameLag = CLAMP(m_sNetMaxFrameLag, static_cast<uint16_t>(0), static_cast<uint16_t>(Net::MaxAheadSeq));
 	pPrefs->GetVal("Multiplayer", "TimePerFrame", m_sNetTimePerFrame, &m_sNetTimePerFrame);
-	m_sNetTimePerFrame = CLAMP(m_sNetTimePerFrame, (int16_t)Net::MinFrameTime, (int16_t)200);
+   m_sNetTimePerFrame = CLAMP(m_sNetTimePerFrame, static_cast<uint16_t>(Net::MinFrameTime), static_cast<uint16_t>(200));
 	pPrefs->GetVal("Multiplayer", "MaxBlockingTime", m_lNetMaxBlockingTime, &m_lNetMaxBlockingTime);
 	pPrefs->GetVal("Multiplayer", "ForceAbortTime", m_lNetForceAbortTime, &m_lNetForceAbortTime);
 /*** 12/5/97 AJC ***/
@@ -446,9 +440,8 @@ int16_t CGameSettings::LoadPrefs(
 	pPrefs->GetVal("Demo", "DemoDebugMovie", m_szDemoDebugMovie, m_szDemoDebugMovie);
 	pPrefs->GetVal("Demo", "NumAvailable", m_sNumAvailableDemos, &m_sNumAvailableDemos);
 
-	int16_t i;
 	char szDurationName[100];
-	for (i = 0; i < MAX_TITLE_SCREENS; i++)
+   for (uint32_t i = 0; i < MAX_TITLE_SCREENS; i++)
 	{
 		sprintf(szDurationName, "Duration%d", i+1);
 		pPrefs->GetVal("Title", szDurationName, 3000, &(m_alTitleDurations[i]));
@@ -476,13 +469,13 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Shell", "TrickySystemQuit", m_sTrickySystemQuit, &m_sTrickySystemQuit);
 
-	for (i = 0; i < SampleMaster::MAX_NUM_SOUND_CATEGORIES; i++)
+   for (uint32_t i = 0; i < SampleMaster::MAX_NUM_SOUND_CATEGORIES; i++)
 		{
 		pPrefs->GetVal("Volumes", SampleMaster::ms_apszSoundCategories[i], SampleMaster::UserDefaultVolume, &m_asCategoryVolumes[i]);
 		}
 
 	// Verify we're in bounds.
-	if (m_sPlayerColorIndex >= CDude::MaxTextures || m_sPlayerColorIndex < 0)
+   if (m_sPlayerColorIndex >= CDude::MaxTextures)
 		{
 		m_sPlayerColorIndex	= 0;
 		}
@@ -490,7 +483,7 @@ int16_t CGameSettings::LoadPrefs(
 	if (!sResult)
 		{
 		if (pPrefs->IsError())
-			sResult = -1;
+			sResult = FAILURE;
 		}
 
 	return sResult;
@@ -554,7 +547,7 @@ int16_t CGameSettings::LoadGame(
 	{
 	pFile->Read(&m_sDifficulty);
 	pFile->Read(&m_sViolence);
-	return 0;
+	return SUCCESS;
 	}
 
 
@@ -566,7 +559,7 @@ int16_t CGameSettings::SaveGame(
 	{
 	pFile->Write(&m_sDifficulty);
 	pFile->Write(&m_sViolence);
-	return 0;
+	return SUCCESS;
 	}
 
 
@@ -580,7 +573,7 @@ int16_t CGameSettings::PreDemo(
 	pFile->Write(&m_sViolence);
 	m_sDifficulty = 10;
 	m_sViolence = 11;
-	return 0;
+	return SUCCESS;
 	}
 
 
@@ -592,7 +585,7 @@ int16_t CGameSettings::PostDemo(
 	{
 	pFile->Read(&m_sDifficulty);
 	pFile->Read(&m_sViolence);
-	return 0;
+	return SUCCESS;
 	}
 
 

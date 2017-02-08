@@ -25,15 +25,15 @@
 This header depends on the rest QuickMath, but is not necessary
 for use of Quickmath, and deals primarily with high speed fixed
 point operations.
-/*****************************************************************
-Hungarian:	fp = either generic fixed point or signed 32 (S16.U16)
+ *****************************************************************
+Hungarian:	fp = either generic fixed point or signed 32 (int16_t.uint16_t)
 				pfp = pointer to fixed point number
 						(sorry FILE*)
-				fpS32 = S16.U16
+				fpS32 = int16_t.uint16_t
 				type = RFixedS32, members = "frac" and "mod"
 
-				fpS16 = S8.U8
-				fpU16 = U8.U8, etc.
+				fpS16 = int8_t.uint8_t
+				fpU16 = uint8_t.uint8_t, etc.
 				type = RFixedS16, same members, etc., etc.
 
 				& = implicit pass by reference, do NOT use a pointer
@@ -44,7 +44,7 @@ NOTE: Some functions can take a long AS an fpS32.  Understand that this is
 a memory cast as a fpS32 and does NOT represent the actual long "value"!
 Use Get and Set "Value" functions to translate integers to fixed point!
 
-/*****************************************************************
+ *****************************************************************
 RFixedS32 { mod, frac, copy }
 RFixedU16 { mod, frac, copy }
 
@@ -62,18 +62,18 @@ inline void rspfpAddHalf(&fpDst) // useful for rounding functions
 inline void rspfpSetValue(&fpDst,double dVal) // translates VALUE into fp
 inline double rspfpGetValue(&fpDst)
 
-/****************************************************************/
+ ****************************************************************/
 // Fixed Point 32S
 //======================================= signed 15:16 fixed point
 typedef union	{
-	int32_t	val; //********* Full 32 bit signed value
+	int32_t	val; // ********* Full 32 bit signed value
 	struct	
 		{
 #ifdef SYS_ENDIAN_BIG // big endian
 //-----------------------------------------------
 		union
 			{
-			int16_t	mod; //********* signed 16-bit integer part
+			int16_t	mod; // ********* signed 16-bit integer part
 			struct {
 				int8_t upper; 	// for 256v level z-coloring:
 				uint8_t lower;

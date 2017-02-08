@@ -272,10 +272,11 @@ using namespace std;
 // to it because you can't overload functions based soley on return type.
 struct GenericCreateResFunc
 	{
+  virtual ~GenericCreateResFunc(void) { }
 	virtual int16_t operator()(void** ppT)
 		{
 		*ppT = 0;
-		return -1;	// generic version should never be called!
+      return FAILURE;	// generic version should never be called!
 		}
 	};
 
@@ -294,6 +295,7 @@ struct CreateResFunc : GenericCreateResFunc
 // destroy a specific type of resource.  The function simply does a "delete". 
 struct GenericDestroyResFunc
 	{
+  virtual ~GenericDestroyResFunc(void) { }
 	virtual void operator()(void* /*pT*/)
 		{  }
 	};
@@ -310,8 +312,9 @@ struct DestroyResFunc : GenericDestroyResFunc
 // load a specific type of resource.  The function uses rspAnyLoad().
 struct GenericLoadResFunc
 	{
+  virtual ~GenericLoadResFunc(void) { }
 	virtual int16_t operator()(void* /*pT*/, RFile* /*pfile*/)
-		{ return -1; }	// generic version should never be called!
+      { return FAILURE; }	// generic version should never be called!
 	};
 
 template<class T>
@@ -341,9 +344,9 @@ class CResourceBlock
 			{
 			m_sRefCount = 0;
 			m_sAccessCount = 0;
-			m_vpRes = NULL;
+			m_vpRes = nullptr;
 			m_pfnDestroy = 0;
-			};
+         }
 
 		~CResourceBlock()
 			{
@@ -352,7 +355,7 @@ class CResourceBlock
 			// Delete the function object
 			delete m_pfnDestroy;
 			m_pfnDestroy = 0;
-			};
+         }
 
 		void FreeResource(void)
 			{
@@ -509,7 +512,7 @@ class RResMgr
 		// for the file you are trying to get
 		RFile* FromSak(RString strResourceName)
 		{
-			RFile* prf = NULL;
+			RFile* prf = nullptr;
 			if (m_rfSakAlt.IsOpen()) 
 			  {
 				int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
@@ -522,7 +525,7 @@ class RResMgr
 						}
 					else
 						{
-						TRACE("RResMgr::FromSak - m_rfSakAlt.Seek(%ld, SEEK_SET) failed.\n", 
+						TRACE("RResMgr::FromSak - m_rfSakAlt.Seek(%i, SEEK_SET) failed.\n", 
 							lResSeekPos);
 						}
 					}
@@ -536,16 +539,14 @@ class RResMgr
 					}
 				else
 					{
-					TRACE("RResMgr::FromSak - m_rfSak.Seek(%ld, SEEK_SET) failed.\n", 
+					TRACE("RResMgr::FromSak - m_rfSak.Seek(%i, SEEK_SET) failed.\n", 
 						lResSeekPos);
 					}
-				}
-#ifdef RESMGR_VERBOSE
+            }
 			else
-				TRACE("RResMgr::FromSak - Break Yo Self! Resource %s is not in this SAK file\n",
+            TRACE("RResMgr::FromSak - Resource %s is not in this SAK file\n",
 				      (char*) strResourceName);
 //				      (char*) strResourceName.c_str());
-#endif // RESMGR_VERBOSE
 
 			return prf;
 		}
@@ -706,7 +707,7 @@ int16_t rspGetResource(									// Returns 0 on success
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Release a resource and set the specified pointer to NULL.
+// Release a resource and set the specified pointer to nullptr.
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <class T>
@@ -715,7 +716,7 @@ void rspReleaseResource(								// Returns 0 on success
 	T** ppres)												// In:  Pointer to resource
 	{
 	presmgr->Release(*ppres);
-	*ppres = NULL;
+	*ppres = nullptr;
 	}
 
 
@@ -734,7 +735,7 @@ bool rspReleaseAndPurgeResource(	// Returns true if it was acutally purged,
 	T** ppres)
 	{
 	bool bPurged = presmgr->ReleaseAndPurge(*ppres);
-	*ppres = NULL;
+	*ppres = nullptr;
 	return bPurged;
 	}
 
@@ -768,7 +769,7 @@ int16_t rspGetResourceInstance(							// Returns 0 on success
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Release a resource instance and set the specified pointer to NULL.  
+// Release a resource instance and set the specified pointer to nullptr.  
 // The resource will be destroyed immediately.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -783,7 +784,7 @@ void rspReleaseResourceInstance(						// Returns 0 on success
 	{
 	// Be gone.
 	delete *ppres;
-	*ppres = NULL;
+	*ppres = nullptr;
 	}
 
 #endif //RESMGR_H

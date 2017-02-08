@@ -42,13 +42,13 @@ of integer degrees, from 0-359 inclusive.
 				T = a single templated type
 				-64 = enhanced 64-bit math mode...
 
-/*****************************************************************
+*****************************************************************
 inline void rspMod360(&sDeg) // USE BEFORE ALL CALLS IF IN QUESTION!
 inline void rspMod(&sValue,&sRange) 
 
 inline void rspDivMod(T num,T den,T &div, T &mod) // symmetric (methematical)
 inline void rspDivModA(T num,T den,T &div, T &mod) // asymmetric
-inline void rspDivModA64(S64 num,S32 den,S32 &div,S32 &mod) // asymmetric
+inline void rspDivModA64(int64_t num,int32_t den,int32_t &div,int32_t &mod) // asymmetric
 
 short rspATan(sDeltaY,sDeltaX);
 inline short rspDegDelta(sDegSrc,sDegDst)
@@ -60,9 +60,9 @@ inline float rspfCos(sDeg)
 
 inline short rspSqrt(long lVal)
 
-/*****************************************************************
+*****************************************************************
 
-/****************************************************************/
+****************************************************************/
 const int16_t csNumRotSteps = 360;
 extern double SINQ[csNumRotSteps],COSQ[csNumRotSteps];
 extern float fSINQ[csNumRotSteps],fCOSQ[csNumRotSteps];
@@ -76,37 +76,29 @@ inline int16_t	rspSqrt(int32_t lVal)
 	}
 
 inline double rspSin(int16_t sDeg) 
-	{ 
-#ifdef _DEBUG
-	ASSERT((sDeg >= 0) || (sDeg < 360));
-#endif
+   {
+   ASSERT((sDeg >= 0) || (sDeg < 360));
 
 	return SINQ[sDeg]; 
 	}
 
 inline double rspCos(int16_t sDeg) 
-	{ 
-#ifdef _DEBUG
-	ASSERT((sDeg >= 0) || (sDeg < 360));
-#endif
+   {
+   ASSERT((sDeg >= 0) || (sDeg < 360));
 
 	return COSQ[sDeg]; 
 	}
 
 inline float rspfSin(int16_t sDeg) 
-	{ 
-#ifdef _DEBUG
-	ASSERT((sDeg >= 0) || (sDeg < 360));
-#endif
+   {
+   ASSERT((sDeg >= 0) || (sDeg < 360));
 
 	return fSINQ[sDeg];
 	}
 
 inline float rspfCos(int16_t sDeg) 
-	{ 
-#ifdef _DEBUG
-	ASSERT((sDeg >= 0) || (sDeg < 360));
-#endif
+   {
+   ASSERT((sDeg >= 0) || (sDeg < 360));
 
 	return fCOSQ[sDeg]; 
 	}
@@ -179,18 +171,22 @@ inline void rspDivModA(T num,T den,T &div, T &mod) // does NOT check if (den == 
 	div = num / den;
 	mod = num - div * den;
 	if (mod)
+   {
 		if (div < 0)  { div--; mod += den;}
+   }
 	else if (!div)
 		if (mod < 0) { div--; mod += den;}
 	}
 
 // This is MACHINE specific and handles temporary overflows:
-inline void rspDivModA64(S64 num,S32 den,S32 &div,S32 &mod) // does NOT check if (den == 0)
+inline void rspDivModA64(int64_t num,int32_t den,int32_t &div,int32_t &mod) // does NOT check if (den == 0)
 	{	// Algorithm not verified for neqative denominator!!!!
 	div = num / den;
 	mod = num - div * den;
 	if (mod)
+   {
 		if (div < 0)  { div--; mod += den;}
+   }
 	else if (!div)
 		if (mod < 0) { div--; mod += den;}
 	}

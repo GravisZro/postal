@@ -97,7 +97,7 @@ class CFire : public CThing
 
 	typedef uint8_t FireAnim;
 
-	typedef enum
+   enum
 	{
 		LargeFire,
 		SmallFire,
@@ -121,8 +121,8 @@ class CFire : public CThing
 													// obstacle.
         bool m_bIsBurningDude;
 
-		U16	m_u16ShooterID;				// Store the shooter ID to pass along in the burn message
-		U16	m_u16FireStarterID;			// Fire's creator.  The ID of the thing that
+		uint16_t	m_u16ShooterID;				// Store the shooter ID to pass along in the burn message
+		uint16_t	m_u16FireStarterID;			// Fire's creator.  The ID of the thing that
 													// caused this fire to be created.  Generally
 													// used by a thing3d when creating an internal
 													// fire in response to Burn messages.
@@ -140,9 +140,9 @@ class CFire : public CThing
 		int32_t m_lStartTime;					// Starting time used to calc the Alpha %
 		int16_t m_sCurrentAlphaLevel;		// Use this Alpha level
 		int16_t m_sTotalAlphaChannels;
-		U32	m_u32CollideIncludeBits;	// bits to use for collision checking
-		U32	m_u32CollideDontcareBits;	// bits to use for collision checking
-		U32	m_u32CollideExcludeBits;	// bits to use for collision checking
+		uint32_t	m_u32CollideIncludeBits;	// bits to use for collision checking
+		uint32_t	m_u32CollideDontcareBits;	// bits to use for collision checking
+		uint32_t	m_u32CollideExcludeBits;	// bits to use for collision checking
 		bool	m_bSendMessages;				// Whether or not to send messages to other
 													// objects telling them to burn or not.
 		FireAnim m_eFireAnim;				// Which animation to use for the fire		
@@ -185,7 +185,7 @@ class CFire : public CThing
 			m_u32CollideDontcareBits = 0;
 			m_u32CollideExcludeBits = 0;
 			m_sTotalAlphaChannels = 0;
-			m_smash.m_pThing = NULL;
+			m_smash.m_pThing = nullptr;
 			m_smash.m_bits = 0;
 			m_lStartTime = 0;
 			m_u16FireStarterID = CIdBank::IdNil;
@@ -199,7 +199,7 @@ class CFire : public CThing
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
 			// Remove yourself from the collision list if it was in use
 			// (switching to smoke removes it from the smashatorium and sets
-			// the m_pThing field to NULL)
+			// the m_pThing field to nullptr)
 			if (m_smash.m_pThing)
 				m_pRealm->m_smashatorium.Remove(&m_smash);
 
@@ -216,11 +216,11 @@ class CFire : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CFire(pRealm);
-			if (*ppNew == 0)
+			if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CFire::Construct(): Couldn't construct CFire (that's a bad thing)\n");
 				}
 			return sResult;
@@ -300,7 +300,7 @@ class CFire : public CThing
 
 		// Allows whoever creates the fire to control what gets burned by it
 		// the defaults are set initially to Characters
-		void SetCollideBits(U32 u32Include, U32 u32Dontcare, U32 u32Exclude)
+		void SetCollideBits(uint32_t u32Include, uint32_t u32Dontcare, uint32_t u32Exclude)
 		{
 			m_u32CollideIncludeBits = u32Include;
 			m_u32CollideDontcareBits = u32Dontcare;

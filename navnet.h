@@ -101,16 +101,16 @@ class CNavigationNet : public CThing
 			// Set default name as NavNetxx where xx is CThing ID
 			m_rstrNetName = "Untitled NavNet";
 			// Initialize the dummy nodes for the sorted tree/list
-			m_BouyTreeListHead.m_powner = NULL;
-			m_BouyTreeListHead.m_pnPrev = NULL;
-			m_BouyTreeListHead.m_pnRight = NULL;
-			m_BouyTreeListHead.m_pnLeft = NULL;
+			m_BouyTreeListHead.m_powner = nullptr;
+			m_BouyTreeListHead.m_pnPrev = nullptr;
+			m_BouyTreeListHead.m_pnRight = nullptr;
+			m_BouyTreeListHead.m_pnLeft = nullptr;
 			m_BouyTreeListHead.m_pnNext = &m_BouyTreeListTail;
-			m_BouyTreeListTail.m_powner = NULL;
+			m_BouyTreeListTail.m_powner = nullptr;
 			m_BouyTreeListTail.m_pnPrev = &m_BouyTreeListHead;
-			m_BouyTreeListTail.m_pnNext = NULL;
-			m_BouyTreeListTail.m_pnRight = NULL;
-			m_BouyTreeListTail.m_pnLeft = NULL;
+			m_BouyTreeListTail.m_pnNext = nullptr;
+			m_BouyTreeListTail.m_pnRight = nullptr;
+			m_BouyTreeListTail.m_pnLeft = nullptr;
 			}
 
 	public:
@@ -133,11 +133,11 @@ class CNavigationNet : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+         int16_t sResult = SUCCESS;
 			*ppNew = new CNavigationNet(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CNavigationNet::Construct(): Couldn't construct CNavigationNet (that's a bad thing)\n");
 				}
 			return sResult;
@@ -248,14 +248,14 @@ class CNavigationNet : public CThing
 
 		// Set this NavNet as the default one for the Realm.  
 		int16_t SetAsDefault(void)
-			{  int16_t sReturn = SUCCESS;
+         {  int16_t sResult = SUCCESS;
 				if (m_pRealm)
 				{
 					m_pRealm->m_pCurrentNavNet = this;
 				}
 				else
-					sReturn = FAILURE;
-				return sReturn;
+               sResult = FAILURE;
+            return sResult;
 			}
 
 		// Delete all bouys from this network.

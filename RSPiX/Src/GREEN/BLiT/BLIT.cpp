@@ -33,9 +33,9 @@
 
 #ifdef _DEBUG
 
-	if (pimDst == NULL)
+	if (pimDst == nullptr)
 		{
-		TRACE("rspPlot: NULL Image passed.\n");
+		TRACE("rspPlot: nullptr Image passed.\n");
 		return;
 		}
 
@@ -63,7 +63,7 @@
 
 	// removed locking and unlocking except where needed for special cases:
 
-	switch ((int16_t)(((S64)pimDst->m_pSpecial))) // 0 = normal image
+   switch ((int16_t)(((intptr_t)pimDst->m_pSpecial))) // 0 = normal image
 		{
 		case 0: // normal image, buffer in image
 		break;
@@ -114,7 +114,7 @@
 	// Special check for buffer not locked correctly:
 	if (!pimDst->m_pData)
 		{
-		TRACE("rspPlot: NULL image data - potential locking error\n");
+		TRACE("rspPlot: nullptr image data - potential locking error\n");
 		return;
 		}
 
@@ -122,9 +122,9 @@
 	PIXSIZE* pTemp = (PIXSIZE*) (pimDst->m_pData + sY * pimDst->m_lPitch) + sX;
 	*pTemp = color;
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 
 	//if (gsScreenLocked || gsBufferLocked) goto PLOT_DONTUNLOCK;
 
@@ -162,7 +162,7 @@ template void rspClipPlot<uint32_t>(uint32_t color, RImage* pimDst,int16_t sX,in
 void instantiatePlot(void);
 void instantiatePlot()
 	{
-	RImage* pim = NULL;
+	RImage* pim = nullptr;
 
 	rspPlot((uint8_t)0,pim,(int16_t)0,(int16_t)0);
 	rspPlot((uint16_t)0,pim,(int16_t)0,(int16_t)0);
@@ -187,32 +187,32 @@ int16_t	rspLasso(PIXSIZE ignoreColor,RImage* pimSrc,int16_t &x,int16_t &y,int16_
 	if ((sWordLen != 1) && (sWordLen != 2) &&(sWordLen != 4))
 		{
 		TRACE("rspLasso: Pixel size not supported.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( (x<0) || (y<0) || ( (x+w) > pimSrc->m_sWidth) || ( (y+h) > pimSrc->m_sHeight) )
 		{
 		TRACE("rspLasso: Outside Source Buffer!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( !ImageIsUncompressed(pimSrc->m_type) )
 		{
 		TRACE("rspLasso: Only uncompressed RAM surfaces accepted.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ((w < 0) || (h < 0)) 
 		{
 		TRACE("rspLasso: Negative area passed.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
 
 	int16_t btos[] = {-1,0,1,-1,2};
-	PIXSIZE* pCursor = NULL;
-	PIXSIZE* pCursorLine = NULL;
+	PIXSIZE* pCursor = nullptr;
+	PIXSIZE* pCursorLine = nullptr;
 	int32_t	lSkipV;
 	int16_t i,j;
 
@@ -239,7 +239,7 @@ int16_t	rspLasso(PIXSIZE ignoreColor,RImage* pimSrc,int16_t &x,int16_t &y,int16_
 			pCursorLine++;
 			}
 		TRACE("rspLasso:  ERROR:  nothing found to lasso!\n");
-		return -1;
+      return FAILURE;
 		}
 DoneL:
 	// Move the right wall, if specified:
@@ -259,7 +259,7 @@ DoneL:
 			pCursorLine--;
 			}
 		TRACE("rspLasso:  ERROR:  nothing found to lasso!\n");
-		return -1;
+      return FAILURE;
 		}
 DoneR:
 	// Move the top wall, if specified:
@@ -280,7 +280,7 @@ DoneR:
 			pCursorLine+=lSkipV;
 			}
 		TRACE("rspLasso:  ERROR:  nothing found to lasso!\n");
-		return -1;
+      return FAILURE;
 		}
 DoneT:
 	// Move the bottom wall, if specified:
@@ -300,11 +300,11 @@ DoneT:
 			pCursorLine-=lSkipV;
 			}
 		TRACE("rspLasso:  ERROR:  nothing found to lasso!\n");
-		return -1;
+      return FAILURE;
 		}
 DoneB:
 
-	return 0;	// lasso'd it!
+   return SUCCESS;	// lasso'd it!
 	}
 
 
@@ -321,7 +321,7 @@ template int16_t rspLasso<uint32_t>(uint32_t ignoreColor,RImage* pimSrc,int16_t 
 void instantiateLasso(void);
 void instantiateLasso()
 	{
-	RImage* pim = NULL;
+	RImage* pim = nullptr;
 	int16_t i = 0;
 
 	rspLasso( (uint8_t)i, pim, i,i,i,i, 1,1,1,1);
@@ -347,7 +347,7 @@ inline void _BLiT(PIXSIZE* pSrc,PIXSIZE* pDst,int32_t lSrcPitch, int32_t lDstPit
 
 	const static int16_t SizeToShift[] = {0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,4};
 	//                                  0 1 2 3 4 5 6 7 8 9 a b c d e f *
-	int16_t sWordWidth = int16_t(sByteWidth >> SizeToShift[sizeof(PIXSIZE)]);
+   int16_t sWordWidth = sByteWidth >> SizeToShift[sizeof(PIXSIZE)];
 
 	pSrcLine.w = pSrc;
 	pDstLine.w = pDst;
@@ -381,13 +381,13 @@ inline void _BLiT_MA(uint8_t* pSrc,uint8_t* pDst,int32_t lSrcPitch, int32_t lDst
 		}
 #else
 	union	{
-		U32 *w;
+		uint32_t *w;
 		uint8_t	*b;
 		} pSrcLine,pDstLine,pS,pD;
 
 	int16_t i;
 	int16_t sWordWidth = int16_t (sWidth >> 2); //32 bit words....
-	int16_t sExtraWidth = sWidth - int16_t(sWordWidth << 2);
+   int16_t sExtraWidth = sWidth - (sWordWidth << 2);
 
 	pS.b = pSrcLine.b = pSrc;
 	pD.b = pDstLine.b = pDst;
@@ -424,13 +424,13 @@ int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 	if (!pimSrc || !pimDst)
 		{
 		TRACE("BLiTA: null images passed.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_sDepth == 24)
 		{
 		TRACE("BLiTA: 24-bit color NYI.  Try 32-bit color.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -449,7 +449,7 @@ int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 	int16_t	sx2 = (sX + sW) << sDepthS;
 
 	// Optimize the 8-bit case:
-	//***********************************************************************
+	// ***********************************************************************
 	if (sDepth == 1)
 		{
 		if (sBestAlign & 15) // try for 128-bit alignment
@@ -514,7 +514,7 @@ int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 			}
 		}
 
-	//***********************************************************************
+	// ***********************************************************************
 	// Other color depths
 
 	if (sBestAlign & 15) // try for 128-bit alignment
@@ -605,7 +605,7 @@ int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 	return rspBlit(pimSrc,pimDst,sX,sY,sX,sY,sW,sH,prDst,prSrc);
 	}
 
-//*****************************************************************************
+// *****************************************************************************
 // This is the main controller... It clips in pixels, then thinks in bytes:
 //
 int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_t sDstX,
@@ -616,16 +616,16 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 	// 1) preliminary parameter validation:
 #ifdef _DEBUG
 
-	if ((pimSrc == NULL) || (pimDst == NULL))
+	if ((pimSrc == nullptr) || (pimDst == nullptr))
 		{
 		TRACE("BLiT: null RImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( (sW < 1) || (sH < 1) )
 		{
 		TRACE("BLiT: zero or negative area passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( !ImageIsUncompressed(pimSrc->m_type) || 
@@ -633,7 +633,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 		{
 		TRACE("BLiT: To BLiT using COMPRESSED Images, you must specify"
 			"your parameters differently (see BLiT.DOC)!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -664,7 +664,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 		sClip = sSrcY + sH - prSrc->sY - prSrc->sH; // positive = clipped
 		if (sClip > 0) { sH -= sClip; }
 
-		if ( (sW <= 0) || (sH <= 0) ) return -1; // clipped out!
+      if ( (sW <= 0) || (sH <= 0) ) return FAILURE; // clipped out!
 		}
 
 	// 2) Source clipping is SO critical in locked screen stuff, that we MUST check it:
@@ -677,7 +677,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 			((sSrcX + sW) > pimSrc->m_sWidth) || ((sSrcY + sH) > pimSrc->m_sHeight) )
 			{
 			TRACE("BLiT:  Gone outside source buffer.  Must source clip.\n");
-			return -1;
+         return FAILURE;
 			}
 		}
 
@@ -697,7 +697,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 		sClip = sDstY + sH - prDst->sY - prDst->sH; // positive = clipped
 		if (sClip > 0) { sH -= sClip; }
 
-		if ( (sW <= 0) || (sH <= 0) ) return -1; // clipped out!
+      if ( (sW <= 0) || (sH <= 0) ) return FAILURE; // clipped out!
 		}
 	else	
 		{
@@ -709,10 +709,10 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 		sClip = sDstY + sH - pimDst->m_sHeight; // positive = clipped
 		if (sClip > 0) sH -= sClip; // positive = clipped
 
-		if ((sW <= 0) || (sH <= 0)) return -1; // fully clipped
+      if ((sW <= 0) || (sH <= 0)) return FAILURE; // fully clipped
 		}
 
-	//**************  INSERT BUFFER HOOKS HERE!  ************************
+	// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	// do OS based copying!
 	//short sNeedToUnlock = 0; // will be the name of a buffer to unlock.
@@ -725,8 +725,8 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 	// IN THIS IMPLEMENTATION, we must do LOCK, BLiT, UNLOCK, so I
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
-	if (pimSrc->m_type == RImage::IMAGE_STUB) sBlitTypeSrc = (int16_t)((S64)pimSrc->m_pSpecial);
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+   if (pimSrc->m_type == RImage::IMAGE_STUB) sBlitTypeSrc = (int16_t)((intptr_t)pimSrc->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
 
 	switch ( (sBlitTypeSrc<<3) + sBlitTypeDst) // 0 = normal image
 		{
@@ -737,7 +737,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;	
@@ -751,7 +751,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;
@@ -765,7 +765,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;	
@@ -779,7 +779,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -790,7 +790,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 		case (BUF_MEMORY<<3) + BUF_VRAM: // system buffer to front screen
 
 			rspUpdateDisplay(sDstX,sDstY,sW,sH); 
-			return 0; // DONE!!!!!
+         return SUCCESS; // DONE!!!!!
 		break;
 
 		case (BUF_VRAM<<3) + BUF_MEMORY: // front screen to system buffer
@@ -804,7 +804,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 
 		default:
 			TRACE("BLiT: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 
 //BLIT_PRELOCKED:
@@ -812,11 +812,11 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 	// Check for locking error:
 	if (!pimDst->m_pData)
 		{
-		TRACE("BLiT: NULL data - possible locking error.\n");
+		TRACE("BLiT: nullptr data - possible locking error.\n");
 		return FAILURE;
 		}
 
-	//********************************************************************
+	// ********************************************************************
 	// Done clipping, convert to bytes to find best alignment:
 	// Currently based on source, assumes source = destination depth:
 	switch (pimSrc->m_sDepth)
@@ -842,8 +842,8 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 	// Calculate memory offsets using signed pitch:
 
 	// sSrcX, sDstX, and sSrcW are in BYTES:
-	U8* pSrc = pimSrc->m_pData + sSrcX + pimSrc->m_lPitch * sSrcY;
-	U8* pDst = pimDst->m_pData + sDstX + pimDst->m_lPitch * sDstY;
+	uint8_t* pSrc = pimSrc->m_pData + sSrcX + pimSrc->m_lPitch * sSrcY;
+	uint8_t* pDst = pimDst->m_pData + sDstX + pimDst->m_lPitch * sDstY;
 	
 	// Determine Byte Alignment:
 	int16_t sAlign = sSrcX | sDstX | sW | 
@@ -855,27 +855,27 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 	if ( (sAlign & 15) == 0 )
 		{
 		// 128-bit copy
-		_BLiT((U128*)pSrc,(U128*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
+		_BLiT((uint128_t*)pSrc,(uint128_t*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
 		}
 	else if ( (sAlign & 7) == 0)
 		{
 		// 64-bit copy
-		_BLiT((U64*)pSrc,(U64*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
+		_BLiT((uint64_t*)pSrc,(uint64_t*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
 		}
 	else if ( (sAlign & 3) == 0)
 		{
 		// 32-bit copy
-		_BLiT((U32*)pSrc,(U32*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
+		_BLiT((uint32_t*)pSrc,(uint32_t*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
 		}
 	else if ( (sAlign & 1) == 0)
 		{
 		// 16-bit copy
-		_BLiT((U16*)pSrc,(U16*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
+		_BLiT((uint16_t*)pSrc,(uint16_t*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
 		}
 	else
 		{
 		// 8-bit copy
-		//*************  GAMBLE that misaligned 32-bit copies are faster than byte copies,
+		// *************  GAMBLE that misaligned 32-bit copies are faster than byte copies,
 		// then handle extra off the end:
 		if (sW < 16)
 			_BLiT(pSrc,pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW);
@@ -892,9 +892,9 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 	#endif
 #endif
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 #if 0
 	switch (sNeedToUnlock)
 		{
@@ -924,12 +924,12 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_
 #endif
 
 //BLIT_DONTUNLOCK:	
-	return 0;
+   return SUCCESS;
 	}
 
-//************************************************************************** 
-//************************************************************************** 
-//************************************************************************** 
+// ************************************************************************** 
+// ************************************************************************** 
+// ************************************************************************** 
 
 // Insert this into your functions... It assumes pre-clipped, pre-sorted,
 // pre-validated rect copy: (Pitch will be sign based!)
@@ -946,7 +946,7 @@ inline void _ClearRect(WORDSIZE color,WORDSIZE* pDst,int32_t lDstPitch,
 	int16_t i,sWordWidth = sByteWidth;
 	const static int16_t SizeToShift[] = {0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,4};
 	//                                  0 1 2 3 4 5 6 7 8 9 a b c d e f *
-	sWordWidth = int16_t(sByteWidth >> SizeToShift[sizeof(WORDSIZE)]);
+   sWordWidth = sByteWidth >> SizeToShift[sizeof(WORDSIZE)];
 	pDstLine.w = pDst;
 
 	while (sHeight--)
@@ -962,7 +962,7 @@ inline void _ClearRect(WORDSIZE color,WORDSIZE* pDst,int32_t lDstPitch,
 
 // Must make TC possible!  
 //
-int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_t sH,RRect* prClip)
+int16_t rspRect(uint32_t color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_t sH,RRect* prClip)
 	{
 	// A cheap hook for mono:
 	if (pimDst->m_type == RImage::BMP1) // monochrome hook
@@ -973,30 +973,30 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 	// 1) preliminary parameter validation:
 #ifdef _DEBUG
 
-	if (pimDst == NULL)
+	if (pimDst == nullptr)
 		{
 		TRACE("rspRect: null RImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	/*
 	if ( (sW < 1) || (sH < 1) )
 		{
 		TRACE("rspRect: zero or negative area passed\n");
-		return -1;
+      return FAILURE;
 		}
 		*/
 
 	if (!ImageIsUncompressed(pimDst->m_type)) 
 		{
 		TRACE("rspRect: Can only draw RECTs into uncompressed images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
 
 	// UNMIRROR THE RECTANGLE:
-	if (!sW && !sH) return 0; // nothing to draw
+   if (!sW && !sH) return SUCCESS; // nothing to draw
 
 	if (sW < 0) { sX += (sW+1); sW = -sW; }
 	if (sH < 0) { sY += (sH+1); sH = -sH; }
@@ -1016,7 +1016,7 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 		sClip = sY + sH - prClip->sY - prClip->sH; // positive = clipped
 		if (sClip > 0) { sH -= sClip; }
 
-		if ( (sW <= 0) || (sH <= 0) ) return -1; // clipped out!
+      if ( (sW <= 0) || (sH <= 0) ) return FAILURE; // clipped out!
 		}
 	else	
 		{
@@ -1028,10 +1028,10 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 		sClip = sY + sH - pimDst->m_sHeight; // positive = clipped
 		if (sClip > 0) sH -= sClip; // positive = clipped
 
-		if ((sW <= 0) || (sH <= 0)) return -1; // fully clipped
+      if ((sW <= 0) || (sH <= 0)) return FAILURE; // fully clipped
 		}
 
-	//**************  INSERT BUFFER HOOKS HERE!  ************************
+	// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
 	int16_t sBlitTypeDst = 0;
@@ -1049,7 +1049,7 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
 
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((int64_t)pimDst->m_pSpecial);
 
 	switch (sBlitTypeDst) // 0 = normal image
 		{
@@ -1063,7 +1063,7 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 				!=0)
 				{
 				TRACE("rspDrawRect: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;
@@ -1077,7 +1077,7 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 				!=0)
 				{
 				TRACE("rspDrawRect: Unable to lock the OnScreen buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;	
@@ -1090,7 +1090,7 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 				!=0)
 				{
 				TRACE("rspDrawRect: Unable to lock the OffScreen buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM2;			
@@ -1098,11 +1098,11 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 
 		default:
 			TRACE("rspDrawRect: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 //RECT_DONTLOCK:
 		
-	//********************************************************************
+	// ********************************************************************
 
 	// Done clipping, convert to bytes to find best alignment:
 	// Currently based on source, assumes source = destination depth:
@@ -1131,7 +1131,7 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 	// Calculate memory offsets using signed pitch:
 
 	// sX and sByteW are in BYTES!
-	U8* pDst = pimDst->m_pData + sX + pimDst->m_lPitch * sY;
+	uint8_t* pDst = pimDst->m_pData + sX + pimDst->m_lPitch * sY;
 	
 	// Determine Byte Alignment:
 	// sX and sByteW are in BYTES!
@@ -1145,24 +1145,24 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 		ulColor += (color << 8); // 16-bit
 		ulColor += (ulColor << 16); // 32-bit
 
-		_ClearRect(ulColor,(U32*)pDst,pimDst->m_lPitch,sH,sByteW); 
+		_ClearRect(ulColor,(uint32_t*)pDst,pimDst->m_lPitch,sH,sByteW); 
 		}
 	else if ( (sAlign & 1) == 0)
 		{
 		// 16-bit copy
 		uint16_t usColor = (uint16_t)(color + (color << 8)); // 16-bit;
-		_ClearRect(usColor,(U16*)pDst,pimDst->m_lPitch,sH,sByteW); 
+		_ClearRect(usColor,(uint16_t*)pDst,pimDst->m_lPitch,sH,sByteW); 
 		}
 	else
 		{
 		// 8-bit copy
-		_ClearRect((U8)color,(U8*)pDst,pimDst->m_lPitch,sH,sByteW); 
+		_ClearRect((uint8_t)color,(uint8_t*)pDst,pimDst->m_lPitch,sH,sByteW); 
 		}
 
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
@@ -1194,45 +1194,45 @@ int16_t rspRect(U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_
 
 //RECT_DONTUNLOCK:
 	
-	return 0;
+   return SUCCESS;
 	}
 
 // Does a "hollow" rectangle! (grows inwards)
 //
-int16_t rspRect(int16_t sThickness,U32 color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_t sH,RRect* prClip)
+int16_t rspRect(int16_t sThickness,uint32_t color,RImage* pimDst,int16_t sX,int16_t sY,int16_t sW,int16_t sH,RRect* prClip)
 	{
 	// 1) preliminary parameter validation:
 #ifdef _DEBUG
 
-	if (pimDst == NULL)
+	if (pimDst == nullptr)
 		{
 		TRACE("rspRect: null RImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( /*(sW < 1) || (sH < 1) ||*/ (sThickness < 1))
 		{
 		TRACE("rspRect: zero or negative thickness passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!ImageIsUncompressed(pimDst->m_type) && (pimDst->m_type != RImage::BMP1)) 
 		{
 		TRACE("rspRect: You may onlt draw rects into uncompressed images.!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( (sThickness > (sW >> 1) ) || (sThickness > (sH >> 1) ) )
 		{
 		TRACE("rspRect: Rect to thick to show!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
 
 	
 	// UNMIRROR THE RECTANGLE:
-	if (!sW && !sH) return 0; // nothing to draw
+   if (!sW && !sH) return SUCCESS; // nothing to draw
 
 	if (sW < 0) { sX += (sW+1); sW = -sW; }
 	if (sH < 0) { sY += (sH+1); sH = -sH; }
@@ -1245,7 +1245,7 @@ int16_t rspRect(int16_t sThickness,U32 color,RImage* pimDst,int16_t sX,int16_t s
 	rspRect(color,pimDst,sX + sW - sThickness,sY+sThickness,sThickness,sH - (sThickness<<1) ,prClip); // left
 	rspRect(color,pimDst,sX,sY + sH - sThickness,sW,sThickness,prClip);	// bottom
 
-	return 0;
+   return SUCCESS;
 	}
 
 // This creates a new image whose uncompressed image is the requested selection
@@ -1260,29 +1260,29 @@ int16_t	rspCrop(RImage* pimSrc,int16_t sX,int16_t sY,int16_t sW,int16_t sH,
 	{
 #ifdef _DEBUG
 
-	if (pimSrc == NULL)
+	if (pimSrc == nullptr)
 		{
-		TRACE("rspCrop: NULL image passed\n");
-		return -1;
+		TRACE("rspCrop: nullptr image passed\n");
+      return FAILURE;
 		}
 
 	if ( (sW < 0) || (sH < 0) )
 		{
 		TRACE("rspCrop: Bad width or height passed!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( (sX < 0) || (sY < 0) || ( (sX + sW) > pimSrc->m_sWidth) ||
 			 ( (sY + sH) > pimSrc->m_sHeight) )
 		{
 		TRACE("rspCrop: Crop rectangle is outside buffer size!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspCrop: Can only crop uncompressed buffers!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -1292,10 +1292,12 @@ int16_t	rspCrop(RImage* pimSrc,int16_t sX,int16_t sY,int16_t sW,int16_t sH,
 	// 2) Create a new buffer with 128-bit alignment and pitch:
 
 	// Determine pixel size:
-	int16_t	sPixSize = pimSrc->m_sDepth >> 3;
-	int16_t sShift[] = {-1,0,1,-1,2};
+#ifdef UNUSED_VARIABLES
+  int16_t sPixSize = pimSrc->m_sDepth >> 3;
+  int16_t sShift[] = {-1,0,1,-1,2};
+  int16_t sPixShift = sShift[sPixSize];
+#endif
 	int16_t sAlignMask = sAlign - 1; // sAlign is in BYTES
-	int16_t sPixShift = sShift[sPixSize];
 
 	// Determine Optimum Pitch...
 	lNewPitch = (sW + sAlignMask) & (~sAlignMask);
@@ -1314,7 +1316,7 @@ int16_t	rspCrop(RImage* pimSrc,int16_t sX,int16_t sY,int16_t sW,int16_t sH,
 	// Move the new buffer back to the original
 	imDst.DetachData((void**)&(pimSrc->m_pMem),(void**)&(pimSrc->m_pData));
 
-	//*******  IMPORTANT! COPY ALL NEW INFO OVER!
+	// *******  IMPORTANT! COPY ALL NEW INFO OVER!
 	pimSrc->m_ulSize = imDst.m_ulSize;
 	pimSrc->m_sWidth = imDst.m_sWidth;
 	pimSrc->m_sHeight = imDst.m_sHeight;
@@ -1326,7 +1328,7 @@ int16_t	rspCrop(RImage* pimSrc,int16_t sX,int16_t sY,int16_t sW,int16_t sH,
 	RImage::DestroyDetachedData((void**)&pSrcMem);
 	// On exit, imDst will auto destruct....
 	
-	return 0;
+   return SUCCESS;
 	}
 
 // This creates a new image whose uncompressed image is the requested selection
@@ -1341,37 +1343,37 @@ int16_t	rspPad(RImage* pimSrc,int16_t sX,int16_t sY, // where to move the old im
 	{
 #ifdef _DEBUG
 
-	if (pimSrc == NULL)
+	if (pimSrc == nullptr)
 		{
-		TRACE("rspPad: NULL image passed\n");
-		return -1;
+		TRACE("rspPad: nullptr image passed\n");
+      return FAILURE;
 		}
 
 	if ( (sW < 0) || (sH < 0) )
 		{
 		TRACE("rspPad: Bad width or height passed!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	/*
 	if ( ( sW < pimSrc->m_sWidth) || ( sH < pimSrc->m_sHeight) )
 		{
 		TRACE("rspPad: You cannot yet combine cropping and padding!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( (sX < 0) || (sY < 0) || ( (sX + pimSrc->m_sWidth) > sW) ||
 			 ( (sY + pimSrc->m_sHeight) > sH) )
 		{
 		TRACE("rspPad: Cannot move image outside of new buffer!\n");
-		return -1;
+      return FAILURE;
 		}
 	*/
 
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspPad: Can only crop uncompressed buffers!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -1384,10 +1386,12 @@ int16_t	rspPad(RImage* pimSrc,int16_t sX,int16_t sY, // where to move the old im
 	// 2) Create a new buffer with 128-bit alignment and pitch:
 
 	// Determine pixel size:
-	int16_t	sPixSize = pimSrc->m_sDepth >> 3;
-	int16_t sShift[] = {-1,0,1,-1,2};
+#ifdef UNUSED_VARIABLES
+  int16_t sPixSize = pimSrc->m_sDepth >> 3;
+  int16_t sShift[] = {-1,0,1,-1,2};
+  int16_t sPixShift = sShift[sPixSize];
+#endif
 	int16_t sAlignMask = sAlign - 1; // sAlign is in BYTES
-	int16_t sPixShift = sShift[sPixSize];
 
 	// Determine Optimum Pitch...
 	lNewPitch = (sW + sAlignMask) & (~sAlignMask);
@@ -1422,7 +1426,7 @@ int16_t	rspPad(RImage* pimSrc,int16_t sX,int16_t sY, // where to move the old im
 	// Move the new buffer back to the original
 	imDst.DetachData((void**)&(pimSrc->m_pMem),(void**)&(pimSrc->m_pData));
 
-	//*******  IMPORTANT! COPY ALL NEW INFO OVER!
+	// *******  IMPORTANT! COPY ALL NEW INFO OVER!
 	pimSrc->m_ulSize = imDst.m_ulSize;
 	pimSrc->m_sWidth = imDst.m_sWidth;
 	pimSrc->m_sHeight = imDst.m_sHeight;
@@ -1434,7 +1438,7 @@ int16_t	rspPad(RImage* pimSrc,int16_t sX,int16_t sY, // where to move the old im
 	RImage::DestroyDetachedData((void**)&pSrcMem);
 	// On exit, imDst will auto destruct....
 	
-	return 0;
+   return SUCCESS;
 	}
 
 // Returns -1 if clipped completely out,
@@ -1468,8 +1472,8 @@ int16_t RRect::ClipTo(RRect* prClipTo)
 		if ( (sW < 0) || (sH < 0) )
 			{
 			sX = sY = sW = sH = 0;
-			return -1;
+         return FAILURE;
 			}
 
-		return 0;
+      return SUCCESS;
 		}

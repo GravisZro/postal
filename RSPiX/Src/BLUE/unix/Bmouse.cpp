@@ -28,7 +28,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 #include "BLUE/Blue.h"
 
@@ -49,8 +49,8 @@ typedef struct
 	} RSP_MOUSE_EVENT, *PRSP_MOUSE_EVENT;
 
 #define MAX_EVENTS	256
-// Only set value if not NULL.
-#define SET(ptr, val)		( ((ptr) != NULL) ? *(ptr) = (val) : 0)
+// Only set value if not nullptr.
+#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0)
 #define INC_N_WRAP(i, max)	(i = (i + 1) % max)
 
 static RSP_MOUSE_EVENT	ms_ameEvents[MAX_EVENTS];
@@ -79,14 +79,13 @@ static int MouseWheelState = 0;
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspGetMouse(
-		int16_t* psX,				// Current x position is returned here (unless NULL)
-		int16_t* psY,				// Current y position is returned here (unless NULL)
-		int16_t* psButton)		// Current button status is returned here (unless NULL)
+      int16_t* psX,				// Current x position is returned here (unless nullptr)
+      int16_t* psY,				// Current y position is returned here (unless nullptr)
+      int16_t* psButton)		// Current button status is returned here (unless nullptr)
 	{
 
     if (!mouse_grabbed)
     {
-        int w, h;
         SET(psX, 0);
         SET(psY, 0);
         SET(psButton, 0);
@@ -94,12 +93,12 @@ extern void rspGetMouse(
     }
 
     int x, y;
-    const Uint32 buttons = SDL_GetMouseState(&x, &y);
+    const uint32_t buttons = SDL_GetMouseState(&x, &y);
     SET(psX, x);
     SET(psY, y);
     // TRACE("x = %d, y = %d\n");
 
-	if (psButton != NULL)
+   if (psButton != nullptr)
 		{
             *psButton = (buttons & SDL_BUTTON_LMASK) ? 0x0001 : 0;
             *psButton |= (buttons & SDL_BUTTON_RMASK) ? 0x0002 : 0;
@@ -116,11 +115,10 @@ extern void rspGetMouse(
 
 extern void Mouse_Event(SDL_Event *event)
 {
-	static int16_t	sEventIndex	= 0;
+  static int16_t	sEventIndex	= 0;
 
-
-    if (!mouse_grabbed)
-        return;  // drop mouse events if input isn't grabbed.
+  if (!mouse_grabbed)
+    return;  // drop mouse events if input isn't grabbed.
 
 	// Get next event.  We do not "new" a RSP_MOUSE_EVENT here to avoid 
 	// memory fragmentation.
@@ -189,7 +187,7 @@ extern void Mouse_Event(SDL_Event *event)
 		}
 
 	// Enqueue event . . .
-	if (ms_qmeEvents.EnQ(pme) == 0)
+	if (ms_qmeEvents.EnQ(pme) == SUCCESS)
 		{
 		// Success.
 		}
@@ -231,13 +229,13 @@ extern void rspSetMouse(
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern int16_t rspGetLastMouseEvent(	// Returns 0 if no event was available, non-zero otherwise
-	int16_t*	psX,						// Event's X position is returned here (unless NULL)
-	int16_t*	psY,						// Event's Y position is returned here (unless NULL)
-	int16_t*	psButton,				// Event's button status is returned here (unless NULL)
-	int32_t*		plTime,					// Event's time stamp returned here (unless NULL)
-	int16_t*	psType /*= NULL*/)	// Event's type (as per OS) is returned here (unless NULL)
+   int16_t*	psX,						// Event's X position is returned here (unless nullptr)
+   int16_t*	psY,						// Event's Y position is returned here (unless nullptr)
+   int16_t*	psButton,				// Event's button status is returned here (unless nullptr)
+   int32_t*		plTime,					// Event's time stamp returned here (unless nullptr)
+   int16_t*	psType /*= nullptr*/)	// Event's type (as per OS) is returned here (unless nullptr)
 	{
-	int16_t	sRes	= TRUE;	// Assume success.
+	int16_t sResult	= TRUE;	// Assume success.
 
 	PRSP_MOUSE_EVENT	peEvent;
 	int16_t					sNumEvents	= ms_qmeEvents.NumItems();
@@ -250,7 +248,7 @@ extern int16_t rspGetLastMouseEvent(	// Returns 0 if no event was available, non
 			peEvent	= ms_qmeEvents.DeQ();
 			}
 
-		if (peEvent != NULL)
+      if (peEvent != nullptr)
 			{
 			SET(psX,			peEvent->sX);
 			SET(psY,			peEvent->sY);
@@ -261,15 +259,15 @@ extern int16_t rspGetLastMouseEvent(	// Returns 0 if no event was available, non
 		else
 			{
 			TRACE("rspGetLastMouseEvent(): Unable to dequeue last event.\n");
-			sRes = FALSE;
+			sResult = FALSE;
 			}
 		}
 	else
 		{
-		sRes	= FALSE;
+		sResult	= FALSE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -279,16 +277,16 @@ extern int16_t rspGetLastMouseEvent(	// Returns 0 if no event was available, non
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern int16_t rspGetMouseEvent(	// Returns 0 if no event was available, non-zero otherwise
-	int16_t*	psX,						// Event's X position is returned here (unless NULL)
-	int16_t*	psY,						// Event's Y position is returned here (unless NULL)
-	int16_t*	psButton,				// Event's button status is returned here (unless NULL)
-	int32_t*		plTime,					// Event's time stamp returned here (unless NULL)
-	int16_t*	psType /*= NULL*/)	// Event's type (as per OS) is returned here (unless NULL)
+   int16_t*	psX,						// Event's X position is returned here (unless nullptr)
+   int16_t*	psY,						// Event's Y position is returned here (unless nullptr)
+   int16_t*	psButton,				// Event's button status is returned here (unless nullptr)
+   int32_t*		plTime,					// Event's time stamp returned here (unless nullptr)
+   int16_t*	psType /*= nullptr*/)	// Event's type (as per OS) is returned here (unless nullptr)
 	{
-	int16_t	sRes	= TRUE;	// Assume success.
+	int16_t sResult	= TRUE;	// Assume success.
 
 	PRSP_MOUSE_EVENT	peEvent	= ms_qmeEvents.DeQ();
-	if (peEvent != NULL)
+   if (peEvent != nullptr)
 		{
 		SET(psX,			peEvent->sX);
 		SET(psY,			peEvent->sY);
@@ -298,10 +296,10 @@ extern int16_t rspGetMouseEvent(	// Returns 0 if no event was available, non-zer
 		}
 	else
 		{
-		sRes = FALSE;
+		sResult = FALSE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -312,7 +310,7 @@ extern int16_t rspGetMouseEvent(	// Returns 0 if no event was available, non-zer
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspClearMouseEvents(void)
 	{
-	while (ms_qmeEvents.DeQ() != NULL);
+   while (ms_qmeEvents.DeQ() != nullptr);
 	}
 
 //////////////////////////////////////////////////////////////////////////////

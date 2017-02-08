@@ -143,7 +143,7 @@ class RPal
 		// you need to also insert that name into the corresponding place
 		//	in this array in pal.cpp.  
 		// Note that this uses END_REG_PAL enum item to size the array.
-		static char* ms_astrTypeNames[END_REG_PAL];
+      static const char* ms_astrTypeNames[END_REG_PAL];
 
 		// This array gives the size in bytes of each palette entry
 		// based on the palette type.  This is used by RPal::GetPalEntrySize
@@ -173,7 +173,7 @@ class RPal
 
 		// Create PAL's data using the specified values.
 		int16_t CreateData(	// Returns 0 if successful
-			uint32_t	ulSize);	// Size of data
+         size_t	ulSize);	// Size of data
 
 		int16_t CreateData(
 			uint32_t ulSize, 			// Size of data
@@ -228,15 +228,15 @@ class RPal
 			// Calculate pointer to specified entry
 			uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
-			// If it's a supported palette type, return the pointer.  Otherwise, return 0.
+         // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
 			if (m_type == PDIB)	// BGR888+reserved
 				return pucDst+2;
 			else if (m_type == P888) // BGR888
 				return pucDst+2;
 			else if (m_type == PFLX) // RGB888
 				return pucDst+0;
-			TRACE("RPal::Red(): Unsupported palette format - returning NULL!\n");
-			return 0;
+			TRACE("RPal::Red(): Unsupported palette format - returning nullptr!\n");
+         return nullptr;
 			}
 
 		uint8_t* Green(
@@ -245,15 +245,15 @@ class RPal
 			// Calculate pointer to specified entry
 			uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
-			// If it's a supported palette type, return the pointer.  Otherwise, return 0.
+         // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
 			if (m_type == PDIB)	// BGR888+reserved
 				return pucDst+1;
 			else if (m_type == P888) // BGR888
 				return pucDst+1;
 			else if (m_type == PFLX) // RGB888
 				return pucDst+1;
-			TRACE("RPal::Green(): Unsupported palette format - returning NULL!\n");
-			return 0;
+			TRACE("RPal::Green(): Unsupported palette format - returning nullptr!\n");
+         return nullptr;
 			}
 
 		uint8_t* Blue(
@@ -262,15 +262,15 @@ class RPal
 			// Calculate pointer to specified entry
 			uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
-			// If it's a supported palette type, return the pointer.  Otherwise, return 0.
+         // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
 			if (m_type == PDIB)	// BGR888+reserved
 				return pucDst+0;
 			else if (m_type == P888) // BGR888
 				return pucDst+0;
 			else if (m_type == PFLX) // RGB888
 				return pucDst+2;
-			TRACE("RPal::Blue(): Unsupported palette format - returning NULL!\n");
-			return 0;
+			TRACE("RPal::Blue(): Unsupported palette format - returning nullptr!\n");
+         return nullptr;
 			}
 
 		// Get RGB entries from palette

@@ -104,7 +104,7 @@ class RMeter : public RDlg
 			int16_t sSrcY = 0,		// Y position in source.
 			int16_t sW = 0,			// Amount to draw.
 			int16_t sH = 0,			// Amount to draw.
-			RRect* prc = NULL);	// Clip to.
+			RRect* prc = nullptr);	// Clip to.
 
 		// Activate or deactivate mouse reaction.
 		void SetActive(		// Returns nothing.
@@ -194,11 +194,11 @@ class RMeter : public RDlg
 
 		// Set the colors.
 		void SetColors(			// Returns nothing.
-			U32 u32Background,	// Background color.
-			U32 u32Meter,			// Meter color.
-			U32 u32Needle,			// Needle, bar, etc. color.
-			U32 u32Text,			// Text foreground color.
-			U32 u32Overflow)		// Needle color for over/underflow.
+			uint32_t u32Background,	// Background color.
+			uint32_t u32Meter,			// Meter color.
+			uint32_t u32Needle,			// Needle, bar, etc. color.
+			uint32_t u32Text,			// Text foreground color.
+			uint32_t u32Overflow)		// Needle color for over/underflow.
 			{
 			m_u32BackColor		= u32Background;
 			m_u32Meter			= u32Meter;
@@ -210,7 +210,7 @@ class RMeter : public RDlg
 		// Compose the static portions.  Fills the parts of the image
 		// that don't change.
 		void Compose(						// Returns 0 nothing.
-			RImage*	pimDst = NULL);	// In: Destination.  NULL == use internal m_im.
+			RImage*	pimDst = nullptr);	// In: Destination.  nullptr == use internal m_im.
 
 		// Advance to next meter type.  Called by btn callback.
 		void NextType(void)
@@ -250,9 +250,9 @@ class RMeter : public RDlg
 		int32_t				m_lMax;								// Maximum value on meter.
 		DisplayType		m_dtType;							// Type of meter display.
 		InfoType			m_itType;							// Type of meter info.
-		U32				m_u32Meter;							// Meter color.
-		U32				m_u32Needle;						// Needle, bar, etc. color.
-		U32				m_u32Overflow;						// Needle color for over/underflow.
+		uint32_t				m_u32Meter;							// Meter color.
+		uint32_t				m_u32Needle;						// Needle, bar, etc. color.
+		uint32_t				m_u32Overflow;						// Needle color for over/underflow.
 
 		int32_t				m_lDuration;						// Time between updates in
 																	// milliseconds.

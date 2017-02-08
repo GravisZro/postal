@@ -107,7 +107,7 @@ class RSndFx
 		void Do(								// Returns nothing.
 			uint8_t* pucSrcData,			// Data to affect.
 			int32_t lBufSize,					// Amount of data.
-			uint8_t* pucDstData = NULL);	// Destination for data, defaults to
+			uint8_t* pucDstData = nullptr);	// Destination for data, defaults to
 												// same as source.
 		
 		/////////////////////////////////////////////////////////////////////////
@@ -187,9 +187,9 @@ class RSndFx
 																			// particular to each 
 																			// PCM type.
 
-		static U8*		ms_pu8Fade;			// Unsigned 8 bit output
+		static uint8_t*		ms_pu8Fade;			// Unsigned 8 bit output
 													// fade table.
-		static S16*		ms_ps16Fade;		// Signed 16 bit output
+		static int16_t*		ms_ps16Fade;		// Signed 16 bit output
 													// fade table.
 
 		static int16_t	ms_sNumFadeSteps;		// Number of fade steps.

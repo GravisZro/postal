@@ -70,7 +70,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 // Module specific (static) globals.
 //////////////////////////////////////////////////////////////////////////////////////
-static char *ms_aszSeed[NUM_KEYS]=				{	"S3D5Lf6klfdsjiureLJKHLKmnblkjshgwieourLKHLKJHSDA0432175094SJAKLFK7348LSDLKJDHFOIUhjgdskgfeiurytowelxcmnvbdfhgeoriyfdslkhgfdgyuie",
+static const char *ms_aszSeed[NUM_KEYS]=		{	"S3D5Lf6klfdsjiureLJKHLKmnblkjshgwieourLKHLKJHSDA0432175094SJAKLFK7348LSDLKJDHFOIUhjgdskgfeiurytowelxcmnvbdfhgeoriyfdslkhgfdgyuie",
 																"KlkjILKJ879IHKJ8kj67kjh7IUKJHjkh98769872vYUTui6JHG87jhg78JHg787JHGUYuytuyjg876RHCVBnvbAIUT678787igJGFHGFTy67uhHJKJHUYTjhg6HGHG76",
 																"4LKJH5Euhysdiouyfjlkw45879345kjshfdgcvxJSDHFR8734hdskmfv7y8KJLSDGFAVBMZXBV789kMNADFYUYjhkgkjhdsgfowe787243KJHGDSAGJKkjgdfuye3sd7",
 																"l45kjhdfuihlIUYSLKHi87ylKJHYOIUmsagKJLHgY9802734KJHLKiuoymNJHTmnb4iU7687nkmbojyTD64654HJG765KHKJhg87jKHKJ76dcbnmbDBDSJFDHJ6IHGHJ",
@@ -113,8 +113,7 @@ void MakeCRCTable();
 //////////////////////////////////////////////////////////////////////////////////////
 int16_t Encrypt(char* szInputString,char* szOutputString,int16_t sSourceLength)
 	{
-	int16_t		rc=0,				// assume success
-				sIndex=0,
+   int16_t	sIndex=0,
 				sStartIndex=GetRandom()%KEY_LENGTH,
 				sCurrentKey=GetRandom()%NUM_KEYS,
 				sSeedIndex=sStartIndex;
@@ -245,7 +244,7 @@ int16_t Decrypt(char* szInputString,char* szOutputString,int16_t sSourceLength)
 //	Description:	This is the file encryption function.
 //
 //	Input:			char*: name of file to encrypt to,
-//						char*: NULL terminated plaintext to encrypt
+//						char*: nullptr terminated plaintext to encrypt
 //
 //	Output:			0 on success.
 //
@@ -271,9 +270,9 @@ int16_t Encrypt(char* szFileName,char* szInputString)
 				UPDATE_CRC(szEncrypted[i]);			
 
 			//grow 2 bytes for internal info
-			cnFile.Write((S16*)&sLength);
-			cnFile.Write((S8*) szEncrypted,sLength+2);
-			cnFile.Write((U16*)&ms_usCRC);
+			cnFile.Write((int16_t*)&sLength);
+			cnFile.Write((int8_t*) szEncrypted,sLength+2);
+			cnFile.Write((uint16_t*)&ms_usCRC);
 			
 			rc=0;
 			}
@@ -310,9 +309,9 @@ int16_t Decrypt(char* szFileName,char* szOutputString)
 		{
 		MakeCRCTable();
 			
-		cnFile.Read((S16*)&sLength);
-		cnFile.Read((S8*) szDecrypted,sLength+2);
-		cnFile.Read((U16*)&usCRC);
+		cnFile.Read((int16_t*)&sLength);
+		cnFile.Read((int8_t*) szDecrypted,sLength+2);
+		cnFile.Read((uint16_t*)&usCRC);
 				
 		if(Verify(szDecrypted,sLength,usCRC)==0)
 			rc=Decrypt(szDecrypted,szOutputString,sLength);

@@ -33,10 +33,10 @@
 //
 ///////////////////////////////////////////////////////////////
 
-int32_t RPipeLine::ms_lNumPts = 0;
-int32_t	RPipeLine::ms_lNumPipes = 0;
+uint32_t RPipeLine::ms_lNumPts = 0;
+uint32_t	RPipeLine::ms_lNumPipes = 0;
 
-RP3d*  RPipeLine::ms_pPts = NULL;
+RP3d*  RPipeLine::ms_pPts = nullptr;
 
 RPipeLine::RPipeLine()
 	{
@@ -46,9 +46,9 @@ RPipeLine::RPipeLine()
 
 void RPipeLine::Init()
 	{
-	m_pimClipBuf = NULL;
-	m_pimShadowBuf = NULL;
-	m_pZB = NULL;
+	m_pimClipBuf = nullptr;
+	m_pimShadowBuf = nullptr;
+	m_pZB = nullptr;
 	m_sUseBoundingRect = FALSE;
 	m_dShadowScale = 1.0;
 
@@ -59,20 +59,20 @@ void RPipeLine::Init()
 
 // assume the clip rect is identical situation to zBUF:
 //
-int16_t RPipeLine::Create(int32_t lNum,int16_t sW)
+int16_t RPipeLine::Create(size_t lNum,int16_t sW)
 	{
 	if (sW)
 		{
 		// Will only overwrite memory if it needs MORE!
-		if ((m_pZB != NULL) && (sW > m_pZB->m_sW))
+		if ((m_pZB != nullptr) && (sW > m_pZB->m_sW))
 			{
 			delete m_pZB;
 			delete m_pimClipBuf;
-			m_pimClipBuf = NULL;
-			m_pZB = NULL;
+			m_pimClipBuf = nullptr;
+			m_pZB = nullptr;
 			}
 
-		if (m_pZB == NULL)
+		if (m_pZB == nullptr)
 			{
 			m_pZB = new RZBuffer(sW,sW); // no need to clear it yet!
 			m_pimClipBuf = new RImage;
@@ -82,20 +82,20 @@ int16_t RPipeLine::Create(int32_t lNum,int16_t sW)
 		}
 
 	//----------
-	if (!lNum) return 0;
+	if (!lNum) return SUCCESS;
 	
-	if ((ms_pPts != NULL) && (lNum > ms_lNumPts))
+	if ((ms_pPts != nullptr) && (lNum > ms_lNumPts))
 		{
 		free(ms_pPts);
-		ms_pPts = NULL;
+		ms_pPts = nullptr;
 		}
 
-	if (ms_pPts == NULL)
+	if (ms_pPts == nullptr)
 		{
 		ms_pPts = (RP3d*) malloc(sizeof(RP3d) * lNum);
 		}
 
-	return 0;
+	return SUCCESS;
 	}
 
 int16_t RPipeLine::CreateShadow(int16_t sAngleY,
@@ -114,7 +114,7 @@ int16_t RPipeLine::CreateShadow(int16_t sAngleY,
 	// Allocate the buffer, if applicable:
 	if (sBufSize <= 0)	// default case:
 		{
-		if (m_pimShadowBuf == NULL) // do a default allocation
+		if (m_pimShadowBuf == nullptr) // do a default allocation
 			{
 			if (m_pimClipBuf) // use as reference:
 				{
@@ -145,7 +145,7 @@ int16_t RPipeLine::CreateShadow(int16_t sAngleY,
 			else
 				{
 				delete m_pimShadowBuf;
-				m_pimShadowBuf = NULL;
+				m_pimShadowBuf = nullptr;
 				}
 			}
 		m_pimShadowBuf = new RImage;
@@ -170,7 +170,7 @@ RPipeLine::~RPipeLine()
 		{
 		if (ms_pPts) free(ms_pPts);
 		ms_lNumPts = 0;
-		ms_pPts = NULL;
+		ms_pPts = nullptr;
 		}
 	}
 
@@ -215,11 +215,11 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 		{
 		// (1) convert to 3d shadow point:
 		RP3d	pOffset = {0.0,static_cast<float>(sHeight),0.0,};
-
+#ifdef UNUSED_VARIABLES
 		double dOffX = sHeight * m_tShadow.T[ROW0 + 1];
 		double dOffY = 0.0;
 		double dOffZ = sHeight * m_tShadow.T[ROW2 + 1]; // y is height here
-
+#endif
 		// (2) partially project
 		m_tShadow.Transform(pOffset);
 		m_tView.Transform(pOffset);
@@ -263,8 +263,9 @@ int16_t RPipeLine::NotCulled(RP3d *p1,RP3d *p2,RP3d *p3)
 	bx = p3->x - p1->x;
 	by = p3->y - p1->y;
 
-	if ( (ax*by - ay*bx) >= 0) return 0;
-	else return 1;
+   if ( (ax*by - ay*bx) >= 0)
+     return FALSE;
+   return TRUE;
 	}
 
 // Currently (sDstX,sDstY) allgns with the upper left half of the z-buffer
@@ -295,7 +296,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 			lNumHidden++; // cull debug
 			}
 		}
-	//TRACE("Number culled was %ld\n",lNumHidden);
+	//TRACE("Number culled was %i\n",lNumHidden);
 	}
 
 // Currently (sDstX,sDstY) allgns with the upper left half of the z-buffer
@@ -436,16 +437,16 @@ void RPipeLine::BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius,
 
 void RPipeLine::ClearClipBuffer()
 	{
-	if (m_pimClipBuf == NULL) return;
+	if (m_pimClipBuf == nullptr) return;
 
-	rspRect(uint32_t(0),m_pimClipBuf,0,0,
+   rspRect(static_cast<uint32_t>(0),m_pimClipBuf,0,0,
 		m_pimClipBuf->m_sWidth,m_pimClipBuf->m_sHeight);
 	}
 
 void RPipeLine::ClearShadowBuffer()
 	{
-	if (m_pimShadowBuf == NULL) return;
+	if (m_pimShadowBuf == nullptr) return;
 
-	rspRect(uint32_t(0),m_pimShadowBuf,0,0,
+   rspRect(static_cast<uint32_t>(0),m_pimShadowBuf,0,0,
 		m_pimShadowBuf->m_sWidth,m_pimShadowBuf->m_sHeight);
 	}

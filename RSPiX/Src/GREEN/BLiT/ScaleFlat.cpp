@@ -111,7 +111,7 @@ inline void _Blit_HS_VS_C(
 	if (sMirrorV == -1) lDstP = -lDstP; // make sure pDst is correctly positioned
 	
 	// ASSUME SHRINKING FOR NOW:
-	//************ THIS CHANGES FOR MAGNIFY!
+	// ************ THIS CHANGES FOR MAGNIFY!
 	INIT_IMPROPER_FRACTION_V(sDstH,sSrcH,lDelMemY,sIncY,sNumY,lSrcP) // sDstH is the numerator
 	sClipH = sDstH - sClipB - sClipT; // Fully clipped...
 	//-------------------------------------------------------------------------
@@ -200,7 +200,7 @@ inline void _Blit_HM_VM_C(
 	if (sMirrorV == -1) lDstP = -lDstP; // make sure pDst is correctly positioned
 	
 	// ASSUME ENLARGING FOR NOW:
-	//************ THIS CHANGES FOR SHRINK!
+	// ************ THIS CHANGES FOR SHRINK!
 	INIT_PROPER_FRACTION(sDstH,sNumY) // sDstH is the denominator
 	sClipH = sDstH - sClipB - sClipT; // Fully clipped...
 	//-------------------------------------------------------------------------
@@ -289,7 +289,7 @@ inline void _Blit_HS_VM_C(
 	if (sMirrorV == -1) lDstP = -lDstP; // make sure pDst is correctly positioned
 	
 	// ASSUME ENLARGING FOR NOW:
-	//************ THIS CHANGES FOR SHRINK!
+	// ************ THIS CHANGES FOR SHRINK!
 	INIT_PROPER_FRACTION(sDstH,sNumY) // sDstH is the denominator
 	sClipH = sDstH - sClipB - sClipT; // Fully clipped...
 	//-------------------------------------------------------------------------
@@ -379,7 +379,7 @@ inline void _Blit_HM_VS_C(
 	if (sMirrorV == -1) lDstP = -lDstP; // make sure pDst is correctly positioned
 	
 	// ASSUME SHRINKING FOR NOW:
-	//************ THIS CHANGES FOR MAGNIFY!
+	// ************ THIS CHANGES FOR MAGNIFY!
 	INIT_IMPROPER_FRACTION_V(sDstH,sSrcH,lDelMemY,sIncY,sNumY,lSrcP) // sDstH is the numerator
 	sClipH = sDstH - sClipB - sClipT; // Fully clipped...
 	//-------------------------------------------------------------------------
@@ -451,12 +451,12 @@ inline void _Blit_HM_VS_C(
 //-----------------------------------------------------------------------------------
 // templated overloads for selecting different inlines...
 
-typedef U32 CHOOSE_MAGNIFY;
-typedef S32 CHOOSE_SHRINK;
-typedef U32 CHOOSE_HCLIP;
-typedef S32 CHOOSE_NO_HCLIP;
-typedef U32 CHOOSE_OPAQUE;
-typedef S32 CHOOSE_TRANSPARENT;
+typedef uint32_t CHOOSE_MAGNIFY;
+typedef int32_t CHOOSE_SHRINK;
+typedef uint32_t CHOOSE_HCLIP;
+typedef int32_t CHOOSE_NO_HCLIP;
+typedef uint32_t CHOOSE_OPAQUE;
+typedef int32_t CHOOSE_TRANSPARENT;
 
 //-----------------------------------------------------------------------------------
 
@@ -465,7 +465,8 @@ typedef S32 CHOOSE_TRANSPARENT;
 inline int16_t	_rspBlit(uint8_t* pSrc,int32_t lSrcP,int16_t sSrcW,int16_t sSrcH,
 								uint8_t* pDst,int32_t lDstP,int16_t sDstW,int16_t sDstH)
 	{
-	return 0;
+  UNUSED(pSrc, lSrcP, sSrcW, sSrcH, pDst, lDstP, sDstW, sDstH);
+	return SUCCESS;
 	}
 
 // do the full transparent case with clipping:
@@ -480,8 +481,8 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 
 	if (!pimSrc || !pimDst)
 		{
-		TRACE("rspBlitT: NULL images passed!\n");
-		return -1;
+      TRACE("rspBlitT: nullptr images passed!\n");
+      return FAILURE;
 		}
 
 	// do type checking....
@@ -489,13 +490,13 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspBlitT: Only use this function with uncompressed Images.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!ImageIsUncompressed(pimDst->m_type))
 		{
 		TRACE("rspBlitT: Only use this function with uncompressed Images.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------------------------------------------------------------------
@@ -504,7 +505,7 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 	if ((pimSrc->m_sDepth != 8) || (pimDst->m_sDepth != 8))
 		{
 		TRACE("rspBlitT: Currently, only 8-bit Images are fully supported.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -521,7 +522,7 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 	if (prSrcClip)
 		{
 		TRACE("rspBlitT: Source clipping not yet available...\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------------------------------------------------------------------
@@ -546,7 +547,7 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 		sDstClipH = prDstClip->sH;
 		}
 
-	//********************* MIRROR PART I => PRE CLIP:
+	// ********************* MIRROR PART I => PRE CLIP:
 	int16_t sMirrorH = 1,sMirrorV = 1;
 
 	if (sDstW < 0)
@@ -562,7 +563,7 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 		sDstH = -sDstH;
 		sDstY -= (sDstH - 1);
 		}
-	//*********************
+	// *********************
 
 	//-------- Do the clipping:
 	int16_t sClipL,sClipR,sClipT,sClipB; // positive = clipped
@@ -574,10 +575,10 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 
 	if ( ((sClipL + sClipR) >= sDstW) || ((sClipT + sClipB) >= sDstH) )
 		{
-		return 0; // fully clipped out
+		return SUCCESS; // fully clipped out
 		}
 
-	//********************* MIRROR PART II => POST CLIP, flip back...
+	// ********************* MIRROR PART II => POST CLIP, flip back...
 	if (sMirrorH == -1)
 		{
 		sDstX += (sDstW - 1);
@@ -591,7 +592,7 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 		}
 
 
-	//*********************
+	// *********************
 
 	//------------------------------------------------------------------------------
 	// set up IC
@@ -619,7 +620,7 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 							pDst,pimDst->m_lPitch,sDstW,sDstH,
 							sClipL,sClipT,sClipR,sClipB,sMirrorH,sMirrorV);
 
-	return 0;
+	return SUCCESS;
 	}
 
 // easy call overloads:
@@ -638,8 +639,8 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 
 	if (!pimSrc || !pimDst)
 		{
-		TRACE("rspBlitT: NULL images passed!\n");
-		return -1;
+      TRACE("rspBlitT: nullptr images passed!\n");
+      return FAILURE;
 		}
 
 #endif
@@ -670,8 +671,8 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 
 	if (!pimSrc || !pimDst)
 		{
-		TRACE("rspBlitT: NULL images passed!\n");
-		return -1;
+      TRACE("rspBlitT: nullptr images passed!\n");
+      return FAILURE;
 		}
 
 #endif

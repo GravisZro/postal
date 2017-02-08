@@ -69,9 +69,9 @@ class CRocket : public CWeapon
 	//---------------------------------------------------------------------------
 	public:
 		// Collision bits
-		U32 m_u32CollideIncludeBits;
-		U32 m_u32CollideDontcareBits;
-		U32 m_u32CollideExcludeBits;
+		uint32_t m_u32CollideIncludeBits;
+		uint32_t m_u32CollideDontcareBits;
+		uint32_t m_u32CollideExcludeBits;
 
 	protected:
 		CAnim3D		m_anim;					// 3D animation
@@ -134,11 +134,11 @@ class CRocket : public CWeapon
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CRocket(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CRocket::Construct(): Couldn't construct CRocket (that's a bad thing)\n");
 				}
 			return sResult;
@@ -166,9 +166,9 @@ class CRocket : public CWeapon
 
 		virtual
 		void SetCollideBits(					// Returns nothing
-			U32 u32CollideBitsInclude,		// Bits considered in collision
-			U32 u32CollideBitsDontCare,	// Bits ignored for collisions
-			U32 u32CollideBitsExclude)		// Bits that invalidate a collision
+			uint32_t u32CollideBitsInclude,		// Bits considered in collision
+			uint32_t u32CollideBitsDontCare,	// Bits ignored for collisions
+			uint32_t u32CollideBitsExclude)		// Bits that invalidate a collision
 		{
 			m_u32CollideIncludeBits = u32CollideBitsInclude;
 			m_u32CollideDontcareBits = u32CollideBitsDontCare;

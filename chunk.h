@@ -65,7 +65,7 @@ class CChunk : public CThing
 
 		typedef struct
 			{
-			U8		u8ColorIndex;
+			uint8_t		u8ColorIndex;
 			int16_t	sLen;
 			} TypeInfo;
 
@@ -142,15 +142,15 @@ class CChunk : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			// Don't allow chunks when disabled . . .
 			if (g_GameSettings.m_sParticleEffects)
 				{
 				*ppNew = new CChunk(pRealm);
-				if (*ppNew == 0)
+				if (*ppNew == nullptr)
 					{
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("CChunk::Construct(): Couldn't construct CChunk (that's really "
 						"not that bad a thing)\n");
 					}
@@ -158,7 +158,7 @@ class CChunk : public CThing
 			else
 				{
 				// Particles disabled.
-				sResult	= 1;
+				sResult = FAILURE;
 				}
 
 			return sResult;

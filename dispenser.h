@@ -82,9 +82,9 @@ class CDispenser : public CThing
 
 		typedef struct
 			{
-			char*	pszName;					// Name of logic (for list box).
-			char*	apszParms[NumParms];	// Parm descriptions or NULL for none.
-			char*	pszDescription;		// Description of logic (for text box).
+         const char*	pszName;					// Name of logic (for list box).
+         const char*	apszParms[NumParms];	// Parm descriptions or nullptr for none.
+         const char*	pszDescription;		// Description of logic (for text box).
 			} LogicInfo;
 
 	//---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ class CDispenser : public CThing
 		int16_t			m_sNumDispensees;						// Number of dispensees already
 																	// dispensed.
 
-		U16			m_u16IdDispensee;						// ID of the last dispensee
+		uint16_t			m_u16IdDispensee;						// ID of the last dispensee
 																	// we created.
 
 		int32_t			m_lNextUpdate;							// Time of next update.
@@ -152,7 +152,7 @@ class CDispenser : public CThing
 		CDispenser(CRealm* pRealm)
 			: CThing(pRealm, CDispenserID)
 			{
-			m_pim					= NULL;
+			m_pim					= nullptr;
 			m_idDispenseeType	= TotalIDs;			// This means none.
 			m_sSuspend			= FALSE;
 			memset(m_alLogicParms, 0, sizeof(m_alLogicParms) );
@@ -182,11 +182,11 @@ class CDispenser : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CDispenser(pRealm);
-			if (*ppNew == 0)
+			if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CDispenser::Construct(): Couldn't construct CDispenser!\n");
 				}
 

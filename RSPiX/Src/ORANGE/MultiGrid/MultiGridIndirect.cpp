@@ -105,6 +105,7 @@ int16_t	RMultiGridIndirect::ms_asColorToPlane[MGI_MAX_PLANES] =
 void	RMultiGridIndirect::DumpPalette(RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_t sDstX,int16_t sDstY,
 					int16_t sW,int16_t sH)
 	{
+  UNUSED(pimDst, sSrcX, sSrcY, sDstX, sDstY, sW, sH);
 	//short i,j;
 
 	}
@@ -184,7 +185,7 @@ int16_t RMultiGridIndirect::AddFSPR1(RImage* pimSrc,int16_t sLogX,int16_t sLogY,
 	{
 	ASSERT(pimSrc);
 	ASSERT(pimSrc->m_type == RImage::FSPR1);
-	int16_t sRet = SUCCESS;
+   int16_t sResult = SUCCESS;
 
 	// Note that the FSPR1 can't clip, so if the buffer size is wrong
 	// it won't copy over.
@@ -195,7 +196,7 @@ int16_t RMultiGridIndirect::AddFSPR1(RImage* pimSrc,int16_t sLogX,int16_t sLogY,
 					(m_pimBuffer->m_sHeight != sMaxH))
 			{
 			delete m_pimBuffer;
-			m_pimBuffer = NULL;
+			m_pimBuffer = nullptr;
 			}
 		}
 
@@ -237,17 +238,18 @@ int16_t RMultiGridIndirect::AddFSPR1(RImage* pimSrc,int16_t sLogX,int16_t sLogY,
 		}
 
 	// 3) calculate the logical tile rects covered by the region:
-	//*************************************************** Use DIVMODS!
-	//************************** BETTER YET, USE POWERS OF 2!
+	// *************************************************** Use DIVMODS!
+	// ************************** BETTER YET, USE POWERS OF 2!
 
 	sX = sLogX & ~(m_sTileW-1); // look for powers of two!
 	sY = sLogY & ~(m_sTileH-1);
 	sX2 = (sLogX + sClipW + m_sTileW - 2) & ~(m_sTileW-1);
 	sY2 = (sLogY + sClipH + m_sTileH - 2) & ~(m_sTileH-1);
 
-	int16_t sTileX,sTileY,sTileW,sTileH;
-	sTileX = sX / m_sTileW;
-	sTileY = sY / m_sTileH;
+   //int16_t sTileX,sTileY;
+   int16_t sTileW,sTileH;
+//	sTileX = sX / m_sTileW;
+//	sTileY = sY / m_sTileH;
 	sTileW = (sX2 - sX + 1) / m_sTileW;
 	sTileH = (sY2 - sY + 1) / m_sTileH;
 
@@ -278,7 +280,7 @@ int16_t RMultiGridIndirect::AddFSPR1(RImage* pimSrc,int16_t sLogX,int16_t sLogY,
 						"Exceeded %hd overlapping regions at (%hd,%hd)\n",
 						m_sMaxPlanes,sCurX,sCurY);
 
-					sRet = FAILURE;
+               sResult = FAILURE;
 					}
 				else
 					{
@@ -295,7 +297,7 @@ int16_t RMultiGridIndirect::AddFSPR1(RImage* pimSrc,int16_t sLogX,int16_t sLogY,
 		}
 
 
-	return sRet;
+   return sResult;
 	}
 
 
@@ -307,7 +309,7 @@ int16_t RMultiGridIndirect::AddFSPR1(RImage* pimSrc,int16_t sLogX,int16_t sLogY,
 		ASSERT(!m_pmg->m_sIsCompressed);
 		ASSERT(usValueOR < 32768);
 		//-------------- half clipping ------------
-		uint16_t* pusAttrib = (uint16_t*) m_pmg->m_psGrid;
+//		uint16_t* pusAttrib = (uint16_t*) m_pmg->m_psGrid;
 		int16_t sW = m_sTileW,sH = m_sTileH;
 
 		if (sClip)

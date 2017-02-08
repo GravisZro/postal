@@ -15,6 +15,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
+
 #ifndef DISPATCH_H
 #define DISPATCH_H
 
@@ -36,7 +40,7 @@
 // Typedefs.
 //////////////////////////////////////////////////////////////////////////////
 // This type is used to call the user to allow them to allocate space for the
-// data and return it to be filled.  Return NULL if unable to allocate the
+// data and return it to be filled.  Return nullptr if unable to allocate the
 // space or other errror.
 typedef uint8_t* (*ALLOC_DISPATCHFUNC)(	int32_t lSize, uint16_t usType, uint8_t ucFlags,
 													int32_t lUser);
@@ -120,7 +124,7 @@ class CDispatch
 		// Returns the time from the override function if set or, if not set, from
 		// Blue.
 		int32_t GetTime(void)
-			{ return (m_fnTime != NULL ? (*m_fnTime)(m_lTimeUser) : Blu_GetTime()); }
+			{ return (m_fnTime != nullptr ? (*m_fnTime)(m_lTimeUser) : Blu_GetTime()); }
 
 		// Returns TRUE if critical handler is Blue's critical list.
 		int16_t IsActive(void)

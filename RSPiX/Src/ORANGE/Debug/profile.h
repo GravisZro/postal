@@ -48,7 +48,7 @@
 //							off based on RSP_PROFILE_ON
 //
 //////////////////////////////////////////////////////////////////////////////
-//***********************  TUTORIAL and INFORMATION  *************************
+// ***********************  TUTORIAL and INFORMATION  *************************
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 // 1)  WHY WOULD I WANT TO USE THE RSPiX PROFILER?
@@ -88,7 +88,7 @@
 // 2)  HOW DO I OPERATE THE RSPiX PROFILER?
 //----------------------------------------------------------------------------
 //
-//********************** A - Profile Pairs ***************************
+// ********************** A - Profile Pairs ***************************
 //
 //  You essentially define timing pairs you wish to profile.  The rest is magic.
 //  Each profile pair you identify with a descriptive string: 
@@ -103,7 +103,7 @@ rspEndProfile("memcpy in scene");
 // an end.  If you screw up, you will get a detailed error report telling you
 // about it.
 //
-//********************** B - Exclusion Pairs ***************************
+// ********************** B - Exclusion Pairs ***************************
 //
 // Putting the rspEndProfile BEFORE the rspStartProfile is 100% legal.  It
 // allows you to provide an EXCLUSIONARY profile, i.e., everything BUT a
@@ -116,7 +116,7 @@ memcpy(.....);
 rspStartProfile("scene without memcpy");
 */
 //
-//********************** C - Disjoint pairs ***************************
+// ********************** C - Disjoint pairs ***************************
 //
 // If you have more than one pair of the SAME name NOT NESTED, it will act
 // as a group.  The total time will act as the total time of the group,
@@ -138,7 +138,7 @@ memcpy(.....);
 rspEndProfile("memcpys in scene");
 */
 //
-//********************** D - PERCENTAGE ***************************
+// ********************** D - PERCENTAGE ***************************
 //
 // You can use any single pair in a given report at a baseline for 
 // comparison.  Just start a pair with the phrase "100%", and all other
@@ -155,7 +155,7 @@ rspEndProfile("memcpys in scene");
 rspEndProfile("100% - the scene");
 */
 //
-//********************** E - START and END TIME ***************************
+// ********************** E - START and END TIME ***************************
 //
 // You can interactively control when timing begins in your program with
 // the commands:
@@ -167,7 +167,7 @@ rspProfileOff();
 // rspEndProfile tags will activate.  Similarly, once rspProfileOff() is used,
 // all timing will cease and your report will be written.
 //
-//********************** F - MULTIPLE TIMING RUNS ***************************
+// ********************** F - MULTIPLE TIMING RUNS ***************************
 //
 // Perhaps the most important feature of the RSPiX profiler is that you can
 // do an unlimited amount of rspProfileOn() and rspProfileOff() sessions 
@@ -186,7 +186,7 @@ rspProfileOff();
 // will not START timing until they have one FULL iteration. (again, no partial
 // timing.)
 //
-//********************** G - Deluxe Reporting ***************************
+// ********************** G - Deluxe Reporting ***************************
 //
 // Once you get a report, you will see all remaining features, such as
 // minimum and maximum speeds, and when they occurred.  You will see the
@@ -246,9 +246,9 @@ rspProfileOff();
 typedef	enum {Inactive,Timing,DoneTiming,InError}	ProfileState;
 
 #ifdef __GNUC__
-#define BIGS64(x) S64(x##ll)
+#define BIGS64(x) int64_t(x##ll)
 #else
-#define BIGS64(x) S64(x)
+#define BIGS64(x) int64_t(x)
 #endif
 
 class	RProfileNode
@@ -271,14 +271,14 @@ public:
 	~RProfileNode(){};
 	//----------------------------
 	char m_szFieldName[PF_MAX_LEN];
-	S64	m_lNumCalls;
-	S64	m_lTotTime;
-	S64  m_lLastTime;
+   int64_t	m_lNumCalls;
+   int64_t	m_lTotTime;
+   int64_t  m_lLastTime;
 
-	S64	m_lMinTime;
-	S64  m_lWhenMin; // relative to begin
-	S64	m_lMaxTime;
-	S64	m_lWhenMax; // relative to begin
+   int64_t	m_lMinTime;
+   int64_t  m_lWhenMin; // relative to begin
+   int64_t	m_lMaxTime;
+   int64_t	m_lWhenMax; // relative to begin
 
 	ProfileState m_eState;	// parenthesis verification!
 
@@ -342,7 +342,7 @@ public:
 			*/
 		}
 
-	//S64	DetermineTimeError();
+   //int64_t	DetermineTimeError();
 
 	void Report(); // tell it all!
 	//----------------------------
@@ -360,18 +360,18 @@ public:
 	RProfile(); // in cpp file
 
 	//----------------------------
-	S64	m_lCount;		// to determine my own overhead!
-	S64	m_lTotTime;		// Total overhead used by profiling!
+   int64_t	m_lCount;		// to determine my own overhead!
+   int64_t	m_lTotTime;		// Total overhead used by profiling!
 
-	S64	m_lInitTime;		// start of program
-	S64	m_lDeceasedTime;	// end of program
+   int64_t	m_lInitTime;		// start of program
+   int64_t	m_lDeceasedTime;	// end of program
 
-	S64	m_lBeginTime;	// when user kicks off profiling
-	S64  m_lFirstTime;	// first time a profile range is entered in active mode
+   int64_t	m_lBeginTime;	// when user kicks off profiling
+   int64_t  m_lFirstTime;	// first time a profile range is entered in active mode
 
 	//===== Let's try to max out a theme here:
-	S64	m_lFastTimeIn;
-	S64	m_lFastTimeOut;
+   int64_t	m_lFastTimeIn;
+   int64_t	m_lFastTimeOut;
 	//----------------------------
 	
 	int16_t	m_sLastUnaccounted;// Used for one frame lag timing of unknown overhead...
@@ -396,7 +396,7 @@ public:
 
 extern	RProfile	rspProfileInstance; // The one global instance
 
-inline void rspProfileOptimizeOut(char* a) {} // used to trick the compiler
+inline void rspProfileOptimizeOut(const char* ) {} // used to trick the compiler
 inline void rspProfileOptimizeOut() {} // used to trick the compiler
 
 #ifdef	RSP_PROFILE_ON

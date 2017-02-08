@@ -248,15 +248,15 @@ int16_t GetLastXInputState(XInputState* xis)
 	if (xis)
 	{
 		memcpy(xis, &ms_XInputState, sizeof(XInputState));
-		return 1;
+      return TRUE;
 	}
-	return 0;
+   return FALSE;
 }
 int16_t GetXInputStateNoUpdate(XInputState* xis)
 {
 	// Get current input state from Blue
-	U32 u32Buttons = 0;
-	U32 u32Axes = 0;
+	uint32_t u32Buttons = 0;
+	uint32_t u32Axes = 0;
 	rspGetJoyState(0, &u32Buttons, &u32Axes);
 
 	for (int i = 0; i < XInputButtons; i++)
@@ -486,7 +486,7 @@ int16_t GetXInputStateNoUpdate(XInputState* xis)
 	else
 		xis->ButtonState[17] = XInputState::None;
 
-	return 1; //!! FIXME: return 0 if controller isn't plugged in?
+   return TRUE; //!! FIXME: return FALSE if controller isn't plugged in?
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -500,9 +500,9 @@ int16_t IsXInputButtonPressed()
 
 	for (int i = 0; i < XInputButtons; i++)
 		if (xis.ButtonState[i] == XInputState::Press)
-			return 1;
+         return TRUE;
 
-	return 0;
+   return FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

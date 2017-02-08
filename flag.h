@@ -56,16 +56,16 @@ class CFlag : public CThing3d
 	//---------------------------------------------------------------------------
 	public:
 		CAnim3D*		m_panimCurBase;					// current animation for the base
-		U16			m_u16FlagID;						// Used to match flag & base
+		uint16_t			m_u16FlagID;						// Used to match flag & base
 
 	protected:
 		CAnim3D		m_animFlagWave;					// animation for the flag waving
-		U32			m_u32IncludeBits;					// Bits to include for Smash collision
-		U32			m_u32DontcareBits;				// Bits to ignore for Smash collision
-		U32			m_u32ExcludeBits;					// Bits to exclude for Smash collision
+		uint32_t			m_u32IncludeBits;					// Bits to include for Smash collision
+		uint32_t			m_u32DontcareBits;				// Bits to ignore for Smash collision
+		uint32_t			m_u32ExcludeBits;					// Bits to exclude for Smash collision
 		int32_t			m_lTimeBonus;						// Flag stores a time bonus for
 																// special game play modes.
-		U16			m_u16FlagColor;					// Color of flag;
+		uint16_t			m_u16FlagColor;					// Color of flag;
 		int16_t			m_sSavedX;							// Save the position of the flagbase
 		int16_t			m_sSavedY;							// Save the position of the flagbase
 		int16_t			m_sSavedZ;							// Save the position of the flagbase
@@ -87,7 +87,7 @@ class CFlag : public CThing3d
 			m_sSuspend = 0;
 			m_dRot = 0;
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
-			m_panimCur = NULL;
+			m_panimCur = nullptr;
 			m_sprite.m_pthing	= this;
 			m_u16FlagID = 1;
 			m_lTimeBonus = 0;
@@ -118,11 +118,11 @@ class CFlag : public CThing3d
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CFlag(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CFlag::Construct(): Couldn't construct CFlag (that's a bad thing)\n");
 				}
 			return sResult;

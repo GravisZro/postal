@@ -59,7 +59,7 @@ inline void _BlitRot(int16_t sDeg,int16_t sHeight, // = 2R + 1?
 	while (sDegL > 359) sDegL -= 360; // FMOD/2
 	while (sDegP > 359) sDegP -= 360; // FMOD/2
 
-	//*************** Find P
+	// *************** Find P
 	int16_t sR = ( (sHeight-1) >> 1);		// spinning corner radius
 	int16_t sEdge = int16_t(sR * rspSQRT2);      // square edge size
 	// all things start at this source location:
@@ -70,19 +70,19 @@ inline void _BlitRot(int16_t sDeg,int16_t sHeight, // = 2R + 1?
 	// Calculate the sub pixel offset:
 	int32_t lLadNumX,lLadNumY,lRungNumX,lRungNumY;
 
-	//**********************************************
-	//******  OVERFLOW AREA - NEEDS 64bit math!
-	//**********************************************
+	// **********************************************
+	// ******  OVERFLOW AREA - NEEDS 64bit math!
+	// **********************************************
 	// OVERFLOW LIMIT: lDstW * lDstH * sSrcW * sSrcH;
 	// MUST CUSTOMIZE FOR THE MAC:
 
 #ifdef _ROT64
 
 	// 64-bit version:
-	S64 l64PX = S64(lDen) * sR,l64PY = S64(lDen) * sR; // go into Denominator space
+	int64_t l64PX = int64_t(lDen) * sR,l64PY = int64_t(lDen) * sR; // go into Denominator space
 	// Stay in denominator space!
-	l64PX += S64(COSQ[sDegP] * sR * lDen + 0.5 * lDen); // offset to pixel center
-	l64PY += S64(SINQ[sDegP] * sR * lDen  + 0.5 * lDen); // offset to pixel center
+	l64PX += int64_t(COSQ[sDegP] * sR * lDen + 0.5 * lDen); // offset to pixel center
+	l64PY += int64_t(SINQ[sDegP] * sR * lDen  + 0.5 * lDen); // offset to pixel center
 	// Now MUST convert to an asymettrical signed proper fraction:
 	int32_t lPX,lPY;
 	rspDivModA64(l64PX,lDen,lPX,lLadNumX);
@@ -105,7 +105,7 @@ inline void _BlitRot(int16_t sDeg,int16_t sHeight, // = 2R + 1?
 
 #endif
 
-	//**********************************************
+	// **********************************************
 
 	//--------------------------------------------------
 	//--------- Initialize the four ratios...
@@ -454,8 +454,8 @@ inline void _BlitRot(int16_t sDeg,int16_t sHeight, // = 2R + 1?
 // With the inliner, this may become a very valuable tool.
 // This only performs DESTINATION CLIPPING AND MIRRORING..
 //
-// returns -1 if clipped out
-// returns 0 if shows at all
+// returns FAILURE if clipped out
+// returns SUCCESS if shows at all
 // if (sClipL), use an HCLIP routine!
 //
 // returns pDst and sClips based on mirroring...
@@ -480,7 +480,7 @@ inline int16_t rspClipMirrorDst(RImage* pimDst, // input:
 										)
 	{
 	int16_t sMirrorX = 1,sMirrorY = 1; // direction flags...
-	//********************* MIRROR PART I => PRE CLIP:
+	// ********************* MIRROR PART I => PRE CLIP:
 	lDstP = pimDst->m_lPitch;
 	lDstPX = (pimDst->m_sDepth>>8);
 
@@ -508,10 +508,10 @@ inline int16_t rspClipMirrorDst(RImage* pimDst, // input:
 
 	if ( ((sClipL + sClipR) >= sDstW) || ((sClipT + sClipB) >= sDstH) )
 		{
-		return -1; // fully clipped out
+      return FAILURE; // fully clipped out
 		}
 
-	//********************* MIRROR PART II => POST CLIP, flip back...
+	// ********************* MIRROR PART II => POST CLIP, flip back...
 	if (sMirrorX == -1)
 		{
 		sDstX += (sDstW - 1);
@@ -527,7 +527,7 @@ inline int16_t rspClipMirrorDst(RImage* pimDst, // input:
 	// Use original pitch signs for offsets...
 	pDst = pimDst->m_pData + pimDst->m_lPitch * sDstY + sDstX;
 	
-	return 0;
+   return SUCCESS;
 	}
 
 // Will allocate a larger buffer and copy the image so that it
@@ -543,7 +543,7 @@ int16_t rspAddRotationPadding(RImage* pimSrc,int16_t sHotX,int16_t sHotY)
 	if (!pimSrc)
 		{
 		TRACE("rspAddRotationPadding: Null input images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 		// do type checking....
@@ -551,7 +551,7 @@ int16_t rspAddRotationPadding(RImage* pimSrc,int16_t sHotX,int16_t sHotY)
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspAddRotationPadding: Only use this function with uncompressed Images.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------------------------------------------------------------------
@@ -560,13 +560,13 @@ int16_t rspAddRotationPadding(RImage* pimSrc,int16_t sHotX,int16_t sHotY)
 	if ((pimSrc->m_sDepth != 8))
 		{
 		TRACE("rspAddRotationPadding: Currently, only 8-bit Images are fully supported.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_sWinX || pimSrc->m_sWinY)
 		{
 		TRACE("rspAddRotationPadding: This image already has padding of some kind!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -595,12 +595,12 @@ int16_t rspAddRotationPadding(RImage* pimSrc,int16_t sHotX,int16_t sHotY)
 	// Calculate new position of image within the buffer:
 	int16_t sX = int16_t (lR - sHotX); // new offset...
 	int16_t sY = int16_t (lR - sHotY);
-	int16_t sOldW = pimSrc->m_sWidth;
-	int16_t sOldH = pimSrc->m_sHeight;
+//	int16_t sOldW = pimSrc->m_sWidth;
+//	int16_t sOldH = pimSrc->m_sHeight;
 
 	rspPad(pimSrc,sX,sY,sSize,sSize,1); // go to 8-bit alignment since offset may not align
 
-	return 0;
+   return SUCCESS;
 	}
 
 // This uses the built in image description of padding.
@@ -615,7 +615,7 @@ int16_t rspRemovePadding(RImage* pimSrc)
 	if (!pimSrc)
 		{
 		TRACE("rspRemovePadding: Null input images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 		// do type checking....
@@ -623,7 +623,7 @@ int16_t rspRemovePadding(RImage* pimSrc)
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspRemovePadding: Only use this function with uncompressed Images.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------------------------------------------------------------------
@@ -632,7 +632,7 @@ int16_t rspRemovePadding(RImage* pimSrc)
 	if ((pimSrc->m_sDepth != 8))
 		{
 		TRACE("rspRemovePadding: Currently, only 8-bit Images are fully supported.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -640,7 +640,7 @@ int16_t rspRemovePadding(RImage* pimSrc)
 	if (!pimSrc->m_sWinX && !pimSrc->m_sWinY)
 		{
 		// Don't need to do anything
-		return 0;
+      return SUCCESS;
 		}
 
 	// Create a new buffer and Image Stub to BLiT can use it:
@@ -659,7 +659,7 @@ int16_t rspRemovePadding(RImage* pimSrc)
 	// Move the new buffer back to the original
 	imDst.DetachData((void**)&(pimSrc->m_pMem),(void**)&(pimSrc->m_pData));
 
-	//*******  IMPORTANT! COPY ALL NEW INFO OVER!
+	// *******  IMPORTANT! COPY ALL NEW INFO OVER!
 	pimSrc->m_ulSize = imDst.m_ulSize;
 	pimSrc->m_sWidth = imDst.m_sWidth; // width and height shouldn't change...
 	pimSrc->m_sHeight = imDst.m_sHeight;
@@ -670,7 +670,7 @@ int16_t rspRemovePadding(RImage* pimSrc)
 	// 4) Destroy the old...
 	RImage::DestroyDetachedData((void**)&pSrcMem);
 	// On exit, imDst will auto destruct....
-	return 0;
+   return SUCCESS;
 	}
 
 
@@ -688,7 +688,7 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 	if (!pimSrc || !pimDst)
 		{
 		TRACE("rspBlitRot: Null input images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 		// do type checking....
@@ -696,13 +696,13 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspBlitT: Only use this function with uncompressed Images.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!ImageIsUncompressed(pimDst->m_type))
 		{
 		TRACE("rspBlitT: Only use this function with uncompressed Images.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------------------------------------------------------------------
@@ -711,13 +711,13 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 	if ((pimSrc->m_sDepth != 8) || (pimDst->m_sDepth != 8))
 		{
 		TRACE("rspBlitT: Currently, only 8-bit Images are fully supported.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!pimSrc->m_sWinX || !pimSrc->m_sWinY)
 		{
 		TRACE("rspBlitRot: You must add buffer padding to the source image!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -742,7 +742,7 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 		sDstClipH = prDstClip->sH;
 		}
 
-	//********************* MIRROR PART I => PRE CLIP:
+	// ********************* MIRROR PART I => PRE CLIP:
 	// Instead of mirror FLAGS, make use of the destination pitch:
 	//
 	int32_t lDstP = pimDst->m_lPitch,lDstXP = (pimDst->m_sDepth>>3);
@@ -763,7 +763,7 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 		sDstY -= (sDstH - 1);
 		lDstP = -lDstP;
 		}
-	//*********************
+	// *********************
 
 	//-------- Do the clipping:
 	int16_t sClipL,sClipR,sClipT,sClipB; // positive = clipped
@@ -775,10 +775,10 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 
 	if ( ((sClipL + sClipR) >= sDstW) || ((sClipT + sClipB) >= sDstH) )
 		{
-		return 0; // fully clipped out
+      return SUCCESS; // fully clipped out
 		}
 
-	//********************* MIRROR PART II => POST CLIP, flip back...
+	// ********************* MIRROR PART II => POST CLIP, flip back...
 	if (sMirrorH == -1)
 		{
 		sDstX += (sDstW - 1);
@@ -792,7 +792,7 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 		}
 
 
-	//*********************
+	// *********************
 
 	//------------------------------------------------------------------------------
 	// set up IC
@@ -806,7 +806,7 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 	_BlitRot(sDeg,pimSrc->m_sHeight,pSrc,pimSrc->m_sDepth>>3,pimSrc->m_lPitch,
 				pDst,lDstXP,lDstP,sDstW,sDstH,sClipL,sClipR,sClipT,sClipB);
 
-	return 0;
+   return SUCCESS;
 	}
 
 // Assumes you are inputing the location of the center of rotation,
@@ -827,7 +827,7 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 	if (!pimSrc || !pimDst)
 		{
 		TRACE("rspBlitRot: Null input images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -843,10 +843,10 @@ int16_t rspBlitRot(int16_t sDeg,RImage* pimSrc,RImage* pimDst,
 	return rspBlitRot(sDeg,pimSrc,pimDst,sDstX,sDstY,sDstW,sDstH,prDstClip);
 	}
 
-//**************************************************************
+// **************************************************************
 //***  BECAUSE THE OLD SrafeRot used GENERIC input structures
 //***  to hold the auxiliary data, it should still be useful!
-//**************************************************************
+// **************************************************************
 
 // In this version, You must supply the host structure, which you may define, but which 
 // must contain the following:  
@@ -869,26 +869,26 @@ int16_t rspStrafeRotate(void *pReturnArray,	// Output
 
 	if (!pimSrc)
 		{
-		TRACE("rspStrafeRotate: NULL source passed!\n");
-		return -1;
+      TRACE("rspStrafeRotate: nullptr source passed!\n");
+      return FAILURE;
 		}
 
 	if (!pReturnArray)
 		{
-		TRACE("rspStrafeRotate: NULL receiver passed!\n");
-		return -1;
+      TRACE("rspStrafeRotate: nullptr receiver passed!\n");
+      return FAILURE;
 		}
 
 	if (sNumFrames < 1)
 		{
 		TRACE("rspStrafeRotate: Bad number of frames!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!ImageIsUncompressed(pimSrc->m_type))
 		{
 		TRACE("rspStrafeRotate:Need an uncompressed image format!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -919,7 +919,7 @@ int16_t rspStrafeRotate(void *pReturnArray,	// Output
 	int16_t sDstH = (sSrcH * dScale); // used for making a copy
 
 	// Make a copy of the input links so they can be center adjusted
-	int16_t *psLinkX = NULL, *psLinkY = NULL;
+   int16_t *psLinkX = nullptr, *psLinkY = nullptr;
 	int16_t j;
 
 	if (sNumLinks > 0)
@@ -944,7 +944,7 @@ int16_t rspStrafeRotate(void *pReturnArray,	// Output
 		if ((*(ppBuf.ppI))->CreateImage(sDstH,sDstH,RImage::BMP8)!= SUCCESS)
 			{
 			TRACE("rspStrafeRotate: Out of memory. Sorry.\n");
-			return -1;
+         return FAILURE;
 			}
 
 		// Do the BLiT such that the hot spot is in the center of the buffer:
@@ -968,8 +968,8 @@ int16_t rspStrafeRotate(void *pReturnArray,	// Output
 			
 
 		// Dpo the links, if any:
-		*(ppLinkX.ppL) = NULL;
-		*(ppLinkY.ppL) = NULL;
+      *(ppLinkX.ppL) = nullptr;
+      *(ppLinkY.ppL) = nullptr;
 
 		if (sNumLinks > 0)
 			{
@@ -1011,7 +1011,7 @@ int16_t rspStrafeRotate(void *pReturnArray,	// Output
 	// Restore the source picture to it's original form.
 	rspRemovePadding(pimSrc);
 	
-	return NULL;
+   return SUCCESS;
 	}
 
-//**************************************************************
+// **************************************************************

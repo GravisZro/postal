@@ -190,16 +190,16 @@ int16_t ConvertToSCREEN16_565(RImage* pImage);
 int16_t ConvertToSCREEN24_RGB(RImage* pImage);
 int16_t ConvertToSCREEN32_ARGB(RImage* pImage);
 
-IMAGELINKLATE(BMP8, ConvertToBMP8, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SYSTEM8, ConvertToSystem, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN8_555, ConvertToSCREEN8_555, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN8_565, ConvertToSCREEN8_565, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN8_888, ConvertToSCREEN8_888, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(BMP24, ConvertToBMP24, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN16_555, ConvertToSCREEN16_555, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN16_565, ConvertToSCREEN16_565, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN24_RGB, ConvertToSCREEN24_RGB, NULL, NULL, NULL, NULL, NULL);
-IMAGELINKLATE(SCREEN32_ARGB, ConvertToSCREEN32_ARGB, NULL, NULL, NULL, NULL, NULL);
+IMAGELINKLATE(BMP8, ConvertToBMP8, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SYSTEM8, ConvertToSystem, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN8_555, ConvertToSCREEN8_555, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN8_565, ConvertToSCREEN8_565, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN8_888, ConvertToSCREEN8_888, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(BMP24, ConvertToBMP24, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN16_555, ConvertToSCREEN16_555, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN16_565, ConvertToSCREEN16_565, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN24_RGB, ConvertToSCREEN24_RGB, nullptr, nullptr, nullptr, nullptr, nullptr);
+IMAGELINKLATE(SCREEN32_ARGB, ConvertToSCREEN32_ARGB, nullptr, nullptr, nullptr, nullptr, nullptr);
 
 //////////////////////////////////////////////////////////////////////
 // More non-standard, always supported types:
@@ -209,13 +209,13 @@ IMAGELINKLATE(SCREEN32_ARGB, ConvertToSCREEN32_ARGB, NULL, NULL, NULL, NULL, NUL
 int16_t ConvertToBMP8RLE(RImage* pImage);
 int16_t ConvertFromBMP8RLE(RImage* pImage);
 // Link in conversion functions.
-IMAGELINKLATE(BMP8RLE, ConvertToBMP8RLE, ConvertFromBMP8RLE, NULL, NULL, NULL, NULL);
+IMAGELINKLATE(BMP8RLE, ConvertToBMP8RLE, ConvertFromBMP8RLE, nullptr, nullptr, nullptr, nullptr);
 
 // Monochrome BMP (BMP1).
 int16_t ConvertToBMP1(RImage* pImage);
 int16_t ConvertFromBMP1(RImage* pImage);
 // Link in conversion functions.
-IMAGELINKLATE(BMP1, ConvertToBMP1, ConvertFromBMP1, NULL, NULL, NULL, NULL);
+IMAGELINKLATE(BMP1, ConvertToBMP1, ConvertFromBMP1, nullptr, nullptr, nullptr, nullptr);
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -246,7 +246,7 @@ int16_t ConvertNoSupport(RImage* /*pImage*/)
 
 int16_t	ConvertToBMP8(RImage* pImage)
 {
-	int16_t sReturn;
+   int16_t sReturn = 0;
 
 	switch (pImage->m_type)
 	{
@@ -457,7 +457,7 @@ int16_t	ConvertToBMP24(RImage* pImage)
 			// Create a new 24-bit buffer and set a pointer to the data
 			pImage->m_sDepth = 24;
 			pImage->m_lPitch = RImage::GetPitch(pImage->m_sWidth, pImage->m_sDepth);
-			if (pImage->CreateData(pImage->m_lPitch * (int32_t)pImage->m_sHeight) == 0)
+			if (pImage->CreateData(pImage->m_lPitch * (int32_t)pImage->m_sHeight) == SUCCESS)
 				{
 				uint8_t* ucp24 = (uint8_t*) pImage->m_pData;
 
@@ -629,6 +629,8 @@ int16_t ConvertToSystem(RImage* pImage)
 			break;
 		}
 	}
+#else
+   UNUSED(pImage);
 #endif
 
     return sReturn;
@@ -1444,33 +1446,33 @@ int16_t ConvertToSCREEN32_ARGB(RImage* pImage)
 //////////////////////////////////////////////////////////////////////
 int16_t ConvertFromBMP8RLE(RImage* pImage)
 	{
-	int16_t	sRes	= RImage::NOT_SUPPORTED;	// Assume failure.
+   int16_t sResult	= RImage::NOT_SUPPORTED;	// Assume failure.
 
 	ASSERT(pImage->m_type == RImage::BMP8RLE);
 
 	// Set up a pointer to the 8-bit compressed buffer before detaching
-	U8*	pu8Comp	= pImage->m_pData;
-	U8*	pu8End	= pu8Comp + pImage->m_ulSize;
+	uint8_t*	pu8Comp	= pImage->m_pData;
+	uint8_t*	pu8End	= pu8Comp + pImage->m_ulSize;
 
 	// Detach the 8-bit compressed buffer from the Image
 	void* pvDetachedMem = pImage->DetachData();
 
 	// Create a new 8-bit uncompressed buffer and set a pointer to the 
 	// data.  Leave the current pitch.
-	if (pImage->CreateData(pImage->m_lPitch * (int32_t)pImage->m_sHeight) == 0)
+	if (pImage->CreateData(pImage->m_lPitch * (int32_t)pImage->m_sHeight) == SUCCESS)
 		{
-		U8*	pu8Uncomp	= pImage->m_pData;
+		uint8_t*	pu8Uncomp	= pImage->m_pData;
 
 		// We must flip the image during decompression.
 		// This should work for both negative and positive
 		// pitch buffers (i.e., upside down and right side up).
 		int32_t	lPitch	= -pImage->m_lPitch;
 		pu8Uncomp		= pu8Uncomp + pImage->m_lPitch * ((int32_t)pImage->m_sHeight - 1);
-		U8*	pu8Row	= pu8Uncomp;
+		uint8_t*	pu8Row	= pu8Uncomp;
 
 		// Actual decompression.  See function header for details.
-		U8	u8Num;	// Num pixels to run.
-		U8	u8Pixel;	// Pixel to run.
+		uint8_t	u8Num;	// Num pixels to run.
+		uint8_t	u8Pixel;	// Pixel to run.
 		int16_t	sDone	= FALSE;
 		while (sDone == FALSE && pu8Comp < pu8End)
 			{
@@ -1511,8 +1513,8 @@ int16_t ConvertFromBMP8RLE(RImage* pImage)
 						// This should only be used in the case of deltas and
 						// I cannot see how that could ever be since this isn't
 						// an animation format.
-						U8	u8Horz	= *pu8Comp++;
-						U8	u8Vert	= *pu8Comp++;
+						uint8_t	u8Horz	= *pu8Comp++;
+						uint8_t	u8Vert	= *pu8Comp++;
 						pu8Uncomp	+= u8Horz + (u8Vert * lPitch);
 						break;
 						}
@@ -1539,7 +1541,7 @@ int16_t ConvertFromBMP8RLE(RImage* pImage)
 
 		pImage->m_type = RImage::BMP8;
 
-		sRes = (int16_t)pImage->m_type;
+		sResult = (int16_t)pImage->m_type;
 		}
 	else
 		{
@@ -1548,7 +1550,7 @@ int16_t ConvertFromBMP8RLE(RImage* pImage)
 		pImage->m_pMem	= (uint8_t*)pvDetachedMem;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////
@@ -1561,7 +1563,7 @@ int16_t ConvertFromBMP8RLE(RImage* pImage)
 //////////////////////////////////////////////////////////////////////
 int16_t ConvertToBMP8RLE(RImage* pImage)
 	{
-	int16_t	sRes	= RImage::NOT_SUPPORTED;	// Assume failure.
+   int16_t sResult	= RImage::NOT_SUPPORTED;	// Assume failure.
 
 	// Only certain types can be converted from.
 	switch (pImage->m_type)
@@ -1569,7 +1571,7 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 		case RImage::BMP8:
 			{
 			// Set up a pointer to the 8-bit uncompressed buffer before detaching
-			U8*	pu8Uncomp	= pImage->m_pData;
+			uint8_t*	pu8Uncomp	= pImage->m_pData;
 
 			// We must flip the image during compression.
 			// This should work for both negative and positive
@@ -1591,12 +1593,12 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 			// assuming 2 times the pixels plus the height times 2 (2 bytes for each end
 			// of line) plus 2 bytes for the end of bitmap is good enough.  
 			// 2 * ulSize + lHeight * 2 + 2.
-			if (pImage->CreateData(2 * pImage->m_ulSize + (int32_t)pImage->m_sHeight * 2 + 2) == 0)
+			if (pImage->CreateData(2 * pImage->m_ulSize + (int32_t)pImage->m_sHeight * 2 + 2) == SUCCESS)
 				{
-				U8*	pu8Comp		= pImage->m_pData;
+				uint8_t*	pu8Comp		= pImage->m_pData;
 
 				// Actual compression.  See function header for details.
-				U8*	pu8Row	= pu8Uncomp;
+				uint8_t*	pu8Row	= pu8Uncomp;
 				int32_t	lRowRemain;
 				int32_t	lRun;
 
@@ -1634,7 +1636,7 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 								}
 							
 							// Number of pixels to run this color index.
-							*pu8Comp++	= (U8)lRun;
+							*pu8Comp++	= (uint8_t)lRun;
 							// Color index to run.
 							*pu8Comp++	= *pu8Uncomp;
 							// Advance past run.
@@ -1645,7 +1647,7 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 							// 0 indicates "absolute mode".
 							*pu8Comp++	= 0;
 							// Number of absolute pixels.
-							*pu8Comp++	= (U8)lRun;
+							*pu8Comp++	= (uint8_t)lRun;
 
 							// Verbatim run.
 							memcpy(pu8Comp, pu8Uncomp, lRun);
@@ -1696,7 +1698,7 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 				pvDetachedMem	= pImage->DetachData();
 
 				// Attempt to allocate new correctly sized buffer . . .
-				if (pImage->CreateData(ulSize) == 0)
+				if (pImage->CreateData(ulSize) == SUCCESS)
 					{
 					// Copy data.
 					memcpy(pImage->m_pData, pu8Comp, pImage->m_ulSize);
@@ -1713,7 +1715,7 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 
 				pImage->m_type = RImage::BMP8RLE;
 
-				sRes = (int16_t)pImage->m_type;
+				sResult = (int16_t)pImage->m_type;
 				}
 			else
 				{
@@ -1730,7 +1732,7 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 			break;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////
@@ -1741,10 +1743,10 @@ int16_t ConvertToBMP8RLE(RImage* pImage)
 //////////////////////////////////////////////////////////////////////
 int16_t ConvertFromBMP1(RImage* pImage)
 	{
-	int16_t	sRes	= RImage::NOT_SUPPORTED;	// Assume failure.
+   int16_t sResult	= RImage::NOT_SUPPORTED;	// Assume failure.
 
 	// Set up a pointer to the 1-bit packed buffer before detaching.
-	U8*	pu8Src	= pImage->m_pData;
+	uint8_t*	pu8Src	= pImage->m_pData;
 
 	// Detach the 1-bit packed buffer from the Image
 	void* pvDetachedMem = pImage->DetachData();
@@ -1769,13 +1771,13 @@ int16_t ConvertFromBMP1(RImage* pImage)
 		}
 
 	// Allocate new data.  This call sets ulSize.  Preserve m_sWidth, m_sHeight.
-	if (pImage->CreateData(pImage->m_sHeight * ABS(pImage->m_lPitch)) == 0)
+	if (pImage->CreateData(pImage->m_sHeight * ABS(pImage->m_lPitch)) == SUCCESS)
 		{
 		// Destination.
-		U8*	pu8Dst	= pImage->m_pData;
+		uint8_t*	pu8Dst	= pImage->m_pData;
 		// Row trackers.
-		U8*	pu8SrcRow	= pu8Src;
-		U8*	pu8DstRow	= pu8Dst;
+		uint8_t*	pu8SrcRow	= pu8Src;
+		uint8_t*	pu8DstRow	= pu8Dst;
 
 		int32_t	lRows	= (int32_t)pImage->m_sHeight;
 		int32_t	lCols;
@@ -1810,7 +1812,7 @@ int16_t ConvertFromBMP1(RImage* pImage)
 		pImage->m_type = RImage::BMP8;
 
 		// Set return value.
-		sRes = (int16_t)pImage->m_type;
+		sResult = (int16_t)pImage->m_type;
 		}
 	else
 		{
@@ -1819,7 +1821,7 @@ int16_t ConvertFromBMP1(RImage* pImage)
 		pImage->m_pMem	= (uint8_t*)pvDetachedMem;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////
@@ -1830,7 +1832,7 @@ int16_t ConvertFromBMP1(RImage* pImage)
 //////////////////////////////////////////////////////////////////////
 int16_t ConvertToBMP1(RImage* pImage)
 	{
-	int16_t	sRes	= RImage::NOT_SUPPORTED;	// Assume failure.
+   int16_t sResult	= RImage::NOT_SUPPORTED;	// Assume failure.
 
 	// Only certain types can be converted from.
 	switch (pImage->m_type)
@@ -1838,7 +1840,7 @@ int16_t ConvertToBMP1(RImage* pImage)
 		case RImage::BMP8:
 			{
 			// Set up a pointer to the 8-bit buffer before detaching.
-			U8*	pu8Src	= pImage->m_pData;
+			uint8_t*	pu8Src	= pImage->m_pData;
 
 			// Detach the 8-bit buffer from the Image
 			void* pvDetachedMem = pImage->DetachData();
@@ -1873,13 +1875,13 @@ int16_t ConvertToBMP1(RImage* pImage)
 				}
 
 			// Allocate new data.  This call sets ulSize.  Preserve lWidth, lHeight.
-			if (pImage->CreateData((int32_t)pImage->m_sHeight * ABS(pImage->m_lPitch)) == 0)
+			if (pImage->CreateData((int32_t)pImage->m_sHeight * ABS(pImage->m_lPitch)) == SUCCESS)
 				{
 				// Bit packed destination.
-				U8*	pu8Dst	= pImage->m_pData;
+				uint8_t*	pu8Dst	= pImage->m_pData;
 				// Row trackers.
-				U8*	pu8SrcRow	= pu8Src;
-				U8*	pu8DstRow	= pu8Dst;
+				uint8_t*	pu8SrcRow	= pu8Src;
+				uint8_t*	pu8DstRow	= pu8Dst;
 
 				// Converts non-zero values to a 1 and increments ptr.
 				#define CHECK_NONZERO_INC(p)	((*(p)++ == 0) ? 0 : 1)
@@ -1917,7 +1919,7 @@ int16_t ConvertToBMP1(RImage* pImage)
 				pImage->m_type = RImage::BMP1;
 
 				// Set return value.
-				sRes = (int16_t)pImage->m_type;
+				sResult = (int16_t)pImage->m_type;
 				}
 			else
 				{
@@ -1934,7 +1936,7 @@ int16_t ConvertToBMP1(RImage* pImage)
 			break;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 

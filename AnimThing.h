@@ -79,7 +79,7 @@ class CAnimThing : public CThing
 		int32_t	m_lAnimTime;						// Cummulative animation time.
 		int32_t	m_lAnimPrevTime;					// Last animation time.
 														
-		U16			m_u16IdSendMsg;			// ID of CThing to send msg to when done.
+		uint16_t			m_u16IdSendMsg;			// ID of CThing to send msg to when done.
 		GameMessage	m_msg;						// Message to send to m_pthingSendMsg.
 
 	protected:
@@ -94,7 +94,7 @@ class CAnimThing : public CThing
 		CAnimThing(CRealm* pRealm)
 			: CThing(pRealm, CAnimThingID)
 			{
-			m_paachannel		= NULL;
+			m_paachannel		= nullptr;
 			m_sSuspend			= 0;
 			m_sLoop				= TRUE;
 			m_szResName[0]		= '\0';
@@ -123,11 +123,11 @@ class CAnimThing : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CAnimThing(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CExplode::Construct(): Couldn't construct CAnimThing (that's a bad thing)\n");
 				}
 			return sResult;

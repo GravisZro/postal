@@ -90,9 +90,9 @@ class CSentry : public CDoofus
 		static int16_t ms_sBurntBrightness;	// Brightness level when burnt
 		static int32_t ms_lMaxShootTime;			// Maximum in ms of continuous shooting.
 		static int32_t ms_lReselectDudeTime;	// Time before looking for a closer dude.
-		static U32 ms_u32WeaponIncludeBits;	// Weapons shot from sentry can hit this
-		static U32 ms_u32WeaponDontcareBits;// Weapons shot from sentry ignore these bits
-		static U32 ms_u32WeaponExcludeBits;	// Weapons shot from sentry do not hit this
+		static uint32_t ms_u32WeaponIncludeBits;	// Weapons shot from sentry can hit this
+		static uint32_t ms_u32WeaponDontcareBits;// Weapons shot from sentry ignore these bits
+		static uint32_t ms_u32WeaponExcludeBits;	// Weapons shot from sentry do not hit this
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
@@ -105,8 +105,8 @@ class CSentry : public CDoofus
 			m_sSuspend = 0;
 			m_dRot = 0;
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
-			m_panimCur = m_panimPrev = NULL;
-			m_panimCurBase	= NULL;
+			m_panimCur = m_panimPrev = nullptr;
+			m_panimCurBase	= nullptr;
 			m_sprite.m_pthing	= this;
 			m_sNumRounds = 0;
 			m_sRoundsPerShot = 0;
@@ -137,11 +137,11 @@ class CSentry : public CDoofus
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CSentry(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CSentry::Construct(): Couldn't construct CSentry (that's a bad thing)\n");
 				}
 			return sResult;

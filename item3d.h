@@ -99,8 +99,8 @@ class CItem3d : public CThing3d
 		// "Constant" values that we want to be able to tune using the editor
 
 		// Array of known animation base names.
-		static char*	ms_apszKnownAnimBaseNames[NumTypes];
-		static char*	ms_apszKnownAnimDescriptions[NumTypes];
+      static const char*	ms_apszKnownAnimBaseNames[NumTypes];
+      static const char*	ms_apszKnownAnimDescriptions[NumTypes];
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
@@ -149,11 +149,11 @@ class CItem3d : public CThing3d
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CItem3d(pRealm);
-			if (*ppNew == 0)
+			if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CItem3d::Construct(): Couldn't construct CItem3d!\n");
 				}
 
@@ -203,9 +203,9 @@ class CItem3d : public CThing3d
 			int16_t sY,						// In:  Starting Y position
 			int16_t sZ,						// In:  Starting Z position
 			ItemType type,					// In:  Known item type or Custom.
-			char*	pszCustomBaseName = NULL,	// In:  Required if type == Custom.
+         const char*	pszCustomBaseName = nullptr,	// In:  Required if type == Custom.
 														// Base name for custom type resources.
-			U16	u16IdParentInstance = CIdBank::IdNil);	// In:  Parent instance ID.
+			uint16_t	u16IdParentInstance = CIdBank::IdNil);	// In:  Parent instance ID.
 
 		// Message handling functions ////////////////////////////////////////////
 

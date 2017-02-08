@@ -34,12 +34,16 @@
 // to.
 //
 //////////////////////////////////////////////////////////////////////////////
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
+
 #define LADDER_CPP
 
 #include "RSPiX.h"
 #include <math.h>
 
-#include "Ladder.h"
+#include "ladder.h"
 #include "game.h"
 #include "reality.h"
 
@@ -112,7 +116,7 @@ int16_t CLadder::Load(								// Returns 0 if successfull, non-zero otherwise
 			}
 		else
 			{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CLadder::Load(): Error reading from file!\n");
 			}
 		}
@@ -151,7 +155,7 @@ int16_t CLadder::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CLadder::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 	{
-	return 0;
+  return SUCCESS;
 	}
 
 
@@ -160,7 +164,7 @@ int16_t CLadder::Startup(void)								// Returns 0 if successfull, non-zero othe
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CLadder::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 	{
-	return 0;
+  return SUCCESS;
 	}
 
 
@@ -207,7 +211,7 @@ int16_t CLadder::EditNew(								// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	
 	// Use specified position
 	m_dX = (double)sX;
@@ -228,12 +232,12 @@ int16_t CLadder::EditModify(void)
 	int16_t	sResult	= 0;
 
 	RGuiItem* pgui = RGuiItem::LoadInstantiate(FullPathVD(GUI_FILE_NAME));
-	if (pgui != NULL)
+  if (pgui != nullptr)
 		{
 		RGuiItem*	pguiLen		= pgui->GetItemFromId(GUI_ID_LEN);
 		RGuiItem*	pguiHeight	= pgui->GetItemFromId(GUI_ID_HEIGHT);
 		RGuiItem*	pguiRot		= pgui->GetItemFromId(GUI_ID_ROT);
-		if (pguiLen != NULL && pguiHeight != NULL && pguiRot != NULL)
+    if (pguiLen != nullptr && pguiHeight != nullptr && pguiRot != nullptr)
 			{
 			// Set text.
 			pguiLen->SetText("%hd", m_sLen);
@@ -298,7 +302,7 @@ int16_t CLadder::EditMove(								// Returns 0 if successfull, non-zero otherwis
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
 
-	return 0;
+  return SUCCESS;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +317,7 @@ void CLadder::EditRect(	// Returns nothiing.
 	prc->sW	= 10;	// Safety.
 	prc->sH	= 10;	// Safety.
 
-	if (m_sprite.m_pImage != NULL)
+  if (m_sprite.m_pImage != nullptr)
 		{
 		prc->sW	= m_sprite.m_pImage->m_sWidth;
 		prc->sH	= m_sprite.m_pImage->m_sHeight;
@@ -336,7 +340,7 @@ void CLadder::EditHotSpot(	// Returns nothiing.
 	*psX	= 0;	// Safety.
 	*psY	= 0;	// Safety.
 
-	if (m_sprite.m_pImage != NULL)
+  if (m_sprite.m_pImage != nullptr)
 		{
 		*psX	= m_sprite.m_pImage->m_sWidth / 2;
 		*psY	= m_sprite.m_pImage->m_sHeight / 2;
@@ -384,7 +388,7 @@ void CLadder::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CLadder::Init(void)	// Returns 0 on success.
 	{
-	int16_t	sRes	= GetResources();
+	int16_t	sResult	= GetResources();
 
 	// Set up collision object.
 	m_smashTop.m_bits								= CSmash::Ladder;
@@ -401,7 +405,7 @@ int16_t CLadder::Init(void)	// Returns 0 on success.
 	m_pRealm->m_smashatorium.Update(&m_smashTop);
 	m_pRealm->m_smashatorium.Update(&m_smashBottom);
 
-	return sRes;
+	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,7 +413,7 @@ int16_t CLadder::Init(void)	// Returns 0 on success.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CLadder::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Safe to call even if no resource.
 	FreeResources();
@@ -428,9 +432,9 @@ int16_t CLadder::GetResources(void)						// Returns 0 if successfull, non-zero o
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CLadder::FreeResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
-	if (m_sprite.m_pImage != NULL)
+  if (m_sprite.m_pImage != nullptr)
 		{
 		rspReleaseResource(&g_resmgrGame, &m_sprite.m_pImage);
 		}
@@ -450,7 +454,7 @@ bool CLadder::GetOn(		// Returns true, if able to get on,
 	{
 	bool	bGotOn	= true;	// Assume success.
 
-	if (m_pcharLadderBoy == NULL)
+  if (m_pcharLadderBoy == nullptr)
 		{
 		m_pcharLadderBoy	= pchar;
 		}
@@ -469,7 +473,7 @@ bool CLadder::GetOn(		// Returns true, if able to get on,
 ////////////////////////////////////////////////////////////////////////////////
 void CLadder::GetOff(void)	// Returns nothing.
 	{
-	m_pcharLadderBoy	= NULL;
+  m_pcharLadderBoy	= nullptr;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

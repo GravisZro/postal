@@ -48,7 +48,7 @@ int16_t CNetServer::Startup(								// Returns 0 if successfull, non-zero otherw
 	char* pszHostName,									// In:  Host name (max size is MaxHostName!!!)
 	RSocket::BLOCK_CALLBACK callback)				// In:  Blocking callback
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Do a reset to be sure we're starting at a good point
 	Reset();
@@ -75,10 +75,10 @@ int16_t CNetServer::Startup(								// Returns 0 if successfull, non-zero otherw
 		RSocket::typStream,
 		RSocket::optDontWaitOnClose | RSocket::optDontCoalesce | RSocket::optDontBlock,
 		callback);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		sResult = m_socketListen.Listen();
-		if (sResult == 0)
+		if (sResult == SUCCESS)
 			{
 
 			// Setup antenna socket, on which we receive broadcasts from potential
@@ -88,12 +88,12 @@ int16_t CNetServer::Startup(								// Returns 0 if successfull, non-zero otherw
 				RSocket::typDatagram,
 				RSocket::optDontBlock,
 				callback);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				// Must set broadcast mode even for sockets that are RECEIVING them.  Doesn't
 				// seem to make sense, but empericial results say we need to do this.
 				sResult = m_socketAntenna.Broadcast();
-				if (sResult == 0)
+				if (sResult == SUCCESS)
 					{
 
 					}
@@ -127,8 +127,6 @@ void CNetServer::Shutdown(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CNetServer::Update(void)
 	{
-	int16_t sResult = 0;
-
 	//------------------------------------------------------------------------------
 	// Accept new clients
 	//------------------------------------------------------------------------------
@@ -148,8 +146,8 @@ void CNetServer::Update(void)
 				if (m_socketListen.CanAcceptWithoutBlocking())
 					{
 					// Try to accept client's connection
-					int16_t serr = m_aClients[id].m_msgr.Accept(&m_socketListen, m_callback);
-					if (serr == 0)
+					int16_t sError = m_aClients[id].m_msgr.Accept(&m_socketListen, m_callback);
+					if (sError == SUCCESS)
 						{
 						// Upgrade state
 						m_aClients[id].m_state = CClient::Used;
@@ -158,7 +156,7 @@ void CNetServer::Update(void)
 						{
 						// If the return error indicates that it would have blocked, then something
 						// is not kosher since CanAcceptWithoutBlocking() just said it woulnd NOT block.
-						if (serr == RSocket::errWouldBlock)
+						if (sError == RSocket::errWouldBlock)
 							TRACE("CNetServer()::Update(): It waid it wouldn't block, but then said it would!\n");
 
 						// Don't return an actual error code from this function because we can't
@@ -190,11 +188,11 @@ void CNetServer::Update(void)
 		// we can ignore it as well.  Bad messages could come from a foreign app that is
 		// using the same port as us.  If we do get a message, the address of the sender
 		// will be recorded -- this gives us the host's address!
-		U8 buf1[4];
-		int32_t lReceived;
+		uint8_t buf1[4];
+      size_t lReceived;
 		RSocket::Address address;
-		int16_t serr = m_socketAntenna.ReceiveFrom(buf1, sizeof(buf1), &lReceived, &address);
-		if (serr == 0)
+		int16_t sError = m_socketAntenna.ReceiveFrom(buf1, sizeof(buf1), &lReceived, &address);
+		if (sError == SUCCESS)
 			{
 			// Validate the message to make sure it was sent by another app of this
 			// type, as opposed to some unknown app that happens to use the same port.
@@ -210,28 +208,28 @@ void CNetServer::Update(void)
 				// that sent it, so as long as the encoding and decoding of the bytes
 				// is the same, that entity will get the same value that it sent.  All
 				// other entities will see this as a meaningless value, which is fine.
-				U8 buf2[4 + 4 + sizeof(m_acHostName)];
+				uint8_t buf2[4 + 4 + sizeof(m_acHostName)];
 				buf2[0] = Net::BroadcastMagic0;
 				buf2[1] = Net::BroadcastMagic1;
 				buf2[2] = Net::BroadcastMagic2;
 				buf2[3] = Net::BroadcastMagic3;
-				buf2[4] = (U8)(m_lHostMagic & 0xff);
-				buf2[5] = (U8)((m_lHostMagic >>  8) & 0xff);
-				buf2[6] = (U8)((m_lHostMagic >> 16) & 0xff);
-				buf2[7] = (U8)((m_lHostMagic >> 24) & 0xff);
+				buf2[4] = (uint8_t)(m_lHostMagic & 0xff);
+				buf2[5] = (uint8_t)((m_lHostMagic >>  8) & 0xff);
+				buf2[6] = (uint8_t)((m_lHostMagic >> 16) & 0xff);
+				buf2[7] = (uint8_t)((m_lHostMagic >> 24) & 0xff);
 				strncpy((char*)&buf2[8], m_acHostName, sizeof(m_acHostName));
 
 				// Send the message directly to the sender of the previous message
-				int32_t lBytesSent;
-				int16_t serr = m_socketAntenna.SendTo(buf2, sizeof(buf2), &lBytesSent, &address);
-				if (serr == 0)
+            size_t lBytesSent;
+				int16_t sError = m_socketAntenna.SendTo(buf2, sizeof(buf2), &lBytesSent, &address);
+				if (sError == SUCCESS)
 					{
 					if (lBytesSent != sizeof(buf2))
 						TRACE("CNetServer::Update(): Error sending broadcast (wrong size)!\n");
 					}
 				else
 					{
-					if (serr != RSocket::errWouldBlock)
+					if (sError != RSocket::errWouldBlock)
 						TRACE("CNetServer::Update(): Error sending broadcast!\n");
 					}
 				}
@@ -240,7 +238,7 @@ void CNetServer::Update(void)
 			}
 		else
 			{
-			if (serr != RSocket::errWouldBlock)
+			if (sError != RSocket::errWouldBlock)
 				TRACE("CNetServer::Update(): Warning: Error receiving broadcast -- ignored!\n");
 			}
 		}
@@ -640,7 +638,7 @@ void CNetServer::GetMsg(
 						Net::ID id2;
 						int16_t sNumExpected = 0;
 						int16_t sNumReady = 0;
-						U16 mask = 0;
+						uint16_t mask = 0;
 						for (id2 = 0; id2 < Net::MaxNumIDs; id2++)
 							{
 							mask = (mask >> 1) & 0x7fff;
@@ -765,7 +763,7 @@ void CNetServer::SendMsg(
 // Send message to specified group of clients - only Joined clients are allowed!
 ////////////////////////////////////////////////////////////////////////////////
 void CNetServer::SendMsg(
-	U16 mask,												// In:  Bit-mask indicating who to send to
+	uint16_t mask,												// In:  Bit-mask indicating who to send to
 	NetMsg* pmsg)											// In:  Message to send
 	{
 	// Bit-mask determines who to send the message to
@@ -921,7 +919,7 @@ void CNetServer::SetupGame(
 void CNetServer::StartGame(
 	Net::ID idServer,										// In:  Server's client's ID
 	int16_t sRealmNum,										// In:  Realm number
-	char* pszRealmFile,									// In:  Realm file name
+   const char* pszRealmFile,									// In:  Realm file name
 	int16_t sDifficulty,									// In:  Difficulty
 	int16_t sRejuvenate,									// In:  Rejuvenate flag
 	int16_t sTimeLimit,										// In:  Time limit in minutes, or negative if none

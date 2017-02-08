@@ -549,6 +549,7 @@ class RChanCoreNothing : public RChanCore<datat>
 		void CreateItems(
 			int32_t lNumItems)										// In:  Number of items
 			{
+        UNUSED(lNumItems);
 			}
 
 
@@ -610,6 +611,7 @@ class RChanCoreNothing : public RChanCore<datat>
 		bool IsRealItem(											// Returns true if "real", false otherwise
 			int32_t lNum)												// In:  Item number
 			{
+        UNUSED(lNum);
 			return false;
 			}
 
@@ -622,14 +624,15 @@ class RChanCoreNothing : public RChanCore<datat>
 		// when the channel is first being created.  Looping flags have no affect on
 		// this function -- the specified item number is ASSUMED TO BE VALID!
 		//
-		// Some types of channels do not store discrete data items and will return 0
+      // Some types of channels do not store discrete data items and will return nullptr
 		// to indicate that the item could not be accessed.
 		//
 		////////////////////////////////////////////////////////////////////////////////
 		datat* GetItem(											// Returns value at specified time
 			int32_t lNum)												// In:  Item number
 			{
-			return 0;
+        UNUSED(lNum);
+         return nullptr;
 			}
 
 
@@ -649,6 +652,7 @@ class RChanCoreNothing : public RChanCore<datat>
 			int32_t lNum,												// In:  Item number
 			const datat* pdata)									// In:  Pointer to data to be added
 			{
+        UNUSED(lNum, pdata);
 			}
 
 
@@ -670,7 +674,8 @@ class RChanCoreNothing : public RChanCore<datat>
 		datat* GetAtTime(											// Returns pointer to value
 			int32_t lTime)												// In:  Channel time
 			{
-			return 0;
+        UNUSED(lTime);
+         return nullptr;
 			}
 
 
@@ -693,6 +698,7 @@ class RChanCoreNothing : public RChanCore<datat>
 		void SetTotalTime(
 			int32_t lTotalTime)										// In:  Total time
 			{
+        UNUSED(lTotalTime);
 			}
 
 
@@ -721,6 +727,7 @@ class RChanCoreNothing : public RChanCore<datat>
 		void SetResolution(
 			int32_t lResolution)										// In:  New resolution
 			{
+        UNUSED(lResolution);
 			}
 	};
 
@@ -804,14 +811,14 @@ class RChanCoreArray : public RChanCore<datat>
 			RFile* pFile,											// In:  RFile to load from
 			int16_t sFileVersion)									// In:  Channel file version number
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			
 			// Reset to get rid of any existing data
 			Reset();
 
 			// Call base class implimentation
 			sResult = RChanCore<datat>::Load(pFile, sFileVersion);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				// Read a bunch 'o stuff
 				pFile->Read(&m_lTotalTime);
@@ -821,15 +828,15 @@ class RChanCoreArray : public RChanCore<datat>
 					{
 					// Create array of items
 					m_pArray = new datat[m_lNumItems];
-					ASSERT(m_pArray != 0);
+               ASSERT(m_pArray != nullptr);
 
 					// Let each item load itself
-					for (int32_t l = 0; (l < m_lNumItems) && (sResult == 0); l++)
+					for (int32_t l = 0; (l < m_lNumItems) && (sResult == SUCCESS); l++)
 						sResult = rspAnyLoad(&(m_pArray[l]), pFile);
 					}
 				else
 					{
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("RChanCoreArray::Load(): Error reading from file!\n");
 					}
 				}
@@ -847,11 +854,11 @@ class RChanCoreArray : public RChanCore<datat>
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile)											// In:  RFile to save to
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			// Call base class implimentation
 			sResult = RChanCore<datat>::Save(pFile);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				// Save a bunch 'o stuff
 				pFile->Write(&m_lTotalTime);
@@ -859,7 +866,7 @@ class RChanCoreArray : public RChanCore<datat>
 				pFile->Write(&m_lNumItems);
 
 				// Let each item save itself
-				for (int32_t l = 0; (l < m_lNumItems) && (sResult == 0); l++)
+				for (int32_t l = 0; (l < m_lNumItems) && (sResult == SUCCESS); l++)
 					sResult = rspAnySave(&(m_pArray[l]), pFile);
 				}
 
@@ -941,6 +948,7 @@ class RChanCoreArray : public RChanCore<datat>
 		bool IsRealItem(											// Returns true if "real", false otherwise
 			int32_t lNum)												// In:  Item number
 			{
+        UNUSED(lNum);
 			// Every item is real
 			return true;
 			}
@@ -954,7 +962,7 @@ class RChanCoreArray : public RChanCore<datat>
 		// when the channel is first being created.  Looping flags have no affect on
 		// this function -- the specified item number is ASSUMED TO BE VALID!
 		//
-		// Some types of channels do not store discrete data items and will return 0
+      // Some types of channels do not store discrete data items and will return nullptr
 		// to indicate that the item could not be accessed.
 		//
 		////////////////////////////////////////////////////////////////////////////////
@@ -1085,7 +1093,7 @@ class RChanCoreArray : public RChanCore<datat>
 			{
 			Free();
 			m_pArray = new datat[lNum];
-			ASSERT(m_pArray != 0);
+         ASSERT(m_pArray != nullptr);
 			m_lNumItems = lNum;
 			}
 
@@ -1152,7 +1160,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 																		// This extra level of indirection makes it easy
 																		// to compress data items by allowing more than
 																		// one pointer to refer to the same data item.
-		U8* m_pArrayOfFlags;										// Pointer to array of flags.  If flag is 0, it
+		uint8_t* m_pArrayOfFlags;										// Pointer to array of flags.  If flag is 0, it
 																		// means it's pointing at it's own data item.  If
 																		// flag is 1, it means it's pointing at another
 																		// item that matched the original item -- in other
@@ -1218,14 +1226,14 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 			RFile* pFile,											// In:  RFile to load from
 			int16_t sFileVersion)									// In:  Channel file version number
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			
 			// Reset to get rid of any existing data
 			Reset();
 
 			// Call base class implimentation
 			sResult = RChanCore<datat>::Load(pFile, sFileVersion);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				// Read a bunch 'o stuff
 				pFile->Read(&m_lTotalTime);
@@ -1238,7 +1246,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 					ASSERT(m_pArrayOfPtrs);
 
 					// Create array of flags
-					m_pArrayOfFlags = new U8[m_lNumItems];
+					m_pArrayOfFlags = new uint8_t[m_lNumItems];
 					ASSERT(m_pArrayOfFlags);
 
 					// The file contains a value corresponding to each of our pointers.
@@ -1249,7 +1257,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 					// pointer that index specifies.  This way, multiple pointers can
 					// refer to the same data item, which is how this data is compressed.
 					m_lRealNumItems = 0;
-					for (int32_t l = 0; (l < m_lNumItems) && (sResult == 0); l++)
+					for (int32_t l = 0; (l < m_lNumItems) && (sResult == SUCCESS); l++)
 						{
 						int32_t lValue;
 						if (pFile->Read(&lValue) == 1)
@@ -1271,20 +1279,20 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 								else
 									{
 									TRACE("RChanCoreArrayOfPtrs::Load(): Internal error: Reference to item that hasn't been loaded yet!\n");
-									sResult = -1;
+									sResult = FAILURE;
 									}
 								}
 							}
 						else
 							{
 							TRACE("RChanCoreArrayOfPtrs::Load(): Error reading value from file!\n");
-							sResult = -1;
+							sResult = FAILURE;
 							}
 						}
 					}
 				else
 					{
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("RChanCoreArrayOfPtrs::Load(): Error reading from file!\n");
 					}
 				}
@@ -1302,11 +1310,11 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile)											// In:  RFile to save to
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			// Call base class implimentation
 			sResult = RChanCore<datat>::Save(pFile);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				// Save a bunch 'o stuff
 				pFile->Write(&m_lTotalTime);
@@ -1321,14 +1329,14 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 				// the data item we're pointing at, and we write that index.  Of course,
 				// in that case, we don't write the data item itself since it was already
 				// saved ealier.
-				for (int32_t l = 0; (l < m_lNumItems) && (sResult == 0); l++)
+				for (int32_t l = 0; (l < m_lNumItems) && (sResult == SUCCESS); l++)
 					{
-					if (m_pArrayOfFlags[l] == 0)
+               if (m_pArrayOfFlags[l] == 0)
 						{
 						// Write -1 followed by data item
 						pFile->Write((int32_t)-1);
 						sResult = pFile->Error();
-						if (sResult == 0)
+						if (sResult == SUCCESS)
 							sResult = rspAnySave(m_pArrayOfPtrs[l], pFile);
 						}
 					else
@@ -1349,7 +1357,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 						else
 							{
 							TRACE("RChanCoreArrayOfPtrs::Save(): Internal error: Couldn't find matching pointer!\n");
-							sResult = -1;
+							sResult = FAILURE;
 							}
 						}
 					}
@@ -1416,12 +1424,12 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 			for (int32_t i = 0; i < m_lNumItems; i++)
 				{
 				// Only if this isn't already compressed
-				if (m_pArrayOfFlags[i] == 0)
+            if (m_pArrayOfFlags[i] == 0)
 					{
 					for (int32_t j = i + 1; j < m_lNumItems; j++)
 						{
 						// Only if this isn't already compressed
-						if (m_pArrayOfFlags[j] == 0)
+                  if (m_pArrayOfFlags[j] == 0)
 							{
 							// Compare items
 							if (*m_pArrayOfPtrs[i] == *m_pArrayOfPtrs[j])
@@ -1488,7 +1496,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 			int32_t lNum)												// In:  Item number
 			{
 			// If flag is 0 then item is real
-			if (m_pArrayOfFlags[lNum] == 0)
+         if (m_pArrayOfFlags[lNum] == 0)
 				return true;
 			// Otherwise item if a copy
 			return false;
@@ -1503,7 +1511,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 		// when the channel is first being created.  Looping flags have no affect on
 		// this function -- the specified item number is ASSUMED TO BE VALID!
 		//
-		// Some types of channels do not store discrete data items and will return 0
+      // Some types of channels do not store discrete data items and will return nullptr
 		// to indicate that the item could not be accessed.
 		//
 		////////////////////////////////////////////////////////////////////////////////
@@ -1642,7 +1650,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 			ASSERT(m_pArrayOfPtrs);
 
 			// Create array of flags
-			m_pArrayOfFlags = new U8[m_lNumItems];
+			m_pArrayOfFlags = new uint8_t[m_lNumItems];
 			ASSERT(m_pArrayOfFlags);
 
 			// Create actual data items and mark each item as uncompressed
@@ -1669,19 +1677,19 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 				{
 				for(int32_t l = 0; l < m_lNumItems; l++)
 					{
-					if (m_pArrayOfFlags[l] == 0)
+               if (m_pArrayOfFlags[l] == 0)
 						delete m_pArrayOfPtrs[l];
-					m_pArrayOfPtrs[l] = 0;
+               m_pArrayOfPtrs[l] = nullptr;
 					}
 				}
 
 			// Delete array of pointers to data items
 			delete []m_pArrayOfPtrs;
-			m_pArrayOfPtrs = 0;
+         m_pArrayOfPtrs = nullptr;
 
 			// Delete array of flags
 			delete []m_pArrayOfFlags;
-			m_pArrayOfFlags = 0;
+         m_pArrayOfFlags = nullptr;
 			}
 	};
 
@@ -1751,9 +1759,9 @@ class RChannel
 		~RChannel()
 			{
 			Reset();
-			// If not NULL, this is safe.
+			// If not nullptr, this is safe.
 			delete m_pcore;
-			// No need to set to NULL, this object is done.
+			// No need to set to nullptr, this object is done.
 			}
 
 
@@ -1812,7 +1820,7 @@ class RChannel
 
 		////////////////////////////////////////////////////////////////////////////////
 		//
-		// Get channel name (could return NULL if no name has been assigned)
+		// Get channel name (could return nullptr if no name has been assigned)
 		//
 		////////////////////////////////////////////////////////////////////////////////
 		const char* Name(void)									// Returns pointer to channel's name
@@ -1841,12 +1849,12 @@ class RChannel
 		int16_t Load(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile)											// In:  RFile to load from
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			// Reset to get rid of any existing data
 			Reset();
 
-			U32 u32ID;
+			uint32_t u32ID;
 			if (pFile->Read(&u32ID) == 1)
 				{
 				// The original versions of RChannel did NOT use an ID or version number.
@@ -1881,19 +1889,19 @@ class RChannel
 							sResult = m_strName.Load(pFile);
 
 							// Let the core load the rest of the file
-							if (sResult == 0)
+							if (sResult == SUCCESS)
 								sResult = m_pcore->Load(pFile, m_sFileVersion);
 							}
 						else
 							{
 							TRACE("RChannel::Load(): Unsupported version number!\n");
-							sResult = -1;
+							sResult = FAILURE;
 							}
 						}
 					else
 						{
 						TRACE("RChannel::Load(): Couldn't read file version!\n");
-						sResult = -1;
+						sResult = FAILURE;
 						}
 					}
 				else
@@ -1921,14 +1929,14 @@ class RChannel
 					m_pcore = ConstructCore(m_type);
 
 					// Let the core load the rest of the file
-					if (sResult == 0)
+					if (sResult == SUCCESS)
 						sResult = m_pcore->Load(pFile, m_sFileVersion);
 					}
 				}
 			else
 				{
 				TRACE("RChannel::Load(): Couldn't read file ID!\n");
-				sResult = -1;
+				sResult = FAILURE;
 				}
 
 			return sResult;
@@ -1943,21 +1951,21 @@ class RChannel
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile)											// In:  RFile to save to
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			// Write header (ID and version)
-			pFile->Write((U32)RChannel_FileID);
+			pFile->Write((uint32_t)RChannel_FileID);
 			pFile->Write((int16_t)RChannel_FileVersion);
 
 			// Write RChannel type
 			pFile->Write((int16_t)m_type);
 
 			sResult = pFile->Error();
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				// Write data common to all channel types
 				sResult = m_strName.Save(pFile);
-				if (sResult == 0)
+				if (sResult == SUCCESS)
 					{
 					// Let the core save the rest of the file
 					sResult = m_pcore->Save(pFile);
@@ -2054,7 +2062,7 @@ class RChannel
 		// when the channel is first being created.  Looping flags have no affect on
 		// this function -- the specified item number is ASSUMED TO BE VALID!
 		//
-		// Some types of channels do not store discrete data items and will return 0
+      // Some types of channels do not store discrete data items and will return nullptr
 		// to indicate that the item could not be accessed.
 		//
 		////////////////////////////////////////////////////////////////////////////////
@@ -2205,7 +2213,7 @@ class RChannel
 					break;
 				}
 
-			TRACE("RChannel::ConstructCore(): Unsupported type (%ld), using RChanCoreNothing<datat> instead!\n", (int32_t)type);
+			TRACE("RChannel::ConstructCore(): Unsupported type (%i), using RChanCoreNothing<datat> instead!\n", (int32_t)type);
 			return new RChanCoreNothing<datat>;
 			}
 	};

@@ -59,7 +59,7 @@ void rspAlphaMaskBlit(RMultiAlpha* pX,RImage* pimMask,
 
 	// right here adjust things if you need to clip to other thatn the full dst im
 	if (rspSimpleClip(sSrcX,sSrcY,sDstX,sDstY,sDstW,sDstH,
-		rDstClip.sX,rDstClip.sY,rDstClip.sW,rDstClip.sH) == -1) return ; // clipped out
+      rDstClip.sX,rDstClip.sY,rDstClip.sW,rDstClip.sH) == FAILURE) return ; // clipped out
 	
 	short i,j;
 	long lSrcP = pimSrc->m_lPitch;
@@ -102,7 +102,7 @@ void rspAlphaBlit(RAlpha* pX,RImage* pimSrc,RImage* pimDst,short sDstX,short sDs
 
 	// right here adjust things if you need to clip to other thatn the full dst im
 	if (rspSimpleClip(sSrcX,sSrcY,sDstX,sDstY,sDstW,sDstH,0,0,
-		pimDst->m_sWidth,pimDst->m_sHeight) == -1) return ; // clipped out
+      pimDst->m_sWidth,pimDst->m_sHeight) == FAILURE) return ; // clipped out
 	
 	short i,j;
 	long lSrcP = pimSrc->m_lPitch;
@@ -139,7 +139,7 @@ void rspMaskBlit(RImage* pimSrc,RImage* pimDst,short sDstX,short sDstY)
 
 	// right here adjust things if you need to clip to other thatn the full dst im
 	if (rspSimpleClip(sSrcX,sSrcY,sDstX,sDstY,sDstW,sDstH,0,0,
-		pimDst->m_sWidth,pimDst->m_sHeight) == -1) return ; // clipped out
+      pimDst->m_sWidth,pimDst->m_sHeight) == FAILURE) return ; // clipped out
 	
 	short i,j;
 	long lSrcP = pimSrc->m_lPitch;
@@ -260,14 +260,14 @@ int16_t	sLoaded = FALSE;
 
 // See if chosen file is alpha based:
 void	Verify()
-	{
-	int16_t i;
+   {
 	sFirst = FALSE;
-	for (i=0;i < strlen((char*)sCheckSum1); i++) sCheckSum1[i] = 255 - sCheckSum1[i];
+   for (size_t i = 0; i < strlen((char*)sCheckSum1); i++)
+     sCheckSum1[i] = 255 - sCheckSum1[i];
 
 	FILE* fp = fopen((char*)sCheckSum1,"r");
 
-	if (fp == NULL) return;
+	if (fp == nullptr) return;
 
 	if (fgetc(fp) != 74) { fclose(fp); return; }
 	if (fgetc(fp) != 69) { fclose(fp); return; }
@@ -322,15 +322,19 @@ void test(RImage* pimF,RImage* pimB)
 	// Wait until user input
 	bool bContinue = TRUE;
 
-	int32_t	lTime = rspGetMilliseconds();
 	int32_t lKey = 0;
-	int32_t lPrevTime = lTime;
+#ifdef UNUSED_VARIABLES
+   int32_t	lTime = rspGetMilliseconds();
+   int32_t lPrevTime = lTime;
+#endif
 	rspSetMouse(sCenterX,sCenterY);
 
 	while (bContinue)
 		{
-		lPrevTime = lTime;
-		lTime = rspGetMilliseconds();
+#ifdef UNUSED_VARIABLES
+     lPrevTime = lTime;
+     lTime = rspGetMilliseconds();
+#endif
 
 		rspGetKey(&lKey);
 		if (lKey == RSP_SK_ESCAPE) bContinue = FALSE;
@@ -408,11 +412,13 @@ void test(RImage* pimF,RImage* pimB)
 	}
 
 void SetAll()
-	{
-	int16_t i;
+   {
+   for (size_t i = 0; i < strlen((char*)sCheckSum2); ++i)
+     sCheckSum2[i] = 255 - sCheckSum2[i];
 
-	for (i=0;i < strlen((char*)sCheckSum2); i++) sCheckSum2[i] = 255 - sCheckSum2[i];
-	for (i=0;i < strlen((char*)sCheckSum3); i++) pct[i] = 255 - sCheckSum3[i];
+   for (size_t i = 0; i < strlen((char*)sCheckSum3); ++i)
+     pct[i] = 255 - sCheckSum3[i];
+
 	RImage *pimF, *pimB;
 	if (rspGetResource(&g_resmgrSamples, (char*)sCheckSum2,&pimF) != SUCCESS) return;
 	if (rspGetResource(&g_resmgrShell, "credits/pile640.bmp",&pimB) != SUCCESS) 
@@ -420,9 +426,11 @@ void SetAll()
 		g_resmgrShell.Release(pimF);
 		return;
 		}
-	U8	Map[256];
-	for (i=0;i < 256;i++) Map[i] = uint8_t(i);
-	rspSetPaletteMaps(0,256,Map,Map,Map,sizeof(U8));
+	uint8_t	Map[256];
+   for (size_t i = 0; i < 256; ++i)
+     Map[i] = uint8_t(i);
+
+	rspSetPaletteMaps(0,256,Map,Map,Map,sizeof(uint8_t));
 
 	test(pimF,pimB);
 

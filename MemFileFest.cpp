@@ -85,12 +85,12 @@
 //////////////////////////////////////////////////////////////////////////////
 // Given a filename, open an RFile to the corresponding resource data.
 //////////////////////////////////////////////////////////////////////////////
-extern int16_t GetMemFileResource(	// Returns 0 on successful open.
+int16_t GetMemFileResource(	// Returns 0 on successful open.
 	const char*		pszResName,		// In:  Res filename.
 	RFile::Endian	endian,			// In:  Endian nature for RFile.
 	RFile*			pfile)			// In:  File to open with.
 	{
-	int16_t	sRes	= 1;	// Assume failure for simplicity.
+	int16_t sResult = FAILURE;	// Assume failure for simplicity.
 	ASSERT(pfile);
 	ASSERT(pszResName);
 
@@ -111,12 +111,12 @@ extern int16_t GetMemFileResource(	// Returns 0 on successful open.
 				bFound	= true;
 
 				// Open the resource data . . .
-				sRes	= pfile->Open(ms_memdisk[sIndex].pau8Res, ms_memdisk[sIndex].lResSize, endian);
+				sResult	= pfile->Open(ms_memdisk[sIndex].pau8Res, ms_memdisk[sIndex].lResSize, endian);
 				}
 			}
 		}
 	
-	return sRes;
+	return sResult;
 	}
 
 #endif	// ENABLE_PLAY_SPECIFIC_REALMS_ONLY

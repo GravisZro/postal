@@ -440,10 +440,10 @@ class CDude : public CCharacter
 
 		typedef struct
 			{
-			char*	pszWeaponName;
-			char*	pszAmmoName;
-			char*	pszStatusFormat;
-			char*	pszWeaponResName;
+         const char*	pszWeaponName;
+         const char*	pszAmmoName;
+         const char*	pszStatusFormat;
+         const char*	pszWeaponResName;
 			int16_t	sMinAmmoRequired;
 			} WeaponDetails;
 
@@ -460,11 +460,11 @@ class CDude : public CCharacter
 				// specified in the provided array of pointers to strings.
 				virtual								// Overridden here.
 				int16_t Get(							// Returns 0 on success.
-					char*		pszBaseFileName,	// In:  Base string for resource filenames.
-					char*		pszRigidName,		// In:  String to add for rigid transform channel
-														// or NULL for none.
-					char*		pszEventName,		// In:  String to add for event states channel
-														// or NULL for none.
+               const char*		pszBaseFileName,	// In:  Base string for resource filenames.
+               const char*		pszRigidName,		// In:  String to add for rigid transform channel
+														// or nullptr for none.
+               const char*		pszEventName,		// In:  String to add for event states channel
+														// or nullptr for none.
 					int16_t		sLoopFlags);		// In:  Looping flags to apply to all channels
 														// in this anim.
 
@@ -559,17 +559,17 @@ class CDude : public CCharacter
 		CCrawler		m_crawler;							// The device that allows us to slide
 																// along edges and stuff.
 
-		U16			m_u16IdChild;						// ID of generic child item.
+		uint16_t			m_u16IdChild;						// ID of generic child item.
 																// Used by State_PickUp currently.
 
 		CSprite2		m_TargetSprite;					// Targeting sprite to show what he is aiming
 																// at.
 
-		U16			m_u16KillerId;						// Instance ID of our killer.
+		uint16_t			m_u16KillerId;						// Instance ID of our killer.
 
-		U8				m_u8LastEvent;						// Last anim event.
+		uint8_t				m_u8LastEvent;						// Last anim event.
 
-		U16			m_idVictim;							// Instance ID of victim to be executed or
+		uint16_t			m_idVictim;							// Instance ID of victim to be executed or
 																// used as human shield.
 
 		bool			m_bDead;								// true, if dead; false otherwise.
@@ -607,9 +607,9 @@ class CDude : public CCharacter
 		static CStockPile	ms_stockpileDefault;
 
 		// Dude's default weapon collision bits ie. what its weapons can hit
-		static U32	ms_u32CollideBitsInclude;	// Bits that determine a collision
-		static U32	ms_u32CollideBitsDontcare;	// Bits that are ignored for collision
-		static U32	ms_u32CollideBitsExclude;	// Bits that invalidate collision
+		static uint32_t	ms_u32CollideBitsInclude;	// Bits that determine a collision
+		static uint32_t	ms_u32CollideBitsDontcare;	// Bits that are ignored for collision
+		static uint32_t	ms_u32CollideBitsExclude;	// Bits that invalidate collision
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
@@ -631,11 +631,11 @@ class CDude : public CCharacter
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CDude(pRealm);
-			if (*ppNew == 0)
+			if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CDude::Construct(): Couldn't construct CDude!\n");
 				}
 
@@ -732,12 +732,12 @@ class CDude : public CCharacter
 		// This should be done when the character releases the weapon it's
 		// shooting.
 		virtual			// Overriden here.
-		CWeapon* ShootWeapon(				// Returns the weapon ptr or NULL.
+		CWeapon* ShootWeapon(				// Returns the weapon ptr or nullptr.
 			CSmash::Bits bitsInclude,
 			CSmash::Bits bitsDontcare,
 			CSmash::Bits bitsExclude);
 
-		CWeapon* ShootWeapon(void);		// Returns the weapoin ptr or NULL.
+		CWeapon* ShootWeapon(void);		// Returns the weapoin ptr or nullptr.
 
 		// Determine if the dude is dead.
 		bool IsDead(void)	// Returns true, if dead; false otherwise.
@@ -850,7 +850,7 @@ class CDude : public CCharacter
 		// Receive damage.
 		void Damage(						// Returns nothing.
 			int16_t	sHitPoints,				// Hit points of damage to do.
-			U16	u16ShooterId);			// In:  Thing responsible for damage.
+			uint16_t	u16ShooterId);			// In:  Thing responsible for damage.
 
 		// Start the brain splat anim on its way.
 		void StartBrainSplat(void);	// Returns nothing.
@@ -873,13 +873,13 @@ class CDude : public CCharacter
 		void ShowTarget(void);
 
 		// Drop a powerup with the settings described by the specified stockpile.
-		CPowerUp* DropPowerUp(				// Returns new powerup on success; NULL on failure.
+		CPowerUp* DropPowerUp(				// Returns new powerup on success; nullptr on failure.
 			CStockPile*	pstockpile,			// In:  Settings for powerup.
 			bool			bCurWeaponOnly);	// In:  true, if only the current weapon should be
 													// in the powerup; false, if all.
 
 		// Create a cheat powerup.
-		CPowerUp* CreateCheat(			// Returns new powerup on success; NULL on failure.
+		CPowerUp* CreateCheat(			// Returns new powerup on success; nullptr on failure.
 			CStockPile*	pstockpile);	// In:  Settings for powerup.
 
 		// Play a step noise if the event is different from the last.
@@ -895,7 +895,7 @@ class CDude : public CCharacter
 		// Take a powerup.
 		void TakePowerUp(					// Returns nothing.
 			CPowerUp**	pppowerup);		// In:  Power up to take from.
-												// Out: Ptr to powerup, if it persisted; NULL otherwise.
+												// Out: Ptr to powerup, if it persisted; nullptr otherwise.
 
 		// Break a powerup open and toss it.
 		void TossPowerUp(					// Returns nothing.
@@ -915,7 +915,7 @@ class CDude : public CCharacter
 		// Get the next child flag item after the specified flag item.
 		CFlag* GetNextFlag(			// Returns the next flag item after pflag.
 			CFlag*	pflag);			// In:  The flag to get the follower of.
-											// NULL for first child flag.
+											// nullptr for first child flag.
 		
 		// Drop all child flag items.
 		void DropAllFlags(

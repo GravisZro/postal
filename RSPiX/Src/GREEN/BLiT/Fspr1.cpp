@@ -16,12 +16,12 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
 #include "System.h"
-//********************************************
+// ********************************************
 //*** This file should be called "ToBMP1"
 //*** Currently, You can BLiT FSPR1 scaled and
 //*** unscaled into a BMP1.
 //       ( support for FSRP8 NYI )
-//********************************************
+// ********************************************
 
 #ifdef PATHS_IN_INCLUDES
 	#include "GREEN/BLiT/BLIT.H"
@@ -37,26 +37,26 @@
 
 #include <string.h>
 
-//***************************************************************************
+// ***************************************************************************
 // Mimicking the success of FSPR8, the newest FSPR1 is GREATLY simplified.  
 // The result is that large images with runs above 254 will have worse
 // compression, and decode slower, but images with runs less than 255
 // will decode faster.  Also, simplified encoding/decoding will enhance
 // portability.  To monitor this inefficiency, it will return the number
 // of overruns.
-//***************************************************************************
+// ***************************************************************************
 // THIS CHANGE REPRESENTS FSPR1 as of 9/23/96
-//***************************************************************************
+// ***************************************************************************
 // FILE note... Mac compatibility seems to work using ASCII (printf/scanf)
 // provided the PC opens the file using "wb" and adds its own newlines.
-//***************************************************************************
+// ***************************************************************************
 // FONT note:  Font specific information will NOT be stored in the FSPR1
 // itself, but in the CFNT Letter description associated with the FSPR1.
 // UPDATE **** Some font info will be in there ...
 // The new conversion does NOT assume the method of lasso, so that you 
 // can "capture" regions of a larger BMP (useful for fonts.)  The default is
 // to convert the BMP REGION AS IS, including padding around the edges.
-//***************************************************************************
+// ***************************************************************************
 // NOTE: Unlike FSPR8, the palette will NOT be copied or preserved.
 // This is based on the idea that since all the color information is
 // lost from the image, it isn't worth taking up space with the palette,
@@ -73,26 +73,26 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf);
 
 typedef	struct
 	{
-	U32	u32TransparentColor;	// ConvertTo 
-	S16	sX,sY,sW,sH;			// ConvertTo (-1 == don't use)
-	RImage** ppimNew;				// Create a separate CImage if not NULL!
-	U32	u32ForeColor;			// ConvertFrom
-	U32	u32BackColor;			// ConvertFrom (if s16Transparent==FALSE)
-	S16	s16Transparent;		// ConvertFrom (flag)
-	S16	sOverRun;				// Statistical info!
+	uint32_t	u32TransparentColor;	// ConvertTo 
+	int16_t	sX,sY,sW,sH;			// ConvertTo (-1 == don't use)
+   RImage** ppimNew;				// Create a separate CImage if not nullptr!
+	uint32_t	u32ForeColor;			// ConvertFrom
+	uint32_t	u32BackColor;			// ConvertFrom (if s16Transparent==FALSE)
+	int16_t	s16Transparent;		// ConvertFrom (flag)
+	int16_t	sOverRun;				// Statistical info!
 	} ConversionInfoFSPR1;
 
 ConversionInfoFSPR1 gFSPR1 = 
 	{
-	(U32) 0,
-	(S16) -1,
-	(S16) -1,
-	(S16) -1,
-	(S16) -1,
-	(RImage**) NULL,
-	(U32)	0xffffff01,	// And the color to the correct depth
-	(U32)	0,
-	(S16) TRUE
+	(uint32_t) 0,
+	(int16_t) -1,
+	(int16_t) -1,
+	(int16_t) -1,
+	(int16_t) -1,
+   (RImage**) nullptr,
+	(uint32_t)	0xffffff01,	// And the color to the correct depth
+	(uint32_t)	0,
+	(int16_t) TRUE
 	}; // Defaults...
 
 void ResetFSPR1();
@@ -102,7 +102,7 @@ void ResetFSPR1()	// only traits DESIRABLE to reset between Converts
 	gFSPR1.sY=-1;
 	gFSPR1.sW=-1;
 	gFSPR1.sH=-1;
-	gFSPR1.ppimNew=NULL;
+   gFSPR1.ppimNew=nullptr;
 	}
 
 int16_t GetOverRuns();
@@ -112,11 +112,11 @@ int16_t GetOverRuns() { return gFSPR1.sOverRun; }
 
 void SetConvertToFSPR1
 	(	
-	U32	u32TransparentColor,
-	S16	sX,	// Use (-1) to use default value
-	S16	sY,	// Use (-1) to use default value
-	S16	sW,	// Use (-1) to use default value
-	S16	sH,	// Use (-1) to use default value
+	uint32_t	u32TransparentColor,
+	int16_t	sX,	// Use (-1) to use default value
+	int16_t	sY,	// Use (-1) to use default value
+	int16_t	sW,	// Use (-1) to use default value
+	int16_t	sH,	// Use (-1) to use default value
 	RImage**	ppimCopy
 	)
 	{
@@ -130,9 +130,9 @@ void SetConvertToFSPR1
 
 void SetConvertFromFSPR1
 	(
-	U32	u32ForeColor,
-	S16	sTransparent,
-	U32	u32BackColor	// matters only if sTransparent = FALSE
+	uint32_t	u32ForeColor,
+	int16_t	sTransparent,
+	uint32_t	u32BackColor	// matters only if sTransparent = FALSE
 	)
 	{
 	gFSPR1.u32ForeColor = u32ForeColor;
@@ -142,7 +142,7 @@ void SetConvertFromFSPR1
 
 //-------------------  HOOK into the CImage world ------------------------
 IMAGELINKLATE(FSPR1,ConvertToFSPR1,ConvertFromFSPR1,
-				  LoadFSPR1,SaveFSPR1,NULL,DeleteFSPR1);
+              LoadFSPR1,SaveFSPR1,nullptr,DeleteFSPR1);
 
 int16_t		DeleteFSPR1(RImage* pImage) // from CImage ONLY
 	{
@@ -202,7 +202,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 	lMaxSize = (lMaxSize + 15) & ~15; // 128 bit alignment
 
 	uint8_t*	pCodeBuf = (uint8_t*) calloc(1,lMaxSize);
-	if (pCodeBuf == NULL)
+   if (pCodeBuf == nullptr)
 		{
 		TRACE("ConvertToFSPR1: Out of memory ERROR!");
 		ResetFSPR1();
@@ -223,7 +223,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 	//-------------------- COMPRESS IT! --------------------
 	for (y=0;y<sH;y++)
 		{
-		//********************* Do a line: *********************
+		// ********************* Do a line: *********************
 		pBuf = pBufLine;
 		sBlank = TRUE;
 		sLineLen = sLineW;
@@ -237,7 +237,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 				pBuf++; sCount++; sLineLen--;
 				}
 
-			//************ CHECK for EOL in a skip run:
+			// ************ CHECK for EOL in a skip run:
 			if (!sLineLen) // EOL:
 				{
 				if (sBlank == TRUE)	// nothing on this line, write nothing!
@@ -249,7 +249,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 
 			// ELSE... Not a blank line... enter skip line count and 
 			// then the clear run count!
-			//************ FILL IN POSSIBLE SKIPPED BLANK LINES
+			// ************ FILL IN POSSIBLE SKIPPED BLANK LINES
 			if (sBlankLineCount > 0) // Now add in the blank line skip code:
 				{
 				while (sBlankLineCount > 254)
@@ -311,11 +311,11 @@ int16_t ConvertToFSPR1(RImage* pImage)
 	*pCode++ = 255;
 	*pCode++ = 255;
 
-	//****************** SHRINK THE BUFFER!
+	// ****************** SHRINK THE BUFFER!
 	int32_t lCompressedSize = pCode - pCodeBuf + 1;
 	int32_t lAlignSize = (lCompressedSize + 15) & ~15;
 	uint8_t* pNewCodeBuf = (uint8_t*) calloc(1,lAlignSize); //+ Free problem
-	if (pNewCodeBuf == NULL)
+   if (pNewCodeBuf == nullptr)
 		{
 		TRACE("ConvertToFSPR1: Out of memory ERROR!");
 		free(pCodeBuf);
@@ -330,7 +330,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 		}
 	free(pCodeBuf);
 	gFSPR1.sOverRun = sOverRun; // for diagnostics
-	//******************************************************************
+	// ******************************************************************
 	//-------  Let's make a new Image!
 	RImage* pimNew = new RImage;
 	pimNew->m_type = RImage::FSPR1;
@@ -349,8 +349,8 @@ int16_t ConvertToFSPR1(RImage* pImage)
 	pimNew->m_sDepth = (int16_t)8;
 	pimNew->m_lPitch = (int32_t)pimNew->m_sWidth; // Pitch is meaningless here!
 
-	//*********************  should we transfer it over?  **************
-	if (gFSPR1.ppimNew != NULL) // make a copy:
+	// *********************  should we transfer it over?  **************
+   if (gFSPR1.ppimNew != nullptr) // make a copy:
 		{
 		*(gFSPR1.ppimNew) = pimNew;
 		ResetFSPR1();
@@ -367,7 +367,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 	pImage->m_ulSize = 0;	// BLiT needs to deal with copying, etc....
 	pImage->m_type = RImage::FSPR1;
 	// free the copy header:
-	pimNew->m_pSpecialMem = NULL;
+   pimNew->m_pSpecialMem = nullptr;
 	delete pimNew; // it's gone!
 
 	return RImage::FSPR1;
@@ -385,7 +385,7 @@ void _rspBLiT(uint8_t ucColor,RImage* pimSrc,RImage* pimDst,
 
 #ifdef _DEBUG
 	
-	if (pimSrc->m_pSpecialMem == NULL)
+   if (pimSrc->m_pSpecialMem == nullptr)
 		{
 		TRACE("_rspBLiT (FSPR1): corrupted source image!\n");
 		return;
@@ -415,7 +415,7 @@ void _rspBLiT(uint8_t ucColor,RImage* pimSrc,RImage* pimDst,
 			{
 			if ((ucCount = *pCode++) == 255) break;	// DONE DRAWING!!!!!!
 			pDstLine += lP * ucCount; // Advance n lines
-			continue; ///********** Start next scanline!
+			continue; /// ********** Start next scanline!
 			}
 
 		do	{ // Draw the scanline!
@@ -457,7 +457,7 @@ int16_t		ConvertFromFSPR1(RImage* pImage)
 
 	// Now jettison the FSPR1 data:
 	delete pHead;
-	pImage->m_pSpecial = pImage->m_pSpecialMem = NULL;
+   pImage->m_pSpecial = pImage->m_pSpecialMem = nullptr;
 
 	return (int16_t)pImage->m_type;
 	}
@@ -467,7 +467,7 @@ int16_t		ConvertFromFSPR1(RImage* pImage)
 //
 int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	{
-	int32_t	lBogus1	= pcf->Tell();
+//	int32_t	lBogus1	= pcf->Tell();
 
 	//------------------
 	// Initial Security:
@@ -479,17 +479,17 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	if (strcmp(szTemp,"__FSPR1__")) // not equal
 		{
 		TRACE("Load FSPR1: Not correct file type!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	// Check Version:
-	U16 u16Temp;
+	uint16_t u16Temp;
 	pcf->Read(&u16Temp);
 
 	if (u16Temp != ((3<<8) + 5) )
 		{
 		TRACE("Load FSPR1: This is an older FSPR1 format!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------
@@ -499,7 +499,7 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	RSpecialFSPR1* pSpec = new RSpecialFSPR1;
 	pImage->m_pSpecialMem = pImage->m_pSpecial = (uint8_t*)pSpec;
 
-	pcf->Read((U32*)(&pSpec->m_OldType));
+	pcf->Read((uint32_t*)(&pSpec->m_OldType));
 	pcf->Read(&pSpec->m_lSize);
 	pcf->Read(&pSpec->m_u16ASCII);
 	pcf->Read(&pSpec->m_s16KernL); // True type compatibilit
@@ -511,7 +511,7 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// Reserved for future expansion:
-	U32 u32Temp[4];
+	uint32_t u32Temp[4];
 
 	pcf->Read(u32Temp,4); // 16 bytes reserved as of version 3.5
 
@@ -520,8 +520,8 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// Now the actual data, which needs no alignment:
-	pSpec->m_pCode = (U8*) malloc(pSpec->m_lSize);    //+ Not freed!
-	pcf->Read((U8*)(pSpec->m_pCode),pSpec->m_lSize);
+	pSpec->m_pCode = (uint8_t*) malloc(pSpec->m_lSize);    //+ Not freed!
+	pcf->Read((uint8_t*)(pSpec->m_pCode),pSpec->m_lSize);
 
 	return SUCCESS;
 	}
@@ -536,7 +536,7 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	if (!pSpec)
 		{
 		TRACE("Save FSPR1: Bad FSPR1!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------
@@ -544,7 +544,7 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	pcf->Write("__FSPR1__"); // image type
-	U16 version = (U16)((3<<8) + 5); // Sprite incarnation 3, File Format 5
+	uint16_t version = (uint16_t)((3<<8) + 5); // Sprite incarnation 3, File Format 5
 	pcf->Write(&version);
 
 	//------------------
@@ -552,7 +552,7 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// NOTE: Some font info is stored here:
-	pcf->Write((U32*)(&(pSpec->m_OldType)));
+	pcf->Write((uint32_t*)(&(pSpec->m_OldType)));
 	pcf->Write(&(pSpec->m_lSize));
 	pcf->Write(&(pSpec->m_u16ASCII));
 	pcf->Write(&(pSpec->m_s16KernL)); // True type compatibilit
@@ -564,7 +564,7 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// Reserved for future expansion
-	U32 reserved[4] = {0,0,0,0};
+	uint32_t reserved[4] = {0,0,0,0};
 	pcf->Write(reserved,4); // 16 bytes reserved as of version 3.5
 
 	//------------------
@@ -572,19 +572,19 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// Now the actual data, which needs no alignment:
-	pcf->Write((U8*)pSpec->m_pCode,pSpec->m_lSize);
+	pcf->Write((uint8_t*)pSpec->m_pCode,pSpec->m_lSize);
 
 	return SUCCESS;
 	}
 
-//************************************************************
-//*****************  BLiTting onto BMP8's  *******************
-//************************************************************
+// ************************************************************
+// *****************  BLiTting onto BMP8's  *******************
+// ************************************************************
 
 
-//************************************************************
-//*********************  NON-SCALING!  ***********************
-//************************************************************
+// ************************************************************
+// *********************  NON-SCALING!  ***********************
+// ************************************************************
 // 8-bit color for now!
 
 // Doesn't clip...
@@ -604,22 +604,22 @@ int16_t rspBlit(
 	{
 #ifdef _DEBUG
 
-	if ((pimSrc == NULL) || (pimDst == NULL))
+   if ((pimSrc == nullptr) || (pimDst == nullptr))
 		{
 		TRACE("BLiT: null CImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_type != RImage::FSPR1)
 		{
 		TRACE("BLiT: This form of BLiT is designed for FSPR1 type images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimDst->m_sDepth > 8)
 		{
 		TRACE("BLiT: TC sprites are not YET implemented for FSPR1.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -649,7 +649,7 @@ int16_t rspBlit(
 		sClipB = sDstY + sH - prDst->sY - prDst->sH; // positive = clipped
 		if (sClipB > 0) { sH -= sClipB; }
 
-		if ( (sW <= 0) || (sH <= 0) ) return -1; // clipped out!
+      if ( (sW <= 0) || (sH <= 0) ) return FAILURE; // clipped out!
 		}
 	else	
 		{
@@ -664,7 +664,7 @@ int16_t rspBlit(
 		sClipB = sDstY + sH - pimDst->m_sHeight; // positive = clipped
 		if (sClipB > 0) sH -= sClipB; // positive = clipped
 
-		if ((sW <= 0) || (sH <= 0)) return -1; // fully clipped
+      if ((sW <= 0) || (sH <= 0)) return FAILURE; // fully clipped
 		}
 		
 	// Make positive:
@@ -673,7 +673,7 @@ int16_t rspBlit(
 	if (sClipT < 0) sClipT = 0;
 	if (sClipB < 0) sClipB = 0;
 
-	//**************  INSERT BUFFER HOOKS HERE!  ************************
+	// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	// do OS based copying!
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
@@ -689,7 +689,7 @@ int16_t rspBlit(
 	// IN THIS IMPLEMENTATION, we must do LOCK, BLiT, UNLOCK, so I
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
 
 	switch (sBlitTypeDst) // 0 = normal image
 		{
@@ -700,7 +700,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;			
@@ -714,7 +714,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;	
@@ -727,7 +727,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OffScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -739,14 +739,14 @@ int16_t rspBlit(
 
 		default:
 			TRACE("BLiT: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 //BLIT_PRELOCKED:
 
 	// Check for locking error:
 	if (!pimDst->m_pData)
 		{
-		TRACE("BLiT: NULL data - possible locking error.\n");
+      TRACE("BLiT: nullptr data - possible locking error.\n");
 		return FAILURE;
 		}
 
@@ -757,14 +757,14 @@ int16_t rspBlit(
 	const uint8_t FF = (uint8_t)255;
 
 
-	//***********************************************************
-	//*****************  AT LAST!   CODE!  **********************
-	//***********************************************************
+	// ***********************************************************
+	// *****************  AT LAST!   CODE!  **********************
+	// ***********************************************************
 	//
 	
-	//***********************************************************
-	//*********  No clip case!
-	//***********************************************************
+	// ***********************************************************
+	// *********  No clip case!
+	// ***********************************************************
 	if ( (sClipL|sClipR) != (uint8_t)0)	// FULL clip case!
 		{
 		TRACE("BLiT: FSPR1=>BMP8, clipping NYI!\n");
@@ -816,8 +816,8 @@ int16_t rspBlit(
 		}
 
 
-	//***********************************************************
-	//*******************************************************************
+	// ***********************************************************
+	// *******************************************************************
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
 
@@ -825,9 +825,9 @@ int16_t rspBlit(
 
 #endif
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 	switch (sNeedToUnlock)
 		{
 		case 0: // nothing to unlock
@@ -850,18 +850,18 @@ int16_t rspBlit(
 		}
 
 //BLIT_DONTUNLOCK:	
-	return 0;
+	return SUCCESS;
 	}
 
-//************************************************************
-//************************************************************
-//************************************************************
-//************************************************************
-//***********************  SCALING!  *************************
-//************************************************************
-//************************************************************
-//************************************************************
-//************************************************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
+// ***********************  SCALING!  *************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
 // 8-bit color for now!
 
 // Doesn't clip...
@@ -883,35 +883,35 @@ int16_t rspBlit(
 	{
 #ifdef _DEBUG
 
-	if ((pimSrc == NULL) || (pimDst == NULL))
+   if ((pimSrc == nullptr) || (pimDst == nullptr))
 		{
 		TRACE("BLiT: null CImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_type != RImage::FSPR1)
 		{
 		TRACE("BLiT: This form of BLiT is designed for FSPR1 type images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimDst->m_sDepth > 8)
 		{
 		TRACE("BLiT: TC sprites are not YET implemented for FSPR1.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	/*
 	if ( (sDstH > pimSrc->lHeight) || (sDstW > pimSrc->lWidth))
 		{
 		//TRACE("BLiT: Magnifying an FSPR1 NYI.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ( (sDstW < 1) || (sDstH < 1) )
 		{
 		//TRACE("BLiT: Zero or negative area passed.\n");
-		return -1;
+      return FAILURE;
 		}
 	*/
 
@@ -947,7 +947,7 @@ int16_t rspBlit(
 		sClipB = sDstY + sH - prDst->sY - prDst->sH; // positive = clipped
 		if (sClipB > 0) { sH -= sClipB; }
 
-		if ( (sW <= 0) || (sH <= 0) ) return -1; // clipped out!
+      if ( (sW <= 0) || (sH <= 0) ) return FAILURE; // clipped out!
 		}
 	else	
 		{
@@ -962,7 +962,7 @@ int16_t rspBlit(
 		sClipB = sDstY + sH - pimDst->m_sHeight; // positive = clipped
 		if (sClipB > 0) sH -= sClipB; // positive = clipped
 
-		if ((sW <= 0) || (sH <= 0)) return -1; // fully clipped
+      if ((sW <= 0) || (sH <= 0)) return FAILURE; // fully clipped
 		}
 		
 	// Make positive:
@@ -971,7 +971,7 @@ int16_t rspBlit(
 	if (sClipT < 0) sClipT = 0;
 	if (sClipB < 0) sClipB = 0;
 
-	//**************  INSERT BUFFER HOOKS HERE!  ************************
+	// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	// do OS based copying!
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
@@ -987,7 +987,7 @@ int16_t rspBlit(
 	// IN THIS IMPLEMENTATION, we must do LOCK, BLiT, UNLOCK, so I
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
 
 	switch (sBlitTypeDst) // 0 = normal image
 		{
@@ -998,7 +998,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;			
@@ -1012,7 +1012,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -1025,7 +1025,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OffScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -1037,14 +1037,14 @@ int16_t rspBlit(
 
 		default:
 			TRACE("BLiT: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 //BLIT_PRELOCKED:
 
 	// Check for locking error:
 	if (!pimDst->m_pData)
 		{
-		TRACE("BLiT: NULL data - possible locking error.\n");
+      TRACE("BLiT: nullptr data - possible locking error.\n");
 		return FAILURE;
 		}
 
@@ -1061,7 +1061,7 @@ int16_t rspBlit(
 	RFracU16 frOldX = {0};
 	RFracU16 frOldY = {0},frY = {0};
 
-	RFracU16 *afrSkipX=NULL,*afrSkipY=NULL;
+   RFracU16 *afrSkipX=nullptr,*afrSkipY=nullptr;
 	afrSkipX = rspfrU16Strafe256(sDstW,sDenX);
 	afrSkipY = rspfrU16Strafe256(sDstH,sDenY);
 	// Make magnification possible:
@@ -1070,15 +1070,15 @@ int16_t rspBlit(
 	for (i=1;i<(afrSkipY[1].mod + 2);i++) 
 		alDstSkip[i] = alDstSkip[i-1] + lDstP;
 
-	//***********************************************************
-	//*****************  AT LAST!   CODE!  **********************
-	//***********************************************************
+	// ***********************************************************
+	// *****************  AT LAST!   CODE!  **********************
+	// ***********************************************************
 	// 
 	int16_t sCount; // to allow horizontal magnification > 255...
 
-	//***********************************************************
-	//*********  No clip case!
-	//***********************************************************
+	// ***********************************************************
+	// *********  No clip case!
+	// ***********************************************************
 	if ( (sClipL|sClipR) != (uint8_t)0)	// FULL clip case!
 		{
 		TRACE("BLiT: FSPR1=>BMP8 + SCALE, clipping NYI!\n");
@@ -1134,8 +1134,8 @@ int16_t rspBlit(
 	free(afrSkipX);
 	free(afrSkipY);
 
-	//***********************************************************
-	//*******************************************************************
+	// ***********************************************************
+	// *******************************************************************
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
 
@@ -1143,9 +1143,9 @@ int16_t rspBlit(
 
 #endif
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 	switch (sNeedToUnlock)
 		{
 		case 0: // nothing to unlock
@@ -1168,7 +1168,7 @@ int16_t rspBlit(
 		}
 
 //BLIT_DONTUNLOCK:	
-	return 0;
+	return SUCCESS;
 	}
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1177,9 +1177,9 @@ int16_t rspBlit(
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-//************************************************************
-//*********************  NON-SCALING!  ***********************
-//************************************************************
+// ************************************************************
+// *********************  NON-SCALING!  ***********************
+// ************************************************************
 // 8-bit color for now!
 
 // Doesn't clip...
@@ -1199,22 +1199,22 @@ int16_t rspBlit(
 	{
 #ifdef _DEBUG
 
-	if ((pimSrc == NULL) || (pimDst == NULL))
+   if ((pimSrc == nullptr) || (pimDst == nullptr))
 		{
 		TRACE("BLiT: null CImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_type != RImage::FSPR1)
 		{
 		TRACE("BLiT: This form of BLiT is designed for FSPR1 type images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimDst->m_sDepth > 8)
 		{
 		TRACE("BLiT: TC sprites are not YET implemented for FSPR1.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -1223,7 +1223,7 @@ int16_t rspBlit(
 	uint8_t	ucForeColor = (uint8_t) ulForeColor;
 	int32_t	lDstP = pimDst->m_lPitch;
 
-	//**************  INSERT BUFFER HOOKS HERE!  ************************
+	// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	// do OS based copying!
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
@@ -1239,7 +1239,7 @@ int16_t rspBlit(
 	// IN THIS IMPLEMENTATION, we must do LOCK, BLiT, UNLOCK, so I
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
 
 	switch (sBlitTypeDst) // 0 = normal image
 		{
@@ -1250,7 +1250,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;		
@@ -1264,7 +1264,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -1277,7 +1277,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OffScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -1289,14 +1289,14 @@ int16_t rspBlit(
 
 		default:
 			TRACE("BLiT: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 //BLIT_PRELOCKED:
 
 	// check for locking error:
 	if (!pimDst->m_pData)
 		{
-		TRACE("Blit: NULL data - possible locking error.\n");
+      TRACE("Blit: nullptr data - possible locking error.\n");
 		return FAILURE;
 		}
 
@@ -1307,14 +1307,14 @@ int16_t rspBlit(
 	const uint8_t FF = (uint8_t)255;
 
 
-	//***********************************************************
-	//*****************  AT LAST!   CODE!  **********************
-	//***********************************************************
+	// ***********************************************************
+	// *****************  AT LAST!   CODE!  **********************
+	// ***********************************************************
 	//
 	
-	//***********************************************************
-	//*********  No clip case!
-	//***********************************************************
+	// ***********************************************************
+	// *********  No clip case!
+	// ***********************************************************
 
 	// Add Italics ability:
 	int16_t* psOffX = psLineOffset;
@@ -1343,8 +1343,8 @@ int16_t rspBlit(
 		}
 
 
-	//***********************************************************
-	//*******************************************************************
+	// ***********************************************************
+	// *******************************************************************
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
 
@@ -1352,9 +1352,9 @@ int16_t rspBlit(
 
 #endif
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 	switch (sNeedToUnlock)
 		{
 		case 0: // nothing to unlock
@@ -1377,18 +1377,18 @@ int16_t rspBlit(
 		}
 
 //BLIT_DONTUNLOCK:	
-	return 0;
+	return SUCCESS;
 	}
 
-//************************************************************
-//************************************************************
-//************************************************************
-//************************************************************
-//***********************  SCALING!  *************************
-//************************************************************
-//************************************************************
-//************************************************************
-//************************************************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
+// ***********************  SCALING!  *************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
+// ************************************************************
 // 8-bit color for now!
 
 // Doesn't clip...
@@ -1410,22 +1410,22 @@ int16_t rspBlit(
 	{
 #ifdef _DEBUG
 
-	if ((pimSrc == NULL) || (pimDst == NULL))
+   if ((pimSrc == nullptr) || (pimDst == nullptr))
 		{
 		TRACE("BLiT: null CImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_type != RImage::FSPR1)
 		{
 		TRACE("BLiT: This form of BLiT is designed for FSPR1 type images!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimDst->m_sDepth > 8)
 		{
 		TRACE("BLiT: TC sprites are not YET implemented for FSPR1.\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -1433,17 +1433,17 @@ int16_t rspBlit(
 	if ( (sDstW < 1) || (sDstH < 1) )
 		{
 		//TRACE("BLiT: Zero or negative area passed.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	// transfer colors:
 	uint8_t	ucForeColor = (uint8_t) ulForeColor;
 
-	int16_t sW = sDstW; // clippng parameters...
-	int16_t sH = sDstH; // clippng parameters...
+//	int16_t sW = sDstW; // clippng parameters...
+//	int16_t sH = sDstH; // clippng parameters...
 	int32_t	lDstP = pimDst->m_lPitch;
 
-	//**************  INSERT BUFFER HOOKS HERE!  ************************
+	// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	// do OS based copying!
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
@@ -1459,7 +1459,7 @@ int16_t rspBlit(
 	// IN THIS IMPLEMENTATION, we must do LOCK, BLiT, UNLOCK, so I
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
 
 	switch (sBlitTypeDst) // 0 = normal image
 		{
@@ -1470,7 +1470,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;	
@@ -1484,7 +1484,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;	
@@ -1497,7 +1497,7 @@ int16_t rspBlit(
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OffScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -1509,14 +1509,14 @@ int16_t rspBlit(
 
 		default:
 			TRACE("BLiT: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 //BLIT_PRELOCKED:
 
 	// Check for locking error:
 	if (!pimDst->m_pData)
 		{
-		TRACE("BLiT: NULL data - possible locking error.\n");
+      TRACE("BLiT: nullptr data - possible locking error.\n");
 		return FAILURE;
 		}
 
@@ -1533,7 +1533,7 @@ int16_t rspBlit(
 	RFracU16 frOldX = {0};
 	RFracU16 frOldY = {0},frY = {0};
 
-	RFracU16 *afrSkipX=NULL,*afrSkipY=NULL;
+   RFracU16 *afrSkipX=nullptr,*afrSkipY=nullptr;
 	afrSkipX = rspfrU16Strafe256(sDstW,sDenX);
 	afrSkipY = rspfrU16Strafe256(sDstH,sDenY);
 	// Make magnification possible:
@@ -1542,14 +1542,14 @@ int16_t rspBlit(
 	for (i=1;i<(afrSkipY[1].mod + 2);i++) 
 		alDstSkip[i] = alDstSkip[i-1] + lDstP;
 
-	//***********************************************************
-	//*****************  AT LAST!   CODE!  **********************
-	//***********************************************************
+	// ***********************************************************
+	// *****************  AT LAST!   CODE!  **********************
+	// ***********************************************************
 	// 
 
-	//***********************************************************
-	//*********  No clip case!
-	//***********************************************************
+	// ***********************************************************
+	// *********  No clip case!
+	// ***********************************************************
 
 	// Add Italics ability:
 	int16_t* psOffX = psLineOffset;
@@ -1604,8 +1604,8 @@ int16_t rspBlit(
 	free(afrSkipX);
 	free(afrSkipY);
 
-	//***********************************************************
-	//*******************************************************************
+	// ***********************************************************
+	// *******************************************************************
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
 
@@ -1613,9 +1613,9 @@ int16_t rspBlit(
 
 #endif
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 	switch (sNeedToUnlock)
 		{
 		case 0: // nothing to unlock
@@ -1638,5 +1638,5 @@ int16_t rspBlit(
 		}
 
 //BLIT_DONTUNLOCK:	
-	return 0;
+	return SUCCESS;
 	}

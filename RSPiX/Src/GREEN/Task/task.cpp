@@ -36,6 +36,9 @@
 //	Calls tasks stored in its list of tasks based on a time interval.
 //
 //////////////////////////////////////////////////////////////////////////////
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 
 // Blue //////////////////////////////////////////////////////////////////////
 #include "Blue.h"
@@ -113,7 +116,7 @@ RTask::~RTask(void)
 //////////////////////////////////////////////////////////////////////////////
 void RTask::Init(TaskFunc tf, uint32_t ulUser)
 	{
-	ASSERT(tf != NULL);
+  ASSERT(tf != nullptr);
 
 	m_fnTask		= tf;
 	m_ulUser	= ulUser;
@@ -128,10 +131,10 @@ void RTask::Init(TaskFunc tf, uint32_t ulUser)
 //////////////////////////////////////////////////////////////////////////////
 int16_t RTask::Kill(void)
 	{
-	int16_t sRes = 0;	// Assume success.
+	int16_t sResult = SUCCESS;	// Assume success.
 	
 	// Attempt to stop the task . . .
-	if (Suspend() == 0)
+  if (Suspend() == SUCCESS)
 		{
 		// Clear the members.
 		Reset();
@@ -139,10 +142,10 @@ int16_t RTask::Kill(void)
 	else
 		{
 		TRACE("Kill(): Suspend() failed.\n");
-		sRes = -1;
+    sResult = FAILURE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -154,12 +157,12 @@ int16_t RTask::Kill(void)
 //////////////////////////////////////////////////////////////////////////////
 int16_t RTask::Start(void)
 	{
-	int16_t sRes = 0;	// Assume success.
+	int16_t sResult = SUCCESS;	// Assume success.
 
 	if (m_sActive == FALSE)
 		{
 		// Attempt to add to list . . .
-		if (ms_listActive.Add(this) == 0)
+    if (ms_listActive.Add(this) == SUCCESS)
 			{
 			// Set active flag.  So we don't have to traverse the list later just
 			// to determine whether or not this is active.
@@ -169,7 +172,7 @@ int16_t RTask::Start(void)
 			m_lNextExpiration		= GetTime() + m_lInterval;
 			
 			// If an error has occurred at this point . . .
-			if (sRes != 0)
+      if (sResult != SUCCESS)
 				{
 				Suspend();
 				}
@@ -177,11 +180,11 @@ int16_t RTask::Start(void)
 		else
 			{
 			TRACE("Start(): Unable to add this task to active list.\n");
-			sRes = -1;
+      sResult = FAILURE;
 			}
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -193,12 +196,12 @@ int16_t RTask::Start(void)
 //////////////////////////////////////////////////////////////////////////////
 int16_t RTask::Suspend(void)
 	{
-	int16_t sRes = 0;	// Assume success.
+	int16_t sResult = SUCCESS;	// Assume success.
 
 	if (m_sActive == TRUE)
 		{
 		// Attempt to remove from list . . .
-		if (ms_listActive.Remove(this) == 0)
+    if (ms_listActive.Remove(this) == SUCCESS)
 			{
 			// Clear active flag.
 			m_sActive = FALSE;
@@ -206,11 +209,11 @@ int16_t RTask::Suspend(void)
 		else
 			{
 			TRACE("Suspend(): Unable to remove this task from active list.\n");
-			sRes = -1;
+      sResult = FAILURE;
 			}
 		}
 
-	return sRes;
+	return sResult;
 	}
 		
 //////////////////////////////////////////////////////////////////////////////
@@ -227,12 +230,12 @@ int16_t RTask::Suspend(void)
 void RTask::Reset(void)
 	{
 	// Clear instantiable members.
-	m_fnTask			= NULL;
-	m_ulUser		= 0L;
+  m_fnTask			= nullptr;
+  m_ulUser		= 0;
 
 	m_sActive	= FALSE;
 
-	m_fnTime		= NULL;
+  m_fnTime		= nullptr;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -256,7 +259,7 @@ void RTask::Do(void)
 	// against the current.
 	PTASK	ptask	= ms_listActive.GetHead();
 
-	while (ptask != NULL)
+  while (ptask != nullptr)
 		{
 		// Get time for ptask.
 		lCurTime = ptask->GetTime();
@@ -264,7 +267,7 @@ void RTask::Do(void)
 		// If time has expired  . . .
 		if (lCurTime >= ptask->m_lNextExpiration)
 			{
-			ASSERT(ptask->m_fnTask != NULL);
+      ASSERT(ptask->m_fnTask != nullptr);
 
 			// Call task.
 			(*(ptask->m_fnTask))(ptask->m_ulUser);

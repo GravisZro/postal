@@ -27,6 +27,9 @@
 // This class stores data identified by a string.
 //
 //////////////////////////////////////////////////////////////////////////////
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // C Headers.
@@ -76,11 +79,11 @@
 //////////////////////////////////////////////////////////////////////////////
 CResItem::CResItem()
 	{
-	m_pszName	= NULL;
-	m_puc			= NULL;
+	m_pszName	= nullptr;
+	m_puc			= nullptr;
 	m_lSize		= 0L;
 	m_sRefCnt	= 0;
-	m_pRes		= NULL;
+	m_pRes		= nullptr;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -111,13 +114,13 @@ CResItem::~CResItem()
 				m_sRefCnt);
 		}
 
-	if (m_pszName != NULL)
+	if (m_pszName != nullptr)
 		{
 		// Remember that the name is the ptr that was allocated and includes
 		// the resource data (where m_puc points).
 		free(m_pszName);
-		m_pszName	= NULL;
-		m_puc			= NULL;
+		m_pszName	= nullptr;
+		m_puc			= nullptr;
 		}
 	}
 

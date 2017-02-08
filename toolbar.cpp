@@ -223,7 +223,7 @@ public:
 		m_dPrevValue = 0.0;
 		m_dLow = 0;
 		m_eFontType = Small;
-		m_pWeapon = m_pAmmo1 = m_pAmmo2 = NULL;
+		m_pWeapon = m_pAmmo1 = m_pAmmo2 = nullptr;
 		m_eWeaponType = NotWeapon;
 		m_eAmmoType = NotAmmo;
 		m_eStockPile = CDude::NoWeapon;
@@ -240,8 +240,8 @@ public:
 		CDude::WeaponType eStock,
 		const RRect &prImage,
 		CToolItem*	pAmmo1,
-		CToolItem*	pAmmo2 = NULL,
-		CToolItem*	pAmmo3 = NULL)
+		CToolItem*	pAmmo2 = nullptr,
+		CToolItem*	pAmmo3 = nullptr)
 		{
 		m_eWeaponType = eType;
 		m_eStockPile = eStock;
@@ -324,7 +324,7 @@ public:
 #if 0	// checking for palette errors:
 		rspSetWindowColors();
 
-		U8 r[256],g[256],b[256];	// for palette checking:
+		uint8_t r[256],g[256],b[256];	// for palette checking:
 		rspGetPaletteEntries(0,256,r,g,b,1);
 		short i;
 
@@ -380,7 +380,7 @@ public:
 		{
 		// First Draw all the weapons...
 		int16_t i;
-		RImage*	pimPlane = NULL;
+		RImage*	pimPlane = nullptr;
 
 		// Set up the bar to a neutral background:
 		rspBlit(pHood->m_pimEmptyBar,ms_pimCompositeBuffer,0,0,0,0,
@@ -600,6 +600,7 @@ public:
 
 		switch (CurWeapon)
 			{
+        UNHANDLED_SWITCH;
 			case CDude::SemiAutomatic:
 				ms_aWeapons[MachineGun].m_bSelected = true;
 				ms_aAmmo[Bullets].m_bSelected = true;
@@ -743,17 +744,17 @@ public:
 
 // I am hoping that before any instance of a class
 // exists, that the staic members must also exist.
-CToolItem* CToolItem::ms_aWeapons = NULL;
-CToolItem* CToolItem::ms_aAmmo = NULL;
-RFont*	CToolItem::ms_pfntTool = NULL;		// General font and print
+CToolItem* CToolItem::ms_aWeapons = nullptr;
+CToolItem* CToolItem::ms_aAmmo = nullptr;
+RFont*	CToolItem::ms_pfntTool = nullptr;		// General font and print
 RPrint	CToolItem::ms_pntTool;
 int16_t		CToolItem::ms_sSmallFontColor	=	255;	// color index
 int16_t		CToolItem::ms_sLargeFontColor =	255;
 int16_t		CToolItem::ms_sWarningColor	=	255;
 int16_t		CToolItem::ms_sAmmoGoneColor	=	255;
 int16_t		CToolItem::ms_sAttentionColor	=	255;
-RImage*	    CToolItem::ms_pimCompositeBuffer  = NULL;
-RImage*	    CToolItem::ms_pimCompositeBufferScaled  = NULL;
+RImage*	    CToolItem::ms_pimCompositeBuffer  = nullptr;
+RImage*	    CToolItem::ms_pimCompositeBufferScaled  = nullptr;
 int32_t		CToolItem::ms_lLastTime = 0;
 
 
@@ -767,7 +768,7 @@ public:
 		CToolItem::ms_aWeapons = new CToolItem[NumberOfWeapons];
 		CToolItem::ms_aAmmo = new CToolItem[NumberOfAmmos];
 
-		//************* WEAPONS **************
+		// ************* WEAPONS **************
 		CToolItem::ms_aWeapons[MachineGun].ArrangeWeapon(
 			MachineGun,CDude::SemiAutomatic,
 			RRect(123,443,48,23),
@@ -799,19 +800,19 @@ public:
 			RRect(464,442,52,22),
 			&CToolItem::ms_aAmmo[Fuel]);
 
-		//************** AMMO ****************
+		// ************** AMMO ****************
 		CToolItem::ms_aAmmo[Health].ArrangeAmmo(
 			Health,CDude::NoWeapon,
 			RRect(0,440,58,40), 
 			42,457,
-			NULL,
+			nullptr,
 			CToolItem::Large);
 
 		CToolItem::ms_aAmmo[KevlarVest].ArrangeAmmo(
 			KevlarVest,CDude::NoWeapon,
 			RRect(61,445,35,34),
 			97,457,
-			NULL,
+			nullptr,
 			CToolItem::Large);
 		//-------------------------------------
 		CToolItem::ms_aAmmo[Bullets].ArrangeAmmo(
@@ -839,7 +840,7 @@ public:
 			Grenades,CDude::Grenade,
 			RRect(272,443,19,23),
 			276,467,
-			NULL,
+			nullptr,
 			CToolItem::Small);
 
 		CToolItem::ms_aAmmo[Rockets].ArrangeAmmo(
@@ -860,7 +861,7 @@ public:
 			Cocktails,CDude::FireBomb,
 			RRect(390,442,20,24),
 			394,467,
-			NULL,
+			nullptr,
 			CToolItem::Small);
 
 		CToolItem::ms_aAmmo[Napalm].ArrangeAmmo(
@@ -881,21 +882,21 @@ public:
 			ProximityMine,CDude::ProximityMine,
 			RRect(567,443,30,23),
 			575,467, // redundantly repeated
-			NULL,
+			nullptr,
 			CToolItem::Small);
 
 		CToolItem::ms_aAmmo[TimedMine].ArrangeAmmo(
 			TimedMine,CDude::TimedMine,
 			RRect(599,443,30,26),
 			575,467, // redundantly repeated
-			NULL,
+			nullptr,
 			CToolItem::Small);
 
 		CToolItem::ms_aAmmo[BouncingBettyMine].ArrangeAmmo(
 			BouncingBettyMine,CDude::BouncingBettyMine,
 			RRect(538,444,28,28),
 			575,467, // redundantly repeated
-			NULL,
+			nullptr,
 			CToolItem::Small);
 		
 		// Now, factor out the bar location from all the coordinates:
@@ -955,7 +956,7 @@ bool	ToolBarRender(CHood* pHood,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 	{
 	bool bRender = true;
 
-	if (pDude == NULL) 
+	if (pDude == nullptr) 
 		{
 		TRACE("ToolBarRender: Dude doesn't exist!\n"); 
 		return false;

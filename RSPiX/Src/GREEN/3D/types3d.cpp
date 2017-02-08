@@ -58,7 +58,7 @@ void RTexture::AllocIndices(void)
 	{
 	FreeIndices();
 	m_pIndices = (uint8_t*)calloc(m_sNum, 1);
-	ASSERT(m_pIndices != 0);
+   ASSERT(m_pIndices != nullptr);
 	}
 
 
@@ -67,7 +67,7 @@ void RTexture::AllocColors(void)
 	{
 	FreeColors();
 	m_pColors = (RPixel32*)calloc(m_sNum, sizeof(RPixel32));
-	ASSERT(m_pColors != 0);
+   ASSERT(m_pColors != nullptr);
 	}
 
 
@@ -106,7 +106,7 @@ int16_t RTexture::Load(RFile* fp)
 	{
 	Free();
 
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	if (fp->Read(&m_sNum) == 1)
 		{
 		int16_t sFlags;
@@ -127,7 +127,7 @@ int16_t RTexture::Load(RFile* fp)
 
 	if (fp->Error())
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("RTexture::Load(): Error reading from file!\n");
 		}
 	return sResult;
@@ -136,7 +136,7 @@ int16_t RTexture::Load(RFile* fp)
 
 int16_t RTexture::Save(RFile* fp)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	fp->Write(&m_sNum);
 
@@ -154,7 +154,7 @@ int16_t RTexture::Save(RFile* fp)
 
 	if (fp->Error())
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("RTexture::Save(): Error writing to file!\n");
 		}
 	return sResult;
@@ -201,12 +201,13 @@ RTexture::Unmap(
 	uint8_t* pb,
 	int32_t lInc)
 	{
+  UNUSED(lInc);
 	ASSERT(m_pIndices);
 		
 	if (m_pColors == 0)
 		AllocColors();
 
-	U8*			pu8	= m_pIndices;
+	uint8_t*			pu8	= m_pIndices;
 	RPixel32*	ppix	= m_pColors;
 	int16_t	sCount		= m_sNum;
 	while (sCount--)
@@ -260,7 +261,7 @@ void RMesh::Alloc(int16_t sNum)
 	Free();
 	m_sNum = sNum;
 	m_pArray = (uint16_t*)calloc((int32_t)m_sNum * 3, sizeof(uint16_t));
-	ASSERT(m_pArray != 0);
+   ASSERT(m_pArray != nullptr);
 	}
 
 
@@ -276,7 +277,7 @@ int16_t RMesh::Load(RFile* fp)
 	{
 	Free();
 
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	if (fp->Read(&m_sNum) == 1)
 		{
 		Alloc(m_sNum);
@@ -284,7 +285,7 @@ int16_t RMesh::Load(RFile* fp)
 		}
 	if (fp->Error())
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("RMesh::Load(): Error reading from file!\n");
 		}
 	return sResult;
@@ -293,12 +294,12 @@ int16_t RMesh::Load(RFile* fp)
 
 int16_t RMesh::Save(RFile* fp)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	fp->Write(&m_sNum);
 	fp->Write(m_pArray, (int32_t)m_sNum * 3);
 	if (fp->Error())
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("RMesh::Save(): Error writing to file!\n");
 		}
 	return sResult;
@@ -313,7 +314,7 @@ void RSop::Alloc(int32_t lNum)
 	Free();
 	m_lNum = lNum;
 	m_pArray = (RP3d*)calloc(m_lNum, sizeof(RP3d));
-	ASSERT(m_pArray != 0);
+   ASSERT(m_pArray != nullptr);
 	}
 
 
@@ -329,7 +330,7 @@ int16_t RSop::Load(RFile* fp)
 	{
 	Free();
 
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	if (fp->Read(&m_lNum) == 1)
 		{
 		Alloc(m_lNum);
@@ -338,7 +339,7 @@ int16_t RSop::Load(RFile* fp)
 		}
 	if (fp->Error())
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("RSop::Load(): Error reading from file!\n");
 		}
 	return sResult;
@@ -347,13 +348,13 @@ int16_t RSop::Load(RFile* fp)
 
 int16_t RSop::Save(RFile* fp)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	fp->Write(&m_lNum);
 	ASSERT(sizeof(RP3d) == (sizeof(REAL) * 4));
 	fp->Write((REAL*)m_pArray, m_lNum * 4);
 	if (fp->Error())
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("RSop::Save(): Error writing to file!\n");
 		}
 	return sResult;

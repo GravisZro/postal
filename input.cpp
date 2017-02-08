@@ -300,7 +300,7 @@ CInputSettings	g_InputSettings;
 INPUT_MODE m_mode;
 
 // Buffer-related stuff
-U32* m_pBuf = 0;				// Pointer to buffer. Must be a U32 to maintain demo compatibility!
+uint32_t* m_pBuf = 0;				// Pointer to buffer. Must be a uint32_t to maintain demo compatibility!
 int32_t m_lBufIndex;					// Current index into buffer
 int32_t m_lBufEntries;				// Total entries in buffer
 
@@ -432,19 +432,19 @@ extern INPUT_MODE GetInputMode(void)				// Returns current mode
 ////////////////////////////////////////////////////////////////////////////////
 extern int16_t InputDemoInit(void)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Reset index and number of entries
 	m_lBufIndex = 0;
 	m_lBufEntries = 0;
 
 	// Allocate buffer
-	if (m_pBuf == 0)
+   if (m_pBuf == nullptr)
 		{
-		m_pBuf = new U32[BUF_MAX_ENTRIES];
-		if (m_pBuf == 0)
+		m_pBuf = new uint32_t[BUF_MAX_ENTRIES];
+      if (m_pBuf == nullptr)
 			{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("InputDemoInit(): Error allocating buffer!\n");
 			}
 		}
@@ -475,7 +475,7 @@ void InputDemoKill(void)
 extern int16_t InputDemoLoad(							// Returns 0 if successfull, non-zero otherwise
 	RFile* pFile)											// In:  RFile to load from
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	ASSERT(m_pBuf);
 	if (m_pBuf)
@@ -493,25 +493,25 @@ extern int16_t InputDemoLoad(							// Returns 0 if successfull, non-zero otherw
 				// Check for errors
 				if (pFile->Error())
 					{
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("InputDemoLoad(): Error reading data!\n");
 					}
 				}
 			else
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("InputDemoLoad(): Too many entries to fit into current buffer size!\n");
 				}
 			}
 		else
 			{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("InputDemoLoad(): Error reading number of entries!\n");
 			}
 		}
 	else
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("InputDemoLoad(): No buffer!\n");
 		}
 
@@ -527,7 +527,7 @@ extern int16_t InputDemoLoad(							// Returns 0 if successfull, non-zero otherw
 extern int16_t InputDemoSave(							// Returns 0 if successfull, non-zero otherwise
 	RFile* pFile)											// In:  RFile to save to
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	ASSERT(m_pBuf);
 	if (m_pBuf)
@@ -542,13 +542,13 @@ extern int16_t InputDemoSave(							// Returns 0 if successfull, non-zero otherw
 		// Check for errors
 		if (pFile->Error())
 			{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("InputDemoSave(): Error saving data!\n");
 			}
 		}
 	else
 		{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("InputDemoSave(): No buffer!\n");
 		}
 
@@ -578,8 +578,7 @@ extern void ClearLocalInput(void)
 	memset(rspGetKeyStatusArray(), 0, 128);
 
 	// Clear cheats.
-	int16_t	i;
-	for (i = 0; i < NUM_ELEMENTS(ms_acheats); i++)
+   for (size_t i = 0; i < NUM_ELEMENTS(ms_acheats); i++)
 		{
 		ms_acheats[i].sCurrentIndex	= 0;
 		}
@@ -593,10 +592,9 @@ extern void ClearLocalInput(void)
 static void FindCheatCombos(	// Returns nothing.
 	UINPUT*	pinput,				// In:  Input to augment.
 										// Out: Input with cheats.
-	RInputEvent* pie)				// In:  Latest input event or NULL.
+	RInputEvent* pie)				// In:  Latest input event or nullptr.
 	{
-	int32_t		lNow		= rspGetMilliseconds();
-	int16_t	i;
+   int32_t		lNow		= rspGetMilliseconds();
 
 	if (pie)
 		{
@@ -608,7 +606,7 @@ static void FindCheatCombos(	// Returns nothing.
 				lKey	= toupper(lKey);
 
 			Cheat*	pcheat	= ms_acheats;
-			for (i = 0; i < NUM_ELEMENTS(ms_acheats); i++, pcheat++)
+         for (size_t i = 0; i < NUM_ELEMENTS(ms_acheats); ++i, ++pcheat)
 				{
 				// Been a while since last input?  We should/need to use rspGetMiliseconds() for
 				// consistency.  This should offer no danger to synchronization as this is part
@@ -625,7 +623,7 @@ static void FindCheatCombos(	// Returns nothing.
 				// obvious when searching/viewing the exe.
 				char	c = DETWEAK_CHAR(pcheat->szCheat, pcheat->sCurrentIndex);
 				// If current key is hit . . .
-				if ( lKey == (int32_t)c && c != 0)
+            if ( lKey == (int32_t)c && c != '\0')
 					{
 					// Remember time of this key.
 					pcheat->lLastValidInputTime				= lNow;
@@ -710,7 +708,7 @@ bool CanCycleThroughWeapons()
 ////////////////////////////////////////////////////////////////////////////////
 extern UINPUT GetLocalInput(				// Returns local input.
 	CRealm* prealm,							// In:  Realm (used to access realm timer)
-	RInputEvent* pie	/*= NULL*/)			// In:  Latest input event.  NULL to 
+	RInputEvent* pie	/*= nullptr*/)			// In:  Latest input event.  nullptr to 
 													//	disable cheats in a way that will be
 													// harder to hack.
 	{
@@ -733,7 +731,7 @@ extern UINPUT GetLocalInput(				// Returns local input.
 		static int32_t		lPrevTime		= lCurTime;
 		// Get ptr to Blue's key status array.  Only need to do this
 		// once.
-		static U8*		pu8KeyStatus	= rspGetKeyStatusArray();
+		static uint8_t*		pu8KeyStatus	= rspGetKeyStatusArray();
 
 		int16_t	sButtons	= 0;
 		int16_t	sDeltaX	= 360;
@@ -792,7 +790,7 @@ extern UINPUT GetLocalInput(				// Returns local input.
 			}
 
 #if defined(ALLOW_JOYSTICK)
-		U32	u32Buttons	= 0;
+		uint32_t	u32Buttons	= 0;
 
 		// If utilizing joystick input . . .
 		if (g_InputSettings.m_sUseJoy)
@@ -800,7 +798,7 @@ extern UINPUT GetLocalInput(				// Returns local input.
 			// Only need to update joystick 1.
 			rspUpdateJoy(0);
 
-			U32	u32Axes	= 0;
+			uint32_t	u32Axes	= 0;
 			rspGetJoyState(0, &u32Buttons, &u32Axes);	
 
 #if defined(ALLOW_TWINSTICK)
@@ -1116,7 +1114,7 @@ extern UINPUT GetLocalInput(				// Returns local input.
 		// Set only the 10 bits of the delta (as unsigned value).
 		// As long as the above range check is used, we don't need
 		// to & with the rotation mask.
-		input		|=	(U32)sDeltaX;
+		input		|=	(uint32_t)sDeltaX;
 
 #ifdef MOBILE
 		input = AndroidGetInput();

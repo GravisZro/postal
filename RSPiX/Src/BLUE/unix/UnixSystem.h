@@ -30,14 +30,16 @@
 #ifndef UNIXSYSTEM_H
 #define UNIXSYSTEM_H
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
 
-#ifdef WIN32
-// !!! FIXME: use SDL_snprintf() in SDL2.
+#if defined(WIN32) || defined(__WIN32__) || defined(_MSC_VER)
+//#warning I find your lack of POSIX disturbing. ;)
+
 #ifndef snprintf
 #define snprintf _snprintf
 #endif
@@ -47,6 +49,44 @@
 #ifndef strcasecmp
 #define strcasecmp _stricmp
 #endif
+
+#include <BaseTsd.h>
+
+typedef SSIZE_T ssize_t;
+
+#ifndef __WORDSIZE
+#define __WORDSIZE WORDSIZE
+#endif
+
+# if __WORDSIZE == 64
+#  define __INT64_C(c)	c ## L
+#  define __UINT64_C(c)	c ## UL
+# else
+#  define __INT64_C(c)	c ## LL
+#  define __UINT64_C(c)	c ## ULL
+# endif
+
+/* Limits of integral types.  */
+
+/* Minimum of signed integral types.  */
+# define INT8_MIN		(-128)
+# define INT16_MIN		(-32767-1)
+# define INT32_MIN		(-2147483647-1)
+# define INT64_MIN		(-__INT64_C(9223372036854775807)-1)
+/* Maximum of signed integral types.  */
+# define INT8_MAX		(127)
+# define INT16_MAX		(32767)
+# define INT32_MAX		(2147483647)
+# define INT64_MAX		(__INT64_C(9223372036854775807))
+
+/* Maximum of unsigned integral types.  */
+# define UINT8_MAX		(255)
+# define UINT16_MAX		(65535)
+# define UINT32_MAX		(4294967295U)
+# define UINT64_MAX		(__UINT64_C(18446744073709551615))
+
+#else
+#include <sys/types.h>
 #endif
 
 #if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
@@ -75,61 +115,60 @@ using namespace std;
 #ifndef __RSPX_TYPES
 #define __RSPX_TYPES
 
-	// The world's most specific types < S | U > < # >
-	// S == signed, U == unsigned, # == number of bits
-	typedef int8_t		S8;
-	typedef uint8_t		U8;
-	typedef int16_t		S16;
-	typedef uint16_t		U16;
-	typedef int32_t		S32;
-	typedef uint32_t		U32;
-	typedef int64_t S64;
-	typedef uint64_t U64;
+#define UNUSED1(a)                (void)(a)
+#define UNUSED2(a,b)             UNUSED1(a),UNUSED1(b)
+#define UNUSED3(a,b,c)           UNUSED1(a),UNUSED2(b,c)
+#define UNUSED4(a,b,c,d)         UNUSED1(a),UNUSED3(b,c,d)
+#define UNUSED5(a,b,c,d,e)       UNUSED1(a),UNUSED4(b,c,d,e)
+#define UNUSED6(a,b,c,d,e,f)     UNUSED1(a),UNUSED5(b,c,d,e,f)
+#define UNUSED7(a,b,c,d,e,f,g)   UNUSED1(a),UNUSED6(b,c,d,e,f,g)
+#define UNUSED8(a,b,c,d,e,f,g,h) UNUSED1(a),UNUSED7(b,c,d,e,f,g,h)
+
+#define VA_NUM_ARGS_IMPL(_1,_2,_3,_4,_5, _6, _7, _8, N,...) N
+#define VA_NUM_ARGS(...) VA_NUM_ARGS_IMPL(__VA_ARGS__,8, 7, 6, 5, 4, 3, 2, 1)
+
+#define UNUSED_IMPL_(nargs) UNUSED ## nargs
+#define UNUSED_IMPL(nargs) UNUSED_IMPL_(nargs)
+#define UNUSED(...) UNUSED_IMPL( VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ )
+
+#define UNHANDLED_SWITCH    default: TRACE("Unhandled switch\n"); break
+
+#define UINT8_MIN 0
+#define UINT16_MIN 0
+#define UINT32_MIN 0
+#define UINT64_MIN 0
+
+  static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 
 	// 128-bit got a little trickier...
 	#ifdef SYS_ENDIAN_LITTLE
-		typedef struct {	U64	lo;
-								S64	hi;} S128;
-		typedef struct {	U64	lo;
-								U64	hi;} U128;
+		typedef struct {	uint64_t	lo;
+                        int64_t	hi;} int128_t;
+		typedef struct {	uint64_t	lo;
+                        uint64_t	hi;} uint128_t;
 	#else	// defined(SYS_ENDIAN_BIG)
 
-		typedef struct {	S64	hi;
-								U64	lo;} S128;
-		typedef struct {	U64	hi;
-								U64	lo;} U128;
+		typedef struct {	int64_t	hi;
+                        uint64_t	lo;} int128_t;
+		typedef struct {	uint64_t	hi;
+                        uint64_t	lo;} uint128_t;
 	#endif
 
-
-	// Ranges for basic RSPiX types
-	#define	S8_MIN	((S8) 0x80)
-	#define	S8_MAX	((S8) 0x7F)
-	#define	U8_MIN	((U8) 0x0)
-	#define	U8_MAX	((U8) 0xFF)
-	#define	S16_MIN	((S16) 0x8000)
-	#define	S16_MAX	((S16) 0x7FFF)
-	#define	U16_MIN	((U16) 0x0)
-	#define	U16_MAX	((U16) 0xFFFF)
-	#define	S32_MIN	((S32) 0x80000000L)
-	#define	S32_MAX	((S32) 0x7FFFFFFFL)
-	#define	U32_MIN	((U32) 0x0)
-	#define	U32_MAX	((U32) 0xFFFFFFFFUL)
-	
 	// These pixel types take the endian order of the system into account.
-	typedef U8 RPixel;
-	typedef U16 RPixel16;
+	typedef uint8_t RPixel;
+	typedef uint16_t RPixel16;
 	typedef struct
 		{
-		U8	u8Red;
-		U8	u8Green;
-		U8	u8Blue;
+		uint8_t	u8Red;
+		uint8_t	u8Green;
+		uint8_t	u8Blue;
 		} RPixel24;
 	typedef struct
 		{
-		U8	u8Alpha;
-		U8	u8Red;
-		U8	u8Green;
-		U8	u8Blue;
+		uint8_t	u8Alpha;
+		uint8_t	u8Red;
+		uint8_t	u8Green;
+		uint8_t	u8Blue;
 		} RPixel32;
 	inline bool operator==(const RPixel24& lhs, const RPixel24& rhs)
 		{ return ((lhs.u8Blue == rhs.u8Blue) && (lhs.u8Green == rhs.u8Green) && (lhs.u8Red == rhs.u8Red)) ? true : false; }
@@ -148,10 +187,6 @@ using namespace std;
 
 #ifndef FALSE
 #define FALSE	0
-#endif
-
-#ifndef NULL
-#define NULL	0
 #endif
 
 #ifndef SUCCESS
@@ -244,13 +279,13 @@ inline bool rspObjCmp(const T* p1, const T* p2, size_t count)
 
 inline char *ltoa(int32_t l, char *buf, int bufsize)
 {
-    snprintf(buf, bufsize, "%ld", l);
+    snprintf(buf, bufsize, "%i", l);
     return(buf);
 }
 
 inline char *ltoa(uint32_t l, char *buf, int bufsize)
 {
-    snprintf(buf, bufsize, "%ld", l);
+    snprintf(buf, bufsize, "%i", l);
     return(buf);
 }
 

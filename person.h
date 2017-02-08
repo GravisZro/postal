@@ -140,7 +140,7 @@ class CPerson : public CDoofus
 
 		// This is the one CPerson that can log its AI table transitions or
 		// CIdBank::IdNil.
-		static U16	ms_u16IdLogAI;
+		static uint16_t	ms_u16IdLogAI;
 
 		// "Constant" values that we want to be able to tune using the editor
 		static double ms_dLongRange;		// Squared distance (500 pixels away)
@@ -173,7 +173,7 @@ class CPerson : public CDoofus
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
 			m_ePersonType = Personatorium::Grenader;
 			m_eWeaponType = CThing::CGrenadeID;
-			m_panimCur = m_panimPrev = NULL;
+			m_panimCur = m_panimPrev = nullptr;
 			m_sprite.m_pthing	= this;
 			m_rstrLogicFile = "res/logics/default.lgk";
 			m_sShowState		= FALSE;
@@ -202,11 +202,11 @@ class CPerson : public CDoofus
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CPerson(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CPerson::Construct(): Couldn't construct CPerson (that's a bad thing)\n");
 				}
 			return sResult;
@@ -260,7 +260,7 @@ class CPerson : public CDoofus
 
 		// Function to choose and play the writhing sound effect
 		virtual SampleMaster::SoundInstance PlaySoundWrithing(
-			int32_t* plDuration);					// Out:  Duration of sample, if not NULL.
+			int32_t* plDuration);					// Out:  Duration of sample, if not nullptr.
 
 		// Function to choose and play the Shot sound effect
 		virtual SampleMaster::SoundInstance PlaySoundShot(void);

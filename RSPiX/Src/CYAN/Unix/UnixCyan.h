@@ -91,8 +91,8 @@ void rspSetWin32StaticColors(
 extern int16_t rspMsgBox(	// Returns one of the macro defined RSP_MB_RET_*.
 	uint16_t usFlags,		// |'ed RSP_MB_BUT/ICO_* representing buttons and icons
 								// desired.
-	char *pszTitle,		// Title for box.
-	char *pszFrmt,			// Format of string (sprintf flags).
+   const char *pszTitle,		// Title for box.
+   const char *pszFrmt,			// Format of string (sprintf flags).
 	...);						// Various crap to represent sprintf flags.
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ extern int16_t rspOpenBox(								// Returns 0 if successfull, non-zero otherwis
 	const char*	pszDefaultPath,						// In:  Default directory and file
 	char* pszSelectedFile,								// Out: File that user selected
 	int16_t sSelectedFileBufSize,						// In:  Size of buffer pointed to by pszSelectedFile
-	const char*	pszFilter = NULL);					// In:  Filename filter or NULL for none
+   const char*	pszFilter = nullptr);					// In:  Filename filter or nullptr for none
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -154,26 +154,26 @@ extern int16_t rspSaveBox(								// Returns 0 if successfull, non-zero otherwis
 	const char*	pszDefaultPath,						// In:  Default directory and file
 	char* pszSelectedFile,								// Out: File that user selected
 	int16_t sSelectedFileBufSize,						// In:  Size of buffer pointed to by pszSelectedFile
-	const char*	pszFilter = NULL);					// In:  Filename filter or NULL for none
+   const char*	pszFilter = nullptr);					// In:  Filename filter or nullptr for none
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Exec API
 ///////////////////////////////////////////////////////////////////////////////
-
+#ifdef NO_IMPLEMENTATION
 // Executes pszExe with pszDir as its current directory.  Note that the
 // pszExe can be relative, but only to the current path.  The pszDir parameter
 // is only for the current directory for the rspExec'd process.
 extern int16_t rspExec(			// Returns 0 on success.
 	char*	pszExe,					// Executable (full path or relative to CURRENT).
-	char* pszDir = NULL,			// Current drive/directory for the child process,
-										// if not NULL.
+   char* pszDir = nullptr,			// Current drive/directory for the child process,
+                              // if not nullptr.
 	int16_t	sWait = FALSE,			// Waits for child execution to stop before
 										// returning if TRUE.
-	int16_t (*waitcall)(void)		// App callback to call during wait, if not NULL.
-					= NULL);			// Returns 0 to continue waiting, 
+   int16_t (*waitcall)(void)		// App callback to call during wait, if not nullptr.
+               = nullptr);			// Returns 0 to continue waiting,
 										// non-zero otherwise.
-
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 // File Path API
 ///////////////////////////////////////////////////////////////////////////////
@@ -317,7 +317,7 @@ extern int16_t rspStartPrinterPage(void);	// Returns 0 if successfull, non-zero 
 extern int16_t rspEndPrinterPage(void);
 
 extern int16_t rspPrintToPage(					// Returns 0 if successfull, non-zero otherwise
-	U8* pu8Src,										// In:  Source data
+	uint8_t* pu8Src,										// In:  Source data
 	int32_t lPitch,									// In:  Source pitch
 	int32_t lWidth,									// In:  Source width
 	int32_t lHeight,									// In:  Source height
@@ -332,16 +332,16 @@ extern int16_t rspPrintToPage(					// Returns 0 if successfull, non-zero otherwi
 	int32_t lDstH);									// In:  Distination (page) height
 
 extern int16_t rspPrintToPage(					// Returns 0 if successfull, non-zero otherwise
-	U8* pu8Src,										// In:  Source data
+	uint8_t* pu8Src,										// In:  Source data
 	int32_t lPitch,									// In:  Source pitch
 	int32_t lWidth,									// In:  Source width
 	int32_t lHeight,									// In:  Source height
 	int16_t sDepth,									// In:  Source depth (1 or 8 - if 8, palette info must be valid!)
 	int16_t sSrcPalStartIndex,					// In:  Starting palette index (0 to 255)
 	int16_t sSrcPalEntries,						// In:  Number of palette entries (1 to 256)
-	U8* pu8SrcPalRed,								// In:  Pointer to starting source red value
-	U8* pu8SrcPalGreen,							// In:  Pointer to starting source green value
-	U8* pu8SrcPalBlue,							// In:  Pointer to starting source blue value
+	uint8_t* pu8SrcPalRed,								// In:  Pointer to starting source red value
+	uint8_t* pu8SrcPalGreen,							// In:  Pointer to starting source green value
+	uint8_t* pu8SrcPalBlue,							// In:  Pointer to starting source blue value
 	int32_t lSrcPalIncBytes,						// In:  What to add to pointers to move to next value
 	int32_t lSrcX,										// In:  Source (image) X coord
 	int32_t lSrcY,										// In:  Source (image) Y coord

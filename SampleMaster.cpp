@@ -209,7 +209,7 @@
 // If not a violent locale . . . 
 #if !VIOLENT_LOCALE
 	// No sounds indicating females are in pain or including police references can be played.
-	#define CAN_PLAY_SAMPLE(id)	( (id.usDescFlags & (SMDF_FEMALE_PAIN | SMDF_POLICE_REF) ) == 0)
+   #define CAN_PLAY_SAMPLE(id)	( (id.usDescFlags & (SMDF_FEMALE_PAIN | SMDF_POLICE_REF)  ) == 0)
 #else
 	// All sounds can be played.
 	#define CAN_PLAY_SAMPLE(id)	(1)
@@ -230,7 +230,7 @@ RResMgr	g_resmgrSamples;
 //------------ put in C file:
 int16_t CSoundCatalogue::ms_sCurPos = 0;
 int16_t CSoundCatalogue::ms_sRefCount = 0;
-SampleMasterID** CSoundCatalogue::ms_ppsmNameList = NULL;
+SampleMasterID** CSoundCatalogue::ms_ppsmNameList = nullptr;
 
 // Sound channels for playing samples.
 static RSnd		ms_asndChannels[NUM_CHANNELS];
@@ -253,7 +253,7 @@ static float	fSoundX = 0.,fSoundY = 0., fSoundZ = 0.;
 //////////////////////////////////////////////////////////////
 // These are the names for the corresponding SoundCategory
 // used as an index.
-char* SampleMaster::ms_apszSoundCategories[SampleMaster::MAX_NUM_SOUND_CATEGORIES]	=	
+const char* SampleMaster::ms_apszSoundCategories[SampleMaster::MAX_NUM_SOUND_CATEGORIES]	=
 	{
 	g_apszSoundCategories[Unspecified],
 	g_apszSoundCategories[BackgroundMusic],
@@ -382,9 +382,9 @@ void SndDoneCall(		// Returns nothing.
 void SndDoneCall(		// Returns nothing.
 	RSnd*	psnd)			// This RSnd.
 	{
-	ASSERT(psnd != NULL);
+	ASSERT(psnd != nullptr);
 	RSample*	psample	= psnd->GetSample();
-	if (psample != NULL)
+	if (psample != nullptr)
 		{
 		// Reduce ResMgr ref count.
 
@@ -454,7 +454,7 @@ int16_t	GetCategoryVolume(
 	{
 	if ((eType < SampleMaster::Unspecified) || (eType >= SampleMaster::MAX_NUM_SOUND_CATEGORIES))
 		{
-		return -1;
+      return FAILURE;
 		}
 
 	// Get the new volume for that sound type dejusted through
@@ -484,7 +484,7 @@ int16_t	SetInstanceVolume(
 	SampleMaster::SoundInstance si,				// make sure it is YOUR sound
 	int16_t sVolume /* = 255 */)	// 0 - 255
 	{
-	if ( (si < 0) || (sVolume < 0) || (sVolume > 255) )
+   if (sVolume < 0 || sVolume > 255)
 		{
 		return FAILURE;
 		}
@@ -568,7 +568,7 @@ void	SetSoundLocation(float fX, float fY, float fZ)
 void CacheSample(			// Returns nothing.
 	SampleMasterID	id)	// Identifier of sample you want played.
 	{
-	if (id.pszId != NULL && CAN_PLAY_SAMPLE(id) )
+	if (id.pszId != nullptr && CAN_PLAY_SAMPLE(id) )
 		{
 		RSample*	psample;
 		// Get it into memory. 
@@ -576,7 +576,7 @@ void CacheSample(			// Returns nothing.
 		if (rspGetResource(
 			&g_resmgrSamples,
 			id.pszId, 
-			&psample) == 0)
+         &psample) == SUCCESS)
 			{
 			// Release it, so the next purge will remove this sample from RAM.
 			// Sort of a flush.
@@ -600,8 +600,8 @@ void PlaySample(												// Returns nothing.
 	SampleMasterID	id,										// In:  Identifier of sample you want played.
 	SampleMaster::SoundCategory eType,					// In:  Sound Volume Category for user adjustment
 	int16_t	sInitialVolume /* = 255 */,					// In:  Initial Sound Volume (0 - 255)
-	SampleMaster::SoundInstance*	psi/* = NULL */,	// Out: Handle for adjusting sound volume
-	int32_t* plSampleDuration /* = NULL */,				// Out: Sample duration in ms, if not NULL.
+	SampleMaster::SoundInstance*	psi/* = nullptr */,	// Out: Handle for adjusting sound volume
+	int32_t* plSampleDuration /* = nullptr */,				// Out: Sample duration in ms, if not nullptr.
 	int32_t lLoopStartTime /* = -1 */,						// In:  Where to loop back to in milliseconds.
 																	//	-1 indicates no looping (unless m_sLoop is
 																	// explicitly set).
@@ -609,18 +609,20 @@ void PlaySample(												// Returns nothing.
 																	// In:  If less than 1, the end + lLoopEndTime is used.
 	bool bPurgeSample /* = false */)						// In:  Call ReleaseAndPurge rather than Release after playing
 	{
-	int16_t	sError	= 0;					// Assume no error.
+   int16_t	sError = SUCCESS;					// Assume no error.
+#ifdef UNUSED_VARIABLES
 	RSnd*		psnd	= &ms_sndFailure;	// Default to failure case.
+#endif
 	if (psi) *psi = 0;					// Default to failure case.
 
-	if (id.pszId != NULL && CAN_PLAY_SAMPLE(id) )
+	if (id.pszId != nullptr && CAN_PLAY_SAMPLE(id) )
 		{
 		RSample*	psample;
 		// Get the sample . . .
 		if (rspGetResource(
 			&g_resmgrSamples,
 			id.pszId, 
-			&psample) == 0)
+         &psample) == SUCCESS)
 			{
 			// Get the duration right away.  We want to return this even if we fail
 			// to play the sample.
@@ -649,10 +651,12 @@ void PlaySample(												// Returns nothing.
 				ms_asndChannels[i].m_sChannelVolume = sInitialVolume;
 				// Atttempt to play sample . . .
 				if (ms_asndChannels[i].Play(psample, PLAY_BUF_SIZE, ms_asndChannels[i].m_sChannelVolume,
-					ms_asndChannels[i].m_sTypeVolume, lLoopStartTime, lLoopEndTime) == 0)
+               ms_asndChannels[i].m_sTypeVolume, lLoopStartTime, lLoopEndTime) == SUCCESS)
 					{
-					// Success.  Give user access to this channel.
-					psnd	= &(ms_asndChannels[i]);
+#ifdef UNUSED_VARIABLES
+               // Success.  Give user access to this channel.
+               psnd	= &(ms_asndChannels[i]);
+#endif
 					// Set return ID so user can tweak the volume:
 					ms_aSoundInstances[i] += NUM_CHANNELS;	// It is a new sound now!
 					// Reserve the lower mask bits for the channel number
@@ -661,18 +665,18 @@ void PlaySample(												// Returns nothing.
 				else
 					{
 	//				TRACE("PlaySample(): RSnd::Play() failed for sample.\n");
-					sError	= 3;
+               sError = FAILURE * 3;
 					}
 				}
 			else
 				{
 				TRACE("PlaySample(): No available sound channels.  Increase NUM_CHANNELS"
 					" or like it.\n");
-				sError	= 2;
+            sError = FAILURE * 2;
 				}
 
 			// If an error occurred . . .
-			if (sError != 0)
+			if (sError != SUCCESS)
 				{
 				// Either release the sample, or purge and release//////////////////////////////////////////////////////////////////////
 
@@ -685,7 +689,7 @@ void PlaySample(												// Returns nothing.
 		else
 			{
 			TRACE("PlaySample(): Could not get sample \"%s\".\n", id.pszId);
-			sError	= 1;
+         sError = FAILURE;
 			}
 		}
 	}
@@ -700,7 +704,7 @@ void PlaySample(								// Returns nothing.
 													// Does not fail.
 	SampleMasterID	id,						// In:  Identifier of sample you want played.
 
-	long* plSampleDuration /* = NULL*/,	// Out: Sample duration in ms, if not NULL.
+	long* plSampleDuration /* = nullptr*/,	// Out: Sample duration in ms, if not nullptr.
 	long lLoopStartTime /* = -1 */,		// In:  Where to loop back to in milliseconds.
 													//	-1 indicates no looping (unless m_sLoop is
 													// explicitly set).
@@ -708,7 +712,7 @@ void PlaySample(								// Returns nothing.
 													// In:  If less than 1, the end + lLoopEndTime is used.
 	bool bPurgeSample /* = false */)		// In:  Call ReleaseAndPurge rather than Release after playing
 	{
-	PlaySampleEx(id,NULL,SampleMaster::Unspecified,255,plSampleDuration,lLoopStartTime,lLoopEndTime,bPurgeSample);
+	PlaySampleEx(id,nullptr,SampleMaster::Unspecified,255,plSampleDuration,lLoopStartTime,lLoopEndTime,bPurgeSample);
 	}
 
 
@@ -719,12 +723,12 @@ void PlaySampleThenPurge(					// Returns nothing.
 													// Does not fail.
 	SampleMasterID	id,						// In:  Identifier of sample you want played.
 
-	SampleMaster::SoundInstance*	psi /* = NULL */,		// Out: Handle for adjusting sound volume
+	SampleMaster::SoundInstance*	psi /* = nullptr */,		// Out: Handle for adjusting sound volume
 	SampleMaster::SoundCategory	eType /* = 
 		SampleMaster::SoundCategory::Unspecified */,	// In:  Sound Volume Category for user adjustment
 	short	sInitialVolume /* = 255 */,	// In:  Initial Sound Volume (0 - 255)
 
-	long* plSampleDuration /* = NULL */,// Out: Sample duration in ms, if not NULL.
+	long* plSampleDuration /* = nullptr */,// Out: Sample duration in ms, if not nullptr.
 	long lLoopStartTime /* = -1 */,		// In:  Where to loop back to in milliseconds.
 													//	-1 indicates no looping (unless m_sLoop is
 													// explicitly set).
@@ -749,7 +753,7 @@ bool IsSamplePlaying(	// Returns true, if the sample is playing,
 	{
 	bool	bRes	= false;	// Assume not playing.
 
-	if (id.pszId != NULL && CAN_PLAY_SAMPLE(id) )
+	if (id.pszId != nullptr && CAN_PLAY_SAMPLE(id) )
 		{
 		RSample*	psample;
 		// Get it into memory. 
@@ -757,7 +761,7 @@ bool IsSamplePlaying(	// Returns true, if the sample is playing,
 		if (rspGetResource(
 			&g_resmgrSamples,
 			id.pszId, 
-			&psample) == 0)
+         &psample) == SUCCESS)
 			{
 			// Check if it is locked.
 			if (psample->IsLocked() != FALSE)
@@ -846,7 +850,7 @@ bool IsSamplePlaying(void)		// Returns true, if a sample is playing,
 int16_t AbortSample(		// Returns 0 if sample aborted, 1 if not.
 	SampleMaster::SoundInstance	si)	// In:  Identifies play instance.
 	{
-	int16_t	sRes	= 1;	// Assume failure.
+   int16_t sResult = FAILURE;	// Assume failure.
 
 	// Get the channel number from the lowest bits:
 	int16_t sChannel = si & CHANNEL_MASK;
@@ -859,10 +863,10 @@ int16_t AbortSample(		// Returns 0 if sample aborted, 1 if not.
 			// Okay.  Abort.
 			if (ms_asndChannels[sChannel].GetState() != RSnd::Stopped)
 				{
-				if (ms_asndChannels[sChannel].Abort() == 0)
+            if (ms_asndChannels[sChannel].Abort() == SUCCESS)
 					{
 					// Success.
-					sRes	= 0;
+               sResult = SUCCESS;
 					// Do we have to release it?  Should get a callback.
 					}
 				else
@@ -877,7 +881,7 @@ int16_t AbortSample(		// Returns 0 if sample aborted, 1 if not.
 		// MASK error!
 		}
 
-	return sRes;
+   return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -902,6 +906,7 @@ void PurgeSamples(void)	// Returns nothing.
 void PurgeSample(			// Returns nothing.
 	SampleMasterID	id)	// Identifier of sample you want played.
 	{
+  UNUSED(id);
 	TRACE("PurgeSample(): NYI.\n");
 	}
 

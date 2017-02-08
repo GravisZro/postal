@@ -66,7 +66,7 @@ class CSndRelay : public CThing
 
 		State	m_state;								// Current state.
 
-		U16	m_idParent;							// Parent CSoundThing.
+		uint16_t	m_idParent;							// Parent CSoundThing.
 
 	protected:
 
@@ -106,11 +106,11 @@ class CSndRelay : public CThing
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CSndRelay(pRealm);
-			if (*ppNew == 0)
+			if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CSndRelay::Construct(): Couldn't construct CSndRelay (that's a bad thing)\n");
 				}
 			return sResult;

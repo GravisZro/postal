@@ -15,9 +15,9 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
-//********************************************
+// ********************************************
 // Here is the basic FSPR8 IO, Convert, & BLiT
-//********************************************
+// ********************************************
 #include "System.h"
 
 #ifdef PATHS_IN_INCLUDES
@@ -34,7 +34,7 @@
 
 #include <string.h>
 
-//***************************************************************************
+// ***************************************************************************
 // NOTES:  The FSPR8 compression format is NOT based around the idea of
 // data compression, but around the sheer speed of assembly blitting.
 // In short, the compression op codes are designed to have the fastest
@@ -42,7 +42,7 @@
 // five other more "advanced" algorithms which took longer to read their
 // OP-CODES.  It provides semi-random access by compressing scan lines as
 // autonomous units, which makes things like clipping much, much faster.
-//***************************************************************************
+// ***************************************************************************
 // There is currently no convert options for FSPR8.
 // Color index zero is transparancy.  Mild performance degredation may occur
 // for objects with visual details larger than 256 pixels across.
@@ -61,13 +61,13 @@ int16_t		SaveFSPR8(RImage* pImage, RFile* pcf);
 //-------------------  HOOK into the CImage world ------------------------
 
 IMAGELINKLATE(FSPR8,ConvertToFSPR8,ConvertFromFSPR8,
-				  LoadFSPR8,SaveFSPR8,NULL,DeleteFSPR8);
+				  LoadFSPR8,SaveFSPR8,nullptr,DeleteFSPR8);
 
 //------------------------------------------------------------------------
 
 int16_t		DeleteFSPR8(RImage* pImage)
 	{
-	if (pImage->m_pSpecial != NULL)
+	if (pImage->m_pSpecial != nullptr)
 		{
 		delete (RSpecialFSPR8*) pImage->m_pSpecial;
 		}
@@ -87,7 +87,7 @@ int16_t		SaveFSPR8(RImage* pImage, RFile* pcf)
 	if (!pSpec)
 		{
 		TRACE("Save FSPR8: Bad FSPR8!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------
@@ -95,7 +95,7 @@ int16_t		SaveFSPR8(RImage* pImage, RFile* pcf)
 	//------------------
 
 	pcf->Write("__FSPR8__"); // image type
-	U16 version = (U16)(6); // Sprite incarnation 3, File Format 5
+	uint16_t version = (uint16_t)(6); // Sprite incarnation 3, File Format 5
 	pcf->Write(&version);
 
 	//------------------
@@ -103,12 +103,12 @@ int16_t		SaveFSPR8(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// NOTE: Some font info is stored here:
-	pcf->Write((U16*)(&(pSpec->m_usSourceType)));
+	pcf->Write((uint16_t*)(&(pSpec->m_usSourceType)));
 	pcf->Write(&(pSpec->m_lBufSize));
 	pcf->Write(&(pSpec->m_lCodeSize));
 
 	// Reserved for future expansion
-	U32 reserved[4] = {0,0,0,0};
+	uint32_t reserved[4] = {0,0,0,0};
 	pcf->Write(reserved,4); // 16 bytes reserved as of version 3.5
 
 	// Write the pixel data:
@@ -119,18 +119,18 @@ int16_t		SaveFSPR8(RImage* pImage, RFile* pcf)
 	// Write the Line Array and Control array as 32-bit offsets:
 	// Both are (H+1) long:
 	int16_t i;
-	U32	lOffset;
+	uint32_t	lOffset;
 	// Do pointers into pixel data:
 	for (i=0;i <= pImage->m_sHeight;i++)
 		{
-		lOffset = U32(pSpec->m_pBufArry[i] - pSpec->m_pCompBuf);
+		lOffset = uint32_t(pSpec->m_pBufArry[i] - pSpec->m_pCompBuf);
 		pcf->Write(&lOffset);
 		}
 
 	// Do pointers into control data:
 	for (i=0;i <= pImage->m_sHeight;i++)
 		{
-		lOffset = U32(pSpec->m_pCodeArry[i] - pSpec->m_pCodeBuf);
+		lOffset = uint32_t(pSpec->m_pCodeArry[i] - pSpec->m_pCodeBuf);
 		pcf->Write(&lOffset);
 		}
 
@@ -154,17 +154,17 @@ int16_t		LoadFSPR8(RImage* pImage, RFile* pcf)
 	if (strcmp(szTemp,"__FSPR8__")) // not equal
 		{
 		TRACE("Load FSPR8: Not correct file type!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	// Check Version:
-	U16 u16Temp;
+	uint16_t u16Temp;
 	pcf->Read(&u16Temp);
 
 	if (u16Temp != (6))
 		{
 		TRACE("Load FSPR8: This is an older FSPR8 format!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	//------------------
@@ -174,7 +174,7 @@ int16_t		LoadFSPR8(RImage* pImage, RFile* pcf)
 	RSpecialFSPR8* pSpec = new RSpecialFSPR8;
 	pImage->m_pSpecialMem = pImage->m_pSpecial = (uint8_t*)pSpec;
 
-	pcf->Read((U16*)(&pSpec->m_usSourceType));
+	pcf->Read((uint16_t*)(&pSpec->m_usSourceType));
 	pcf->Read(&pSpec->m_lBufSize);
 	pcf->Read(&pSpec->m_lCodeSize);
 
@@ -188,7 +188,7 @@ int16_t		LoadFSPR8(RImage* pImage, RFile* pcf)
 	//------------------
 	// Reserved Space
 	//------------------
-	U32 u32Temp[4];
+	uint32_t u32Temp[4];
 	pcf->Read(u32Temp,4); // 16 bytes reserved as of version 3.5
 
 	//------------------
@@ -203,7 +203,7 @@ int16_t		LoadFSPR8(RImage* pImage, RFile* pcf)
 	// Now restore the pointer list by adding them as offsets!
 	// (Pre ALLOCATED!)
 	int16_t i;
-	U32	lOffset;
+	uint32_t	lOffset;
 	// Do pointers into pixel data:
 	for (i=0;i <= pImage->m_sHeight;i++)
 		{
@@ -279,7 +279,7 @@ int16_t   ConvertFromFSPR8(RImage* pImage)
 
 	// Remove pSpecial:
 	delete (RSpecialFSPR8*) pImage->m_pSpecial;
-	pImage->m_pSpecial = pImage->m_pSpecialMem = NULL;
+	pImage->m_pSpecial = pImage->m_pSpecialMem = nullptr;
 
 	return (int16_t)pImage->m_type;
 	}
@@ -287,7 +287,7 @@ int16_t   ConvertFromFSPR8(RImage* pImage)
 //------------------------------------------------------------------------
 
 // Returns NOT_SUPPORTED if conversion is not possible:
-// Destroys the image's buffer (officially) and sets it to NULL
+// Destroys the image's buffer (officially) and sets it to nullptr
 //
 int16_t   ConvertToFSPR8(RImage*  pImage)
 	{
@@ -306,7 +306,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	  return RImage::NOT_SUPPORTED;
 	  }
 
-	if (pImage->m_pData == NULL)
+	if (pImage->m_pData == nullptr)
 	  {
 	  TRACE("Convert:  Invalid image passed to convert to FSPR8\n");
 	  return RImage::NOT_SUPPORTED;
@@ -314,12 +314,12 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 
 #endif
 
-	//*********************  DO THE CONVERSION  ************************
+	// *********************  DO THE CONVERSION  ************************
 	RSpecialFSPR8* pHeader = new RSpecialFSPR8;
 	pHeader->m_usCompType = RImage::FSPR8;
 	pHeader->m_usSourceType = (uint16_t) pImage->m_type;
 
-	//************ RUN LENGTH COMPRESSION -> 8-bit Aligned **********
+	// ************ RUN LENGTH COMPRESSION -> 8-bit Aligned **********
 
 	//====== CONTROL BLOCK CODES (8-bit) ====== (Only one run type)
 	// if first clear run byte = 255, done the line
@@ -346,8 +346,8 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	int16_t	sCount;
 	uint8_t *pucOldMem,*pucOldBuf; // For shrinking the buffer while maintaining alignment
 
-	//********* MALLOC all elements to maximum possible length, then shrink them. (realloc)
-	//********* for now, assume MALLOC returns 32-bit aligned ptr arrays.
+	// ********* MALLOC all elements to maximum possible length, then shrink them. (realloc)
+	// ********* for now, assume MALLOC returns 32-bit aligned ptr arrays.
 
 	// Max memory requirements:  Compresssed block = uncompressed block.
 	//									  Control Block = (width+1)*height
@@ -355,21 +355,21 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 
 	// So worst case scenario:  MEM = Height * (2*Width+9)
 
-	//*********************************** These are always the same size!
+	// *********************************** These are always the same size!
 	// Adjustment... for saving and retrieval, I am storing the total buffer sizes
 	// as the last elements in the random access arrays.
 	//
 	pHeader->m_pCodeArry = (uint8_t**)calloc(pImage->m_sHeight+1,sizeof(uint8_t*));
 	pHeader->m_pBufArry = (uint8_t**)calloc(pImage->m_sHeight+1,sizeof(uint8_t*));
 
-	//************** For now, set these to an optimisitically large size: 1:1 compression (could be 2:1 worst case)
+	// ************** For now, set these to an optimisitically large size: 1:1 compression (could be 2:1 worst case)
 	int32_t	lSizeEstimate = ((int32_t)(pImage->m_sHeight+1))*(pImage->m_sWidth*2+1) + 15;
 	pHeader->m_pCompMem = (uint8_t*)malloc((size_t)pImage->m_sHeight*(size_t)pImage->m_sWidth+15);
 
-	pHeader->m_pCompBuf = (uint8_t*)(( (S64)(pHeader->m_pCompMem) + 15) & ~ 15); // align it 128!
+   pHeader->m_pCompBuf = (uint8_t*)(( (intptr_t)(pHeader->m_pCompMem) + 15) & ~ 15); // align it 128!
 	pHeader->m_pCodeBuf = (uint8_t*)malloc((size_t)lSizeEstimate);
 
-	//******** For convenience, generate the Compressed Buffer immediately:
+	// ******** For convenience, generate the Compressed Buffer immediately:
 	uint8_t*	pucCPos = pHeader->m_pCompBuf;
 	uint8_t*	pucBPos = pImage->m_pData; // read the actual buffer
 	int16_t	sW = pImage->m_sWidth;
@@ -411,7 +411,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	// NOTE: pucCPos is an open stack!
 	pHeader->m_pCompMem = (uint8_t*)calloc(1,(size_t)(pucCPos - pHeader->m_pCompBuf + 15));
 	// And align it:
-	pHeader->m_pCompBuf = (uint8_t*)(( (S64)(pHeader->m_pCompMem) +15)&~15);
+   pHeader->m_pCompBuf = (uint8_t*)(( (intptr_t)(pHeader->m_pCompMem) +15)&~15);
 	// Store the size of the Compressed Buffer:
 	pHeader->m_pBufArry[sH] = (uint8_t*)(size_t)(pucCPos - pHeader->m_pCompBuf);
 
@@ -421,9 +421,9 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	free(pucOldMem);
 	
 	// Now update the indexes (m_pBufArry) which point into PCBuf:
-	for (y=0;y<sH;y++) pHeader->m_pBufArry[y] += (S64)(pHeader->m_pCompBuf);
+   for (y=0;y<sH;y++) pHeader->m_pBufArry[y] += (intptr_t)(pHeader->m_pCompBuf);
 
-	//******** NOW, the challange... Create the Control Block!
+	// ******** NOW, the challange... Create the Control Block!
 	pucBPos = pImage->m_pData;
 	uint8_t*	pucConBlk = pHeader->m_pCodeBuf;
 
@@ -492,11 +492,11 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 										(size_t)(pucConBlk - pHeader->m_pCodeBuf));	
 
 	// Move the indexes in (m_pCodeArry)
-	for (y=0;y<sH;y++) pHeader->m_pCodeArry[y] += (S64)(pHeader->m_pCodeBuf);
+   for (y=0;y<sH;y++) pHeader->m_pCodeArry[y] += (intptr_t)(pHeader->m_pCodeBuf);
 
-	//******************************************************************
+	// ******************************************************************
 
-	//******************************************************************
+	// ******************************************************************
 	// Install the newly compressed buffer:
 
 	// Kill the old buffer in an Image-Safe way:
@@ -514,7 +514,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 
 //------------------------------------------------------------------------
 
-//*****************************  THE FSPRITE BLiT  ******************************
+// *****************************  THE FSPRITE BLiT  ******************************
 // currently 8-bit, but soon to be full color.
 // Must deal with screen locking.
 //
@@ -526,28 +526,28 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 	// 1) preliminary parameter validation:
 #ifdef _DEBUG
 
-	if ((pimSrc == NULL) || (pimDst == NULL))
+	if ((pimSrc == nullptr) || (pimDst == nullptr))
 		{
 		TRACE("BLiT: null CImage* passed\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ((!ImageIsUncompressed(pimDst->m_type)))
 		{
 		TRACE("BLiT: Cannot BLiT this into a compressed buffer!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if ((pimSrc->m_type == RImage::FSPR16) || (pimSrc->m_type == RImage::FSPR32))
 		{
 		TRACE("BLiT: TC sprites are not YET implemented.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (pimSrc->m_type == RImage::FSPR1)
 		{
 		TRACE("BLiT: Use a different form of parameters for this type (see BLiT.DOC).\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -557,11 +557,11 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 		{
 		// Doing a background BLiT for speed, although a BlitT is more desired
 		rspBlit(pimSrc,pimDst,0,0,sDstX,sDstY,pimSrc->m_sWidth,pimSrc->m_sHeight,prDst);
-		return 0;
+		return SUCCESS;
 		}
 
 	// 2) Destination Clipping is hard here:
-	int16_t sClipL=0,sClipR=0,sClipT=0,sClipB=0;
+//	int16_t sClipL=0,sClipR=0,sClipT=0,sClipB=0;
 	int16_t sSrcX = 0,sSrcY = 0; // clippng parameters...
 	int16_t sW = pimSrc->m_sWidth; // clippng parameters...
 	int16_t sH = pimSrc->m_sHeight; // clippng parameters...
@@ -579,7 +579,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 		sClip = sDstY + sH - prDst->sY - prDst->sH; // positive = clipped
 		if (sClip > 0) { sH -= sClip; }
 
-		if ( (sW <= 0) || (sH <= 0) ) return -1; // clipped out!
+      if ( (sW <= 0) || (sH <= 0) ) return FAILURE; // clipped out!
 		}
 	else	
 		{
@@ -591,10 +591,10 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 		sClip = sDstY + sH - pimDst->m_sHeight; // positive = clipped
 		if (sClip > 0) sH -= sClip; // positive = clipped
 
-		if ((sW <= 0) || (sH <= 0)) return -1; // fully clipped
+      if ((sW <= 0) || (sH <= 0)) return FAILURE; // fully clipped
 		}
 
-		//**************  INSERT BUFFER HOOKS HERE!  ************************
+		// **************  INSERT BUFFER HOOKS HERE!  ************************
 
 	// do OS based copying!
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
@@ -612,7 +612,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
 	// NOT NECESSARY!!! THe SOURCE WILL ALWAYS BE A BUFFER!
-	if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((S64)pimDst->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
 
 	switch (sBlitTypeDst) // 0 = normal image
 		{
@@ -623,7 +623,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the system buffer, remember to unlock it:
 			sNeedToUnlock = BUF_MEMORY;
@@ -637,7 +637,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OnScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;	
@@ -650,7 +650,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 				!=0)
 				{
 				TRACE("BLiT: Unable to lock the OffScreen system buffer, failed!\n");
-				return -1;
+            return FAILURE;
 				}
 			// Locked the front VRAM, remember to unlock it:
 			sNeedToUnlock = BUF_VRAM;			
@@ -662,16 +662,16 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 
 		default:
 			TRACE("BLiT: This type of copy is not yet supported.\n");
-			return -1;
+         return FAILURE;
 		}
 //BLIT_PRELOCKED:
 
-	//*******************************************************************
+	// *******************************************************************
 	// 8-bit biased!
 	// Check for locking error:
 	if (!pimDst->m_pData)
 		{
-		TRACE("BLiT: NULL data - possible bad lock.\n");
+		TRACE("BLiT: nullptr data - possible bad lock.\n");
 		return FALSE;
 		}
 
@@ -691,7 +691,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 	//
 	if (sSrcX > 0)	// LClip Situation! => The slowest!
 		{
-		//**** THE WORST OF ALL CASES!  TWO SIDED CLIPPING! ****
+		// **** THE WORST OF ALL CASES!  TWO SIDED CLIPPING! ****
 		if (sW < (pimSrc->m_sWidth - sSrcX) )
 			{
 			for (sY = sSrcY; sY < sSrcY + sH; sY++,pDstLine += lDstP)
@@ -935,7 +935,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 					}
 				}
 
-	//*******************************************************************
+	// *******************************************************************
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
 
@@ -943,9 +943,9 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 
 #endif
 
-	//********************
+	// ********************
 	// OS_SPECIFIC:
-	//********************  UNLOCK WHATEVER YOU NEED TO
+	// ********************  UNLOCK WHATEVER YOU NEED TO
 	switch (sNeedToUnlock)
 		{
 		case 0: // nothing to unlock!
@@ -968,7 +968,7 @@ int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,const 
 		}
 
 //BLIT_DONTUNLOCK:	
-	return 0;
+	return SUCCESS;
 	}
 
 //------------------------------------------------------------------------

@@ -119,10 +119,10 @@
 // This a GUI item that is based on CDlg derived from the basic RGuiItem. 
 // This utilizes the m_ulUserData, m_ulUserInstance, and m_bcUser fields.  If 
 // you use any of these fields for other purposes MAKE SURE that m_bcUser is
-// set to NULL or any other callback besides ItemBtnUpCall!!!!!!!!!!
+// set to nullptr or any other callback besides ItemBtnUpCall!!!!!!!!!!
 // 
-// If you do m_mbcUser is NULL, DoModal() will call rspDoSystem(), RHot::Do(),
-// and this->Do().  If m_mbcUser is not NULL, NONE OF THESE WILL BE CALLED.
+// If you do m_mbcUser is nullptr, DoModal() will call rspDoSystem(), RHot::Do(),
+// and this->Do().  If m_mbcUser is not nullptr, NONE OF THESE WILL BE CALLED.
 // You must call whatever is necessary for the CMsgBox to work with your
 // scenario.  Usually this will be the 3 functions listed above and whatever
 // others you feel like calling (e.g., rspDoSound()).
@@ -185,7 +185,7 @@
 RMsgBox::RMsgBox()
 	{
 	// Assume no button up callback.
-	m_mbcUser	= NULL;
+	m_mbcUser	= nullptr;
 	// Active when visible.
 	m_sActive	= TRUE;
 
@@ -216,7 +216,7 @@ RMsgBox::~RMsgBox()
 RBtn* RMsgBox::AddButton(	// Returns allocated GUI item on success.
 									// Do NOT delete this item; it will be deleted
 									// by a RemoveAll() call.
-	char* pszText,				// Text for btn item.
+   const char* pszText,				// Text for btn item.
 	int16_t	sX,					// X position in RMsgBox dlg.
 	int16_t	sY,					// Y position in RMsgBox dlg.
 	uint32_t	ulId,				// ID to return if this item is chosen.
@@ -225,33 +225,33 @@ RBtn* RMsgBox::AddButton(	// Returns allocated GUI item on success.
 	int16_t	sAddW /*= 0*/,	// Additional width for guis that require more.
 	int16_t	sAddH /*= 0*/)	// Additional height for guis that require more.
 	{
-	int16_t	sError	= 0;
+   int16_t sError = SUCCESS;
 
 	// Attempt to allocate new btn.
 	RBtn*	pbtn	= new RBtn;
-	if (pbtn != NULL)
+	if (pbtn != nullptr)
 		{
-		if (AddItem(pbtn, pszText, sX, sY, ulId, sAddW, sAddH) == 0)
+      if (AddItem(pbtn, pszText, sX, sY, ulId, sAddW, sAddH) == SUCCESS)
 			{
 			// Success.
 			}
 		else
 			{
 			TRACE("AddButton(): AddItem() failed for allocated RBtn.\n");
-			sError	= 2;
+         sError = FAILURE * 2;
 			}
 
 		// If any errors occurred after allocation . . .
-		if (sError != 0)
+      if (sError != SUCCESS)
 			{
 			delete pbtn;
-			pbtn	= NULL;
+			pbtn	= nullptr;
 			}
 		}
 	else
 		{
 		TRACE("AddButton(): Failed to allocate RBtn.\n");
-		sError	= 1;
+      sError = FAILURE;
 		}
 
 	return pbtn;
@@ -265,7 +265,7 @@ RBtn* RMsgBox::AddButton(	// Returns allocated GUI item on success.
 RTxt* RMsgBox::AddText(	// Returns allocated GUI item on success.
 								// Do NOT delete this item; it will be deleted
 								// by a RemoveAll() call.
-	char* pszText,			// Text for txt item.
+   const char* pszText,			// Text for txt item.
 	int16_t	sX,				// X position in RMsgBox dlg.
 	int16_t	sY,				// Y position in RMsgBox dlg.
 	uint32_t	ulId,				// ID to return if this item is chosen.
@@ -274,33 +274,33 @@ RTxt* RMsgBox::AddText(	// Returns allocated GUI item on success.
 	int16_t	sAddW /*= 0*/,	// Additional width for guis that require more.
 	int16_t	sAddH /*= 0*/)	// Additional height for guis that require more.
 	{
-	int16_t	sError	= 0;
+   int16_t sError = SUCCESS;
 
 	// Attempt to allocate new btn.
 	RTxt*	ptxt	= new RTxt;
-	if (ptxt != NULL)
+	if (ptxt != nullptr)
 		{
-		if (AddItem(ptxt, pszText, sX, sY, ulId, sAddW, sAddH) == 0)
+      if (AddItem(ptxt, pszText, sX, sY, ulId, sAddW, sAddH) == SUCCESS)
 			{
 			// Success.
 			}
 		else
 			{
 			TRACE("AddText(): AddItem() failed for allocated RTxt.\n");
-			sError	= 2;
+         sError = FAILURE * 2;
 			}
 
 		// If any errors occurred after allocation . . .
-		if (sError != 0)
+      if (sError != SUCCESS)
 			{
 			delete ptxt;
-			ptxt	= NULL;
+			ptxt	= nullptr;
 			}
 		}
 	else
 		{
 		TRACE("AddText(): Failed to allocate RTxt.\n");
-		sError	= 1;
+      sError = FAILURE;
 		}
 
 	return ptxt;
@@ -314,7 +314,7 @@ RTxt* RMsgBox::AddText(	// Returns allocated GUI item on success.
 REdit* RMsgBox::AddEdit(	// Returns allocated GUI item on success.
 									// Do NOT delete this item; it will be deleted
 									// by a RemoveAll() call.
-	char* pszText,				// Text for edit item.
+   const char* pszText,				// Text for edit item.
 	int16_t	sX,					// X position in RMsgBox dlg.
 	int16_t	sY,					// Y position in RMsgBox dlg.
 	uint32_t	ulId,				// ID to return if this item is chosen.
@@ -323,18 +323,18 @@ REdit* RMsgBox::AddEdit(	// Returns allocated GUI item on success.
 	int16_t	sAddW /*= 0*/,	// Additional width for guis that require more.
 	int16_t	sAddH /*= 0*/)	// Additional height for guis that require more.
 	{
-	int16_t	sError	= 0;
+   int16_t sError	= SUCCESS;
 
 	// Attempt to allocate new btn.
 	REdit*	pedit	= new REdit;
-	if (pedit != NULL)
+	if (pedit != nullptr)
 		{
 		// Need to create string so we can determine size of caret.
 		char	szCaret[]	= { pedit->m_cCaretChar, '\0' };
 		// Store text width.
 		int16_t sTextWidth	= pedit->m_pprint->GetWidth(szCaret);
 
-		if (AddItem(pedit, pszText, sX, sY, ulId, sTextWidth + sAddW, sAddH) == 0)
+      if (AddItem(pedit, pszText, sX, sY, ulId, sTextWidth + sAddW, sAddH) == SUCCESS)
 			{
 			// Limit text to the number of characters originally used.
 //			pedit->m_sMaxText	= strlen(pszText);
@@ -344,20 +344,20 @@ REdit* RMsgBox::AddEdit(	// Returns allocated GUI item on success.
 		else
 			{
 			TRACE("AddEdit(): AddItem() failed for allocated REdit.\n");
-			sError	= 2;
+         sError = FAILURE * 2;
 			}
 
 		// If any errors occurred after allocation . . .
-		if (sError != 0)
+      if (sError != SUCCESS)
 			{
 			delete pedit;
-			pedit	= NULL;
+			pedit	= nullptr;
 			}
 		}
 	else
 		{
 		TRACE("AddEdit(): Failed to allocate REdit.\n");
-		sError	= 1;
+      sError = FAILURE;
 		}
 
 	return pedit;
@@ -374,7 +374,7 @@ RGuiItem* RMsgBox::AddItem(	// Returns pgui on success.
 										// already have been set).
 	{
 	// Store RMsgBox instance.
-	pgui->m_ulUserInstance	= (U64)this;
+	pgui->m_ulUserInstance	= (uint64_t)this;
 	// Let RGuiItem know where to call.
 	pgui->m_bcUser				= ItemBtnUpCall;
 
@@ -402,7 +402,7 @@ inline void DrawDirty(	// Returns nothing.
 		rspShieldMouseCursor();
 
 		pdr	= pdrl->GetHead();
-		while (pdr != NULL)
+		while (pdr != nullptr)
 			{
 			// Update screen.
 			rspBlit( pimComp, pimScr,
@@ -432,7 +432,7 @@ uint32_t RMsgBox::DoModeless(		// Returns item clicked or 0, if none.
 										// Out: pie->sUsed = TRUE, if used.
 	{
 	// If there is a user callback . . .
-	if (m_mbcUser != NULL)
+	if (m_mbcUser != nullptr)
 		{
 		// Allow the user to call stuff.
 		uint32_t	ulRes	= (*m_mbcUser)(this);
@@ -471,28 +471,28 @@ uint32_t RMsgBox::DoModal(					// Returns chosen ID on success,
 												// 0 on failure.
 	RInputEvent* pie,						// In:  Most recent user input event.
 												// Out: pie->sUsed = TRUE, if used.
-	RImage*	pimDst		/*= NULL*/)	// Where to draw dialog and rspBlit from.
-												// If this is NULL, the system buffer is
+	RImage*	pimDst		/*= nullptr*/)	// Where to draw dialog and rspBlit from.
+												// If this is nullptr, the system buffer is
 												// used.
 												// rspBlit is used to update this to the
 												// screen image unless pimDst is the screen
 												// image.
 	{
 	m_ulId			= 0;	// ID to return.
-	int16_t	sError	= 0;	// No errors yet.
+   int16_t sError = SUCCESS;	// No errors yet.
 
 	// Deactivate RHots, adding them to our list.
 	// We now can just service our own RHots.
 
 	RImage*	pimScr;
 	// If composition buffer provided . . .
-	if (pimDst != NULL)
+	if (pimDst != nullptr)
 		{
-		rspNameBuffers(NULL, &pimScr, NULL);
+		rspNameBuffers(nullptr, &pimScr, nullptr);
 		}
 	else	// No composition buffer provided.
 		{
-		rspNameBuffers(&pimDst, &pimScr, NULL);
+		rspNameBuffers(&pimDst, &pimScr, nullptr);
 		}
 
 	// Allocate eraser . . .
@@ -502,13 +502,13 @@ uint32_t RMsgBox::DoModal(					// Returns chosen ID on success,
 		m_im.m_sHeight,
 		RImage::BMP8, 
 		0, 
-		m_im.m_sDepth) == 0)
+      m_im.m_sDepth) == SUCCESS)
 		{
 		}
 	else
 		{
 		TRACE("DoModal(): m_imEraser.CreateImage() failed.\n");
-		sError	= 1;
+      sError = FAILURE;
 		}
 
 	// Activate this and all children.
@@ -524,7 +524,7 @@ uint32_t RMsgBox::DoModal(					// Returns chosen ID on success,
 
 	// Main loop:
 	// Wait for an error or an ID.
-	while (m_ulId == 0 && sError == 0)
+   while (m_ulId == 0 && sError == SUCCESS)
 		{
 		dr.sX	= m_sX;
 		dr.sY	= m_sY;
@@ -534,7 +534,7 @@ uint32_t RMsgBox::DoModal(					// Returns chosen ID on success,
 					dr.sX, dr.sY,
 					0, 0,
 					dr.sW, dr.sH, 
-					NULL,						// Destination clippage.
+					nullptr,						// Destination clippage.
 					&rcCompositeClip);	// Source clippage.
 
 		// Draw new dlg data.
@@ -585,7 +585,7 @@ uint32_t RMsgBox::DoModal(					// Returns chosen ID on success,
 void RMsgBox::RemoveAll(void)	// Returns nothing.
 	{
 	RGuiItem*	pgui	= m_listGuis.GetHead();
-	while (pgui != NULL)
+	while (pgui != nullptr)
 		{
 		m_listGuis.Remove();
 
@@ -615,7 +615,7 @@ void RMsgBox::RemoveAll(void)	// Returns nothing.
 ////////////////////////////////////////////////////////////////////////
 void RMsgBox::ItemBtnUpCall(RGuiItem* pgui)
 	{
-	ASSERT(pgui->m_ulUserInstance != NULL);
+   ASSERT(pgui->m_ulUserInstance);
 
 	RMsgBox*	pmb	= (RMsgBox*)(pgui->m_ulUserInstance);
 
@@ -637,7 +637,7 @@ void RMsgBox::ItemBtnUpCall(RGuiItem* pgui)
 ////////////////////////////////////////////////////////////////////////
 int16_t RMsgBox::AddItem(	// Returns 0 on success.
 	RGuiItem* pgui,		// Item to add.
-	char* pszText,			// Text for item.
+   const char* pszText,			// Text for item.
 	int16_t	sX,				// X position in RMsgBox dlg.
 	int16_t	sY,				// Y position in RMsgBox dlg.
 	uint32_t	ulId,				// ID to return if this item is chosen.
@@ -646,7 +646,7 @@ int16_t RMsgBox::AddItem(	// Returns 0 on success.
 	int16_t	sAddW /*= 0*/,	// Additional width for guis that require more.
 	int16_t	sAddH /*= 0*/)	// Additional height for guis that require more.
 	{
-	int16_t	sRes	= 0;	// Assume success.
+   int16_t sResult = SUCCESS;	// Assume success.
 
 	// Copy settings.
 	CopyParms(pgui);
@@ -677,32 +677,32 @@ int16_t RMsgBox::AddItem(	// Returns 0 on success.
 		== 0)
 		{
 		// Add item (i.e., set parent to us) . . .
-		if (AddItem(pgui) != NULL)
+		if (AddItem(pgui) != nullptr)
 			{
 			// Add to our list of items to be deallocated later . . .
-			if (m_listGuis.Add(pgui) == 0)
+         if (m_listGuis.Add(pgui) == SUCCESS)
 				{
 				// Success.
 				}
 			else
 				{
 				TRACE("AddItem(): Failed to add item to list.\n");
-				sRes	= -3;
+            sResult = FAILURE * 3;
 				}
 			}
 		else
 			{
 			TRACE("AddItem(): AddItem() failed for allocated item.\n");
-			sRes	= -2;
+         sResult = FAILURE * 2;
 			}
 		}
 	else
 		{
 		TRACE("AddItem(): [RGuiItem::]Create failed.\n");
-		sRes = -1;
+      sResult = FAILURE;
 		}
 
-	return sRes;
+   return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////

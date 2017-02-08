@@ -49,11 +49,11 @@ class CFlagbase : public CThing3d
 	//---------------------------------------------------------------------------
 	public:
 		CAnim3D*		m_panimCurBase;					// current animation for the base
-		U16			m_u16FlagID;						// ID to match flag and base
+		uint16_t			m_u16FlagID;						// ID to match flag and base
 
 	protected:
 		CAnim3D		m_animFlagWave;					// animation for the flag waving
-		U16			m_u16Color;							// Color of base
+		uint16_t			m_u16Color;							// Color of base
 
 
 		// Tracks file counter so we know when to load/save "common" data 
@@ -73,7 +73,7 @@ class CFlagbase : public CThing3d
 			m_sSuspend = 0;
 			m_dRot = 0;
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
-			m_panimCur = NULL;
+			m_panimCur = nullptr;
 			m_sprite.m_pthing	= this;
 			m_u16FlagID = 1;
 			m_u16Color = 0;
@@ -100,11 +100,11 @@ class CFlagbase : public CThing3d
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CFlagbase(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CFlagbase::Construct(): Couldn't construct CFlagbase (that's a bad thing)\n");
 				}
 			return sResult;

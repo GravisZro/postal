@@ -159,7 +159,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-class RGuiItem : public RProps <U32, U32>
+class RGuiItem : public RProps <uint32_t, uint32_t>
 	{
 	public:	// Construction/Destruction.
 		// Default constructor.
@@ -232,7 +232,7 @@ class RGuiItem : public RProps <U32, U32>
 		// User callback to draw region.
 		typedef void (*DrawCall)(	// Returns nothing.
 			RGuiItem* pgui,			// The RGuiItem being drawn (this).
-			RImage* pim,				// Data to draw; if NULL, erase rect in prc.
+			RImage* pim,				// Data to draw; if nullptr, erase rect in prc.
 			RRect* prc);				// Where/amount to draw/erase in blue coords.
 
 		// User callback to draw background.
@@ -278,13 +278,13 @@ class RGuiItem : public RProps <U32, U32>
 
 		// Set the text that represents this item.
 		void SetText(	
-			char* pszFrmt,	// sprintf formatted format string.
+         const char* pszFrmt,	// sprintf formatted format string.
 			...);				// Corresponding good stuff.
 
 		// Set the text that represents the specified child item.
 		int16_t SetText(		// Returns 0 if item found, non-zero otherwise.
 			int32_t	lId,		// Child item ID (can identify this item).
-			char* pszFrmt,	// sprintf formatted format string.
+         const char* pszFrmt,	// sprintf formatted format string.
 			...);				// Corresponding good stuff.
 
 		// Set the justification of m_pprint to the current RGuiItem member 
@@ -336,7 +336,7 @@ class RGuiItem : public RProps <U32, U32>
 			int16_t sSrcY = 0,		// Y position in source.
 			int16_t sW = 0,			// Amount to draw.
 			int16_t sH = 0,			// Amount to draw.
-			RRect* prc = NULL);	// Clip to.
+			RRect* prc = nullptr);	// Clip to.
 
 		// Pass up a message to redraw the specified region.
 		virtual					// If you override this, call this base if possible.
@@ -356,7 +356,7 @@ class RGuiItem : public RProps <U32, U32>
 			int16_t sSrcY = 0,		// Y position in source.
 			int16_t sW = 0,			// Amount to draw.
 			int16_t sH = 0,			// Amount to draw.
-			RRect* prc = NULL);	// Clip to.
+			RRect* prc = nullptr);	// Clip to.
 
 		// Draw text in m_szText in m_u32TextColor with transparent
 		// background at sX, sY with sW and m_sJustification.
@@ -367,7 +367,7 @@ class RGuiItem : public RProps <U32, U32>
 			int16_t sY,				// Y position in image.
 			int16_t sW = 0,			// Width of text area.
 			int16_t	sH = 0,			// Height of test area.
-			RImage* pim = NULL);	// Destination image.  NULL == use m_im.
+			RImage* pim = nullptr);	// Destination image.  nullptr == use m_im.
 
 		// Ask user to erase area specified.
 		virtual					// If you override this, call this base if possible.
@@ -411,31 +411,31 @@ class RGuiItem : public RProps <U32, U32>
 			int16_t sVisible);	// TRUE to make visible, FALSE otherwise.
 
 		// Change parent.  Removes from old parent's list and adds to new.
-		// New can be NULL (so can old).
+		// New can be nullptr (so can old).
 		virtual					// If you override this, call this base if possible.
 		void SetParent(RGuiItem* pguiParent);
 
 		// Draw border.
 		virtual					// If you override this, call this base if possible.
 		void DrawBorder(		// Returns nothing.
-			RImage* pim	= NULL,			// Dest image, uses m_im if NULL.
+			RImage* pim	= nullptr,			// Dest image, uses m_im if nullptr.
 			int16_t sInvert	= FALSE);	// Inverts border if TRUE.
 
 		// Draw background.  Calls user callback m_backcall if provided.
 		virtual					// If you override this, call this base if possible.
 		void DrawBackground(			// Returns nothing.
-			RImage* pim	= NULL);		// Dest image, uses m_im if NULL.
+			RImage* pim	= nullptr);		// Dest image, uses m_im if nullptr.
 
 		// Draw background resource, if one is specified.
 		// Utilizes m_*BkdRes* parameters to get, place, and BLiT the resource.
 		virtual					// If you override this, call this base if possible.
 		void DrawBackgroundRes(		// Returns nothing.
-			RImage* pim = NULL);		// Dest image, uses m_im, if NULL.
+			RImage* pim = nullptr);		// Dest image, uses m_im, if nullptr.
 
 		// Compose item.
 		virtual					// If you override this, call this base if possible.
 		void Compose(			// Returns nothing.
-			RImage* pim = NULL);	// Dest image, uses m_im if NULL.
+			RImage* pim = nullptr);	// Dest image, uses m_im if nullptr.
 
 		// Do one iteration of processing.  This is useful on items that need to
 		// poll frequently or do something every once in a while that is not
@@ -513,7 +513,7 @@ class RGuiItem : public RProps <U32, U32>
 			RImage* pimDst,		// Destination image.
 			int16_t sDstX	= 0,		// X offset in destination.
 			int16_t sDstY	= 0,		// Y offset in destination.
-			RRect* prc = NULL);	// Clip to.
+			RRect* prc = nullptr);	// Clip to.
 
 		// Called by the static implementation of SetFocus() on the item gaining
 		// the focus.
@@ -555,16 +555,16 @@ class RGuiItem : public RProps <U32, U32>
 		// NOTE:  Eventually, this function may do more, so it is better to call
 		// it than simply setting ms_pguiFocus to your gui.
 		static RGuiItem* SetFocus(		// Returns pointer to GUI losing the focus.
-			RGuiItem*	pguiNewFocus);	// New item to focus or NULL for none.
+			RGuiItem*	pguiNewFocus);	// New item to focus or nullptr for none.
 
 		// Moves the focus to the next GUI at the same level as the current
 		// ms_pguiFocus.  Does not affect current focus for top-level guis.
-		static RGuiItem* FocusNext(void);		// Returns new item with focus or NULL,
+		static RGuiItem* FocusNext(void);		// Returns new item with focus or nullptr,
 															// if none.
 
 		// Moves the focus to the previous GUI at the same level as the current
 		// ms_pguiFocus.  Does not affect current focus for top-level guis.
-		static RGuiItem* FocusPrev(void);		// Returns new item with focus or NULL,
+		static RGuiItem* FocusPrev(void);		// Returns new item with focus or nullptr,
 															// if none.
 
 		// Sends the event to the GUI focused via Do(), and, if event is not 
@@ -576,7 +576,7 @@ class RGuiItem : public RProps <U32, U32>
 		// Creates the specified object and returns a pointer to it.
 		// The object is created with new, so use delete to destroy the object.
 		static RGuiItem* CreateGuiItem(	// Returns the allocated type on success.
-													// Returns NULL on error.
+													// Returns nullptr on error.
 			Type	type);						// Type of GuiItem to allocate.  Must be one
 													// of the enums that is a member of 
 													// RGuiItem::Type.
@@ -593,21 +593,21 @@ class RGuiItem : public RProps <U32, U32>
 		// proper (specified in the file) type and loads it using the specified
 		// file.
 		static RGuiItem* LoadInstantiate(	// Returns newly allocated GUI item
-														// on success or NULL on failure.
+														// on success or nullptr on failure.
 			char*	pszFileName);					// Name of file to instantiate from.
 
 		// Instantiate a GUI tree from a file.  Allocates a GUI item of the
 		// proper (specified in the file) type and loads it using the specified
 		// file.
 		static RGuiItem* LoadInstantiate(	// Returns newly allocated GUI item
-														// on success or NULL on failure.
+														// on success or nullptr on failure.
 			RFile*	pfile);						// Pointer to open GUI file.
 
 		// Read item's members from file.
 		virtual				// If you override this, call this base if possible.
 		int16_t ReadMembers(			// Returns 0 on success.
 			RFile*	pfile,			// File to read from.
-			U32		u32Version);	// File format version to use.
+			uint32_t		u32Version);	// File format version to use.
 
 		// Write item's members to file.
 		virtual				// If you override this, call this base if possible.
@@ -622,13 +622,13 @@ class RGuiItem : public RProps <U32, U32>
 		// Get the text that represents this item.
 		int16_t GetText(		// Returns 0 on success.
 			char* pszText,	// Location to copy text to.
-			int16_t sMax);	// Total memory pointed to by pszText.
+         size_t sMax);	// Total memory pointed to by pszText.
 
 		// Get the text that represents the specified item.
 		int16_t GetText(		// Returns 0 on success.
 			int32_t	lId,		// In:  Child item ID (can identify this item). 
 			char* pszText,	// Out: Location to copy text to.
-			int16_t sMax);	// In:  Total memory pointed to by pszText.
+         size_t sMax);	// In:  Total memory pointed to by pszText.
 
 		// Get the number represented by the text in this item.
 		int32_t GetVal(void);		// Returns value.
@@ -660,18 +660,18 @@ class RGuiItem : public RProps <U32, U32>
 		// item.
 		virtual					// If you override this, call this base if possible.
 		void GetClient(		// Returns nothing.
-			int16_t* psX,			// Out: X position unless NULL.
-			int16_t* psY,			// Out: Y position unless NULL.
-			int16_t* psW,			// Out: Width unless NULL.
-			int16_t* psH);		// Out: Height unless NULL.
+			int16_t* psX,			// Out: X position unless nullptr.
+			int16_t* psY,			// Out: Y position unless nullptr.
+			int16_t* psW,			// Out: Width unless nullptr.
+			int16_t* psH);		// Out: Height unless nullptr.
 
 		// Get the "hot" area (i.e., clickable area) relative to this item.
 		virtual					// If you override this, call this base if possible.
 		void GetHotArea(		// Returns nothing.
-			int16_t* psX,			// Out: X position unless NULL.
-			int16_t* psY,			// Out: Y position unless NULL.
-			int16_t* psW,			// Out: Width unless NULL.
-			int16_t* psH);		// Out: Height unless NULL.
+			int16_t* psX,			// Out: X position unless nullptr.
+			int16_t* psY,			// Out: Y position unless nullptr.
+			int16_t* psW,			// Out: Width unless nullptr.
+			int16_t* psH);		// Out: Height unless nullptr.
 
 		// Change the position specified to a top-level coord.
 		void ChildPosToTop(	// Returns nothing.
@@ -690,7 +690,7 @@ class RGuiItem : public RProps <U32, U32>
 			{
 			// Get client position.
 			int16_t	sClientX, sClientY;
-			GetClient(&sClientX, &sClientY, NULL, NULL);
+			GetClient(&sClientX, &sClientY, nullptr, nullptr);
 			// Offset.
 			*psX	+= sClientX;
 			*psY	+= sClientY;
@@ -707,7 +707,7 @@ class RGuiItem : public RProps <U32, U32>
 			TopPosToChild(psX, psY);
 			// Get client position.
 			int16_t	sClientX, sClientY;
-			GetClient(&sClientX, &sClientY, NULL, NULL);
+			GetClient(&sClientX, &sClientY, nullptr, nullptr);
 			// Offset.
 			*psX	-= sClientX;
 			*psY	-= sClientY;
@@ -716,17 +716,17 @@ class RGuiItem : public RProps <U32, U32>
 		// Get the first item with the supplied ID from this among RGuiItem and
 		// its children.
 		RGuiItem* GetItemFromId(	// Returns pointer to RGuiItem, if found;
-											// otherwise, returns NULL.
-			int32_t lId)					// ID of RGuiItem to find.
+											// otherwise, returns nullptr.
+         int32_t lId)					// ID of RGuiItem to find.
 			{
-			RGuiItem*	pguiRes	= NULL;	// Assume not found.
+			RGuiItem*	pguiRes	= nullptr;	// Assume not found.
 
 			// First check this item . . .
 			if (m_lId != lId)
 				{
 				// Check children.
 				RGuiItem*	pgui	= m_listguiChildren.GetHead();
-				while (pgui != NULL && pguiRes == NULL)
+				while (pgui != nullptr && pguiRes == nullptr)
 					{
 					// Check pgui and its children.
 					pguiRes	= pgui->GetItemFromId(lId);
@@ -746,7 +746,7 @@ class RGuiItem : public RProps <U32, U32>
 		// Get the item at the specified point that has the
 		// specified parameters.
 		RGuiItem* GetItemFromPoint(	// Returns item ptr, if item found;
-												// NULL on failure.
+												// nullptr on failure.
 			int16_t	sPosX,					// X position.
 			int16_t	sPosY,					// Y position.
 			int16_t	sActive = TRUE,		// If TRUE, only searches active items.
@@ -760,7 +760,7 @@ class RGuiItem : public RProps <U32, U32>
 			int16_t	sDepth	= 0;
 
 			RGuiItem*	pguiParent	= GetParent();
-			while (pguiParent != NULL)
+			while (pguiParent != nullptr)
 				{
 				// Increase depth.
 				sDepth++;
@@ -777,21 +777,21 @@ class RGuiItem : public RProps <U32, U32>
 									// Returns FALSE otherwise.
 			RGuiItem* pgui)	// GUI that may be an ancestor.
 			{
-			int16_t	sRes	= FALSE;
+			int16_t sResult	= FALSE;
 
 			RGuiItem*	pguiParent =	GetParent();
-			while (pguiParent != NULL && sRes == FALSE)
+			while (pguiParent != nullptr && sResult == FALSE)
 				{
 				if (pguiParent == pgui)
 					{
 					// Found item is an ancestor.
-					sRes	= TRUE;
+					sResult	= TRUE;
 					}
 
 				pguiParent =	pguiParent->GetParent();
 				}
 
-			return sRes;
+			return sResult;
 			}
 
 		// See if item is currently activated.
@@ -828,7 +828,7 @@ class RGuiItem : public RProps <U32, U32>
 
 		// Get the current file version (that is, the file version a file
 		// written from this GUI right now would be).
-		static U32 GetCurrentFileVersion(void);
+		static uint32_t GetCurrentFileVersion(void);
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -851,7 +851,7 @@ class RGuiItem : public RProps <U32, U32>
 		// Read header for this GUI item.
 		static int16_t ReadHeader(	// Returns 0 on success.
 			RFile*	pfile,			// In:  File to read from.
-			U32*	pu32Version,		// Out: File format version.
+			uint32_t*	pu32Version,		// Out: File format version.
 			Type*	ptype);				// Out: Type of GUI item stored.
 
 		// Save item's children to the specified file.
@@ -907,14 +907,14 @@ class RGuiItem : public RProps <U32, U32>
 
 
 
-		U32					m_u32BorderColor;
-		U32					m_u32BorderShadowColor;
-		U32					m_u32BorderHighlightColor;
-		U32					m_u32BorderEdgeColor;
+		uint32_t					m_u32BorderColor;
+		uint32_t					m_u32BorderShadowColor;
+		uint32_t					m_u32BorderHighlightColor;
+		uint32_t					m_u32BorderEdgeColor;
 
-		U32					m_u32TextColor;			// 0 indicates transparency.
-		U32					m_u32BackColor;
-		U32					m_u32TextShadowColor;
+		uint32_t					m_u32TextColor;			// 0 indicates transparency.
+		uint32_t					m_u32BackColor;
+		uint32_t					m_u32TextShadowColor;
 
 		int16_t					m_sTextEffects;			// Flags for text effects.
 
@@ -925,11 +925,11 @@ class RGuiItem : public RProps <U32, U32>
 
 		Justification		m_justification;	// { RGuiItem::Right, RGuiItem::Center, RGuiItem::Left }
 
-		U64					m_ulUserInstance;	// Space that can be used in any way by 
+      uintptr_t					m_ulUserInstance;	// Space that can be used in any way by
 														// the user but is intended to represent 
 														// a user instance structure such as a 
 														// struct or class.
-		uint32_t					m_ulUserData;		// Space that can be used in any way by
+      uintptr_t					m_ulUserData;		// Space that can be used in any way by
 														// the user and has no particular intended
 														// use.
 
@@ -945,7 +945,7 @@ class RGuiItem : public RProps <U32, U32>
 														// (e.g., FSPR8 will always be blt'ed
 														// with transparency).
 
-		U32					m_u32TransparentColor;	// Color used for transparency
+		uint32_t					m_u32TransparentColor;	// Color used for transparency
 																// when using transparent blit
 																// call.
 
@@ -964,7 +964,7 @@ class RGuiItem : public RProps <U32, U32>
 														// -1 would but it just outside the
 														// client area.
 
-		U32					m_u32FocusColor;	// Color to draw focus with.
+		uint32_t					m_u32FocusColor;	// Color to draw focus with.
 
 		int16_t					m_sClicked;			// TRUE if this item is considered
 														// 'Clicked'.  For example, the default
@@ -978,7 +978,7 @@ class RGuiItem : public RProps <U32, U32>
 		int16_t					m_sBkdResTransparent;	// TRUE, if m_pimBkdRes is to be
 																// BLiT'ed transparently; FALSE,
 																// otherwise.
-		U32					m_u32BkdResTransparentColor;	// Transparency color for
+		uint32_t					m_u32BkdResTransparentColor;	// Transparency color for
 																		// m_pimBkdRes when 
 																		// BLiT'ed transparently.
 		int16_t					m_sBkdResPlacement;	// Combination of |'ed
@@ -1009,7 +1009,7 @@ class RGuiItem : public RProps <U32, U32>
 		static RGuiItem*	ms_pguiFocus;		// Higher level APIs can use this as
 														// their current point of input
 														// focus.
-		static char*		ms_apszTypes[NumGuiTypes];	// Array of strings 
+      static const char*		ms_apszTypes[NumGuiTypes];	// Array of strings
 																	// indexed by type.
 	};
 

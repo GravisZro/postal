@@ -31,15 +31,15 @@
 
 //short RAlpha::ms_SetPalette(RImage* pimImage);
 int16_t RAlpha::ms_IsPaletteSet = FALSE;
-U8 RAlpha::ms_red[256] = {0,};
-U8 RAlpha::ms_green[256] = {0,};
-U8 RAlpha::ms_blue[256] = {0,};
+uint8_t RAlpha::ms_red[256] = {0,};
+uint8_t RAlpha::ms_green[256] = {0,};
+uint8_t RAlpha::ms_blue[256] = {0,};
 
-U8 RAlpha::ms_r[256] = {0,};
-U8 RAlpha::ms_g[256] = {0,};
-U8 RAlpha::ms_b[256] = {0,};
-U8 RAlpha::ms_a[256] = {0,};
-U8 RAlpha::ms_f[256] = {0,};
+uint8_t RAlpha::ms_r[256] = {0,};
+uint8_t RAlpha::ms_g[256] = {0,};
+uint8_t RAlpha::ms_b[256] = {0,};
+uint8_t RAlpha::ms_a[256] = {0,};
+uint8_t RAlpha::ms_f[256] = {0,};
 
 int16_t RMultiAlpha::ms_sIsInitialized = FALSE;
 uint8_t	RMultiAlpha::ms_aucLiveDimming[65536];
@@ -84,13 +84,13 @@ int16_t RAlpha::Load(char* pszFile)
 	if (file.Open(pszFile,"rb",RFile::LittleEndian))
 		{
 		TRACE("RAlpha::Load: Error accessing file %s\n",pszFile);
-		return -1;
+      return FAILURE;
 		}
 	
-	int16_t sRet = Load(&file);
+   int16_t sResult = Load(&file);
 	file.Close();
 
-	return sRet;
+   return sResult;
 	}
 
 int16_t RAlpha::Save(char* pszFile)
@@ -100,12 +100,12 @@ int16_t RAlpha::Save(char* pszFile)
 	if (fp->Open(pszFile,"wb",RFile::LittleEndian))
 		{
 		TRACE("RAlpha::Load: Error accessing file %s\n",pszFile);
-		return -1;
+      return FAILURE;
 		}
 	
-	int16_t sRet = Save(fp);
+   int16_t sResult = Save(fp);
 	fp->Close();
-	return sRet;
+   return sResult;
 	}
 
 int16_t RAlpha::Save(RFile* fp)
@@ -115,7 +115,7 @@ int16_t RAlpha::Save(RFile* fp)
 	if (!fp)
 		{
 		TRACE("RAlpha::Save: Null RFile!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	fp->Write("RALPHA");
@@ -141,7 +141,7 @@ int16_t RAlpha::Load(RFile* fp)
 	if (!fp)
 		{
 		TRACE("RAlpha::Load: Null RFile!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -150,14 +150,14 @@ int16_t RAlpha::Load(RFile* fp)
 	if (strcmp(name,"RALPHA"))
 		{
 		TRACE("RAlpha::Load: Not an RAlpha!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	fp->Read(&sVersion);
 	if (sVersion != 1)
 		{
 		TRACE("RAlpha::Load: Not a supported version!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	fp->Read(&m_sAlphaDepth);
@@ -173,7 +173,7 @@ int16_t RAlpha::Load(RFile* fp)
 		if (fp->Read(m_pAlphas[i],m_sAlphaDepth)!=m_sAlphaDepth)
 			{
 			TRACE("RAlpha::Load: read error!\n");
-			return -1;
+         return FAILURE;
 			}
 		}
 
@@ -187,19 +187,19 @@ int16_t RAlpha::ms_SetPalette(RImage* pimImage)
 	if (!pimImage)
 		{
 		TRACE("RAlpha::ms_SetPalette: Null image!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!pimImage->m_pPalette)
 		{
 		TRACE("RAlpha::ms_SetPalette: image has no palette!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (!pimImage->m_pPalette->m_pData)
 		{
 		TRACE("RAlpha::ms_SetPalette: palette has no data!\n");
-		return -1;
+      return FAILURE;
 		}
 
 #endif
@@ -210,7 +210,7 @@ int16_t RAlpha::ms_SetPalette(RImage* pimImage)
 		return 0;
 		}
 
-	return -1;
+   return FAILURE;
 	}
 
  // do alloc first
@@ -228,13 +228,13 @@ int16_t RAlpha::MarkEffect(int16_t sLev,int16_t sChannel,uint8_t ucLev)
 	if (sLev >= m_sAlphaDepth)
 		{
 		TRACE("RAlpha::MarkEffect: Level out of range!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (sChannel >= csLAST_EFFECT) 
 		{
 		TRACE("RAlpha::MarkEffect: Channel not supported\n");
-		return -1;
+      return FAILURE;
 		}
 
 	ms_f[sLev] |= sChannel;
@@ -255,7 +255,7 @@ int16_t RAlpha::MarkEffect(int16_t sLev,int16_t sChannel,uint8_t ucLev)
 
 		default:
 			TRACE("RAlpha::MarkEffect:: BAD CHANNEL VALUE!\n");
-			return -1;
+         return FAILURE;
 		}
 
 	return 0;
@@ -273,7 +273,7 @@ void RAlpha::FinishEffect(int16_t sPalStart, int16_t sPalLen)
 
 	while (sChannel < csLAST_EFFECT)
 		{
-		uint8_t* pucChannel = NULL;
+		uint8_t* pucChannel = nullptr;
 
 		switch (sChannel)
 			{
@@ -353,9 +353,9 @@ int16_t RAlpha::Alloc(int16_t sDepth)
 
 RAlpha::RAlpha()
 	{
-	//m_pAlphas = NULL;
+	//m_pAlphas = nullptr;
 	for (int16_t i = 0 ;i<256;i++)
-		m_pAlphas[i] = NULL;
+		m_pAlphas[i] = nullptr;
 	m_sAlphaDepth = 0;
 	}
 
@@ -368,7 +368,7 @@ void RAlpha::Erase()
 			if (m_pAlphas[i]) 
 				{
 				free(m_pAlphas[i]);
-				m_pAlphas[i] = NULL;
+				m_pAlphas[i] = nullptr;
 				}
 			}
 		//free(m_pAlphas);
@@ -380,7 +380,7 @@ RAlpha::~RAlpha()
 	Erase();
 	}
 
-//************ COMMENT THIS OUT TO REMOVE DEPENDENCY ON BLIT!
+// ************ COMMENT THIS OUT TO REMOVE DEPENDENCY ON BLIT!
 // For debugging an alpha, you should set the current palette to the
 // default one...
 void RAlpha::Dump(RImage* pimDst,int16_t sX,int16_t sY) 
@@ -400,7 +400,7 @@ void RAlpha::Dump(RImage* pimDst,int16_t sX,int16_t sY)
 			rspPlot((m_pAlphas[i][j]),pimDst,int16_t(sX+i),int16_t(sY+j));
 	}
 
-//************ COMMENT THIS OUT TO REMOVE DEPENDENCY ON BLIT!
+// ************ COMMENT THIS OUT TO REMOVE DEPENDENCY ON BLIT!
 // For debugging an alpha, you should set the current palette to the
 // default one...
 void RAlpha::DumpPalette(RImage* pimDst,int16_t sX,int16_t sY) 
@@ -428,7 +428,7 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 	if (!ms_IsPaletteSet)
 		{
 		TRACE("RAlpha::CreateAlphaRGB: First set your palette with ms_SetPalette\n");
-		return -1;
+      return FAILURE;
 		}
 #endif
 
@@ -449,11 +449,11 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 		for (d = 0;d < 256;d++)
 			{
 			// This can be replaced with a 256K table
-			r.val = U16( ms_red[s] * lSrc + ms_red[d] * lDst);
-			g.val = U16( ms_green[s] * lSrc + ms_green[d] * lDst);
-			b.val = U16( ms_blue[s] * lSrc + ms_blue[d] * lDst);
+			r.val = uint16_t( ms_red[s] * lSrc + ms_red[d] * lDst);
+			g.val = uint16_t( ms_green[s] * lSrc + ms_green[d] * lDst);
+			b.val = uint16_t( ms_blue[s] * lSrc + ms_blue[d] * lDst);
 
-			m_pAlphas[s][d] = (U8)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
+			m_pAlphas[s][d] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
 			}
 		}
@@ -466,11 +466,12 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 int16_t RAlpha::CreateLightEffectRGB(uint8_t* pa,uint8_t* pr,uint8_t* pg,uint8_t* pb,int32_t linc,
 			int16_t sPalStart, int16_t sPalLen, int16_t sAlphaDepth)
 	{
+  UNUSED(linc);
 #ifdef _DEBUG
 	if (!ms_IsPaletteSet)
 		{
 		TRACE("RAlpha::CreateLightEffectRGB: First set your palette with ms_SetPalette\n");
-		return -1;
+      return FAILURE;
 		}
 #endif
 
@@ -489,11 +490,11 @@ int16_t RAlpha::CreateLightEffectRGB(uint8_t* pa,uint8_t* pr,uint8_t* pg,uint8_t
 			lSrc = int32_t(pa[f]);
 			lFog = 255 - lSrc;
 			// This can be replaced with a 256K table
-			r.val = U16( ms_red[s] * lSrc + pr[f] * lFog);
-			g.val = U16( ms_green[s] * lSrc + pg[f] * lFog);
-			b.val = U16( ms_blue[s] * lSrc + pb[f] * lFog);
+			r.val = uint16_t( ms_red[s] * lSrc + pr[f] * lFog);
+			g.val = uint16_t( ms_green[s] * lSrc + pg[f] * lFog);
+			b.val = uint16_t( ms_blue[s] * lSrc + pb[f] * lFog);
 
-			m_pAlphas[s][f] = (U8)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
+			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
 			}
 		}
@@ -507,7 +508,7 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 	if (!ms_IsPaletteSet)
 		{
 		TRACE("RAlpha::CreateLightEffectRGB: First set your palette with ms_SetPalette\n");
-		return -1;
+      return FAILURE;
 		}
 #endif
 
@@ -523,11 +524,11 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 			lFog = 255 - lSrc;
 
 			// This can be replaced with a 256K table
-			r.val = U16( ms_red[s] * lSrc + ms_r[f] * lFog);
-			g.val = U16( ms_green[s] * lSrc + ms_g[f] * lFog);
-			b.val = U16( ms_blue[s] * lSrc + ms_b[f] * lFog);
+			r.val = uint16_t( ms_red[s] * lSrc + ms_r[f] * lFog);
+			g.val = uint16_t( ms_green[s] * lSrc + ms_g[f] * lFog);
+			b.val = uint16_t( ms_blue[s] * lSrc + ms_b[f] * lFog);
 
-			m_pAlphas[s][f] = (U8)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
+			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
 			}
 		}
@@ -536,11 +537,11 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 	}
 
 
-//**************************************************************************
-//**************************************************************************
+// **************************************************************************
+// **************************************************************************
 // MultiAlpha!
-//**************************************************************************
-//**************************************************************************
+// **************************************************************************
+// **************************************************************************
 
 RMultiAlpha::RMultiAlpha()
 	{
@@ -581,7 +582,7 @@ RMultiAlpha::~RMultiAlpha()
 	{
 	for (int16_t i=0;i < m_sNumLevels;i++)
 		{
-		if (m_pAlphaList[i] != NULL) delete m_pAlphaList[i];
+		if (m_pAlphaList[i] != nullptr) delete m_pAlphaList[i];
 		}
 
 	free (m_pAlphaList);
@@ -592,11 +593,11 @@ RMultiAlpha::~RMultiAlpha()
 
 int16_t RMultiAlpha::Alloc(int16_t sDepth)
 	{
-	// a NULL pointer will be left in the zero position.
+	// a nullptr pointer will be left in the zero position.
 	if (m_pAlphaList)
 		{
 		TRACE("RMultiAlpha::alloc: error, already created!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	m_sNumLevels = sDepth;
@@ -609,14 +610,14 @@ int16_t RMultiAlpha::Alloc(int16_t sDepth)
 void RMultiAlpha::Erase()
 	{
 	m_sNumLevels = 0;
-	m_pAlphaList = NULL;
+	m_pAlphaList = nullptr;
 	for (int16_t i=0;i < 256;i++) 
 		{
-		m_pGeneralAlpha[i] = NULL;
+		m_pGeneralAlpha[i] = nullptr;
 		m_pSaveLevels[i] = uint8_t(0);
 		}
 	m_sGeneral = TRUE;
-	m_pLevelOpacity = NULL;
+	m_pLevelOpacity = nullptr;
 	}
 
 // Note: this type can be supported with one alphablit
@@ -629,7 +630,7 @@ int16_t RMultiAlpha::AddAlpha(RAlpha* pAlpha,int16_t sLev)
 	if (sLev > m_sNumLevels)
 		{
 		TRACE("RMultiAlpha::AddAlpha: level out of range!\n");
-		return -1;
+      return FAILURE;
 		}
 	m_pAlphaList[sLev] = pAlpha;
 	return 0;
@@ -644,7 +645,7 @@ int16_t RMultiAlpha::Load(RFile* pFile)
 	if (strcmp(type,"MALPHA"))
 		{
 		TRACE("RMultiAlpha::Load: Bad File Type\n");
-		return -1;
+      return FAILURE;
 		}
 
 	pFile->Read(&sVer);
@@ -652,7 +653,7 @@ int16_t RMultiAlpha::Load(RFile* pFile)
 	if (sVer != 2)
 		{
 		TRACE("RMultiAlpha::Load: Bad Version Number\n");
-		return -1;
+      return FAILURE;
 		}
 
 	pFile->Read(&m_sNumLevels);
@@ -677,7 +678,7 @@ int16_t RMultiAlpha::Load(RFile* pFile)
 	for (i=0;i<256;i++)
 		{
 		if ((m_pSaveLevels[i]==0) || (m_pSaveLevels[i] > m_sNumLevels)) 
-			m_pGeneralAlpha[i] = NULL;
+			m_pGeneralAlpha[i] = nullptr;
 		else m_pGeneralAlpha[i] = m_pAlphaList[m_pSaveLevels[i] - 1]->m_pAlphas;
 		}
 
@@ -715,21 +716,21 @@ int16_t RMultiAlpha::Load(char* pszFile)
 	RFile fplocal;
 	RFile *fp = &fplocal; // needs to be freed automatically!
 
-	if (m_pAlphaList != NULL)
+	if (m_pAlphaList != nullptr)
 		{
 		TRACE("RMultiAlpha::Load: MultAlpha NOT EMPTY!\n");
-		return -1;
+      return FAILURE;
 		}
 
 	if (fp->Open(pszFile,"rb",RFile::LittleEndian))
 		{
 		TRACE("RMultiAlpha::Load: Error accessing file %s\n",pszFile);
-		return -1;
+      return FAILURE;
 		}
 	
-	int16_t sRet = Load(fp);
+   int16_t sResult = Load(fp);
 	fp->Close();
-	return sRet;
+   return sResult;
 	}
 
 int16_t RMultiAlpha::Save(char* pszFile)
@@ -739,12 +740,12 @@ int16_t RMultiAlpha::Save(char* pszFile)
 	if (fp->Open(pszFile,"wb",RFile::LittleEndian))
 		{
 		TRACE("RMultiAlpha::Load: Error accessing file %s\n",pszFile);
-		return -1;
+      return FAILURE;
 		}
 	
-	int16_t sRet = Save(fp);
+   int16_t sResult = Save(fp);
 	fp->Close();
-	return sRet;
+   return sResult;
 	}
 
 // dOpacity for now is between 0.0 (background) and 1.0 (foreground)
@@ -760,13 +761,13 @@ int16_t RMultiAlpha::CreateLayer(int16_t sLayerNumber,
 	if (sLayerNumber >= m_sNumLevels)
 		{
 		TRACE("RMultiAlpha::CreateAlphaLayer: Layer out of range.\n");
-		return -1;
+      return FAILURE;
 		}
 
-	if (m_pAlphaList[sLayerNumber] != NULL)
+	if (m_pAlphaList[sLayerNumber] != nullptr)
 		{
 		TRACE("RMultiAlpha::CreateAlphaLayer: Error: Layer exists.\n");
-		return -1;
+      return FAILURE;
 		}
 	// remember how this level was created.
 	m_pLevelOpacity[sLayerNumber] = uint8_t(255 * dOpacity);
@@ -787,12 +788,12 @@ int16_t RMultiAlpha::Finish(int16_t sGeneral)
 		{
 		m_sGeneral = FALSE;
 
-		m_pGeneralAlpha[0] = NULL; // shift things up one.
+		m_pGeneralAlpha[0] = nullptr; // shift things up one.
 		for (i=0;i<m_sNumLevels;i++) // make it look like (m_sNumLevels+2)
 			{
 			m_pSaveLevels[i] = i;
-			// Use NULL as a code for opacity, 0 is hooked as transparent
-			if (m_pLevelOpacity[i] == 255) m_pGeneralAlpha[i+1] = NULL;
+			// Use nullptr as a code for opacity, 0 is hooked as transparent
+			if (m_pLevelOpacity[i] == 255) m_pGeneralAlpha[i+1] = nullptr;
 			else
 				m_pGeneralAlpha[i+1] = m_pAlphaList[i]->m_pAlphas;
 			}
@@ -800,7 +801,7 @@ int16_t RMultiAlpha::Finish(int16_t sGeneral)
 		m_pSaveLevels[m_sNumLevels] = m_sNumLevels;
 		for (i = m_sNumLevels + 1; i < 256;i++) 
 			{
-			m_pGeneralAlpha[i] = NULL;
+			m_pGeneralAlpha[i] = nullptr;
 			m_pSaveLevels[i] = m_sNumLevels + 1;
 			}
 		}
@@ -812,7 +813,7 @@ int16_t RMultiAlpha::Finish(int16_t sGeneral)
 
 		for (i=0;i<m_sNumLevels;i++)
 			{
-			// Use NULL as a code for opacity, 0 is hooked as transparent
+			// Use nullptr as a code for opacity, 0 is hooked as transparent
 			m_pSaveLevels[m_pLevelOpacity[i]] = (i+1); // the zeroth level is implied!
 			}
 
@@ -846,7 +847,7 @@ int16_t RMultiAlpha::Finish(int16_t sGeneral)
 		for (i=0;i<256;i++) 
 			{
 			if ((m_pSaveLevels[i]==0) || (m_pSaveLevels[i] > m_sNumLevels)) 
-				m_pGeneralAlpha[i] = NULL;
+				m_pGeneralAlpha[i] = nullptr;
 			else m_pGeneralAlpha[i] = m_pAlphaList[m_pSaveLevels[i] - 1]->m_pAlphas;
 			}
 		}
@@ -892,12 +893,12 @@ uint8_t*** RMultiAlpha::pppucCreateFastMultiAlpha(
 	// how you seek!
 
 	// I am adding on in BYTES, not words...
-	uint8_t*** pppucFastAligned = (uint8_t***) ((U64(pppucFastMem)+4095) & (~4095) );
+	uint8_t*** pppucFastAligned = (uint8_t***) ((uint64_t(pppucFastMem)+4095) & (~4095) );
 
-	if (!pppucFastMem) return NULL;
+	if (!pppucFastMem) return nullptr;
 	uint8_t* pInfo = (uint8_t*)pppucFastAligned;
 	// For freeing:
-	int32_t lMemOffset = U64(pppucFastAligned) - U64(pppucFastMem);
+	int32_t lMemOffset = uint64_t(pppucFastAligned) - uint64_t(pppucFastMem);
 
 	// Remember offsets for each main memory structure:
 
@@ -915,7 +916,7 @@ uint8_t*** RMultiAlpha::pppucCreateFastMultiAlpha(
 	//------------------------------------------------------------------------
 	// Create the needed pointers into the normal MultiAlpha:
 	//------------------------------------------------------------------------
-	uint8_t** ppucLevel = NULL;
+	uint8_t** ppucLevel = nullptr;
 
 	// Copy the abridged data from the current MultiAlpha in 
 	// level majorest, source major, destination minor form:
@@ -935,7 +936,7 @@ uint8_t*** RMultiAlpha::pppucCreateFastMultiAlpha(
 		pppucFastAligned[a] = ppucCurSrc - sStartSrc; // sStartSrc Biased!
 
 		ppucLevel = m_pGeneralAlpha[a];
-		if (!ppucLevel) {pppucFastAligned[a] = NULL; continue;} // Final 100% alphas are not stored
+		if (!ppucLevel) {pppucFastAligned[a] = nullptr; continue;} // Final 100% alphas are not stored
 
 		for (s = 0; s < sNumSrc; s++,ppucCurSrc++)
 			{
@@ -976,7 +977,7 @@ int16_t	RMultiAlpha::DeleteFastMultiAlpha(uint8_t ****pfmaDel)
 	ASSERT(lDelta < 4096); // best error checking I can do.
 
 	free(pByteAligned - lDelta);
-	*pfmaDel = NULL;
+	*pfmaDel = nullptr;
 
 	return SUCCESS;
 	}
@@ -1042,7 +1043,7 @@ void	RFastMultiAlphaWrapper::Clear()
 
 RFastMultiAlphaWrapper::RFastMultiAlphaWrapper()
 	{
-	m_pppucFastMultiAlpha = NULL;
+	m_pppucFastMultiAlpha = nullptr;
 	Clear();
 	}
 
@@ -1077,7 +1078,7 @@ int16_t RFastMultiAlphaWrapper::Attach(uint8_t	***pppucFMA,int16_t sStartSrc,
 		int16_t sNumSrc,int16_t sStartDst,int16_t sNumDst,
 		int16_t sNumLayers)
 	{
-	ASSERT(m_pppucFastMultiAlpha == NULL);
+	ASSERT(m_pppucFastMultiAlpha == nullptr);
 	ASSERT(sStartSrc >= 0);
 	ASSERT(sNumSrc > 0);
 	ASSERT(sStartDst >= 0);
@@ -1121,7 +1122,7 @@ uint8_t***	RFastMultiAlphaWrapper::pppucGetFMA()
 	TRACE("YOU MUST INSTEAD STORE THE POINTER SOMEWHERE AND REUSE IT!\n");
 
 	ASSERT(FALSE);
-	return NULL;
+	return nullptr;
 	}
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1196,7 +1197,7 @@ int16_t RFastMultiAlphaWrapper::Save(RFile* pf)
 int16_t RFastMultiAlphaWrapper::Load(RFile* pf)
 	{
 	ASSERT(pf);
-	ASSERT(m_pppucFastMultiAlpha == NULL);
+	ASSERT(m_pppucFastMultiAlpha == nullptr);
 
 	int16_t sVer = 1;
 	char	szType[32];
@@ -1222,13 +1223,13 @@ int16_t RFastMultiAlphaWrapper::Load(RFile* pf)
 	pf->Read(&m_sNumDst);
 
 	// RESERVED:
-	int16_t sRes;
+	int16_t sResult;
 	int32_t lRes;
 
-	pf->Read(&sRes); 
-	pf->Read(&sRes);
-	pf->Read(&sRes);
-	pf->Read(&sRes);
+	pf->Read(&sResult); 
+	pf->Read(&sResult);
+	pf->Read(&sResult);
+	pf->Read(&sResult);
 	pf->Read(&lRes);
 
 	//---------------------- HEADER ------------------
@@ -1254,10 +1255,10 @@ int16_t RFastMultiAlphaWrapper::Load(RFile* pf)
 	// how you seek!
 
 	// I am adding on in BYTES, not words...
-	uint8_t*** pppucFastAligned = (uint8_t***) ((U64(pppucFastMem)+4095) & (~4095) );
+	uint8_t*** pppucFastAligned = (uint8_t***) ((uint64_t(pppucFastMem)+4095) & (~4095) );
 
 	// For freeing (in bytes):
-	int32_t lMemOffset = U64(pppucFastAligned) - U64(pppucFastMem);
+	int32_t lMemOffset = uint64_t(pppucFastAligned) - uint64_t(pppucFastMem);
 
 	//==============  Idenitfy the different data sections  ===============
 	// NOTE:  once debugged, remove ppucFirstSrcArray,pucData

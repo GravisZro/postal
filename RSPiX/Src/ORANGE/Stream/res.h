@@ -15,6 +15,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
+
 #ifndef RES_H
 #define RES_H
 
@@ -60,7 +64,7 @@ class CRes
 
 	public:		// Querries.
 		// Retrieves the resource identified by pszName.
-		// Returns ptr to CResItem on succes, NULL otherwise.
+		// Returns ptr to CResItem on succes, nullptr otherwise.
 		PRESITEM GetResource(char* pszName);
 
 		// Releases a resource.

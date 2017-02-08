@@ -140,7 +140,8 @@ void CChunk::Update(void)
 
 		switch (m_type)
 			{
-			case Blood:
+        UNHANDLED_SWITCH;
+         case Blood:
 				{
 				RImage*	pim	= m_pRealm->m_phood->m_pimBackground;
 
@@ -149,7 +150,7 @@ void CChunk::Update(void)
 					&& sY2d < pim->m_sHeight)
 					{
 					// Pixel.  8bpp only!
-					U8*	pu8Dst	= pim->m_pData + sX2d + sY2d * pim->m_lPitch;
+					uint8_t*	pu8Dst	= pim->m_pData + sX2d + sY2d * pim->m_lPitch;
 					
 					*pu8Dst	= rspBlendColor(						// Alpha color/index.
 						ALPHA_LEVEL,									// Alpha level.
@@ -165,7 +166,7 @@ void CChunk::Update(void)
 			case Shell:
 #if 0	// Looks bad.
 				rspPlot(
-					(U8)251,
+					(uint8_t)251,
 					m_pRealm->m_phood->m_pimBackground,
 					sX2d, 
 					sY2d);
@@ -177,7 +178,7 @@ void CChunk::Update(void)
 					sY2d,
 					sX2d + RAND_SWAY(BLOOD_SWAY),
 					sY2d + RAND_SWAY(BLOOD_SWAY),
-					NULL);
+					nullptr);
 #endif
 				break;
 			}
@@ -224,7 +225,7 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 	int16_t	sRandVertVelSway,	// In:  Random sway on velocity or zero.
 	Type	type)					// In:  Type of chunk.
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	
 	// Use specified position
 	m_dX = (double)sX;

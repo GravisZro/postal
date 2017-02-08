@@ -214,7 +214,7 @@ void RString::Grow(int32_t lMinimumSize)
 			// Change buffer size
 			char* pOld = m_pBuf;
 			m_pBuf = (char*)malloc(lMinimumSize);
-			ASSERT(m_pBuf != 0); // should be caught by new_handler, but just in case...
+         ASSERT(m_pBuf != nullptr); // should be caught by new_handler, but just in case...
 			memcpy(m_pBuf, pOld, m_lBufSize);
 			free(pOld);
 			}
@@ -222,7 +222,7 @@ void RString::Grow(int32_t lMinimumSize)
 			{
 			// Create new buffer
 			m_pBuf = (char*)malloc(lMinimumSize);
-			ASSERT(m_pBuf != 0); // should be caught by new_handler, but just in case...
+         ASSERT(m_pBuf != nullptr); // should be caught by new_handler, but just in case...
 			*m_pBuf = 0;	// write terminating null (string length must be 0 at this point)
 			}
 		m_lBufSize = lMinimumSize;
@@ -258,7 +258,7 @@ void RString::Shrink(int32_t lMaximumSize)
 				// Change buffer size
 				char* pOld = m_pBuf;
 				m_pBuf = (char*)malloc(lMaximumSize);
-				ASSERT(m_pBuf != 0); // should be caught by new_handler, but just in case...
+            ASSERT(m_pBuf != nullptr); // should be caught by new_handler, but just in case...
 				memcpy(m_pBuf, pOld, m_lBufSize);
 				free(pOld);
 				m_lBufSize = lMaximumSize;
@@ -554,7 +554,7 @@ void RString::ToLower(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t RString::Load(RFile* pFile)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Read length to separate var to avoid corrupting real one in case of read error
 	int32_t lLen;
@@ -575,7 +575,7 @@ int16_t RString::Load(RFile* pFile)
 				{
 				Clear();
 				TRACE("RString::Load(): Error reading string!\n");
-				sResult = -1;
+				sResult = FAILURE;
 				}
 			}
 		else
@@ -587,7 +587,7 @@ int16_t RString::Load(RFile* pFile)
 		{
 		Clear();
 		TRACE("RString::Load(): Error reading string length!\n");
-		sResult = -1;
+		sResult = FAILURE;
 		}
 
 	return sResult;
@@ -611,10 +611,10 @@ int16_t RString::Save(RFile* pFile) const
 	if (pFile->Error())
 		{
 		TRACE("RString::Save(): Error writing string!\n");
-		return -1; // error
+      return FAILURE; // error
 		}
 
-	return 0; // success
+	return SUCCESS; // success
 	}
 
 

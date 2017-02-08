@@ -99,8 +99,8 @@
 // taking warp-around into account.  Note that the given index must NEVER be
 // modified, even temporarily, because that could cause bugs when the queue is
 // used by interrupt-driven and normal code at the same time.
-#define QNEXT(i) 		(((i)+(short)1) >= QSIZE ? (short)0 : ((i)+(short)1))
-#define QPREV(i)		(((i)-(short)1) >= 0 ? ((i)-(short)1) : (QSIZE-(short)1))
+#define QNEXT(i) 		((size_t)(i+1) >= QSIZE ? 0 : i+1)
+#define QPREV(i)		((i-1) >= 0 ? i-1 : QSIZE-1)
 
 template <class T, int16_t sSize> class RQueue
 	{
@@ -137,14 +137,14 @@ template <class T, int16_t sSize> class RQueue
 				// done in this order to allow interrupt-driven usage.)
 				m_aptQ[m_sTail] = pT;
 				m_sTail = QNEXT(m_sTail);
-				return 0;	// success!
+            return SUCCESS;	// success!
 				}
 			else
-				return 1;	// failure!
+            return FAILURE;	// failure!
 			}
 
 		
-		// Dequeue the next item (NULL = empty)
+      // Dequeue the next item (nullptr = empty)
 		//   NOTICE: No problems with mixed usage of normal and interrupt-driven code!
 		T* DeQ(void)
 			{
@@ -158,10 +158,10 @@ template <class T, int16_t sSize> class RQueue
 				return ptTemp;
 				}
 			else
-				return NULL;
+            return nullptr;
 			}
 		
-		// Remove the item at the tail of the queue (NULL = empty).
+      // Remove the item at the tail of the queue (nullptr = empty).
 		//   WARNING: NEVER call this under mixed usage of normal and interrupt-driven
 		//   code!  It would only be safe if (1) called from normal code when interrupts
 		//   are disabled or (2) from interrupt code when it is certain that normal code
@@ -176,7 +176,7 @@ template <class T, int16_t sSize> class RQueue
 				return m_aptQ[m_sTail];
 				}
 			else
-				return NULL;
+            return nullptr;
 			}
 		
 		// Check if queue is empty (returns TRUE if it's empty)
@@ -209,11 +209,11 @@ template <class T, int16_t sSize> class RQueue
 			
 		// "Peek" at head item in the queue
 		//   WARNING: Could yield inaccurate results if EnQ() or DeQ() are interrupt-driven!
-		T* Peek(void) { return (IsNotEmpty() ? m_aptQ[m_sHead] : NULL); }
+      T* Peek(void) { return (IsNotEmpty() ? m_aptQ[m_sHead] : nullptr); }
 		
 		// "Peek" at tail item in the queue.
 		//   WARNING: Could yield inaccurate results if EnQ() or DeQ() are interrupt-driven!
-		T* PeekTail(void) { return (IsNotEmpty() ? m_aptQ[QPREV(m_sTail)] : NULL); }
+      T* PeekTail(void) { return (IsNotEmpty() ? m_aptQ[QPREV(m_sTail)] : nullptr); }
 
 	protected:		
 		volatile int16_t m_sHead;		// volatile since it could change on interrupt!

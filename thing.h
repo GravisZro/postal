@@ -306,7 +306,7 @@ class CListNode
 		void InsertBefore(
 			Node* pn)	// In:  Node to insert before.
 			{
-			ASSERT(m_pnNext == NULL && m_pnPrev == NULL);
+			ASSERT(m_pnNext == nullptr && m_pnPrev == nullptr);
 			m_pnNext					= pn;
 			m_pnPrev					= pn->m_pnPrev;
 			m_pnPrev->m_pnNext	= this;
@@ -318,7 +318,7 @@ class CListNode
 		void AddAfter(
 			Node* pn)	// In:  Node to add after.
 			{
-			ASSERT(m_pnNext == NULL && m_pnPrev == NULL);
+			ASSERT(m_pnNext == nullptr && m_pnPrev == nullptr);
 			m_pnNext					= pn->m_pnNext;
 			m_pnPrev					= pn;
 			m_pnNext->m_pnPrev	= this;
@@ -332,8 +332,8 @@ class CListNode
 			{
 			m_pnNext->m_pnPrev		= m_pnPrev;
 			m_pnPrev->m_pnNext		= m_pnNext;
-			m_pnNext						= NULL;
-			m_pnPrev						= NULL;
+			m_pnNext						= nullptr;
+			m_pnPrev						= nullptr;
 			}
 
 	public:
@@ -373,15 +373,15 @@ class CThing
 																		// cannot.
 			} ClassInfo;
 
-		// Typedef for class ID's, required because we want specify the type,
-		// whereas the compiler always uses type int for enums.
-		typedef uint8_t ClassIDType;
+      // Typedef for class ID's, required because we want specify the type,
+      // whereas the compiler always uses type int for enums.
+      typedef uint8_t ClassIDType;
 
 		// Class ID's for all derived classes that need to be loaded/saved.  If
 		// these numbers change, it will completely invalidate any world files
 		// that were created prior to the change!  Add new ID's after existing
 		// ID's so the existing ones don't change.
-		typedef enum
+      enum : uint8_t
 			{
 			// First entry should start at 0!
 			CHoodID = 0,
@@ -445,7 +445,7 @@ class CThing
 
 			// This must be the last entry so it gets set to the total number of ID's
 			TotalIDs
-			};
+         };
 
 		typedef enum	// Macros within CThing namespace.
 			{
@@ -533,7 +533,7 @@ class CThing
 
 		// Unique ID specific to this instance of CThing (set in constructor,
 		// released in destructor).
-		U16			m_u16InstanceId;
+		uint16_t			m_u16InstanceId;
 
 	//---------------------------------------------------------------------------
 	// Public member variables
@@ -568,14 +568,14 @@ class CThing
 			}
 
 		// Get object instance's unique ID.
-		U16 GetInstanceID(void)
+		uint16_t GetInstanceID(void)
 			{
 			return m_u16InstanceId;
 			}
 
 		// Set object instance's unique ID.
 		void SetInstanceID(	// Returns nothing.
-			U16	u16Id);		// New id for this instance.
+			uint16_t	u16Id);		// New id for this instance.
 
 		// Helper for processing your GUIs.
 		// Will be made visible by calling pguiRoot->SetVisible(TRUE).
@@ -604,7 +604,7 @@ class CThing
 												// to continue.                          
 			RInputEvent*	pie);			// Out: Next input event to process.     
 
-		int16_t SendThingMessage(pGameMessage pMessage, U16 u16ID)
+		int16_t SendThingMessage(pGameMessage pMessage, uint16_t u16ID)
 			{
 				return SendThingMessage(pMessage, pMessage->msg_Generic.sPriority, u16ID);
 			}
@@ -614,7 +614,7 @@ class CThing
 				return SendThingMessage(pMessage, pMessage->msg_Generic.sPriority, pThing);
 			}
 
-		int16_t SendThingMessage(pGameMessage pMessage, int16_t sPriority, U16 u16ID);
+		int16_t SendThingMessage(pGameMessage pMessage, int16_t sPriority, uint16_t u16ID);
 
 		int16_t SendThingMessage(pGameMessage pMessage, int16_t sPriority, CThing* pThing);
 
@@ -662,13 +662,13 @@ class CThing
 		// Startup object
 		virtual int16_t Startup(void)							// Returns 0 if successfull, non-zero otherwise
 			{
-			return 0;
+         return SUCCESS;
 			}
 
 		// Shutdown object
 		virtual int16_t Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 			{
-			return 0;
+         return SUCCESS;
 			}
 
 		// Suspend object
@@ -697,13 +697,13 @@ class CThing
 			int16_t /*sY*/,											// In:  New y coord
 			int16_t /*sZ*/)											// In:  New z coord
 			{
-			return 0;
+         return SUCCESS;
 			}
 
 		// Called by editor to modify object
 		virtual int16_t EditModify(void)						// Returns 0 if successfull, non-zero otherwise
 			{
-			return 0;
+         return SUCCESS;
 			}
 
 		// Called by editor to move object to specified position
@@ -712,7 +712,7 @@ class CThing
 			int16_t /*sY*/,											// In:  New y coord
 			int16_t /*sZ*/)											// In:  New z coord
 			{
-			return 0;
+         return SUCCESS;
 			}
 
 		// Called by editor to get the clickable pos/area of an object in 2D.
@@ -754,8 +754,8 @@ class CThing
 		// Get the sprite for this thing.  If there's more than one, pick one
 		// or none to return.
 		virtual	// If you override this, do NOT call this base class.
-		CSprite* GetSprite(void)	// Returns the sprite for this thing or NULL.
-			{ return NULL; }
+		CSprite* GetSprite(void)	// Returns the sprite for this thing or nullptr.
+			{ return nullptr; }
 
 		// Get the coordinates of this thing.  This implementation returns 
 		// InvalidPosition to indicate that it is not implemented for this 
@@ -771,9 +771,9 @@ class CThing
 		double GetZ(void)	{ return InvalidPosition; }
 
 		// Get the smash - for normal CThings that don't have a smash, it
-		// will return NULL, CThing3d's though always have a smash.
+		// will return nullptr, CThing3d's though always have a smash.
 		virtual 
-		CSmash* GetSmash(void) {return NULL;}
+		CSmash* GetSmash(void) {return nullptr;}
 
 		//////////////////////////////////////////////////////////////////////////
 		// These are defined merely to discourage their use within CThings.

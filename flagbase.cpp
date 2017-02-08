@@ -78,7 +78,7 @@ int16_t CFlagbase::ms_sFileCount;
 
 /// Throwing Animation Files ////////////////////////////////////////////////////
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszRedResNames[] = 
+static const char* ms_apszRedResNames[] =
 {
 	"3d/rbase.sop",
 	"3d/rbase.mesh",
@@ -86,11 +86,11 @@ static char* ms_apszRedResNames[] =
 	"3d/rbase.hot",
 	"3d/rbase.bounds",
 	"3d/rbase.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
-static char* ms_apszBlueResNames[] = 
+static const char* ms_apszBlueResNames[] =
 {
 	"3d/bbase.sop",
 	"3d/bbase.mesh",
@@ -98,11 +98,11 @@ static char* ms_apszBlueResNames[] =
 	"3d/bbase.hot",
 	"3d/bbase.bounds",
 	"3d/bbase.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
-
+#ifdef UNUSED_VARIABLES
 // These are the points that are checked on the attribute map relative to his origin
 static RP3d ms_apt3dAttribCheck[] =
 {
@@ -113,7 +113,7 @@ static RP3d ms_apt3dAttribCheck[] =
 	{ 0, 0,  6},
 	{ 6, 0,  6},
 };
-
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -124,10 +124,10 @@ int16_t CFlagbase::Load(				// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,					// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)				// In:  Version of file format to load.
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	// Call the base load function to get ID, position, etc.
 	sResult = CThing3d::Load(pFile, bEditMode, sFileCount, ulFileVersion);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 		// Load common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -201,14 +201,14 @@ int16_t CFlagbase::Load(				// Returns 0 if successfull, non-zero otherwise
 		}
 
 		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == 0)
+		if (!pFile->Error() && sResult == SUCCESS)
 		{
 			// Get resources
 			sResult = GetResources();
 		}
 		else
 		{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CFlagbase::Load(): Error reading from file!\n");
 		}
 	}
@@ -255,7 +255,7 @@ int16_t CFlagbase::Save(										// Returns 0 if successfull, non-zero otherwis
 	else
 	{
 		TRACE("CFlagbase::Save() - Error writing to file\n");
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -268,7 +268,7 @@ int16_t CFlagbase::Save(										// Returns 0 if successfull, non-zero otherwis
 
 int16_t CFlagbase::Init(void)
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Prepare shadow (get resources and setup sprite).
 	sResult	= PrepareShadow();
@@ -297,7 +297,7 @@ int16_t CFlagbase::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlagbase::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Set the current height, previous time, and Nav Net
 	CThing3d::Startup();
@@ -314,7 +314,7 @@ int16_t CFlagbase::Startup(void)								// Returns 0 if successfull, non-zero ot
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlagbase::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	m_trans.Make1();
 
@@ -327,11 +327,11 @@ int16_t CFlagbase::Shutdown(void)							// Returns 0 if successfull, non-zero ot
 ////////////////////////////////////////////////////////////////////////////////
 void CFlagbase::Update(void)
 {
-	int16_t sHeight = m_sPrevHeight;
+//	int16_t sHeight = m_sPrevHeight;
 	int32_t lThisTime;
 	int32_t lTimeDifference;
-	int32_t lSqDistanceToDude = 0;
-	CSmash* pSmashed = NULL;
+//	int32_t lSqDistanceToDude = 0;
+	CSmash* pSmashed = nullptr;
 
 	if (!m_sSuspend)
 	{
@@ -340,7 +340,7 @@ void CFlagbase::Update(void)
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		// Calculate elapsed time in seconds
-		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
+//		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
 
 		// Check for new messages that may change the state
 		ProcessMessages();
@@ -348,7 +348,8 @@ void CFlagbase::Update(void)
 
 		switch(m_state)
 		{
-			case CFlagbase::State_Wait:
+        UNHANDLED_SWITCH;
+         case CFlagbase::State_Wait:
 				if (lThisTime > m_lTimer)
 				{
 					m_state = CFlagbase::State_Guard;
@@ -446,7 +447,7 @@ int16_t CFlagbase::EditNew(									// Returns 0 if successfull, non-zero otherw
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	sResult = CThing3d::EditNew(sX, sY, sZ);
 
@@ -461,7 +462,7 @@ int16_t CFlagbase::EditNew(									// Returns 0 if successfull, non-zero otherw
 	}
 	else
 	{
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -520,16 +521,15 @@ void CFlagbase::EditHotSpot(			// Returns nothiing.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlagbase::EditModify(void)
 {
-	int16_t sResult = 0;
-	U16 u16OrigColor = m_u16Color;
-	RGuiItem* pGuiItem = NULL;
+	int16_t sResult = SUCCESS;
+	uint16_t u16OrigColor = m_u16Color;
 	RGuiItem* pguiRoot = RGuiItem::LoadInstantiate(FullPathVD("res/editor/flagbase.gui"));
-	if (pguiRoot != NULL)
+	if (pguiRoot != nullptr)
 	{
 		REdit* peditFlagID = (REdit*) pguiRoot->GetItemFromId(GUI_FLAGID_EDIT_ID);
 		REdit* peditColor  = (REdit*) pguiRoot->GetItemFromId(GUI_COLOR_EDIT_ID);
 
-		if (peditFlagID != NULL && peditColor != NULL)
+		if (peditFlagID != nullptr && peditColor != nullptr)
 		{
 			ASSERT(peditFlagID->m_type == RGuiItem::Edit);
 			ASSERT(peditColor->m_type == RGuiItem::Edit);
@@ -556,7 +556,7 @@ int16_t CFlagbase::EditModify(void)
 		GetResources();
 	}
 
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -564,7 +564,7 @@ int16_t CFlagbase::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlagbase::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	switch (m_u16Color)
 	{
@@ -579,7 +579,7 @@ int16_t CFlagbase::GetResources(void)						// Returns 0 if successfull, non-zero
 
 	}
 
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 						// Add new animation loads here
 	}
@@ -599,7 +599,7 @@ int16_t CFlagbase::FreeResources(void)						// Returns 0 if successfull, non-zer
 {
 	m_animFlagWave.Release();
 
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -617,6 +617,7 @@ int16_t CFlagbase::FreeResources(void)						// Returns 0 if successfull, non-zer
 
 void CFlagbase::OnExplosionMsg(Explosion_Message* pMessage)
 {
+  UNUSED(pMessage);
 	if (
 	    m_state != State_BlownUp	&&
 		 m_state != State_Die		&& 
@@ -649,6 +650,7 @@ void CFlagbase::OnExplosionMsg(Explosion_Message* pMessage)
 
 void CFlagbase::OnBurnMsg(Burn_Message* pMessage)
 {
+  UNUSED(pMessage);
 	// For now we made the sentry fireproof, the only
 	// way it can be destroyed is by blowing it up.
 }

@@ -30,7 +30,9 @@
 //							possibility of HWND not being valid.
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Headers
@@ -184,7 +186,7 @@ int16_t CVideo::Create(void)
 //				TRACE("Failed to subclass the MCI window's proc to our's.");
 //				}
 
-			return 0;
+			return SUCCESS;
 			}
 		else
 			return VIDEO_ERR_CREATE;
@@ -207,7 +209,7 @@ void CVideo::Destroy(void)
 	Close();
 
 	// If a window has been created . . .
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		MCIWndDestroy((HWND)m_lhwnd);
 		}
@@ -282,7 +284,7 @@ int16_t CVideo::Open(char* szFilename,						// name of the video file
 												 0);
 
 						if (!SetWindowPos((HWND)m_lhwnd,
-												(HWND)NULL,
+												(HWND)nullptr,
 												rect.left,
 												rect.top,
 												rect.right - rect.left,
@@ -303,7 +305,7 @@ int16_t CVideo::Open(char* szFilename,						// name of the video file
 												 0);
 
 						if (SetWindowPos((HWND)m_lhwnd,
-											  (HWND)NULL,
+											  (HWND)nullptr,
 											  rect.left,
 											  rect.top,
 											  rect.right - rect.left,
@@ -316,7 +318,7 @@ int16_t CVideo::Open(char* szFilename,						// name of the video file
 													 MCIWNDF_NOAUTOSIZEWINDOW | MCIWNDF_NOAUTOSIZEMOVIE,
 													 MCIWNDF_NOAUTOSIZEWINDOW | MCIWNDF_NOAUTOSIZEMOVIE);
 							if (!SetWindowPos((HWND)m_lhwnd,
-													(HWND)NULL,
+													(HWND)nullptr,
 													rect.left,
 													rect.top,
 													w,
@@ -363,17 +365,17 @@ int16_t CVideo::Open(char* szFilename,						// name of the video file
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int16_t CVideo::Close(void)
 	{
-	int16_t	sRes = VIDEO_ERR_CLOSE;
+	int16_t	sResult = VIDEO_ERR_CLOSE;
 
 	// If there is a window . . .
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		// No matter what happens here, let's hide the window.
 		ShowWindow((HWND)m_lhwnd, SW_HIDE);
 
 		if (MCIWndClose((HWND)m_lhwnd) == 0)
 			{
-			sRes = VIDEO_SUCCESS;
+			sResult = VIDEO_SUCCESS;
 			}
 		else
 			{
@@ -381,7 +383,7 @@ int16_t CVideo::Close(void)
 			}
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -447,13 +449,13 @@ int16_t CVideo::Play(int16_t sMode, int32_t lStart, int32_t lEnd)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int16_t CVideo::Pause(void)
 	{
-	int16_t sRes = VIDEO_ERR_PAUSE;
+	int16_t sResult = VIDEO_ERR_PAUSE;
 
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		if (MCIWndPause((HWND)m_lhwnd) == 0)
 			{
-			sRes = VIDEO_SUCCESS;
+			sResult = VIDEO_SUCCESS;
 			}
 		else
 			{
@@ -461,7 +463,7 @@ int16_t CVideo::Pause(void)
 			}
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -475,13 +477,13 @@ int16_t CVideo::Pause(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int16_t CVideo::Resume(void)
 	{
-	int16_t sRes = VIDEO_ERR_RESUME;
+	int16_t sResult = VIDEO_ERR_RESUME;
 
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		if (MCIWndResume((HWND)m_lhwnd) == 0)
 			{
-			sRes = VIDEO_SUCCESS;
+			sResult = VIDEO_SUCCESS;
 			}
 		else
 			{
@@ -489,7 +491,7 @@ int16_t CVideo::Resume(void)
 			}
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -606,19 +608,19 @@ int16_t CVideo::IsOpened(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int16_t CVideo::IsPlaying(void)
 	{
-	int16_t sRes = FALSE;
+	int16_t sResult = FALSE;
 
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		if (MCIWndGetMode((HWND)m_lhwnd, ms_szBuf, 80) == MCI_MODE_PLAY)
 			{
-			sRes = TRUE;
+			sResult = TRUE;
 			}
 		//	TRACE("Video status:  %s\n", ms_szBuf);
 		}
 	//	TraceMCIError("CVideo::IsPlaying(MCIWndGetMode)");
 
-	return sRes;
+	return sResult;
 	}
  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -631,20 +633,20 @@ int16_t CVideo::IsPlaying(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int16_t CVideo::IsPaused(void)
 	{
-	int16_t	sRes	= FALSE;
+	int16_t	sResult	= FALSE;
 
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		if (MCIWndGetMode((HWND)m_lhwnd, ms_szBuf, 80) == MCI_MODE_PAUSE)
 			{
-			sRes = TRUE;
+			sResult = TRUE;
 			}
 		}
 
 	//	TRACE("Video status:  %s\n", ms_szBuf);
 	//	TraceMCIError("CVideo::IsPaused(MCIWndGetMode)");
 	
-	return sRes;
+	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -657,20 +659,20 @@ int16_t CVideo::IsPaused(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int16_t CVideo::IsStopped(void)
 	{
-	int16_t	sRes = FALSE;
+	int16_t	sResult = FALSE;
 
-	if (m_lhwnd != NULL)
+	if (m_lhwnd != nullptr)
 		{
 		if (MCIWndGetMode((HWND)m_lhwnd, ms_szBuf, 80) == MCI_MODE_STOP)
 			{
-			sRes = TRUE;
+			sResult = TRUE;
 			}
 		}
 
 //	TRACE("Video status:  %s\n", ms_szBuf);
 //	TraceMCIError("CVideo::IsStopped(MCIWndGetMode)");
 	
-	return sRes;
+	return sResult;
 	}
 
 

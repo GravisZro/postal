@@ -23,17 +23,17 @@ char	RBatch::ms_Error[256];
 int16_t RBatch::GetLine()
 	{
 	m_sNumTokens = 0;
-	int16_t i;
+   size_t i;
 	for (i=0; i < SB_MAX_TOKENS; i++)
 		{
 		m_pszTokenList[i][0] = '\0';
 		m_sLinePos[i] = 0;
 		}
 
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		{
 		TRACE("RBatch:  File not open.\n");
-		return -1;
+      return FAILURE;
 		}
 
 	int iChar;
@@ -41,7 +41,7 @@ int16_t RBatch::GetLine()
 	int16_t sLinePos = 0;
 	int16_t sTokenChar = 0;
 	int16_t sLoop = TRUE;
-	int16_t sRet = 0;
+   int16_t sResult = SUCCESS;
 	int16_t sMidToken = FALSE;
 	int16_t sInString = FALSE;
 
@@ -59,9 +59,9 @@ BEGIN_LOOP:
 				sTokenChar = 0;
 				}
 
-			m_fp = NULL;
+			m_fp = nullptr;
 
-			sRet =  -1;
+         sResult =  FAILURE;
 			sLoop = FALSE;
 			break;
 			}
@@ -70,7 +70,7 @@ BEGIN_LOOP:
 		sLinePos++;
 
 		// 1) check for end of line:
-		if ( (c == '\n') || (c == '\r'))
+      if (c == '\n' || c == '\r')
 			{
 			m_lCurrentLine++;
 
@@ -146,6 +146,7 @@ BEGIN_LOOP:
 
 		// Check for string changes....
 		if (c == m_cStringContext)
+      {
 			if (sInString)  // end the string
 				{
 				m_pszTokenList[m_sNumTokens][sTokenChar] = '\0';
@@ -162,6 +163,7 @@ BEGIN_LOOP:
 				m_sLinePos[m_sNumTokens] = sLinePos;
 				continue; // KEEP SCANNING!
 				}
+      }
 
 		// 5) Add to token
 		if (sMidToken) // continue to add onto existing token
@@ -169,7 +171,7 @@ BEGIN_LOOP:
 			m_pszTokenList[m_sNumTokens][sTokenChar++] = c;
 			continue; // KEEP SCANNING!
 			}
-		//************************************* START A TOKEN
+		// ************************************* START A TOKEN
 		else // start a new token
 			{
 			sMidToken = TRUE;
@@ -179,17 +181,17 @@ BEGIN_LOOP:
 		// KEEP SCANNING!
 		}
 
-	if (sRet != -1)
+   if (sResult != FAILURE)
 		{
 		return m_sNumTokens;
 		}
 	else
-		return -1;
+      return FAILURE;
 	}
 
 char* RBatch::CreateError(int16_t sToken)
 	{
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		{
 		sprintf(ms_Error,"RBatch(%s):\n*   Premature end of file!\n",m_pszFileName);
 		return ms_Error;
@@ -204,14 +206,14 @@ char* RBatch::CreateError(int16_t sToken)
 			m_pszTokenList[sToken],m_sLinePos[sToken]);
 		}
 	
-	sprintf(ms_Error,"RBatch(%s):\n*   Parse error at line %ld\n*   %s",m_pszFileName,
+	sprintf(ms_Error,"RBatch(%s):\n*   Parse error at line %i\n*   %s",m_pszFileName,
 		m_lCurrentLine,temp);
 
 	return ms_Error;
 	}
 
 // Use a command syntax that is completely not line based:
-// Returns NULL if EOF
+// Returns nullptr if EOF
 // MUST ADVANCE WHEN CALLED AND SIT THERE!!!!!
 //
 char* RBatch::NextToken()
@@ -220,7 +222,7 @@ char* RBatch::NextToken()
 		{
 		if (GetLine() == int16_t(-1)) 
 			{
-			return NULL;
+			return nullptr;
 			}
 		m_sCurToken = -1;
 		}
@@ -231,9 +233,9 @@ search:
 
 	while (m_sCurToken >= m_sNumTokens)
 		{
-		if ((GetLine() == -1) && (m_sNumTokens==0))
+      if ((GetLine() == FAILURE) && (m_sNumTokens==0))
 			{
-			return NULL;
+			return nullptr;
 			}
 		m_sCurToken = 0; // search for non null line
 		}

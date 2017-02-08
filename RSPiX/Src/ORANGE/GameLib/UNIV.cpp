@@ -30,7 +30,10 @@
 //	particular level of the game.
 //	
 //*****************************************************************************
-					
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
+
 #include <stdio.h>
 #include <windows.h>
 #include <fstream.h>
@@ -52,15 +55,15 @@ CUniverse::CUniverse()
 //	m_strFileAPal = "h:\\zootopia\\code\\library\\zoo.apl";
 //	m_strFileBPal = "h:\\zootopia\\code\\library\\zoo.bpl";
 
-	m_pSection = NULL;
-	m_pAnimData = NULL;
-	m_pBackData = NULL;
-	m_pBackgroundPal = NULL;
-	m_pSpritePal = NULL;
-	m_pAttrMap = NULL;
-	m_pAttrCont = NULL;
-	m_pEventData = NULL;
-	m_pImageData = NULL;
+  m_pSection = nullptr;
+  m_pAnimData = nullptr;
+  m_pBackData = nullptr;
+  m_pBackgroundPal = nullptr;
+  m_pSpritePal = nullptr;
+  m_pAttrMap = nullptr;
+  m_pAttrCont = nullptr;
+  m_pEventData = nullptr;
+  m_pImageData = nullptr;
 	sprintf(m_strDataPath, "c:\\w\\rspix\\yellow\\sprtest\\");
 }
 
@@ -72,7 +75,7 @@ CUniverse::CUniverse()
 
 CUniverse::~CUniverse()
 {
-	if (m_pSection != NULL)
+  if (m_pSection != nullptr)
 		delete m_pSection;
 //	free(m_pvImageChunks);
 
@@ -207,7 +210,7 @@ short CUniverse::SetSection(
 
 	fclose(fp);
 
-	return 0;
+  return SUCCESS;
 }
 
 #endif
@@ -271,7 +274,7 @@ int16_t CUniverse::SetSection(
 //	LoadAttributeData();
 //	LoadEventData();
 
-	return 0;
+  return SUCCESS;
 }
 
 //*****************************************************************************
@@ -358,7 +361,7 @@ int16_t CUniverse::LoadAnimData()
 	}
 
  	free(pChunkHeader);
- 	return 0;
+  return SUCCESS;
 }
 
 
@@ -425,7 +428,7 @@ short CUniverse::LoadAnimData()
 
 	}
 	free (pChunkHeader);
-	return 0;
+  return SUCCESS;
 }
 
 
@@ -461,9 +464,9 @@ short CUniverse::LoadAnimData()
 //
 // Note:
 //		In the file, offset values of 0 indicate that the pointer should
-//		be NULL.  For example if a particular frame does not use an Image
+//		be nullptr.  For example if a particular frame does not use an Image
 //		then the offset for the pImage field will be 0 and the pointer
-//		pImage should remain 0 (NULL).
+//		pImage should remain 0 (nullptr).
 //
 //*****************************************************************************
 
@@ -544,7 +547,7 @@ void CUniverse::SetZonesetOffsets(
 
 int16_t CUniverse::LoadBackgroundData()
 {
-	return 0;
+  return SUCCESS;
 }
 
 //*****************************************************************************
@@ -600,7 +603,7 @@ int16_t CUniverse::LoadAttributeData()
 //	m_pAttrCont = new short[sLength];
 //	ifsAttrData.read();
 
-	return 0;
+  return SUCCESS;
 }
 
 
@@ -631,7 +634,7 @@ int16_t CUniverse::LoadAttributeData()
 
 int16_t CUniverse::LoadEventData()
 {
-	return 0;
+  return SUCCESS;
 }
 
 //*****************************************************************************
@@ -654,14 +657,14 @@ int16_t CUniverse::LoadEventData()
 //
 //	Return:
 //		PALETTE* (pointer to palette structure)
-//		NULL if there was an error in reading the file
+//		nullptr if there was an error in reading the file
 //
 //*****************************************************************************
 
 PALETTE* CUniverse::LoadPalette(
 	LPSTR lpstrFilePalette)					// Palette file to be loaded
 {
-	return NULL;
+  return nullptr;
 }
 
 //*****************************************************************************

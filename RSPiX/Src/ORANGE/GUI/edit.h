@@ -123,7 +123,7 @@ class REdit : public RTxt
 			int16_t sSrcY = 0,		// Y position in source.
 			int16_t sW = 0,			// Amount to draw.
 			int16_t sH = 0,			// Amount to draw.
-			RRect* prc = NULL);	// Clip to.
+			RRect* prc = nullptr);	// Clip to.
 
 		// Draw text in m_szText in m_u32TextColor with transparent
 		// background at sX, sY with sW and m_sJustification.
@@ -134,7 +134,7 @@ class REdit : public RTxt
 			int16_t sY,				// Y position in image.
 			int16_t sW = 0,			// Width of text area.
 			int16_t	sH = 0,			// Height of test area.
-			RImage* pim = NULL);	// Destination image.  NULL == use m_im.
+			RImage* pim = nullptr);	// Destination image.  nullptr == use m_im.
 
 		// Does REdit stuff like check for text, update caret, and draw new 
 		// text.
@@ -147,7 +147,7 @@ class REdit : public RTxt
 		virtual						// If you override this, call this base if 
 										// possible.
 		void NotifyCall(void)	// Returns nothing.
-			{ if (m_encCall != NULL) (*m_encCall)(this); }
+			{ if (m_encCall != nullptr) (*m_encCall)(this); }
 
 		// Cursor event notification.
 		// Events in event area.
@@ -186,7 +186,7 @@ class REdit : public RTxt
 		virtual				// Overridden here.
 		int16_t ReadMembers(			// Returns 0 on success.
 			RFile*	pfile,			// File to read from.
-			U32		u32Version);	// File format version to use.
+			uint32_t		u32Version);	// File format version to use.
 
 		// Write item's members to file.
 		virtual				// Overridden here.
@@ -200,7 +200,7 @@ class REdit : public RTxt
 
 	public:	// Member variables.
 		char	m_cCaretChar;		// Character to use as caret.
-		U32	m_u32CaretColor;	// Color to use for caret.
+		uint32_t	m_u32CaretColor;	// Color to use for caret.
 		int16_t	m_sCaretPos;		// Text position of caret.
 		int32_t	m_lCaretBlinkRate;// Rate at which character blinks in ms.  Can be
 										// 0 indicating no blinkage.

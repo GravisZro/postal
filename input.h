@@ -238,8 +238,8 @@ typedef enum
 
 // UINPUT type
 // Had to rename this from INPUT because of a pre-existing type
-// Redefined to U64 because we ran out of input room.
-typedef U64 UINPUT;
+// Redefined to uint64_t because we ran out of input room.
+typedef uint64_t UINPUT;
 
 // Global input settings.
 extern CInputSettings g_InputSettings;
@@ -328,7 +328,7 @@ extern bool InputIsDemoOver(void);		// Returns true when demo is over
 ////////////////////////////////////////////////////////////////////////////////
 extern UINPUT GetLocalInput(				// Returns local input structure.
 	CRealm* prealm,							// In:  Realm (used to access realm timer)
-	RInputEvent* pie	= NULL);				// In:  Latest input event.  NULL to 
+	RInputEvent* pie	= nullptr);				// In:  Latest input event.  nullptr to 
 													//	disable cheats in a way that will be
 													// harder to hack.
 

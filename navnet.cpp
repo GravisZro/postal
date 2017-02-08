@@ -176,7 +176,7 @@ int16_t CNavigationNet::Load(							// Returns 0 if successfull, non-zero otherw
 	{
 	// Call the base class load to get the instance ID
 	int16_t sResult = CThing::Load(pFile, bEditMode, sFileCount, ulFileVersion);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// Load common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -210,14 +210,14 @@ int16_t CNavigationNet::Load(							// Returns 0 if successfull, non-zero otherw
 			}
 
 		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == 0)
+		if (!pFile->Error() && sResult == SUCCESS)
 			{
 			// Get resources
 			sResult = GetResources();
 			}
 		else
 			{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CNavigationNet::Load(): Error reading from file!\n");
 			}
 		}
@@ -261,7 +261,7 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 
 	m_rstrNetName.Save(pFile);
 
-	return 0;
+   return SUCCESS;
 	}
 
 
@@ -270,7 +270,7 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CNavigationNet::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sReturn = 0;
+   int16_t sResult = SUCCESS;
 	// At this point we can assume the CHood was loaded, so we init our height
 	m_dY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 	// Set yourself to be the new current Nav Net
@@ -280,12 +280,12 @@ int16_t CNavigationNet::Startup(void)								// Returns 0 if successfull, non-ze
 	if (m_ucNextID <= m_ucNumSavedBouys)
 	{
 		m_sCallStartup = 1;
-		sReturn = 0;
+      sResult = SUCCESS;
 	}
 	else
 		UpdateRoutingTables();
 
-	return sReturn;
+   return sResult;
 	}
 
 
@@ -294,7 +294,7 @@ int16_t CNavigationNet::Startup(void)								// Returns 0 if successfull, non-ze
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CNavigationNet::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 	{
-	return 0;
+   return SUCCESS;
 	}
 
 
@@ -343,23 +343,23 @@ void CNavigationNet::Render(void)
 
 int16_t CNavigationNet::EditPostLoad(void)
 {
-	int16_t sResult = 0;
+   int16_t sResult = SUCCESS;
 
 	CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
 	CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 	RListBox* plb = peditor->m_plbNavNetList;
-	if (plb != NULL)
+	if (plb != nullptr)
 	{
 		RGuiItem* pgui = plb->AddString((char*) m_rstrNetName);
 		pgui->m_lId = GetInstanceID();
 		pgui->m_bcUser = NavNetListPressedCall;
-		pgui->m_ulUserInstance = (U64) this;
+      pgui->m_ulUserInstance = (uintptr_t) this;
 		plb->AdjustContents();
 		plb->SetSel(pgui);
 	}
 	else
 	{
-		sResult = -1;
+		sResult = FAILURE;
 		TRACE("CNavigationNet::EditLoad - Error setting up NavNet list box in editor\n");
 	}
 
@@ -374,7 +374,7 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	int16_t sResult = 0;
+   int16_t sResult = SUCCESS;
 	
 	// Use specified position
 	m_dX = (double)sX;
@@ -389,12 +389,12 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
 		CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
 		CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 		RListBox* plb = peditor->m_plbNavNetList;
-		if (plb != NULL)
+		if (plb != nullptr)
 		{
 			RGuiItem* pgui = plb->AddString((char*) m_rstrNetName);
 			pgui->m_lId = GetInstanceID();
 			pgui->m_bcUser = NavNetListPressedCall;
-			pgui->m_ulUserInstance = (U64) this;
+         pgui->m_ulUserInstance = (uintptr_t) this;
 			plb->AdjustContents();
 			plb->SetSel(pgui);
 		}
@@ -413,7 +413,7 @@ void SetText(					// Returns nothing.
 	char*			str)			// In:  Value to set text to.
 	{
 	RGuiItem*	pgui	= pguiRoot->GetItemFromId(lId);
-	if (pgui != NULL)
+	if (pgui != nullptr)
 		{
 		pgui->SetText(str);
 		pgui->Compose(); 
@@ -426,7 +426,7 @@ void SetText(					// Returns nothing.
 
 int16_t CNavigationNet::EditModify(void)
 {
-	int16_t sResult = 0;
+   int16_t sResult = SUCCESS;
 	RGuiItem* pGui = RGuiItem::LoadInstantiate(FullPathVD("res/editor/network.gui"));
 	if (pGui)
 	{
@@ -451,12 +451,12 @@ int16_t CNavigationNet::EditModify(void)
 		}
 	}
 
-	return 0;
+   return SUCCESS;
 }
 /*
 
 		RGuiItem*	pguiRemove;
-		if (pview != NULL)
+		if (pview != nullptr)
 			{
 			pguiRemove	= plb->GetItemFromId((long)pview);
 			}
@@ -465,7 +465,7 @@ int16_t CNavigationNet::EditModify(void)
 			pguiRemove	= plb->GetSel();
 			}
 
-		if (pguiRemove != NULL)
+		if (pguiRemove != nullptr)
 			{
 			KillView((View*)(pguiRemove->m_lId));
 			plb->RemoveItem(pguiRemove);
@@ -483,7 +483,7 @@ int16_t CNavigationNet::EditMove(									// Returns 0 if successfull, non-zero 
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
 
-	return 0;
+   return SUCCESS;
 	}
 
 
@@ -543,7 +543,7 @@ void CNavigationNet::EditRect(RRect* pRect)
 	pRect->sW	= 10;	// Safety.
 	pRect->sH	= 10;	// Safety.
 
-	if (m_pImage != NULL)
+	if (m_pImage != nullptr)
 		{
 		pRect->sW	= m_pImage->m_sWidth;
 		pRect->sH	= m_pImage->m_sHeight;
@@ -573,18 +573,18 @@ void CNavigationNet::EditHotSpot(	// Returns nothiing.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CNavigationNet::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+   int16_t sResult = SUCCESS;
 
-	if (m_pImage == 0)
+   if (m_pImage == nullptr)
 		{
 		sResult	= rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &m_pImage);
-		if (sResult == 0)
+		if (sResult == SUCCESS)
 			{
 			// This is a questionable action on a resource managed item, but it's
 			// okay if EVERYONE wants it to be an FSPR8.
 			if (m_pImage->Convert(RImage::FSPR8) != RImage::FSPR8)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CNavigationNet::GetResource(): Couldn't convert to FSPR8!\n");
 				}
 			}
@@ -599,9 +599,9 @@ int16_t CNavigationNet::GetResources(void)						// Returns 0 if successfull, non
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CNavigationNet::FreeResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+   int16_t sResult = SUCCESS;
 
-	if (m_pImage != 0)
+   if (m_pImage != nullptr)
 		{
 		rspReleaseResource(&g_resmgrGame, &m_pImage);
 		}
@@ -645,7 +645,7 @@ void CNavigationNet::RemoveBouy(uint8_t ucBouyID)
 
 CBouy* CNavigationNet::GetBouy(uint8_t ucBouyID)
 {
-	CBouy* pBouy = NULL;
+	CBouy* pBouy = nullptr;
 	nodeMap::iterator i;
 
 	i = m_NodeMap.find(ucBouyID);
@@ -670,8 +670,8 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 	double dX;
 	double dZ;
 	CBouy* pBouy;
-	TreeListNode* pRoot = NULL;
-	TreeListNode* pCurrent = NULL;
+	TreeListNode* pRoot = nullptr;
+	TreeListNode* pCurrent = nullptr;
 	uint8_t	ucNode = 0;
 
 	// Build the sorted list of bouys
@@ -683,7 +683,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 		dSqDist = (dX * dX) + (dZ * dZ);
 		pBouy->m_TreeNode.m_sortkey = dSqDist;
 		pBouy->m_TreeNode.m_powner = pBouy;
-		if (pRoot == NULL)
+		if (pRoot == nullptr)
 		{
 			pRoot = &pBouy->m_TreeNode;
 			//m_BouyTreeListHead.AddAfter(&pBouy->m_TreeNode);
@@ -703,7 +703,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 	while (pCurrent && bSearching)
 	{
 		pBouy = pCurrent->m_powner;
-//		ASSERT(pBouy != NULL);
+//		ASSERT(pBouy != nullptr);
 		if (pBouy)
 		{
 			if (m_pRealm->IsPathClear(sX, sY, sZ, 4.0, (int16_t) pBouy->GetX(), (int16_t) pBouy->GetZ()))
@@ -773,7 +773,7 @@ void CNavigationNet::UpdateRoutingTables(void)
 	char szLine[256];
 	FILE* fp;
 	fp = fopen("c:\\temp\\net.txt", "wt");
-	if (fp != NULL)
+	if (fp != nullptr)
 	{
 		for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
 		{
@@ -799,7 +799,7 @@ void CNavigationNet::PrintRoutingTables(void)
 	char szLine[256];
 	FILE* fp;
 	fp = fopen("c:\\temp\\links.txt", "wt");
-	if (fp != NULL)
+	if (fp != nullptr)
 	{
 		for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
 		{
@@ -825,7 +825,7 @@ void CNavigationNet::PrintRoutingTables(void)
 
 int16_t CNavigationNet::DeleteNetwork(void)
 {
-	int16_t sReturn = SUCCESS;
+   int16_t sResult = SUCCESS;
 
 	nodeMap::iterator i;
 	for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
@@ -835,7 +835,7 @@ int16_t CNavigationNet::DeleteNetwork(void)
 
 	m_NodeMap.erase(m_NodeMap.begin(), m_NodeMap.end());
 
-	return sReturn;
+   return sResult;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

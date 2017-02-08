@@ -109,7 +109,7 @@
 // corresponding place in this array.  
 // Note that this uses END_REG_PAL enum item to size the array.
 
-char* RPal::ms_astrTypeNames[END_REG_PAL] = 
+const char* RPal::ms_astrTypeNames[END_REG_PAL] =
 {
 	"Same Type",
 	"PDIB BGRA 8888 (RGBQUAD)",
@@ -176,7 +176,7 @@ RPal::RPal()
 	m_sStartIndex		= 0;
 	m_sNumEntries		= 0;
 	m_sPalEntrySize	= 0;
-	m_pData				= NULL;
+   m_pData				= nullptr;
 	m_sCanDestroyData	= FALSE;
 } 
 
@@ -277,7 +277,7 @@ int16_t RPal::GetPalEntrySize(Type type)
 	else
 	{
 	 	TRACE("RPal::GetPalEntrySize - Not a registered palette type\n");
-		return -1;
+      return FAILURE;
 	}
 }
 
@@ -302,7 +302,7 @@ int16_t RPal::GetPalEntrySize(Type type)
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t	RPal::CreateData(uint32_t ulNewSize)
+int16_t	RPal::CreateData(size_t ulNewSize)
 {
 	if (m_sCanDestroyData && m_pData)
 	{
@@ -312,7 +312,7 @@ int16_t	RPal::CreateData(uint32_t ulNewSize)
 	}
 
 	if (m_pData && !m_sCanDestroyData)
-		TRACE("RPal::CreateData - Warning m_pData != NULL\n");
+      TRACE("RPal::CreateData - Warning m_pData != nullptr\n");
 
 	m_sCanDestroyData = TRUE;
 	m_ulSize = ulNewSize;
@@ -325,16 +325,16 @@ int16_t RPal::CreateData(uint32_t ulNewSize,
 							  int16_t sSetStartIndex,
 							  int16_t sSetNumEntries)
 {
-	int16_t sReturn = CreateData(ulNewSize);
+   int16_t sResult = CreateData(ulNewSize);
 
-	if (sReturn == SUCCESS)
+   if (sResult == SUCCESS)
 	{
 		m_type				= typeNew;
 		m_sPalEntrySize	= sSetPalEntrySize;
 		m_sStartIndex		= sSetStartIndex;
 		m_sNumEntries		= sSetNumEntries;
 	}
-	return sReturn;
+   return sResult;
 }
 
 
@@ -386,7 +386,7 @@ int16_t	RPal::DestroyData()
 //					   palette's buffer
 //
 // Returns:
-//		FAILURE if the buffer passed in is NULL or if there was
+//		FAILURE if the buffer passed in is nullptr or if there was
 //			     already a palette buffer
 //		SUCCESS if the buffer was set
 //
@@ -394,7 +394,7 @@ int16_t	RPal::DestroyData()
 
 int16_t RPal::SetData(void* pUserData)
 {
-	if (pUserData != NULL && m_pData == NULL)
+   if (pUserData != nullptr && m_pData == nullptr)
 	{
 		m_pData = (uint8_t*) pUserData;
 		m_sCanDestroyData = FALSE;
@@ -402,7 +402,7 @@ int16_t RPal::SetData(void* pUserData)
 	}
 	else
 	{
-	 	TRACE("RPal::SetData - Your data handle or data pointer is NULL\n");
+      TRACE("RPal::SetData - Your data handle or data pointer is nullptr\n");
 		return FAILURE;
 	}
 }
@@ -434,7 +434,7 @@ int16_t RPal::SetData(void* pUserData)
 uint8_t* RPal::DetachData(void)
 {
  	uint8_t* pDetachment = m_pData;
-	m_pData = NULL;
+   m_pData = nullptr;
 	m_sCanDestroyData = FALSE;
 	return pDetachment;
 }
@@ -500,7 +500,7 @@ RPal::Type RPal::Convert(Type typeNew)
 int16_t RPal::Save(char* pszFilename)
 {
 	RFile cf;
-	int16_t sReturn = SUCCESS;
+   int16_t sResult = SUCCESS;
 
 	if (cf.Open(pszFilename, "wb", RFile::LittleEndian) != SUCCESS)
 	{
@@ -508,11 +508,11 @@ int16_t RPal::Save(char* pszFilename)
 	 	return FAILURE;
 	}
 
-	sReturn = Save(&cf);
+   sResult = Save(&cf);
 
 	cf.Close();
 
-	return sReturn;
+   return sResult;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -537,7 +537,7 @@ int16_t RPal::Save(char* pszFilename)
 
 int16_t RPal::Save(RFile* pcf)
 {
-	int16_t sReturn = SUCCESS;
+   int16_t sResult = SUCCESS;
 	uint32_t ulFileType = PAL_COOKIE;
 	uint32_t ulCurrentVersion = PAL_CURRENT_VERSION;
 
@@ -546,8 +546,8 @@ int16_t RPal::Save(RFile* pcf)
 		pcf->ClearError();
 		pcf->Write(&ulFileType);
 		pcf->Write(&ulCurrentVersion);
-		// No RFile support for RImage::Type, so we used a U32.
-		U32	u32Temp	= (uint32_t)m_type;
+		// No RFile support for RImage::Type, so we used a uint32_t.
+		uint32_t	u32Temp	= (uint32_t)m_type;
 		pcf->Write(&u32Temp);
 		pcf->Write(&m_ulSize);
 		pcf->Write(&m_sStartIndex);
@@ -567,16 +567,16 @@ int16_t RPal::Save(RFile* pcf)
 		if (pcf->Error())
 		{
 			TRACE("RPal::Save - Error writing palette data\n");
-			sReturn = FAILURE;
+         sResult = FAILURE;
 		}
 	}
 	else
 	{
 		TRACE("RPal::Save - Error: The RFile does not refer to an open file\n");
-		sReturn = FAILURE;
+      sResult = FAILURE;
 	}
 
-	return sReturn;
+   return sResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -599,7 +599,7 @@ int16_t RPal::Save(RFile* pcf)
 int16_t RPal::Load(char* pszFilename)
 {
 	RFile cf;
-	int16_t sReturn = SUCCESS;
+   int16_t sResult = SUCCESS;
 
 	if (cf.Open(pszFilename, "rb", RFile::LittleEndian) != SUCCESS)
 	{
@@ -607,11 +607,11 @@ int16_t RPal::Load(char* pszFilename)
 	 	return FAILURE;
 	}
 
-	sReturn = Load(&cf);
+   sResult = Load(&cf);
 
 	cf.Close();
 
-	return sReturn;
+   return sResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -636,24 +636,24 @@ int16_t RPal::Load(char* pszFilename)
 
 int16_t RPal::Load(RFile* pcf)
 {	
-	int16_t sReturn = SUCCESS;
-	uint32_t ulFileType = 0;
-	uint32_t ulFileVersion = 0;
-	uint16_t usFlag = 2;
+   int16_t sResult = SUCCESS;
+//	uint32_t ulFileType = 0;
+//	uint32_t ulFileVersion = 0;
+//	uint16_t usFlag = 2;
 
 	if (pcf && pcf->IsOpen())
 	{
 		pcf->ClearError();
 
-		sReturn	= RPalFile::Load(this, pcf);
+      sResult	= RPalFile::Load(this, pcf);
 	}
 	else
 	{
 		TRACE("RPal::Load - Error: RFile pointer does not refer to an open file\n");
-		sReturn = FAILURE;
+      sResult = FAILURE;
 	}
 
-	return sReturn;
+   return sResult;
 }
 
 
@@ -679,7 +679,7 @@ int16_t RPal::Load(RFile* pcf)
 //		with red/green/blue info.  This functionality was momentarily built into
 // 	this function, but was quickly removed when it became obvious that it
 //		would slow things down in cases where there was no alpha info, or more
-//		importantly, when the user passed a NULL to indicate a lack of alpha data.
+//		importantly, when the user passed a nullptr to indicate a lack of alpha data.
 //
 // Parameters:
 //		(see function declaration below)
@@ -699,9 +699,9 @@ int16_t RPal::GetEntries(
 	int32_t lAddToPointers)						// In:  What to add to pointers to move to next value
 	{
 	// Validate parameters
-	ASSERT(pDstRed != NULL);
-	ASSERT(pDstGreen != NULL);
-	ASSERT(pDstBlue != NULL);
+   ASSERT(pDstRed != nullptr);
+   ASSERT(pDstGreen != nullptr);
+   ASSERT(pDstBlue != nullptr);
 	if ((sStart < m_sStartIndex) || ((sStart + sCount - 1) > (m_sStartIndex + m_sNumEntries - 1)))
 		{
 		TRACE("RPal::GetEntries(): Specified range (%d to %d) exceeds palette's range (%d to %d)!\n",
@@ -834,7 +834,7 @@ int16_t RPal::GetEntries(
 //		with red/green/blue info.  This functionality was momentarily built into
 // 	this function, but was quickly removed when it became obvious that it
 //		would slow things down in cases where there was no alpha info, or more
-//		importantly, when the user passed a NULL to indicate a lack of alpha data.
+//		importantly, when the user passed a nullptr to indicate a lack of alpha data.
 //
 // Parameters:
 //		(see function declaration below)
@@ -854,9 +854,9 @@ int16_t RPal::SetEntries(
 	int32_t lAddToPointers)						// In:  What to add to pointers to move to next value
 	{
 	// Validate parameters
-	ASSERT(pSrcRed != NULL);
-	ASSERT(pSrcGreen != NULL);
-	ASSERT(pSrcBlue != NULL);
+   ASSERT(pSrcRed != nullptr);
+   ASSERT(pSrcGreen != nullptr);
+   ASSERT(pSrcBlue != nullptr);
 	if ((sStart < m_sStartIndex) || ((sStart + sCount - 1) > (m_sStartIndex + m_sNumEntries - 1)))
 		{
 		TRACE("RPal::PutEntries(): Specified range (%d to %d) exceeds palette's range (%d to %d)!\n",
@@ -977,7 +977,7 @@ RPal& RPal::operator=(RPal &palSrc)
 	if (palSrc.m_ulSize > 0)
 		{
 		// Allocate space . . .
-		if (CreateData(palSrc.m_ulSize) == 0)
+		if (CreateData(palSrc.m_ulSize) == SUCCESS)
 			{
 			// Copy actual data.
 			memcpy(m_pData, palSrc.m_pData, palSrc.m_ulSize);

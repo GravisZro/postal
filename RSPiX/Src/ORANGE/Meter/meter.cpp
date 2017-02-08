@@ -139,7 +139,7 @@ RMeter::RMeter()
 
 	m_guiMeter.SetParent(this);
 	m_guiMeter.m_bcUser				= BtnCall;
-	m_guiMeter.m_ulUserInstance	= (U64)this;
+	m_guiMeter.m_ulUserInstance	= (uint64_t)this;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -162,22 +162,22 @@ RMeter::~RMeter()
 //
 ////////////////////////////////////////////////////////////////////////
 inline int16_t Rectangle(		// Returns 0 on success.
-	U32 u32Color,				// Color.
+	uint32_t u32Color,				// Color.
 	RImage* pimDst,			// Destination.
 	int16_t sDstX,				// Destination x coordinate.
 	int16_t sDstY,				// Destination y coordinate.
 	int16_t sDstW,				// Width.
 	int16_t sDstH,				// Height.
-	RRect* prClip = NULL)	// Optional clipping rectangle.
+	RRect* prClip = nullptr)	// Optional clipping rectangle.
 	{
-	int16_t	sRes	= 0;	// Assume success.
+   int16_t sResult = SUCCESS;	// Assume success.
 
 	if (sDstW > 0 && sDstH > 0)
 		{
-		sRes = rspRect(u32Color, pimDst, sDstX, sDstY, sDstW, sDstH, prClip);
+      sResult = rspRect(u32Color, pimDst, sDstX, sDstY, sDstW, sDstH, prClip);
 		}
 
-	return sRes;
+   return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////
@@ -187,12 +187,10 @@ inline int16_t Rectangle(		// Returns 0 on success.
 //
 ////////////////////////////////////////////////////////////////////////
 void RMeter::Compose(				// Returns nothing.
-	RImage*	pimDst /*= NULL*/)	// In: Destination.  NULL == use 
+	RImage*	pimDst /*= nullptr*/)	// In: Destination.  nullptr == use 
 											// internal m_im.
 	{
-	int16_t	sRes	= 0;	// Assume success.
-
-	if (pimDst == NULL)
+	if (pimDst == nullptr)
 		{
 		pimDst	= &m_im;
 		}
@@ -204,7 +202,7 @@ void RMeter::Compose(				// Returns nothing.
 	GetClient(&sX, &sY, &sW, &sH);
 
 	int16_t	sCellH;
-	m_pprint->GetPos(NULL, NULL, NULL, &sCellH);
+	m_pprint->GetPos(nullptr, nullptr, nullptr, &sCellH);
 
 	int16_t	sMeterX;
 	int16_t	sMeterY;
@@ -245,14 +243,14 @@ void RMeter::Compose(				// Returns nothing.
 	m_guiMeter.m_sInvertedBorder				= !m_sInvertedBorder;
 
 	// If there is already data . . .
-	if (m_guiMeter.m_im.m_pData != NULL)
+	if (m_guiMeter.m_im.m_pData != nullptr)
 		{
 		m_guiMeter.m_im.DestroyData();
 		}
 
 	// Attempt to create display . . .
 	if (m_guiMeter.Create(sMeterX, sMeterY, sMeterW, sMeterH, 
-		m_im.m_sDepth) == 0)
+      m_im.m_sDepth) == SUCCESS)
 		{
 		// Set hot area to entire button.
 		m_guiMeter.GetClient(
@@ -283,11 +281,11 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 			int16_t sSrcY /*= 0*/,		// Y position in source.
 			int16_t sW /*= 0*/,			// Amount to draw.
 			int16_t sH /*= 0*/,			// Amount to draw.
-			RRect* prc /*= NULL*/)	// Clip to.
+			RRect* prc /*= nullptr*/)	// Clip to.
 	{
-	int16_t	sRes	= 0;	// Assume success.
+   int16_t sResult = SUCCESS;	// Assume success.
 
-	ASSERT(pimDst != NULL);	// Duh!
+	ASSERT(pimDst != nullptr);	// Duh!
 
 	// If visible . . .
 	if (m_sVisible != FALSE)
@@ -296,7 +294,7 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 		if (lTime >= m_lNextUpdate)
 			{
 			// First copy precomposed stuff.
-			if (m_im.m_pData != NULL)
+			if (m_im.m_pData != nullptr)
 				{
 				RDlg::Draw(pimDst, sDstX, sDstY, sSrcX, sSrcY, sW, sH, prc);
 				}
@@ -318,7 +316,7 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 				}
 
 			// Draw text label.
-			if (m_pprint->GetFont() != NULL)
+			if (m_pprint->GetFont() != nullptr)
 				{
 				// Determine info based on type.
 				int32_t	lVal	= lAvg;
@@ -347,7 +345,7 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 				m_pprint->SetColumn(sMeterX, sInfoY, sMeterW, sMeterH);
 
 				// Draw text info.
-				m_pprint->print(sMeterX, sInfoY, "%ld%s%s", lVal, szExtra, m_szUnit);
+				m_pprint->print(sMeterX, sInfoY, "%i%s%s", lVal, szExtra, m_szUnit);
 				}
 
 			// Contain within range.
@@ -369,7 +367,8 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 			// Draw meter based on type.
 			switch (m_dtType)
 				{
-				case Digital:
+           UNHANDLED_SWITCH;
+            case Digital:
 					// Done.
 					break;
 				case Needle:
@@ -503,7 +502,7 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 			}
 		}
 
-	return sRes;
+   return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////

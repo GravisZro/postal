@@ -99,8 +99,9 @@ class RFrame : public RGuiItem
 		// Compose item.
 		virtual					// If you override this, call this base if possible.
 		void Compose(			// Returns nothing.
-			RImage* pim = NULL)	// Dest image, uses m_im if NULL.
+			RImage* pim = nullptr)	// Dest image, uses m_im if nullptr.
 			{
+        UNUSED(pim);
 			// Set hot area.
 			SetHotArea();
 
@@ -118,6 +119,7 @@ class RFrame : public RGuiItem
 			int16_t sH,			// Height.
 			int16_t sDepth)		// Color depth.
 			{
+        UNUSED(sDepth);
 			m_sX				= sX;
 			m_sY				= sY;
 			m_im.m_sWidth	= sW;
@@ -126,7 +128,7 @@ class RFrame : public RGuiItem
 			Compose();
 
 			// Nothing to allocate.
-			return 0;
+			return SUCCESS;
 			}
 
 		// Draw this item and all its subitems into the provided RImage.
@@ -139,9 +141,10 @@ class RFrame : public RGuiItem
 			int16_t sSrcY = 0,		// Y position in source.
 			int16_t sW = 0,			// Amount to draw.
 			int16_t sH = 0,			// Amount to draw.
-			RRect* prc = NULL)	// Clip to.
+			RRect* prc = nullptr)	// Clip to.
 			{
-			int16_t	sRes	= 0;	// Assume success.
+        UNUSED(sSrcX, sSrcY, sW, sH);
+			int16_t sResult = SUCCESS;	// Assume success.
 
 			// If visible . . .
 			if (m_sVisible != FALSE)
@@ -163,7 +166,7 @@ class RFrame : public RGuiItem
 				RRect	rcDst;
 
 				// If no rect . . .
-				if (prc == NULL)
+				if (prc == nullptr)
 					{
 					// Provide one using destination image.
 					rcDst.sX	= 0;
@@ -191,10 +194,10 @@ class RFrame : public RGuiItem
 
 				RGuiItem*	pgui	= m_listguiChildren.GetTail();
 				
-				while (sRes == 0 && pgui != NULL)
+				while (sResult == SUCCESS && pgui != nullptr)
 					{
 					// Draw subitem and all its subitems.
-					sRes	= pgui->Draw(pimDst, sDstX, sDstY, 0, 0, 0, 0, &rc);
+					sResult	= pgui->Draw(pimDst, sDstX, sDstY, 0, 0, 0, 0, &rc);
 
 					pgui	= m_listguiChildren.GetPrev();
 					}
@@ -210,7 +213,7 @@ class RFrame : public RGuiItem
 				rspGeneralUnlock(pimDst);
 				}
 
-			return sRes;
+			return sResult;
 			}
 
 

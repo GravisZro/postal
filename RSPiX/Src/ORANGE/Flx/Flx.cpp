@@ -61,7 +61,9 @@
 // valid for larger than 320 x 200!
 //
 ///////////////////////////////////////////////////////////////////////////////
-
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 #include "common/system.h"
 
 #include "flx/FLX.H"
@@ -124,10 +126,10 @@ CFlx::~CFlx()
 int16_t CFlx::Open(
 	char* pszFileName,			// Full path and filename of flic file
 	int16_t bSimple,					// TRUE for simple mode, FALSE for advanced stuff
-	FLX_FILE_HDR* pfilehdr,		// Copy of header returned here if not NULL
-	FLX_BUF* pbuf)					// Memory allocated within struct if not NULL
+	FLX_FILE_HDR* pfilehdr,		// Copy of header returned here if not nullptr
+	FLX_BUF* pbuf)					// Memory allocated within struct if not nullptr
 	{
-	int16_t sError = 0;
+  int16_t sError = SUCCESS;
 	
 	// Close in case it was left open
 	Close();
@@ -138,14 +140,14 @@ int16_t CFlx::Open(
 	ClearHeader();
 
 	// Open file (only if it already exists -- do not create new file!)
-	if (m_file.Open(pszFileName, "rb", ENDIAN_LITTLE) == 0)
+  if (m_file.Open(pszFileName, "rb", ENDIAN_LITTLE) == SUCCESS)
 		{
 		// Set file mode to binary (this seems to be necessary even
 		// though we specified ios::binary when we opened the stream)
 		
 		// Read the header.  Regardless of whether it's a FLC or FLI file,
 		// the header is returned as if it was a FLC file.
-		if (ReadHeader() == 0)
+    if (ReadHeader() == SUCCESS)
 			{
 			
 			// Restart animation
@@ -165,29 +167,29 @@ int16_t CFlx::Open(
 				}
 			}
 		else
-			sError = 1;
+      sError = FAILURE;
 		}
 	else
-		sError = 1;
+    sError = FAILURE;
 	
 	// Final check for file errors
-	if ((sError == 0) && m_file.Error() != FALSE)
-		sError = 1;
+  if ((sError == SUCCESS) && m_file.Error() != FALSE)
+    sError = FAILURE;
 	
-	// If pointer to header not NULL, then return copy of header there
-	if ((sError == 0) && (pfilehdr != NULL))
+	// If pointer to header not nullptr, then return copy of header there
+  if ((sError == SUCCESS) && (pfilehdr != nullptr))
 		*pfilehdr = m_filehdr;
 	
-	// If pointer to buf not NULL, then allocate memory
-	if ((sError == 0) && (pbuf != NULL))
+	// If pointer to buf not nullptr, then allocate memory
+  if ((sError == SUCCESS) && (pbuf != nullptr))
 		sError = CreateBuf(pbuf, m_filehdr.sWidth, m_filehdr.sHeight, 256);
 	
 	// If no errors, then file is finally marked "open for reading"
-	if (sError == 0)
+  if (sError == SUCCESS)
 		m_bOpenForRead = TRUE;
 		
 	// If error, reset the fstream object
-	if (sError == 1)
+  if (sError == FAILURE)
 	{
 		// clear the ios's error flags
 		m_file.ClearError();
@@ -216,10 +218,10 @@ int16_t CFlx::Create(
 	int16_t sAspectY,				// Y aspect ratio
 	int16_t bOldFLI,					// TRUE for old FLI format, FALSE for new FLC
 	int16_t bSimple,					// TRUE for simple mode, FALSE for advanced stuff
-	FLX_FILE_HDR* pfilehdr,		// Copy of header returned here if not NULL
-	FLX_BUF* pbuf)					// Memory allocated within struct if not NULL
+	FLX_FILE_HDR* pfilehdr,		// Copy of header returned here if not nullptr
+	FLX_BUF* pbuf)					// Memory allocated within struct if not nullptr
 	{
-	int16_t sError = 0;
+  int16_t sError = SUCCESS;
 	
 	// Close in case it was left open
 	Close();
@@ -291,22 +293,22 @@ int16_t CFlx::Create(
 			}
 		}
 	else
-		sError = 1;
+    sError = FAILURE;
 		
 	// Final check for file errors
-	if ((sError == 0) && m_file.Error() != FALSE)
-		sError = 1;
+  if ((sError == SUCCESS) && m_file.Error() != FALSE)
+    sError = FAILURE;
 	
-	// If pointer to header not NULL, then return copy of header there
-	if ((sError == 0) && (pfilehdr != NULL))
+	// If pointer to header not nullptr, then return copy of header there
+  if ((sError == SUCCESS) && (pfilehdr != nullptr))
 		*pfilehdr = m_filehdr;
 	
-	// If pointer to buf not NULL, then allocate memory
-	if ((sError == 0) && (pbuf != NULL))
+	// If pointer to buf not nullptr, then allocate memory
+	if ((sError == 0) && (pbuf != nullptr))
 		sError = CreateBuf(pbuf, m_filehdr.sWidth, m_filehdr.sHeight, 256);
 	
 	// If no errors, then file is finally marked "open for writing"
-	if (sError == 0)
+  if (sError == SUCCESS)
 		m_bOpenForWrite = TRUE;
 	
 	return sError;
@@ -323,7 +325,7 @@ int16_t CFlx::Create(
 ///////////////////////////////////////////////////////////////////////////////
 int16_t CFlx::Close(FLX_BUF* pbuf)
 	{
-	int16_t sError = 1;
+  int16_t sError = FAILURE;
 	
 	// Before we close the file, let's write the ring frame!
 	if (m_bOpenForWrite)
@@ -334,7 +336,7 @@ int16_t CFlx::Close(FLX_BUF* pbuf)
 	// If file is open, try to close it.
 	if (m_bOpenForRead || m_bOpenForWrite)
 		{
-		if (m_file.Close() == 0)
+    if (m_file.Close() == SUCCESS)
 			{
 			// Clear flags
 			m_bOpenForRead = FALSE;
@@ -344,14 +346,14 @@ int16_t CFlx::Close(FLX_BUF* pbuf)
 			FreeBuf(&m_bufPrev);
 			
 			// Successfull
-			sError = 0;
+      sError = SUCCESS;
 			}
 		}
 	else
-		sError = 0;
+    sError = SUCCESS;
 		
 	// let's free the buffer passed in, if valid
-	if (pbuf != NULL)
+	if (pbuf != nullptr)
 		FreeBuf(pbuf);
 		
 	return sError;
@@ -367,13 +369,13 @@ int16_t CFlx::Close(FLX_BUF* pbuf)
 ///////////////////////////////////////////////////////////////////////////////
 int16_t CFlx::GetHeader(FLX_FILE_HDR* pFileHdr)
 	{
-	int16_t sError = 1;
+  int16_t sError = FAILURE;
 	
 	if (m_bOpenForRead || m_bOpenForWrite)
 		{
 		// Copy our header struct to user's struct
 		*pFileHdr = m_filehdr;
-		sError = 0;
+    sError = SUCCESS;
 		}
 	
 	return sError;
@@ -409,7 +411,7 @@ int16_t CFlx::ReadFrame(
 	int16_t sFrameNum,			// Frame number to be read
 	FLX_BUF* pbufRead)		// Buffer for frame being read
 	{
-	int16_t sError = 0;
+  int16_t sError = SUCCESS;
 	
 	if (m_bOpenForRead)
 		{
@@ -434,15 +436,15 @@ int16_t CFlx::ReadFrame(
 					Restart();
 				
 				// Go frame-by-frame to the requested frame
-				while ((m_sFrameNum < sFrameNum) && (sError == 0))
+        while ((m_sFrameNum < sFrameNum) && (sError == SUCCESS))
 					sError = ReadNextFrame(pbufRead);
 				}
 			}
 		else
-			sError = 1;
+      sError = ABORT;
 		}
 	else
-		sError = 1;
+    sError = ABORT;
 	
 	return sError;
 	}
@@ -458,7 +460,7 @@ int16_t CFlx::ReadFrame(
 int16_t CFlx::ReadNextFrame(
 	FLX_BUF* pbufRead)		// Buffer for frame being read
 	{
-	int16_t sError = 0;
+  int16_t sError = SUCCESS;
 
 	if (m_bOpenForRead)
 		{
@@ -467,7 +469,7 @@ int16_t CFlx::ReadNextFrame(
 			// Apply delta to our buf and copy result to user buf.
 			// Note that we copy the modified flags, too!
 			sError = DoReadFrame(&m_bufPrev);
-			if (sError == 0)
+      if (sError == SUCCESS)
 				{
 				CopyBuf(pbufRead, &m_bufPrev);
 				pbufRead->bPixelsModified = m_bufPrev.bPixelsModified;
@@ -481,7 +483,7 @@ int16_t CFlx::ReadNextFrame(
 			}
 		}
 	else
-		sError = 1;
+    sError = ABORT;
 
 	return sError;
 	}
@@ -499,7 +501,7 @@ int16_t CFlx::ReadNextFrame(
 int16_t CFlx::WriteNextFrame(
 	FLX_BUF* pbufWrite)		// Buffer of frame to be written
 	{
-	int16_t sError = 0;
+  int16_t sError = SUCCESS;
 	
 	// Verify open for writing and simple mode and header not written yet
 	if (m_bOpenForWrite && m_bSimple && (m_filehdr.sFlags != 3))
@@ -535,9 +537,9 @@ int16_t CFlx::WriteFirstFrame(
 	FLX_BUF* pbufWrite)		// Buffer of frame to be written
 	{
 	if (m_bOpenForWrite && (m_sFrameNum == 0))
-		return DoWriteFrame(pbufWrite, NULL);
+		return DoWriteFrame(pbufWrite, nullptr);
 	else
-		return 1;
+    return FAILURE;
 	}
 
 
@@ -566,14 +568,14 @@ int16_t CFlx::WriteNextFrame(
 // Finish writing the flic file.  This must be called after the last frame was
 // written but before closing the file.  The first and last frames are required
 // in order to generate the "ring" frame (used for looping the animation).
-// If you don't want a ring frame, simply specify NULL for both parameters.
+// If you don't want a ring frame, simply specify nullptr for both parameters.
 // The header is also updated with the final information for the file.
 // Returns 0 if successfull, non-zero otherwise.
 //
 ///////////////////////////////////////////////////////////////////////////////
 int16_t CFlx::WriteFinish(
-	FLX_BUF* pbufFirst,		// Buffer of first frame that was written or NULL
-	FLX_BUF* pbufLast)		// Buffer of last frame that was written or NULL
+	FLX_BUF* pbufFirst,		// Buffer of first frame that was written or nullptr
+	FLX_BUF* pbufLast)		// Buffer of last frame that was written or nullptr
 	{
 	int16_t sError = 0;
 	
@@ -582,7 +584,7 @@ int16_t CFlx::WriteFinish(
 		{
 		// Write out the ring frame (delta between the last and the first frames)
 		// unless the user doesn't want a ring frame!
-		if ((pbufFirst != NULL) && (pbufLast != NULL))
+		if ((pbufFirst != nullptr) && (pbufLast != nullptr))
 			{
 			sError = DoWriteFrame(pbufFirst, pbufLast);
 			m_sFrameNum -= 1;		// Ring frame doesn't count!

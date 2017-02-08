@@ -132,7 +132,7 @@
 int16_t CItem3d::ms_sFileCount;
 
 // Array of known animation base names.
-char*	CItem3d::ms_apszKnownAnimBaseNames[CItem3d::NumTypes]	=
+const char*	CItem3d::ms_apszKnownAnimBaseNames[CItem3d::NumTypes]	=
 	{
 	"None",				// None.
 	"Custom",			// Custom.
@@ -142,7 +142,7 @@ char*	CItem3d::ms_apszKnownAnimBaseNames[CItem3d::NumTypes]	=
 	};
 
 // Array of known animation descriptions.
-char*	CItem3d::ms_apszKnownAnimDescriptions[CItem3d::NumTypes]	=
+const char*	CItem3d::ms_apszKnownAnimDescriptions[CItem3d::NumTypes]	=
 	{
 	"None",
 	"Custom",
@@ -150,8 +150,8 @@ char*	CItem3d::ms_apszKnownAnimDescriptions[CItem3d::NumTypes]	=
 	"Horn",
 	"Sax",
 	};
-
-static char* ms_apszResExtensions[NUM_RES_NAMES]	=
+#ifdef UNUSED_VARIABLES
+static const char* ms_apszResExtensions[NUM_RES_NAMES]	=
 	{
 	"sop",
 	"mesh",
@@ -160,6 +160,7 @@ static char* ms_apszResExtensions[NUM_RES_NAMES]	=
 	"bounds",
 	"floor",
 	};
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -170,11 +171,11 @@ int16_t CItem3d::Load(										// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,										// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)									// In:  Version of file format to load.
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// In most cases, the base class Load() should be called.
 	sResult	= CThing3d::Load(pFile, bEditMode, sFileCount, ulFileVersion);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// Load common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -244,7 +245,7 @@ int16_t CItem3d::Load(										// Returns 0 if successfull, non-zero otherwise
 			case 1:
 				pFile->Read(m_szAnimBaseName);
 
-				U32	u32Temp;
+				uint32_t	u32Temp;
 				pFile->Read(&u32Temp);
 				m_type	= (ItemType)u32Temp;
 
@@ -253,14 +254,14 @@ int16_t CItem3d::Load(										// Returns 0 if successfull, non-zero otherwise
 			}
 		
 		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == 0)
+		if (!pFile->Error() && sResult == SUCCESS)
 			{
 			// Init item3d
 			sResult = Init();
 			}
 		else
 			{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CItem3d::Load(): Error reading from file!\n");
 			}
 		}
@@ -280,11 +281,11 @@ int16_t CItem3d::Save(										// Returns 0 if successfull, non-zero otherwise
 	RFile* pFile,											// In:  File to save to
 	int16_t sFileCount)										// In:  File count (unique per file, never 0)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// In most cases, the base class Save() should be called.
 	sResult	= CThing3d::Save(pFile, sFileCount);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// Save common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -303,7 +304,7 @@ int16_t CItem3d::Save(										// Returns 0 if successfull, non-zero otherwise
 
 		pFile->Write(m_szAnimBaseName);
 
-		pFile->Write((U32)m_type);
+		pFile->Write((uint32_t)m_type);
 
 		pFile->Write(m_u16IdParent);
 		
@@ -410,7 +411,7 @@ int16_t CItem3d::EditNew(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sZ)												// In:  New z coord
 	{
 	int16_t sResult = CThing3d::EditNew(sX, sY, sZ);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		sResult	= EditModify();
 		}
@@ -423,10 +424,10 @@ int16_t CItem3d::EditNew(									// Returns 0 if successfull, non-zero otherwis
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t	sResult	= CThing3d::EditModify();
+	int16_t sResult	= CThing3d::EditModify();
 
 	RGuiItem*	pguiRoot	= RGuiItem::LoadInstantiate(FullPathVD(EDIT_GUI_FILE));
-	if (pguiRoot != NULL)
+	if (pguiRoot != nullptr)
 		{
 		// Get listbox.
 		RListBox* plb				= (RListBox*)pguiRoot->GetItemFromId(LIST_BOX_ID);
@@ -469,7 +470,7 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 			for (i = Custom; i < NumTypes; i++)
 				{
 				pguiItem	= plb->AddString(ms_apszKnownAnimDescriptions[i]);
-				if (pguiItem != NULL)
+				if (pguiItem != nullptr)
 					{
 					// Set item number.
 					pguiItem->m_ulUserData	= i;
@@ -487,7 +488,7 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 			if (DoGui(pguiRoot) == 1)
 				{
 				RGuiItem*	pguiSel	= plb->GetSel();
-				if (pguiSel != NULL)
+				if (pguiSel != nullptr)
 					{
 					m_type	= (ItemType)pguiSel->m_ulUserData;
 					if (m_type != Custom)
@@ -501,7 +502,7 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 					}
 				else
 					{
-					sResult	= 1;
+					sResult = FAILURE;
 					}
 
 				// Get new rigid body name.
@@ -511,28 +512,28 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 				strcpy(m_szChildAnimBaseName, peditChildName->m_szText);
 
 				// Get new rotation velocities.
-				m_dExtRotVelY	= strtod(peditRotY->m_szText, NULL);
-				m_dExtRotVelZ	= strtod(peditRotZ->m_szText, NULL);
+				m_dExtRotVelY	= strtod(peditRotY->m_szText, nullptr);
+				m_dExtRotVelZ	= strtod(peditRotZ->m_szText, nullptr);
 				}
 			else
 				{
-				sResult	= 1;
+				sResult = FAILURE;
 				}
 			}
 		else
 			{
 			TRACE("EditModify(): Missing GUI items in  %s.\n", EDIT_GUI_FILE);
-			sResult	= -2;
+			sResult = FAILURE * 2;
 			}
 		}
 	else
 		{
 		TRACE("EditModify(): Failed to load %s.\n", EDIT_GUI_FILE);
-		sResult	= -1;
+		sResult = FAILURE;
 		}
 
 	// If successful so far . . .
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// Init item3d
 		sResult = Init();
@@ -547,7 +548,7 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CItem3d::Init(void)									// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	m_lPrevTime			= m_pRealm->m_time.GetGameTime();
 
@@ -590,7 +591,7 @@ void CItem3d::Kill(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Free existing resources, if any.
 	FreeResources();
@@ -604,13 +605,13 @@ int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero o
 		}
 
 	// Load main anim.
-	sResult	= m_anim.Get(m_szAnimBaseName, m_szAnimRigidName, NULL, NULL, RChannel_LoopAtStart | RChannel_LoopAtEnd);
+	sResult	= m_anim.Get(m_szAnimBaseName, m_szAnimRigidName, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
 
 	// If there is a child name . . .
 	if (m_szChildAnimBaseName[0])
 		{
 		// Load child naim.
-		sResult	|= m_animChild.Get(m_szChildAnimBaseName, NULL, NULL, NULL, RChannel_LoopAtStart | RChannel_LoopAtEnd);
+		sResult	|= m_animChild.Get(m_szChildAnimBaseName, nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
 		}
 
 	// Get shadow.
@@ -654,6 +655,7 @@ void CItem3d::FreeResources(void)
 void CItem3d::OnShotMsg(			// Returns nothing.
 	Shot_Message* pshotmsg)		// In:  Message to handle.
 	{
+  UNUSED(pshotmsg);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -679,6 +681,7 @@ void CItem3d::OnExplosionMsg(					// Returns nothing.
 void CItem3d::OnBurnMsg(			// Returns nothing.
 	Burn_Message* pburnmsg)		// In:  Message to handle.
 	{
+  UNUSED(pburnmsg);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -700,11 +703,11 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
 	int16_t sY,						// In: Starting Y position
 	int16_t sZ,						// In: Starting Z position
 	ItemType type,					// In:  Known item type or Custom.
-	char*	pszCustomBaseName /*= NULL*/,	// In:  Required if type == Custom.
+   const char*	pszCustomBaseName /*= nullptr*/,	// In:  Required if type == Custom.
 													// Base name for custom type resources.
-	U16	u16IdParentInstance /*= CIdBank::IdNil*/)	// In:  Parent instance ID.
+	uint16_t	u16IdParentInstance /*= CIdBank::IdNil*/)	// In:  Parent instance ID.
 	{
-	int16_t	sResult	= 0;
+	int16_t sResult = SUCCESS;
 
 	m_dX	= sX;
 	m_dY	= sY;
@@ -712,7 +715,7 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
 
 	m_type	= type;
 
-	if (pszCustomBaseName != NULL)
+	if (pszCustomBaseName != nullptr)
 		{
 		strcpy(m_szAnimBaseName, pszCustomBaseName);
 		}

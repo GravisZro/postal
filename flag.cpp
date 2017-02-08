@@ -111,7 +111,7 @@ int16_t CFlag::ms_sFileCount;
 
 /// Throwing Animation Files ////////////////////////////////////////////////////
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszRedResNames[] = 
+static const char* ms_apszRedResNames[] =
 {
 	"3d/rflag.sop",
 	"3d/rflag.mesh",
@@ -119,11 +119,11 @@ static char* ms_apszRedResNames[] =
 	"3d/rflag.hot",
 	"3d/rflag.bounds",
 	"3d/rflag.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
-static char* ms_apszBlueResNames[] = 
+static const char* ms_apszBlueResNames[] =
 {
 	"3d/bflag.sop",
 	"3d/bflag.mesh",
@@ -131,8 +131,8 @@ static char* ms_apszBlueResNames[] =
 	"3d/bflag.hot",
 	"3d/bflag.bounds",
 	"3d/bflag.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,10 +144,10 @@ int16_t CFlag::Load(				// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,					// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)				// In:  Version of file format to load.
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	// Call the base load function to get ID, position, etc.
 	sResult = CThing3d::Load(pFile, bEditMode, sFileCount, ulFileVersion);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 		// Load common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -222,14 +222,14 @@ int16_t CFlag::Load(				// Returns 0 if successfull, non-zero otherwise
 		}
 
 		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == 0)
+		if (!pFile->Error() && sResult == SUCCESS)
 		{
 			// Get resources
 			sResult = GetResources();
 		}
 		else
 		{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CFlag::Load(): Error reading from file!\n");
 		}
 	}
@@ -277,7 +277,7 @@ int16_t CFlag::Save(										// Returns 0 if successfull, non-zero otherwise
 	else
 	{
 		TRACE("CFlag::Save() - Error writing to file\n");
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -290,7 +290,7 @@ int16_t CFlag::Save(										// Returns 0 if successfull, non-zero otherwise
 
 int16_t CFlag::Init(void)
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Prepare shadow (get resources and setup sprite).
 	sResult	= PrepareShadow();
@@ -323,7 +323,7 @@ int16_t CFlag::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlag::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Set the current height, previous time, and Nav Net
 	CThing3d::Startup();
@@ -340,7 +340,7 @@ int16_t CFlag::Startup(void)								// Returns 0 if successfull, non-zero otherw
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlag::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	m_trans.Make1();
 
@@ -353,10 +353,10 @@ int16_t CFlag::Shutdown(void)							// Returns 0 if successfull, non-zero otherw
 ////////////////////////////////////////////////////////////////////////////////
 void CFlag::Update(void)
 {
-	int16_t sHeight = m_sPrevHeight;
+//	int16_t sHeight = m_sPrevHeight;
 	int32_t lThisTime;
 	int32_t lTimeDifference;
-	CSmash* pSmashed = NULL;
+	CSmash* pSmashed = nullptr;
 
 	if (!m_sSuspend)
 	{
@@ -367,14 +367,15 @@ void CFlag::Update(void)
 		m_lAnimTime += lTimeDifference;
 
 		// Calculate elapsed time in seconds
-		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
+//		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
 
 		// Check for new messages that may change the state
 		ProcessMessages();
 
 		switch(m_state)
 		{
-			case CFlag::State_Wait:
+        UNHANDLED_SWITCH;
+         case CFlag::State_Wait:
 				if (lThisTime > m_lTimer)
 				{
 					m_state = CFlag::State_Guard;
@@ -436,13 +437,13 @@ void CFlag::Update(void)
 
 								m_pRealm->m_sFlagbaseCaptured++;
 
-								CThing3d* pParent = NULL;
+								CThing3d* pParent = nullptr;
 								GameMessage msg;
 								msg.msg_PutMeDown.eType = typePutMeDown;
 								msg.msg_PutMeDown.sPriority = 0;
 								msg.msg_PutMeDown.u16FlagInstanceID = GetInstanceID();
 
-								if (m_pRealm->m_idbank.GetThingByID((CThing**)&pParent, m_u16IdParent) == 0)
+								if (m_pRealm->m_idbank.GetThingByID((CThing**)&pParent, m_u16IdParent) == SUCCESS)
 								{
 									SendThingMessage(&msg, pParent);
 								}
@@ -558,7 +559,7 @@ int16_t CFlag::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	sResult = CThing3d::EditNew(sX, sY, sZ);
 
@@ -573,7 +574,7 @@ int16_t CFlag::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	}
 	else
 	{
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -632,12 +633,11 @@ void CFlag::EditHotSpot(			// Returns nothiing.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlag::EditModify(void)
 {
-	int16_t sResult = 0;
-	U16 u16OrigColor = m_u16FlagColor;
+	int16_t sResult = SUCCESS;
+	uint16_t u16OrigColor = m_u16FlagColor;
 
-	RGuiItem* pGuiItem = NULL;
 	RGuiItem* pguiRoot = RGuiItem::LoadInstantiate(FullPathVD("res/editor/flag.gui"));
-	if (pguiRoot != NULL)
+	if (pguiRoot != nullptr)
 	{
 		REdit* peditMinutes = (REdit*) pguiRoot->GetItemFromId(GUI_MINUTES_EDIT_ID);
 		REdit* peditSeconds = (REdit*) pguiRoot->GetItemFromId(GUI_SECONDS_EDIT_ID);
@@ -646,7 +646,7 @@ int16_t CFlag::EditModify(void)
 		int32_t lMinutes;
 		int32_t lSeconds;
 
-		if (peditMinutes != NULL && peditSeconds != NULL && peditFlagID != NULL && peditColor != NULL)
+		if (peditMinutes != nullptr && peditSeconds != nullptr && peditFlagID != nullptr && peditColor != nullptr)
 		{
 			ASSERT(peditMinutes->m_type == RGuiItem::Edit);
 			ASSERT(peditSeconds->m_type == RGuiItem::Edit);
@@ -656,7 +656,7 @@ int16_t CFlag::EditModify(void)
 			lMinutes = m_lTimeBonus / 60000;
 			lSeconds = (m_lTimeBonus / 1000) % 60;
 
-			peditMinutes->SetText("%ld", lMinutes);
+			peditMinutes->SetText("%i", lMinutes);
 			peditSeconds->SetText("%2.2ld", lSeconds);
 			peditFlagID->SetText("%d", m_u16FlagID);
 			peditColor->SetText("%d", m_u16FlagColor);
@@ -685,7 +685,7 @@ int16_t CFlag::EditModify(void)
 		GetResources();
 	}
 
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -693,7 +693,7 @@ int16_t CFlag::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlag::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	switch (m_u16FlagColor)
 	{
@@ -706,7 +706,7 @@ int16_t CFlag::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			sResult = m_animFlagWave.Get(ms_apszBlueResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
 			break;
 	}
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 						// Add new animation loads here
 	}
@@ -726,7 +726,7 @@ int16_t CFlag::FreeResources(void)						// Returns 0 if successfull, non-zero ot
 {
 	m_animFlagWave.Release();
 
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -771,6 +771,7 @@ void CFlag::OnExplosionMsg(Explosion_Message* pMessage)
 
 void CFlag::OnBurnMsg(Burn_Message* pMessage)
 {
+  UNUSED(pMessage);
 	// For now we made the sentry fireproof, the only
 	// way it can be destroyed is by blowing it up.
 	m_state = State_Burning;

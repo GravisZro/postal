@@ -30,14 +30,14 @@
 
 #include <map>
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #include "BLUE/Blue.h"
 #include "ORANGE/CDT/QUEUE.H"
 
 
 #define MAX_EVENTS	256
-// Only set value if not NULL.
-#define SET(ptr, val)		( ((ptr) != NULL) ? *(ptr) = (val) : 0 )
+// Only set value if not nullptr.
+#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0 )
 #define INC_N_WRAP(i, max)	(i = (i + 1) % max)
 
 extern SDL_Window *sdlWindow;
@@ -45,10 +45,10 @@ extern SDL_Surface *sdlShadowSurface;
 
 static bool sdlKeyRepeat = false;
 
-static std::map<SDL_Keycode,U8> sdl_to_rws_keymap;
-static std::map<SDL_Keycode,U16> sdl_to_rws_gkeymap;
-static U8 keystates[128];
-static U8 ms_au8KeyStatus[128];
+static std::map<SDL_Keycode,uint8_t> sdl_to_rws_keymap;
+static std::map<SDL_Keycode,uint16_t> sdl_to_rws_gkeymap;
+static uint8_t keystates[128];
+static uint8_t ms_au8KeyStatus[128];
 
 typedef struct
 	{
@@ -75,13 +75,13 @@ extern void Key_Event(SDL_Event *event)
     ASSERT((event->type == SDL_KEYUP) || (event->type == SDL_KEYDOWN));
     //ASSERT(event->key.keysym.sym < SDLK_LAST);
 
-    const U8 pushed = (event->type == SDL_KEYDOWN);
+    const uint8_t pushed = (event->type == SDL_KEYDOWN);
     if ((pushed) && (event->key.repeat) && (!sdlKeyRepeat))
         return;  // drop it.
 
-    U8 key = sdl_to_rws_keymap[event->key.keysym.sym];
-    U16 gkey = sdl_to_rws_gkeymap[event->key.keysym.sym];
-    U8* pu8KeyStatus = (&ms_au8KeyStatus[key]);
+    uint8_t key = sdl_to_rws_keymap[event->key.keysym.sym];
+    uint16_t gkey = sdl_to_rws_gkeymap[event->key.keysym.sym];
+    uint8_t* pu8KeyStatus = (&ms_au8KeyStatus[key]);
 
     if (key == 0)
         return;
@@ -189,19 +189,19 @@ extern void rspScanKeys(
 // Read next key from keyboard queue.
 //
 //////////////////////////////////////////////////////////////////////////////
-extern int16_t rspGetKey(			// Returns 1 if a key was available; 0 if not.
+extern int16_t rspGetKey(			// Returns TRUE if a key was available; FALSE if not.
 	int32_t* plKey,					// Key info returned here (or 0 if no key available)
-	int32_t* plTime /*= NULL*/)	// Key's time stamp returned here (unless NULL)
+	int32_t* plTime /*= nullptr*/)	// Key's time stamp returned here (unless nullptr)
 	{
-	int16_t	sRes	= 0;	// Assume no key.
+   int16_t sReturn = FALSE;	// Assume no key.
 
 	PRSP_SK_EVENT	pkeEvent	= ms_qkeEvents.DeQ();
-	if (pkeEvent != NULL)
+	if (pkeEvent != nullptr)
 		{
 		SET(plKey,	pkeEvent->lKey);
 		SET(plTime,	pkeEvent->lTime);
 		// Indicate a key was available.
-		sRes	= 1;
+      sReturn = TRUE;
 		}
 	else
 		{
@@ -209,18 +209,20 @@ extern int16_t rspGetKey(			// Returns 1 if a key was available; 0 if not.
 		SET(plTime, 0L);
 		}
 
-	return sRes;
+   return sReturn;
 	}
 
+#ifdef UNUSED_FUNCTIONS
 //////////////////////////////////////////////////////////////////////////////
 //
 // Check if a key is available in the keyboard queue via rspGetKey.
 //
 //////////////////////////////////////////////////////////////////////////////
-extern int16_t rspIsKey(void)		// Returns 1 if a key is available; 0 if not.
+extern int16_t rspIsKey(void)		// Returns TRUE if a key is available; FALSE if not.
 	{
-	return (ms_qkeEvents.IsEmpty() == FALSE) ? 1 : 0;
+   return (ms_qkeEvents.IsEmpty() == FALSE) ? TRUE : FALSE;
 	}
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -424,7 +426,7 @@ extern void Key_Init(void)
 // to call this function once for an entire program's execution of scans and 
 // clears of the array.
 //////////////////////////////////////////////////////////////////////////////
-U8* rspGetKeyStatusArray(void)	// Returns a ptr to the key status array.
+uint8_t* rspGetKeyStatusArray(void)	// Returns a ptr to the key status array.
 	{
 	return ms_au8KeyStatus;
 	}
@@ -436,6 +438,7 @@ extern void rspSetQuitStatusFlags(	// Returns nothing.
 	int32_t	lKeyFlags)						// In:  New keyflags (RSP_GKF_*).
 												// 0 to clear.
 	{
+  UNUSED(lKeyFlags);
     //fprintf(stderr, "STUBBED: %s:%d\n", __FILE__, __LINE__);
 	}
 
@@ -456,7 +459,7 @@ extern int32_t rspGetToggleKeyStates(void)	// Returns toggle key state flags.
 	{
 	int32_t	lKeyStates	= 0;
 #if 0  // !!! FIXME
-    Uint8 *states = SDL_GetKeyState(NULL);
+    uint8_t *states = SDL_GetKeyState(nullptr);
     if (states[SDLK_CAPSLOCK]) lKeyStates |= RSP_CAPS_LOCK_ON;
     if (states[SDLK_NUMLOCKCLEAR]) lKeyStates |= RSP_NUM_LOCK_ON;
     if (states[SDLK_SCROLLLOCK]) lKeyStates |= RSP_SCROLL_LOCK_ON;

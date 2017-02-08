@@ -329,7 +329,7 @@ class CThing3d : public CThing
 		int16_t  m_sPrevHeight;				// Previous height
 		int16_t  m_sSuspend;					// Suspend flag
 
-		U16	m_u16IdFire;					// ID of fire to carry around when you are burning.
+		uint16_t	m_u16IdFire;					// ID of fire to carry around when you are burning.
 
 		CSprite3 m_sprite;					// 3D Sprite used to render the 3D Thing.
 		CSprite2	m_spriteShadow;			// 2D shadow sprite to be shown on the ground
@@ -350,7 +350,7 @@ class CThing3d : public CThing
 
 		bool	m_bAboveTerrain;				// true, if in the air, false if on terrain.
 
-		U16	m_u16IdParent;					// Instance ID of parent.
+		uint16_t	m_u16IdParent;					// Instance ID of parent.
 
 		CStockPile	m_stockpile;			// Stockpile of ammo and health.
 
@@ -368,7 +368,7 @@ class CThing3d : public CThing
 		static double	ms_dDefaultSurfaceDrag;	// Default drag along surfaces.
 		static double	ms_dDefaultAirDrag;		// Default drag due to air friction.
 		static int16_t	ms_sBurntBrightness;		// Brightness level after being burnt
-		static char*	ms_apszStateNames[];		// Strings describing states, indexed by
+      static const char*	ms_apszStateNames[];		// Strings describing states, indexed by
 															// the state enum.
 
 		// These are arrays of pts to be checked on the attribute map for various
@@ -391,7 +391,7 @@ class CThing3d : public CThing
 			m_stockpile.Zero();
 
 			m_state				= State_Idle;
-			m_panimCur			= NULL;
+			m_panimCur			= nullptr;
 			m_dExtHorzVel		= 0.0;
 			m_dExtHorzRot		= 0.0;
 			m_dExtHorzDrag		= 0.0;
@@ -414,7 +414,7 @@ class CThing3d : public CThing
 			m_stockpile.m_sHitPoints	= DefHitPoints;
 			m_u16IdParent		= CIdBank::IdNil;
 			m_spriteShadow.m_sInFlags = CSprite::InHidden;
-			m_spriteShadow.m_pImage = NULL;
+			m_spriteShadow.m_pImage = nullptr;
 			m_spriteShadow.m_pthing = this;
 			m_lAnimTime = 0;
 			m_lTimer = 0;
@@ -509,7 +509,7 @@ class CThing3d : public CThing
 		// Get the sprite for this thing.  If there's more than one, pick one
 		// or none to return.
 		virtual	// If you override this, do NOT call this base class.
-		CSprite* GetSprite(void)	// Returns the sprite for this thing or NULL.
+		CSprite* GetSprite(void)	// Returns the sprite for this thing or nullptr.
 			{ return &m_sprite; }
 
 		// Get the coordinates of this thing.
@@ -670,15 +670,15 @@ class CThing3d : public CThing
 		void GetFloorAttributes(	// Returns nothing
 			int16_t  sX,					// In:  X coord.
 			int16_t  sZ,					// In:  Z coord.
-			U16*   pu16Attrib,		// Out: Combined attributes, if not NULL
-			int16_t* psHeight);			// Out: Max height, if not NULL
+			uint16_t*   pu16Attrib,		// Out: Combined attributes, if not nullptr
+			int16_t* psHeight);			// Out: Max height, if not nullptr
 
 		// Get Effect attributes (effects attributes like light, camera, oil, blood)
 		void GetEffectAttributes(	// Returns nothing
 			int16_t  sX,					// In:  X coord.
 			int16_t  sZ,					// In:  Z coord.
-			U16*   pu16Attrib,		// Out: Combined attributes, if not NULL
-			int16_t* psLightBits);		// Out: Tally of light bits set, if not NULL.
+			uint16_t*   pu16Attrib,		// Out: Combined attributes, if not nullptr
+			int16_t* psLightBits);		// Out: Tally of light bits set, if not nullptr.
 
 		// Get the layer based on the attribute points array.
 		void GetLayer(
@@ -689,8 +689,8 @@ class CThing3d : public CThing
 		// Detach the specified Thing3d.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-		CThing3d* DetachChild(			// Returns ptr to the child or NULL, if none.
-			U16*		pu16InstanceId,	// In:  Instance ID of child to detach.
+		CThing3d* DetachChild(			// Returns ptr to the child or nullptr, if none.
+			uint16_t*		pu16InstanceId,	// In:  Instance ID of child to detach.
 												// Out: CIdBank::IdNil.
 			RTransform*	ptrans);			// In:  Transform for positioning child.
 
@@ -745,8 +745,8 @@ class CThing3d : public CThing
 			int16_t	sInitialVolume	= -1,						// In:  Initial Sound Volume (0 - 255)
 																	// Negative indicates to use the distance to the
 																	// ear to determine the volume.
-			SampleMaster::SoundInstance*	psi = NULL,	// Out: Handle for adjusting sound volume
-			int32_t* plSampleDuration = NULL,				// Out: Sample duration in ms, if not NULL.
+			SampleMaster::SoundInstance*	psi = nullptr,	// Out: Handle for adjusting sound volume
+			int32_t* plSampleDuration = nullptr,				// Out: Sample duration in ms, if not nullptr.
 			int32_t lLoopStartTime = -1,						// In:  Where to loop back to in milliseconds.
 																	//	-1 indicates no looping (unless m_sLoop is
 																	// explicitly set).
@@ -756,8 +756,8 @@ class CThing3d : public CThing
 
 
 		// Start a CAnimThing.
-		CAnimThing* StartAnim(					// Returns ptr to CAnimThing on success; NULL otherwise.
-			char* pszAnimResName,				// In:  Animation's resource name.
+		CAnimThing* StartAnim(					// Returns ptr to CAnimThing on success; nullptr otherwise.
+         const char* pszAnimResName,				// In:  Animation's resource name.
 			int16_t	sX,								// In:  Position.
 			int16_t	sY,								// In:  Position.
 			int16_t	sZ,								// In:  Position.

@@ -304,7 +304,7 @@ int16_t CPerson::ms_sFileCount;
 
 // This is the one CPerson that can log its AI table transitions or
 // CIdBank::IdNil.
-U16	CPerson::ms_u16IdLogAI	= CIdBank::IdNil;
+uint16_t	CPerson::ms_u16IdLogAI	= CIdBank::IdNil;
 
 // The max amount a guy and step up while writhing.
 #define WRITHING_VERTICAL_TOLERANCE		(MaxStepUpThreshold / 2)
@@ -324,10 +324,10 @@ int16_t CPerson::Load(				// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,					// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)				// In:  Version of file format to load.
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	sResult = CDoofus::Load(pFile, bEditMode, sFileCount, ulFileVersion);
 	
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 		// Load common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -410,14 +410,14 @@ int16_t CPerson::Load(				// Returns 0 if successfull, non-zero otherwise
 		m_bCivilian = (g_apersons[m_ePersonType].eLifestyle == Personatorium::Civilian);
 		
 		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == 0)
+		if (!pFile->Error() && sResult == SUCCESS)
 		{
 			// Get resources
 			sResult = GetResources();
 		}
 		else
 		{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CPerson::Load(): Error reading from file!\n");
 		}
 	}
@@ -468,7 +468,7 @@ int16_t CPerson::Save(				// Returns 0 if successfull, non-zero otherwise
 	else
 	{
 		TRACE("CPerson::Save() - Error writing to file\n");
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -480,7 +480,7 @@ int16_t CPerson::Save(				// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPerson::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Set the current height, previous time, and Nav Net
 	CDoofus::Startup();
@@ -497,7 +497,7 @@ int16_t CPerson::Startup(void)								// Returns 0 if successfull, non-zero othe
 
 int16_t CPerson::Init(void)
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Prepare shadow (get resources and setup sprite).
 	sResult	= PrepareShadow();
@@ -588,7 +588,7 @@ int16_t CPerson::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CPerson::Update(void)
 {
-	CThing* pDemon = NULL;
+	CThing* pDemon = nullptr;
 
 	if (!m_sSuspend)
 	{
@@ -794,7 +794,7 @@ void CPerson::Update(void)
 					rspMsgBox(
 						RSP_MB_ICN_INFO | RSP_MB_BUT_OK,
 						g_pszAppName,
-						"The state is \"%s\" (%ld).\n"
+                  "The state is \"%s\" (%i).\n"
 						"%s",
 						ms_apszStateNames[m_state],
 						m_state,
@@ -838,7 +838,7 @@ void CPerson::Render(void)
 //		m_sprite.m_pszText = ms_apszStateNames[m_state];
 	}
 	else
-		m_sprite.m_pszText		= NULL;
+		m_sprite.m_pszText		= nullptr;
 
 	CDoofus::Render();
 }
@@ -875,7 +875,7 @@ void CPerson::EditRender(void)
 			}
 		else
 			{
-			m_sprite.m_pszText	= NULL;
+			m_sprite.m_pszText	= nullptr;
 			}
 		}
 	}
@@ -928,7 +928,7 @@ void CPerson::Logic_Writhing(void)
 		int16_t	sPseudoHeadX	= m_dX + COSQ[sRot] * sRadius;
 		int16_t	sPseudoHeadY	= m_dZ - SINQ[sRot] * sRadius;
 		// Check pseudo-head point.
-		U16	u16Attrib	= 0;	// Safety.
+		uint16_t	u16Attrib	= 0;	// Safety.
 		int16_t	sHeight		= 0;	// Safety.
 		GetFloorAttributes(sPseudoHeadX, sPseudoHeadY, &u16Attrib, &sHeight);
 		if ( (u16Attrib & REALM_ATTR_NOT_WALKABLE) || sHeight > m_dY + WRITHING_VERTICAL_TOLERANCE
@@ -1003,7 +1003,7 @@ void CPerson::Logic_Writhing(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPerson::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 {
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1014,7 +1014,7 @@ int16_t CPerson::EditNew(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	sResult = CDoofus::EditNew(sX, sY, sZ);
 
@@ -1029,7 +1029,7 @@ int16_t CPerson::EditNew(									// Returns 0 if successfull, non-zero otherwis
 	}
 	else
 	{
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -1042,7 +1042,7 @@ static void LogicUserBrowse(	// Returns nothing
 	RGuiItem* pgui)				// In: GUI pressed.
 {
 	RGuiItem* pguiLogicFileName	= (RGuiItem*)pgui->m_ulUserInstance;
-	ASSERT(pguiLogicFileName != NULL);
+	ASSERT(pguiLogicFileName != nullptr);
 
 	// Get the logic file name . . .
 	char	szLogicFile[RSP_MAX_PATH];
@@ -1053,12 +1053,12 @@ static void LogicUserBrowse(	// Returns nothing
 		szLogicFile,
 		szLogicFile,
 		sizeof(szLogicFile),
-		"lgk.") == 0)
+      "lgk.") == SUCCESS)
 	{
 		char	szHDPath[RSP_MAX_PATH];
 		strcpy(szHDPath, FullPathHD(""));
 		// Attempt to remove HD path . . .
-		if (rspStrnicmp(szLogicFile, szHDPath, strlen(szHDPath) ) == 0)
+      if (rspStrnicmp(szLogicFile, szHDPath, strlen(szHDPath) ) == SUCCESS)
 			{
 			// Determine amount of path to ignore.
 			int32_t	lSubPathBegin	= strlen(szHDPath);
@@ -1075,9 +1075,9 @@ static void LogicUserBrowse(	// Returns nothing
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPerson::EditModify(void)
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	Personatorium::Index eCurrentType = m_ePersonType;
-	RGuiItem* pGuiItem = NULL;
+	RGuiItem* pGuiItem = nullptr;
 	RGuiItem* pGui = RGuiItem::LoadInstantiate(FullPathVD("res/editor/person.gui"));
 	if (pGui)
 	{
@@ -1109,7 +1109,7 @@ int16_t CPerson::EditModify(void)
 			for (i = 0; i < Personatorium::NumPersons; i++)
 			{
 				pGuiItem = pPersonalityList->AddString(g_apersons[i].pszDescription);
-				if (pGuiItem != NULL)
+				if (pGuiItem != nullptr)
 				{
 					pGuiItem->m_lId = PERSONALITY_ITEM_ID_BASE + i;
 					pGuiItem->m_ulUserData = (uint32_t) i;
@@ -1141,7 +1141,7 @@ int16_t CPerson::EditModify(void)
 						(i != BouncingBettyMine) )
 					{
 					pGuiItem	= pWeaponList->AddString(ms_awdWeapons[i].pszName);
-					if (pGuiItem != NULL)
+					if (pGuiItem != nullptr)
 						{
 						// Store class ID so we can determine user selection
 						pGuiItem->m_lId	= ms_awdWeapons[i].id;
@@ -1185,7 +1185,7 @@ int16_t CPerson::EditModify(void)
 			// Set callback for logic browser button.
 			pbtnLogicUserBrowse->m_bcUser	= LogicUserBrowse;
 			// Set instance data to GUI to query/update.
-			pbtnLogicUserBrowse->m_ulUserInstance	= (U64)peditLogicFile;
+			pbtnLogicUserBrowse->m_ulUserInstance	= (uint64_t)peditLogicFile;
 
 			SetGuiToNotify(pGui->GetItemFromId(ID_GUI_EDIT_TEXTURES) );
 
@@ -1261,7 +1261,7 @@ int16_t CPerson::EditModify(void)
 	}
 	delete pGui;
 
-	return 0;
+   return SUCCESS;
 }
 
 
@@ -1278,7 +1278,7 @@ void CPerson::EditUpdate(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPerson::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	int16_t sLoadResult = 0;
 
 	
@@ -1643,7 +1643,7 @@ int16_t CPerson::GetResources(void)						// Returns 0 if successfull, non-zero o
 	char	szExeTargetResName[RSP_MAX_PATH];
 	sprintf(szExeTargetResName, "%s_writhing_exe.trans", g_apersons[m_ePersonType].Anim.pszBaseName);
 	sLoadResult	= rspGetResource(&g_resmgrGame, szExeTargetResName, &m_ptransExecutionTarget);
-	if (sLoadResult == 0)
+   if (sLoadResult == SUCCESS)
 		{
 		m_ptransExecutionTarget->SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
 		}
@@ -1690,7 +1690,7 @@ int16_t CPerson::FreeResources(void)						// Returns 0 if successfull, non-zero 
 	// Release base class resources.
 	CDoofus::ReleaseResources();
 
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1698,7 +1698,7 @@ int16_t CPerson::FreeResources(void)						// Returns 0 if successfull, non-zero 
 ////////////////////////////////////////////////////////////////////////////////
 
 SampleMaster::SoundInstance CPerson::PlaySoundWrithing(
-			int32_t* plDuration)					// Out:  Duration of sample, if not NULL.
+			int32_t* plDuration)					// Out:  Duration of sample, if not nullptr.
 {
 	m_siPlaying = 0;
 	SampleMasterID*	psmid	= &g_smidNil;
@@ -1733,7 +1733,7 @@ SampleMaster::SoundInstance CPerson::PlaySoundWrithing(
 		-1,											// In:  Initial Sound Volume (0 - 255)
 														// Negative indicates to use the distance to the ear.
 		&m_siPlaying,								// Out: Handle for adjusting sound volume
-		plDuration);								// Out: Sample duration in ms, if not NULL.
+		plDuration);								// Out: Sample duration in ms, if not nullptr.
 //#ifdef MOBILE
 	}
 //#endif
@@ -1808,7 +1808,7 @@ SampleMaster::SoundInstance CPerson::PlaySoundShot(void)
 		-1,											// In:  Initial Sound Volume (0 - 255)
 														// Negative indicates to use the distance to the ear.
 		&m_siPlaying,								// Out: Handle for adjusting sound volume
-		&lSampleDuration);						// Out: Sample duration in ms, if not NULL.
+		&lSampleDuration);						// Out: Sample duration in ms, if not nullptr.
 
 	return m_siPlaying;
 }
@@ -1976,7 +1976,7 @@ SampleMaster::SoundInstance CPerson::PlaySoundRandom(void)
 		if (m_idDude != CIdBank::IdNil)
 		{
 			CDude* pdude;
-			if (m_pRealm->m_idbank.GetThingByID((CThing**) &pdude, m_idDude) == 0)
+         if (m_pRealm->m_idbank.GetThingByID((CThing**) &pdude, m_idDude) == SUCCESS)
 			{
 				if (pdude && pdude->m_state != State_Dead)
 				{

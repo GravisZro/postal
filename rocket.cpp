@@ -212,7 +212,7 @@ int32_t CRocket::ms_lSmokeTimeToLive = 1000;				// Time for smoke to stick aroun
 int16_t CRocket::ms_sFileCount;
 
 /// Rocket Animation Files
-static char* ms_apszResNames[] = 
+static const char* ms_apszResNames[] =
 {
 	"3d/missile.sop",
 	"3d/missile.mesh",
@@ -220,8 +220,8 @@ static char* ms_apszResNames[] =
 	"3d/missile.hot",
 	"3d/missile.bounds",
 	"3d/missile.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -271,7 +271,7 @@ int16_t CRocket::Load(										// Returns 0 if successfull, non-zero otherwise
 		}
 		else
 		{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("CRocket::Load(): Error reading from file!\n");
 		}
 	}
@@ -304,7 +304,7 @@ int16_t CRocket::Save(										// Returns 0 if successfull, non-zero otherwise
 
 	// Save object data
 
-	return 0;
+   return SUCCESS;
 }
 
 
@@ -313,7 +313,9 @@ int16_t CRocket::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 void CRocket::Update(void)
 {
+#ifdef UNUSED_VARIABLES
 	uint16_t usAttrib;
+#endif
 	int16_t sHeight;
 	double dNewX;
 	double dNewZ;
@@ -359,7 +361,7 @@ void CRocket::Update(void)
 					SampleMaster::Weapon,					// In:  Sound Volume Category for user adjustment
 					DistanceToVolume(m_dX, m_dY, m_dZ, LaunchSndHalfLife),	// In:  Initial Sound Volume (0 - 255)
 					&m_siThrust,								// Out: Handle for adjusting sound volume
-					NULL,											// Out: Sample duration in ms, if not NULL.
+					nullptr,											// Out: Sample duration in ms, if not nullptr.
 					2841,											// In:  Where to loop back to in milliseconds.
 																	//	-1 indicates no looping (unless m_sLoop is
 																	// explicitly set).
@@ -394,7 +396,9 @@ void CRocket::Update(void)
 
 				// Check for obstacles
 				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
-				usAttrib = m_pRealm->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
+#ifdef UNUSED_VARIABLES
+            usAttrib = m_pRealm->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
+#endif
 
 				// If the new position's height is too high, the new position is a ways
 				// off screen, or the path to the new position is not clear of terrain . . .
@@ -419,9 +423,9 @@ void CRocket::Update(void)
 						(int16_t) dNewX, 			// In:  Destination X.                                        
 						(int16_t) dNewZ,				// In:  Destination Z.                                        
 						0,								// In:  Max traverser can step up.                      
-						NULL,							// Out: If not NULL, last clear point on path.                
-						NULL,							// Out: If not NULL, last clear point on path.                
-						NULL,							// Out: If not NULL, last clear point on path.                
+						nullptr,							// Out: If not nullptr, last clear point on path.                
+						nullptr,							// Out: If not nullptr, last clear point on path.                
+						nullptr,							// Out: If not nullptr, last clear point on path.                
 						false) )						// In:  If true, will consider the edge of the realm a path
 														// inhibitor.  If false, reaching the edge of the realm    
 														// indicates a clear path.                                 
@@ -447,7 +451,7 @@ void CRocket::Update(void)
 				// the weapon yet.
 				if (m_bArmed)
 				{
-					CSmash* pSmashed = NULL;
+					CSmash* pSmashed = nullptr;
 					m_pRealm->m_smashatorium.QuickCheckReset(
 						&m_smash, 
 						m_u32CollideIncludeBits,
@@ -500,7 +504,7 @@ void CRocket::Update(void)
 				else
 				{
 					// Check for collision with self and if no collision, then arm
-					CThing* pShooter = NULL;
+					CThing* pShooter = nullptr;
 					m_pRealm->m_idbank.GetThingByID(&pShooter, m_u16ShooterID);
 					// If the shooter is valid, then arm when it clears the shooter
 					if (pShooter)
@@ -530,8 +534,8 @@ void CRocket::Update(void)
 				if (lThisTime > m_lSmokeTimer)
 				{
 					m_lSmokeTimer = lThisTime + ms_lSmokeTrailInterval;
-					CFire* pSmoke = NULL;
-					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == 0)
+					CFire* pSmoke = nullptr;
+					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
@@ -552,7 +556,7 @@ void CRocket::Update(void)
 
 				m_bArmed = true;
 				{
-					CSmash* pSmashed = NULL;
+					CSmash* pSmashed = nullptr;
 					if (m_pRealm->m_smashatorium.QuickCheck(&m_smash, 
 																	m_u32CollideIncludeBits, 
 																	m_u32CollideDontcareBits,
@@ -564,8 +568,8 @@ void CRocket::Update(void)
 				if (lThisTime > m_lSmokeTimer)
 				{
 					m_lSmokeTimer = lThisTime + ms_lSmokeTrailInterval;
-					CFire* pSmoke = NULL;
-					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == 0)
+					CFire* pSmoke = nullptr;
+					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
@@ -590,7 +594,7 @@ void CRocket::Update(void)
 				// Start an explosion object and then kill rocket
 				// object
 				CExplode* pExplosion;
-				if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == 0)
+				if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
 				{
 					pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_u16ShooterID);
 					PlaySample(										// Returns nothing.
@@ -605,7 +609,7 @@ void CRocket::Update(void)
 				CFire* pSmoke;
 				for (a = 0; a < 8; a++)
 				{
-					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == 0)
+					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
 					{
 						pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 						pSmoke->m_u16ShooterID = m_u16ShooterID;
@@ -694,7 +698,7 @@ int16_t CRocket::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 	
 	// Use specified position
 	m_dX = (double)sX;
@@ -730,13 +734,13 @@ int16_t CRocket::Setup(									// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CRocket::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	sResult = m_anim.Get(ms_apszResNames);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
-		if (sResult == 0)
+		if (sResult == SUCCESS)
 		{
 			// add more gets
 		}
@@ -761,7 +765,7 @@ int16_t CRocket::FreeResources(void)						// Returns 0 if successfull, non-zero 
 {
 	m_anim.Release();
 
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

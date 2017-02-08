@@ -128,8 +128,8 @@ static RImage* m_pim;
 
 static int16_t m_sStep;
 static bool m_bFinishASAP;
-static int32_t m_lTotalTime;
-static int32_t m_lBaseTime;
+static uint32_t m_lTotalTime;
+static uint32_t m_lBaseTime;
 
 static double m_dReduce = 1.0;
 
@@ -154,7 +154,7 @@ extern void StartMenuTrans(
 	// Save total time
 	if (lTotalTime < 0)
 		{
-		TRACE("StartMenuTransIn(): Moronic time specified: %ld -- changed to 0!\n", lTotalTime);
+		TRACE("StartMenuTransIn(): Moronic time specified: %i -- changed to 0!\n", lTotalTime);
 		lTotalTime = 0;
 		}
 	m_lTotalTime = lTotalTime;
@@ -173,7 +173,7 @@ extern void StartMenuTrans(
 		{
 
 		// Setup image to match screen buffer
-		if (m_pim->CreateImage(g_pimScreenBuf->m_sWidth, g_pimScreenBuf->m_sHeight, RImage::BMP8) == 0)
+      if (m_pim->CreateImage(g_pimScreenBuf->m_sWidth, g_pimScreenBuf->m_sHeight, RImage::BMP8) == SUCCESS)
 			{
 
 			// Everything's cool, so set for first step
@@ -596,7 +596,7 @@ static void Remap(
 	// here, the end result would be no locking.  This is only a problem in
 	// debug mode.  We'll have to check into a better solution, but for now
 	// I'm just calling the "real" buffer lock.
-	U8* pu8VideoBuf;
+	uint8_t* pu8VideoBuf;
 	int32_t	lPitch;
 // Note that we only need to do this in the case that the buffer is not already
 // locked.  Since we keep it locked while the game is running now, we don't need
@@ -604,10 +604,10 @@ static void Remap(
 // does the lock even in DEBUG mode)
 // IF you comment this back in, remember to comment in the unlock as well!
 #if 0
-	if (rspLockVideoBuffer((void**)&pu8VideoBuf, &lPitch) ) == 0)
+   if (rspLockVideoBuffer((void**)&pu8VideoBuf, &lPitch) ) == SUCCESS)
 		{
 #else
-	if (rspLockBuffer() == 0)
+   if (rspLockBuffer() == SUCCESS)
 		{
 		pu8VideoBuf	= g_pimScreenBuf->m_pData;
 		lPitch		= g_pimScreenBuf->m_lPitch;

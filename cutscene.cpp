@@ -253,26 +253,26 @@ class	CCutSceneInfo
 		bool m_bDeleteFont;
 		int16_t m_sDelW;
 		int16_t m_sDelH;
-		int32_t m_lTotalBytes;
-		int32_t m_lTimeToUpdate;
-		int32_t m_lBytesSoFar;
-		U8 m_u8BloodColor;
+      size_t m_lTotalBytes;
+      uint32_t m_lTimeToUpdate;
+      size_t m_lBytesSoFar;
+		uint8_t m_u8BloodColor;
 		int16_t m_sLastDistance;
 		SampleMasterID m_musicID;
 		//-----------------------------------------
 
 		void	Clear()
 			{
-			m_pFont = NULL;
+			m_pFont = nullptr;
 			m_szTitle[0] = 0;
 			m_szText[0] = 0;
 			m_szMusic[0] = 0;
 			m_ucForeText = 0;
 			m_ucShadowText = 0;
-			m_pimBGLayer = NULL;
-			m_pimTextLayer = NULL;
-			m_pimDst = NULL;
-			m_pmaAlpha = NULL;
+			m_pimBGLayer = nullptr;
+			m_pimTextLayer = nullptr;
+			m_pimDst = nullptr;
+			m_pmaAlpha = nullptr;
 			m_bDeleteFont = true;
 			m_sDelW = 0;
 			m_sDelH = 0;
@@ -317,7 +317,7 @@ int16_t	MartiniDo(	RImage*	pimBackground,	// actually, this is the ONLY graphic
 						int16_t	sRadius,				// Your tuning pleasure
 						int32_t	lSpinTime,			// in milliseconds
 						int32_t	lSwayTime,			// in milliseconds
-						RRect*  prCenter,			// if not NULL, use this portion of the image only!
+						RRect*  prCenter,			// if not nullptr, use this portion of the image only!
 						int32_t	lFadeTime,			// fade to black, in milliseconds.
 						SampleMaster::SoundInstance siFade	// to make sound fade out
 					)
@@ -481,7 +481,7 @@ class	CSwirlMe
 					SampleMaster::Unspecified,				// In:  Sound Volume Category for user adjustment
 					255,											// In:  Initial Sound Volume (0 - 255)
 					&m_siSound,									// Out: Handle for adjusting sound volume
-					NULL,											// Out: Sample duration in ms, if not NULL.
+					nullptr,											// Out: Sample duration in ms, if not nullptr.
 					0,												// In:  Where to loop back to in milliseconds.
 																	//	-1 indicates no looping (unless m_sLoop is
 																	// explicitly set).
@@ -526,14 +526,14 @@ class	CSwirlMe
 			rSafeClip.sW -= (m_sRadX<<1);
 			rSafeClip.sH -= (m_sRadY<<1);
 
-//******************************************************************************
+// ******************************************************************************
 //  THIS IS A COMPLETE HACK - IT IS A LAST MINUTE ATTEMPT TO ADJUST FOR THE
 //  CHANGE TO THE CUT SCENE ASSEST WHICH ADDED BLACK STRIPS TO THE TOP AND
 //  BOTTOM OF THE SCREEN....
-//******************************************************************************
+// ******************************************************************************
 			rSafeClip.sY += 40; // HARD CODED FOR POSTAL!
 			rSafeClip.sH -= 80; // HARD CODED FOR POSTAL!
-//******************************************************************************
+// ******************************************************************************
 
 			// 1) Put original image down upon target:
 
@@ -545,7 +545,7 @@ class	CSwirlMe
 						m_rClip.sW,m_rClip.sH,&rSafeClip);
 
 				// 2) Alpha Blit Upon it:
-				if (m_pCut->m_pmaAlpha != NULL)
+				if (m_pCut->m_pmaAlpha != nullptr)
 					{
 					rspAlphaBlitT(int16_t(255.9*dAlpha),m_pCut->m_pmaAlpha,m_pCut->m_pimBGLayer,m_pCut->m_pimDst,
 						m_rClip.sX + sOffX,m_rClip.sY + sOffY,&rSafeClip);
@@ -633,7 +633,7 @@ class	CSwirlMe
 				m_lTimeSpin = m_lCycleTimeX = m_lCycleTimeY = m_lCycleTimeA = 0;
 			m_dCenA = m_dRadA = 0.0;
 			m_rClip = RRect(0,0,0,0);
-			m_siSound = NULL;
+         m_siSound = 0;
 			}
 
 		////////////////////////////////////////////////////////////////////////////
@@ -653,7 +653,7 @@ class	CSwirlMe
 			{
  			if (m_siSound != 0) AbortSample(m_siSound);
 			m_siSound = 0;
-			m_pCut = NULL;	// we don't free this - you do!
+			m_pCut = nullptr;	// we don't free this - you do!
 			}
 
 		////////////////////////////////////////////////////////////////////////////
@@ -679,15 +679,15 @@ class	CSwirlMe
 // Variables/data
 ////////////////////////////////////////////////////////////////////////////////
 
-static CCutSceneInfo* ms_pCut = NULL;
-static CSwirlMe* pSwirl = NULL;
+static CCutSceneInfo* ms_pCut = nullptr;
+static CSwirlMe* pSwirl = nullptr;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototypes
 ////////////////////////////////////////////////////////////////////////////////
 
-static void CutScene_RFileCallback(int32_t lBytes);
+static void CutScene_RFileCallback(size_t lBytes);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -713,6 +713,7 @@ extern void CutSceneStart(
 	int16_t sBorderX,
 	int16_t sBorderY)
 	{
+  UNUSED(pstrEntry);
 	// This is used for more than just paths, so it has a larger size!
 	char szText[2048];
 
@@ -731,7 +732,7 @@ extern void CutSceneStart(
 
 	// Open the realm prefs file
 	RPrefs prefsRealm;
-	if (prefsRealm.Open(FullPathHD(g_GameSettings.m_pszRealmPrefsFile), "rt") != 0)
+	if (prefsRealm.Open(FullPathHD(g_GameSettings.m_pszRealmPrefsFile), "rt") != SUCCESS)
 		{
 		TRACE("CutSceneStart(): Error opening prefs file.\n");
 		return ;
@@ -758,11 +759,11 @@ extern void CutSceneStart(
 
 	// Load bg, but do NOT display yet!
 	ms_pCut->m_pimBGLayer = new RImage;
-	if ((ms_pCut->m_pimBGLayer->Load(FullPathHD(szText)) == 0) ||
-		 (ms_pCut->m_pimBGLayer->Load(FullPathVD(szText)) == 0))
+	if ((ms_pCut->m_pimBGLayer->Load(FullPathHD(szText)) == SUCCESS) ||
+		 (ms_pCut->m_pimBGLayer->Load(FullPathVD(szText)) == SUCCESS))
 		{
 		// Set palette
-		ASSERT(ms_pCut->m_pimBGLayer->m_pPalette != NULL);
+		ASSERT(ms_pCut->m_pimBGLayer->m_pPalette != nullptr);
 		ASSERT(ms_pCut->m_pimBGLayer->m_pPalette->m_type == RPal::PDIB);
 		rspSetPaletteEntries(
 			0, 256, ms_pCut->m_pimBGLayer->m_pPalette->Red(0), 
@@ -776,17 +777,17 @@ extern void CutSceneStart(
 		{
 		TRACE("CutScene(): Error loading bg image: '%s'\n", FullPathVD(szText));
 		delete ms_pCut->m_pimBGLayer;
-		ms_pCut->m_pimBGLayer	= NULL;
+		ms_pCut->m_pimBGLayer	= nullptr;
 		}
 
 	//------------------------------------------------------------------------------
 	// Get tables used for color matching
 	//------------------------------------------------------------------------------
 
-	U8	au8Red[256];
-	U8	au8Green[256];
-	U8	au8Blue[256];
-	rspGetPaletteEntries(0, 256, au8Red, au8Green, au8Blue, sizeof(U8));
+	uint8_t	au8Red[256];
+	uint8_t	au8Green[256];
+	uint8_t	au8Blue[256];
+	rspGetPaletteEntries(0, 256, au8Red, au8Green, au8Blue, sizeof(uint8_t));
 
 	//------------------------------------------------------------------------------
 	// Get multialpha
@@ -795,15 +796,15 @@ extern void CutSceneStart(
 	ms_pCut->m_pmaAlpha = new RMultiAlpha;
 
 	prefsRealm.GetVal(*pstrSection, "Alpha", DEFAULT_MULTIALPHA, szText);
-	if ((ms_pCut->m_pmaAlpha->Load(FullPathHD(szText)) == 0) ||
-		 (ms_pCut->m_pmaAlpha->Load(FullPathVD(szText)) == 0))
+	if ((ms_pCut->m_pmaAlpha->Load(FullPathHD(szText)) == SUCCESS) ||
+		 (ms_pCut->m_pmaAlpha->Load(FullPathVD(szText)) == SUCCESS))
 		{
 		}
 	else
 		{
 		TRACE("CutScene(): Error loading multialpha: '%s'\n", FullPathVD(szText));
 		delete ms_pCut->m_pmaAlpha;
-		ms_pCut->m_pmaAlpha = NULL;
+		ms_pCut->m_pmaAlpha = nullptr;
 		}
 
 	//------------------------------------------------------------------------------
@@ -823,9 +824,9 @@ extern void CutSceneStart(
 
 	// Find closest matches for the desired colors
 	ms_pCut->m_ucForeText = rspMatchColorRGB(
-		FONT_FORE_R, FONT_FORE_G, FONT_FORE_B, 10, 236, au8Red, au8Green, au8Blue, sizeof(U8));
+		FONT_FORE_R, FONT_FORE_G, FONT_FORE_B, 10, 236, au8Red, au8Green, au8Blue, sizeof(uint8_t));
 	ms_pCut->m_ucShadowText = rspMatchColorRGB(
-		FONT_SHAD_R, FONT_SHAD_G, FONT_SHAD_B, 10, 236, au8Red, au8Green, au8Blue, sizeof(U8));
+		FONT_SHAD_R, FONT_SHAD_G, FONT_SHAD_B, 10, 236, au8Red, au8Green, au8Blue, sizeof(uint8_t));
 
 	// Setup print
 	RPrint print;
@@ -974,7 +975,7 @@ extern void CutSceneStart(
 			PROGRESS_BOX_X, PROGRESS_BOX_Y,					// Src.
 			PROGRESS_BOX_X, PROGRESS_BOX_Y,					// Dst.
 			PROGRESS_BOX_WIDTH, PROGRESS_BOX_HEIGHT,		// Both.
-			NULL,														// Dst.
+			nullptr,														// Dst.
 			&rcBGClipper);											// Src.
 		}
 
@@ -1011,7 +1012,7 @@ extern void CutSceneStart(
 
 	// Find good blood color
 	ms_pCut->m_u8BloodColor = rspMatchColorRGB(
-		BLOOD_FORE_R, BLOOD_FORE_G, BLOOD_FORE_B, 1, 254, au8Red, au8Green, au8Blue, sizeof(U8));
+		BLOOD_FORE_R, BLOOD_FORE_G, BLOOD_FORE_B, 1, 254, au8Red, au8Green, au8Blue, sizeof(uint8_t));
 	}
 
 
@@ -1060,7 +1061,7 @@ extern int16_t CutSceneConfig(
 			PROGRESS_BOX_X, PROGRESS_BOX_Y,					// Src.
 			PROGRESS_BOX_X, PROGRESS_BOX_Y,					// Dst.
 			PROGRESS_BOX_WIDTH, PROGRESS_BOX_HEIGHT,		// Both.
-			NULL,														// Dst.
+			nullptr,														// Dst.
 			&rcBGClipper);											// Src.
 
 		rspUnlockBuffer();
@@ -1118,7 +1119,7 @@ extern void CutSceneEnd(void)
 // Our RFile callback
 //
 ////////////////////////////////////////////////////////////////////////////////
-static void CutScene_RFileCallback(int32_t lBytes)
+static void CutScene_RFileCallback(size_t lBytes)
 	{
 	static int16_t asWavyY[] =
 		{
@@ -1136,7 +1137,7 @@ static void CutScene_RFileCallback(int32_t lBytes)
 				ms_pCut->m_lBytesSoFar += lBytes;
 
 				// Check if time for an update
-				int32_t lNow = rspGetMilliseconds();
+            uint32_t lNow = rspGetMilliseconds();
 				if ((lNow - ms_pCut->m_lTimeToUpdate) > PROGRESS_BAR_UPDATE_TIME)
 					{
 					// Get percentage that's been loaded so far (result is from 0 to 1)
@@ -1158,7 +1159,7 @@ static void CutScene_RFileCallback(int32_t lBytes)
 							int16_t sY = PROGRESS_BAR_START_Y + sBaseY + RandomPlusMinus(PROGRESS_BAR_RANDOM_Y);
 
 							// Draw an alpha'd pixel at this location
-							U8 u8dst = *(ms_pCut->m_pimBGLayer->m_pData + (sY * ms_pCut->m_pimBGLayer->m_lPitch) + sX);
+							uint8_t u8dst = *(ms_pCut->m_pimBGLayer->m_pData + (sY * ms_pCut->m_pimBGLayer->m_lPitch) + sX);
 							rspPlot(
 								rspBlendColor(150, ms_pCut->m_pmaAlpha, ms_pCut->m_u8BloodColor, u8dst),
 								ms_pCut->m_pimBGLayer,
@@ -1188,7 +1189,7 @@ static void CutScene_RFileCallback(int32_t lBytes)
 						PROGRESS_BOX_X, PROGRESS_BOX_Y,					// Src.
 						PROGRESS_BOX_X, PROGRESS_BOX_Y,					// Dst.
 						PROGRESS_BOX_WIDTH, PROGRESS_BOX_HEIGHT,		// Both.
-						NULL,														// Dst.
+						nullptr,														// Dst.
 						&rcBGClipper);											// Src.
 
 					rspUnlockBuffer();

@@ -28,6 +28,9 @@
 // Handles keyboard emulation of joystick stuff.
 //
 //////////////////////////////////////////////////////////////////////////////
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 
 #include "common/system.h"
 
@@ -70,7 +73,7 @@ static uint8_t		ms_aucDirKeys[NUM_JOYSTICKS][NUM_DIRS]		= { 0, };
 //////////////////////////////////////////////////////////////////////////////
 extern int16_t Joy_SetKey(int16_t sJoy, uint8_t ucKey, uint16_t usState)
 	{
-	int16_t	sRes	= 0;	// Assume success.
+	int16_t	sResult	= 0;	// Assume success.
 
 	ASSERT(sJoy >= 0 && sJoy < NUM_JOYSTICKS);
 	
@@ -104,7 +107,7 @@ extern int16_t Joy_SetKey(int16_t sJoy, uint8_t ucKey, uint16_t usState)
 			}
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -116,7 +119,7 @@ extern int16_t Joy_SetKey(int16_t sJoy, uint8_t ucKey, uint16_t usState)
 //////////////////////////////////////////////////////////////////////////////
 extern int16_t Joy_Update(int16_t sJoy)
 	{
-	int16_t sRes = 0; // Assume success.
+	int16_t sResult = SUCCESS; // Assume success.
 
 	ASSERT(sJoy >= 0 && sJoy < NUM_JOYSTICKS);
 	
@@ -160,16 +163,16 @@ extern int16_t Joy_Update(int16_t sJoy)
 		else
 			{
 			TRACE("Joy_Update(): Unable to get keyboard state.\n");
-			sRes = -2;
+			sResult = -2;
 			}
 		}
 	else
 		{
 		TRACE("Joy_Update(): Unable to get joystick state.\n");
-		sRes = -1;
+		sResult = FAILURE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////

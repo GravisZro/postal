@@ -17,6 +17,9 @@
 //
 // RSPiXBlue.cpp : implementation file
 //
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 
 #include "stdafx.h"
 #include "MFC_CNTL/RSPXBlue.h"
@@ -42,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 
 CRSPiXBlue::CRSPiXBlue()
 	{
-	m_pim	= NULL;
+	m_pim	= nullptr;
 	}
 
 CRSPiXBlue::~CRSPiXBlue()
@@ -67,7 +70,7 @@ END_MESSAGE_MAP()
 ///////////////////////////////////////////////////////////////////////////////
 void CRSPiXBlue::SetDisplayImage(CImage* pim, int16_t sFlip /*= FALSE*/)
 	{
-	ASSERT(pim != NULL);
+	ASSERT(pim != nullptr);
 
 	// Calculate DIB type width.
 	int32_t	lWinWidth	= pim->lPitch / ((int32_t)pim->sDepth / 8L);
@@ -104,7 +107,7 @@ void CRSPiXBlue::SetDisplayImage(CImage* pim, int16_t sFlip /*= FALSE*/)
 ///////////////////////////////////////////////////////////////////////////////
 void CRSPiXBlue::SetDisplayPalette(CPal* ppal)
 	{
-	ASSERT(ppal != NULL);
+	ASSERT(ppal != nullptr);
 
 	SetFocus();
 
@@ -160,7 +163,7 @@ void CRSPiXBlue::PreSubclassWindow()
 
 			m_wndPal.Attach(Blu_GetPaletteWindow());
 
-			if (m_wndPal.m_hWnd != NULL)
+			if (m_wndPal.m_hWnd != nullptr)
 				{
 				m_wndPal.SetParent(this);
 				}
@@ -209,7 +212,7 @@ void CRSPiXBlue::OnDestroy()
 ///////////////////////////////////////////////////////////////////////////////
 void CRSPiXBlue::Redraw(void)
 	{
-	ASSERT(m_pim != NULL);
+	ASSERT(m_pim != nullptr);
 
 	Blu_UpdateDisplay(0, 0, 0, 0, m_pim->lWidth, m_pim->lHeight);
 	}
@@ -224,7 +227,7 @@ void CRSPiXBlue::OnSetFocus(CWnd* pOldWnd)
 	{
 	CStatic::OnSetFocus(pOldWnd);
 	
-	if (gsi.hWnd != NULL)
+	if (gsi.hWnd != nullptr)
 		{
 		::SetFocus(gsi.hWnd);
 		}
@@ -240,7 +243,7 @@ void CRSPiXBlue::OnPaletteChanged(CWnd* pFocusWnd)
 	{
 	CStatic::OnPaletteChanged(pFocusWnd);
 	
-	if (gsi.hWnd != NULL)
+	if (gsi.hWnd != nullptr)
 		{
 		::SendMessage(	gsi.hWnd, WM_PALETTECHANGED, 
 							(WPARAM)pFocusWnd->GetSafeHwnd(), 0L);
@@ -256,7 +259,7 @@ BOOL CRSPiXBlue::OnQueryNewPalette()
 	{
 	BOOL	bRes	= TRUE;
 
-	if (gsi.hWnd != NULL)
+	if (gsi.hWnd != nullptr)
 		{
 		bRes	= ::SendMessage(	gsi.hWnd, WM_QUERYNEWPALETTE, 
 										0L, 0L);
@@ -271,12 +274,12 @@ BOOL CRSPiXBlue::OnQueryNewPalette()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Returns a CWnd* to the palette window.  Returns NULL if no window.
+// Returns a CWnd* to the palette window.  Returns nullptr if no window.
 //
 ///////////////////////////////////////////////////////////////////////////////
 CWnd* CRSPiXBlue::GetPaletteWindow(void)
 	{
-	return (m_wndPal.m_hWnd == NULL) ? NULL : &m_wndPal;
+	return (m_wndPal.m_hWnd == nullptr) ? nullptr : &m_wndPal;
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -319,7 +322,7 @@ LRESULT CRSPiXBlue::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		//////////////////////////// Palette Oriented ///////////////////////////
 		case WM_QUERYNEWPALETTE:
 		case WM_PALETTECHANGED:
-			if (gsi.hWnd != NULL)
+			if (gsi.hWnd != nullptr)
 				{
 				::SendMessage(gsi.hWnd, message, wParam, lParam);
 				}

@@ -128,7 +128,7 @@ int16_t COstrich::ms_sFileCount;
 
 /// Standing Animation Files
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszStandResNames[] = 
+static const char* ms_apszStandResNames[] =
 {
 	"3d/ostrich_stand.sop",
 	"3d/ostrich_stand.mesh",
@@ -136,13 +136,13 @@ static char* ms_apszStandResNames[] =
 	"3d/ostrich_stand.hot",
 	"3d/ostrich_stand.bounds",
 	"3d/ostrich_stand.floor",
-	NULL,
-	NULL	
+	nullptr,
+	nullptr	
 };
 
 /// Running Animation Files
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszRunResNames[] = 
+static const char* ms_apszRunResNames[] =
 {
 	"3d/ostrich_run.sop",
 	"3d/ostrich_run.mesh",
@@ -150,13 +150,13 @@ static char* ms_apszRunResNames[] =
 	"3d/ostrich_run.hot",
 	"3d/ostrich_run.bounds",
 	"3d/ostrich_run.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 /// Throwing Animation Files 
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszWalkResNames[] = 
+static const char* ms_apszWalkResNames[] =
 {
 	"3d/ostrich_walk.sop",
 	"3d/ostrich_walk.mesh",
@@ -164,13 +164,13 @@ static char* ms_apszWalkResNames[] =
 	"3d/ostrich_walk.hot",
 	"3d/ostrich_walk.bounds",
 	"3d/ostrich_walk.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 // Shot Animation Files
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszShotResNames[] = 
+static const char* ms_apszShotResNames[] =
 {
 	"3d/ostrich_shot.sop",
 	"3d/ostrich_shot.mesh",
@@ -178,13 +178,13 @@ static char* ms_apszShotResNames[] =
 	"3d/ostrich_shot.hot",
 	"3d/ostrich_shot.bounds",
 	"3d/ostrich_shot.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 /// Blown up Animation Files
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszBlownupResNames[] =
+static const char* ms_apszBlownupResNames[] =
 {
 	"3d/ostrich_blownup.sop",
 	"3d/ostrich_blownup.mesh",
@@ -192,13 +192,13 @@ static char* ms_apszBlownupResNames[] =
 	"3d/ostrich_blownup.hot",
 	"3d/ostrich_blownup.bounds",
 	"3d/ostrich_blownup.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 /// Hide Animation Files
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszHideResNames[] =
+static const char* ms_apszHideResNames[] =
 {
 	"3d/ostrich_hide.sop",
 	"3d/ostrich_hide.mesh",
@@ -206,13 +206,13 @@ static char* ms_apszHideResNames[] =
 	"3d/ostrich_hide.hot",
 	"3d/ostrich_hide.bounds",
 	"3d/ostrich_hide.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
 /// Die Animation files
 // An array of pointers to resource names (one for each channel of the animation)
-static char* ms_apszDieResNames[] = 
+static const char* ms_apszDieResNames[] =
 {
 	"3d/ostrich_die.sop",
 	"3d/ostrich_die.mesh",
@@ -220,10 +220,11 @@ static char* ms_apszDieResNames[] =
 	"3d/ostrich_die.hot",
 	"3d/ostrich_die.bounds",
 	"3d/ostrich_die.floor",
-	NULL,
-	NULL
+	nullptr,
+	nullptr
 };
 
+#ifdef UNUSED_VARIABLES
 // These are the points that are checked on the attribute map relative to his origin
 static RP3d ms_apt3dAttribCheck[] =
 {
@@ -234,6 +235,7 @@ static RP3d ms_apt3dAttribCheck[] =
 	{ 0, 0,  6},
 	{ 6, 0,  6},
 };
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -244,11 +246,11 @@ int16_t COstrich::Load(					// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,					// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)				// In:  Version of file format to load.
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Call the base class load to get the instance ID, position, motion etc.
 	sResult	= CDoofus::Load(pFile, bEditMode, sFileCount, ulFileVersion);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 		// Load common data just once per file (not with each object)
 		if (ms_sFileCount != sFileCount)
@@ -280,14 +282,14 @@ int16_t COstrich::Load(					// Returns 0 if successfull, non-zero otherwise
 			}
 			
 		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == 0)
+		if (!pFile->Error() && sResult == SUCCESS)
 		{
 			// Get resources
 			sResult = GetResources();
 		}
 		else
 		{
-			sResult = -1;
+			sResult = FAILURE;
 			TRACE("COstrich::Load(): Error reading from file!\n");
 		}
 	}
@@ -328,7 +330,7 @@ int16_t COstrich::Save(										// Returns 0 if successfull, non-zero otherwise
 	else
 	{
 		TRACE("COstrich::Save() - Error writing to file\n");
-		sResult = -1;
+		sResult = FAILURE;
 	}
 
 	return sResult;
@@ -341,7 +343,7 @@ int16_t COstrich::Save(										// Returns 0 if successfull, non-zero otherwise
 
 int16_t COstrich::Init(void)
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Prepare shadow (get resources and setup sprite).
 	sResult	= PrepareShadow();
@@ -418,6 +420,7 @@ void COstrich::Update(void)
 		// Check the current state
 		switch (m_state)
 		{
+        UNHANDLED_SWITCH;
 
 //-----------------------------------------------------------------------
 // Stand or Hide - Either one waits in the current position for the
@@ -660,7 +663,7 @@ int16_t COstrich::EditNew(									// Returns 0 if successfull, non-zero otherwi
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Call the base class to place the item.
 	sResult = CDoofus::EditNew(sX, sY, sZ);
@@ -684,7 +687,7 @@ int16_t COstrich::EditNew(									// Returns 0 if successfull, non-zero otherwi
 
 int16_t COstrich::EditModify(void)
 {
-	return 0;
+   return SUCCESS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -692,28 +695,28 @@ int16_t COstrich::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t COstrich::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	sResult = m_animRun.Get(ms_apszRunResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 	{
 		sResult = m_animStand.Get(ms_apszStandResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-		if (sResult == 0)
+		if (sResult == SUCCESS)
 		{
 			sResult = m_animWalk.Get(ms_apszWalkResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 			{
 				sResult = m_animShot.Get(ms_apszShotResNames);
-				if (sResult == 0)
+				if (sResult == SUCCESS)
 				{
 					sResult = m_animBlownup.Get(ms_apszBlownupResNames);
-					if (sResult == 0)
+					if (sResult == SUCCESS)
 					{
 						sResult = m_animHide.Get(ms_apszHideResNames);
-						if (sResult == 0)
+						if (sResult == SUCCESS)
 						{
 							sResult = m_animDie.Get(ms_apszDieResNames);
-							if (sResult == 0)
+							if (sResult == SUCCESS)
 							{
 								// Add more anim gets here if necessary
 							}
@@ -769,7 +772,7 @@ int16_t COstrich::FreeResources(void)						// Returns 0 if successfull, non-zero
 	m_animHide.Release();
 	m_animDie.Release();		
 
-	return 0;
+   return SUCCESS;
 }
 
 
@@ -890,6 +893,7 @@ void COstrich::OnBurnMsg(Burn_Message* pMessage)
 
 void COstrich::OnPanicMsg(Panic_Message* pMessage)
 {
+  UNUSED(pMessage);
 	if (m_state != State_Die &&
 	    m_state != State_Dead &&
 		 m_state != State_BlownUp &&
@@ -925,7 +929,7 @@ void COstrich::AlertFlock(void)
 	msg.msg_Panic.sZ = (int16_t) m_dZ;
 
 	CListNode<CThing>* pNext = m_pRealm->m_everythingHead.m_pnNext;
-	while (pNext->m_powner != NULL)
+	while (pNext->m_powner != nullptr)
 	{
 		pThing = pNext->m_powner;
 		if (pThing->GetClassID() == COstrichID && pThing != this)

@@ -109,7 +109,7 @@ class RMix
 		typedef void* (*RMixCall)(	Msg		msg, 
 											void*		pData, 
 											uint32_t*	pulBufSize, 
-											uint32_t		ulUser,
+                                 uintptr_t		ulUser,
 											uint8_t*	pucVol1,
 											uint8_t*	pucVol2);
 
@@ -137,7 +137,7 @@ class RMix
 		// Start receiving callbacks to fill channel data.
 		// Set the initial mix volumes
 		// Returns 0 on success.
-		int16_t Start(RMixCall mcUser, uint32_t ulUser,
+      int16_t Start(RMixCall mcUser, uintptr_t ulUser,
 					uint8_t	ucVolume = 255, uint8_t ucVol2 = 255 );
 
 		// Stop receiving callbacks to fill channel data.
@@ -152,10 +152,10 @@ class RMix
 		// Check mix channel's paused status.
 		int16_t IsChannelPaused(void);	// Returns TRUE, if sound output is paused; FALSE otherwise.
 
-		// Set or clear (if psndfx is NULL) a RSndFx for this channel.
+      // Set or clear (if psndfx is nullptr) a RSndFx for this channel.
 		void SetFx(				// Returns nothing.
 			RSndFx* psndfx)	// FX for this channel.  Clears current, if 
-									// NULL.
+                           // nullptr.
 			{
 			m_psndfx	= psndfx;
 			}
@@ -232,10 +232,10 @@ class RMix
 		static void SetBufferTime(int32_t lBufferTime) 
 			{ ms_ulBufSize = 0; rspSetSoundOutBufferTime(lBufferTime); }
 
-		// Set or clear (if psndfx is NULL) a RSndFx for all channels.
+      // Set or clear (if psndfx is nullptr) a RSndFx for all channels.
 		static void SetGlobalFx(	// Returns nothing.
 			RSndFx* psndfx)			// FX for all channels.  Clears current, if 
-											// NULL.
+                                 // nullptr.
 			{
 			ms_psndfx	= psndfx;
 			}
@@ -277,28 +277,28 @@ class RMix
 		static int16_t GetMode(						// Returns 0 on success; 
 															// nonzero if no mode.
 			int32_t*		plSamplesPerSec,				// Sample rate in samples per second
-															// returned here, if not NULL.
-			int32_t*		plDevBitsPerSample = NULL,	// Bits per sample of device,
-															// returned here, if not NULL.
-			int32_t*		plNumChannels = NULL,		// Number of channels (1 == mono, 
+                                             // returned here, if not nullptr.
+         int32_t*		plDevBitsPerSample = nullptr,	// Bits per sample of device,
+                                             // returned here, if not nullptr.
+         int32_t*		plNumChannels = nullptr,		// Number of channels (1 == mono,
 															// 2 == stereo) returned here, 
-															// if not NULL.
-			int32_t*		plBufferTime = NULL,			// Amount of time in ms to lead the 
+                                             // if not nullptr.
+         int32_t*		plBufferTime = nullptr,			// Amount of time in ms to lead the
 															// current play cursor returned here,
-															// if not NULL.  This could also be 
+                                             // if not nullptr.  This could also be
 															// described as the maximum amount of
 															// time in ms that can occur between 
 															// calls to rspDoSound.
-			int32_t*		plMaxBufferTime	= NULL,	// Maximum buffer time.  This is the amt
+         int32_t*		plMaxBufferTime	= nullptr,	// Maximum buffer time.  This is the amt
 															// that *plBufferTime can be increased to.
 															// This is indicative of how much space
 															// was/will-be allocated for the sound
 															// output device on rspLockSoundOut.
-			int32_t*		plMixBitsPerSample = NULL,	// Bits per sample at which samples are
-															// mixed, if not NULL.
-			int32_t*		plSrcBitsPerSample = NULL);// Bits per sample at which samples must
+         int32_t*		plMixBitsPerSample = nullptr,	// Bits per sample at which samples are
+                                             // mixed, if not nullptr.
+         int32_t*		plSrcBitsPerSample = nullptr);// Bits per sample at which samples must
 															// be to be mixed (0 if no requirement), 
-															// if not NULL.
+                                             // if not nullptr.
 
 	protected:	// Internal use.
 		// Intialize members.
@@ -340,7 +340,7 @@ class RMix
 													// otherwise.
 		int32_t			m_lLastDataPos;		// Last byte mixed into.
 		RMixCall		m_mcUser;				// User callback.
-		uint32_t			m_ulUser;				// User value.
+      uintptr_t			m_ulUser;				// User value.
 		uint8_t*		m_pucData;				// User data.
 		uint32_t			m_ulAmount;				// Amount of user data remaining.
 

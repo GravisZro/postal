@@ -58,6 +58,9 @@
 //	11/08/96	JMI	Changed CList to RList in one location.
 //
 //////////////////////////////////////////////////////////////////////
+#ifndef TIME_TRAVEL_IS_REAL
+#error I AM ARCHAIC - DO NOT USE
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Includes
@@ -70,7 +73,7 @@
 	#include "ORANGE/MTask/mtask.h"
 
 #else
-	#include "MTASK.H"
+  #include "mtask.h"
 
 #endif	//PATHS_IN_INCLUDES
 
@@ -125,16 +128,16 @@ void MTaskManager(void)
 
 	while (ptiTask)
 	{
-		ASSERT(ptiTask->plSP != NULL);
+		ASSERT(ptiTask->plSP != nullptr);
 		// Set current task for error reporting & killing
 		ptiCurrentTask = ptiTask;
 		m_lTaskStack = (int32_t) ptiTask->plSP;
 		ptiTask->plSP = MTaskRun();
 		if (ptiTask->plSP == 0)
 		{
-			ASSERT(ptiTask->plStackAddress != NULL);
+			ASSERT(ptiTask->plStackAddress != nullptr);
 			free(ptiTask->plStackAddress);
-			ASSERT(ptiTask->pszFunctionName != NULL);
+			ASSERT(ptiTask->pszFunctionName != nullptr);
 			free(ptiTask->pszFunctionName);
 			MTaskList.Remove(ptiTask);
 			delete ptiTask;
@@ -170,13 +173,13 @@ void MTaskManager(void)
 
 int16_t MTaskAddFunc(void* pFunction, char* pszFuncName, int16_t sStackSize)
 {
-	PTASKINFO ptiNewTask = NULL;
-	int32_t* plNewStack = NULL;
+	PTASKINFO ptiNewTask = nullptr;
+	int32_t* plNewStack = nullptr;
 	int16_t sLongElements = sStackSize/4;
 	int16_t sReturn = SUCCESS;
 	
 	ptiNewTask = new TASKINFO;
-	if (ptiNewTask != NULL)
+	if (ptiNewTask != nullptr)
 	{
 		plNewStack = (int32_t*) calloc(sLongElements, 4);
 		if (plNewStack)
@@ -237,7 +240,7 @@ __declspec (naked) int32_t* TaskKill(void)
 	{
 		mov	esp,m_lMainProgramStack	;restore the program's stack
 		pop	ebp							;restore programs's stack frame
-		mov	eax,0h						;return NULL to flag as 
+		mov	eax,0h						;return nullptr to flag as 
 		mov	dx,0h							;ready to delete
 		ret
 	}

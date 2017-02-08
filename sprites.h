@@ -106,7 +106,7 @@ class CSprite
 	public:
 
 		// Define bit usage within "m_sInFlags"
-		typedef enum
+      enum
 			{
 			InAlpha				= 0x0001,			// Set if on alpha layer, clear otherwise
 			InOpaque				= 0x0002,			// Set if on opaque layer, clear otherwise
@@ -122,19 +122,19 @@ class CSprite
 			};
 
 		// Define bit usage within "m_sOutFlags"
-		typedef enum
+      enum
 			{
 			OutRendered = 1										// Set whenever rendered (cleared by user)
 			};
 
 		// Define bit usage within "m_sPrivFlags"
-		typedef enum
+      enum
 			{
 			PrivInserted = 1										// Set if inserted in scene
 			};
 
 		// Types of sprites (or primitives).
-		typedef enum
+      typedef enum
 			{
 			Standard2d,
 			Standard3d,
@@ -151,7 +151,7 @@ class CSprite
 		int16_t m_sOutFlags;										// Sprite's output flags
 		CThing*	m_pthing;										// Owner of this sprite (for debugging).
 
-		char*	m_pszText;											// Point this at your text.
+      const char*	m_pszText;											// Point this at your text.
 																		// DO NOT strcpy/cat/etc to this until
 																		// you've pointed it at some memory!!!
 
@@ -176,26 +176,26 @@ class CSprite
 			m_sX2		= 0;		// Any sprite's 2D dest x coord.
 			m_sY2		= 0;		// Any sprite's 2D dest y coord.
 
-			m_pszText			= NULL;
+			m_pszText			= nullptr;
 
-			m_psprHeadChild	= NULL;
-			m_psprNext			= NULL;
-			m_psprParent		= NULL;
+			m_psprHeadChild	= nullptr;
+			m_psprNext			= nullptr;
+			m_psprParent		= nullptr;
 
-			m_pthing				= NULL;
+			m_pthing				= nullptr;
 			}
 
 		virtual ~CSprite()
 			{
 			// If we have a parent . . .
-			if (m_psprParent != NULL)
+			if (m_psprParent != nullptr)
 				{
 				// Get outta there!
 				m_psprParent->RemoveChild(this);
 				}
 
 			// While we have children . . .
-			while (m_psprHeadChild != NULL)
+			while (m_psprHeadChild != nullptr)
 				{
 				// Remove the head child.
 				RemoveChild(m_psprHeadChild);
@@ -210,7 +210,7 @@ class CSprite
 			CSprite*	psprNewChild)	// In:  New child.
 			{
 			// If we already had a parent . . .
-			if (psprNewChild->m_psprParent != NULL)
+			if (psprNewChild->m_psprParent != nullptr)
 				{
 				psprNewChild->m_psprParent->RemoveChild(psprNewChild);
 				}
@@ -241,7 +241,7 @@ class CSprite
 			CSprite*		psprCur			= m_psprHeadChild;	// Current traversal sprite.
 			CSprite**	ppsprPrevNext	= &m_psprHeadChild;	// Ptr to the previous sprite's
 																			// next ptr.
-			while (psprCur != NULL)
+			while (psprCur != nullptr)
 				{
 				// If we found the item to remove . . .
 				if (psprCur == psprRemove)
@@ -249,8 +249,8 @@ class CSprite
 					// Point the previous' next at this item's next.
 					*ppsprPrevNext	= psprCur->m_psprNext;
 					// Clean this item.
-					psprCur->m_psprParent	= NULL;
-					psprCur->m_psprNext		= NULL;
+					psprCur->m_psprParent	= nullptr;
+					psprCur->m_psprNext		= nullptr;
 					// Done.
 					break;
 					}
@@ -261,7 +261,7 @@ class CSprite
 				psprCur			= psprCur->m_psprNext;
 				}
 
-			if (psprCur == NULL)
+			if (psprCur == nullptr)
 				{
 				TRACE("CSprite3::RemoveChild(): No such child sprite.\n");
 				}
@@ -292,8 +292,8 @@ class CSprite2 : public CSprite
 
 	CSprite2()
 		{
-		m_pImage			= NULL;
-		m_pimAlpha		= NULL;
+		m_pImage			= nullptr;
+		m_pimAlpha		= nullptr;
 		m_sAlphaLevel	= 255;
 		m_type			= Standard2d;
 		}
@@ -306,7 +306,7 @@ class CSpriteLine2d : public CSprite
 	public:
 		int16_t		m_sX2End;	// 2D end point for line.
 		int16_t		m_sY2End;	// 2D end point for line.
-		U8			m_u8Color;	// Color for line segment.
+		uint8_t			m_u8Color;	// Color for line segment.
 
 	CSpriteLine2d()
 		{
@@ -321,7 +321,7 @@ class CSpriteCylinder3d : public CSprite
 	public:
 		int16_t		m_sRadius;	// Radius of cylinder
 		int16_t		m_sHeight;	// Height of cylinder.
-		U8			m_u8Color;	// Color for line segment.
+		uint8_t			m_u8Color;	// Color for line segment.
 
 	CSpriteCylinder3d()
 		{
@@ -342,11 +342,11 @@ class CSprite3 : public CSprite
 	public:
 		void Init(void)
 			{
-			m_pmesh			= NULL;	// Mesh.                  
-			m_psop			= NULL;	// Sea Of Points.         
-			m_ptrans			= NULL;	// Transform.             
-			m_ptex			= NULL;	// Texture.
-			m_psphere		= NULL;	// Bounding sphere.
+			m_pmesh			= nullptr;	// Mesh.                  
+			m_psop			= nullptr;	// Sea Of Points.         
+			m_ptrans			= nullptr;	// Transform.             
+			m_ptex			= nullptr;	// Texture.
+			m_psphere		= nullptr;	// Bounding sphere.
 
 			m_sRadius		= 0;		// Radius of collision circle.
 			m_sCenX			= 0;		// Location of collision circle.

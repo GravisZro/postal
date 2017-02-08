@@ -88,6 +88,7 @@ class CLogTabVar_GetAction : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_getaction;
 
@@ -133,7 +134,7 @@ class CLogTabVar_TargetDist : CLogTabVar<CPerson*>
 			// IMPORTANT:  these enums all represent distance RANGES!
 			// Each one means "between myself and the next highest value"
 			//
-			static char* ms_sz[] = {"VeryClose", "Close", "Medium", "Far","OffScreen"};
+         static const char* ms_sz[] = {"VeryClose", "Close", "Medium", "Far","OffScreen"};
 			m_sNumStrings = 5;
 			m_papszStrings = ms_sz;
 			}
@@ -169,6 +170,7 @@ class CLogTabVar_TargetDist : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_targetdist;
 
@@ -184,7 +186,7 @@ class CLogTabVar_PopoutAvailable : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -197,6 +199,7 @@ class CLogTabVar_PopoutAvailable : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_popoutavailable;
 
@@ -212,7 +215,7 @@ class CLogTabVar_RunShootAvailable : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -225,6 +228,7 @@ class CLogTabVar_RunShootAvailable : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_runshootavailable;
 
@@ -241,7 +245,7 @@ class CLogTabVar_SafetyAvailable : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -254,6 +258,7 @@ class CLogTabVar_SafetyAvailable : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_safetyavailable;
 
@@ -270,14 +275,14 @@ class CLogTabVar_PylonAvailable : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"none", "popout", "runshoot", "safety"};
+         static const char* ms_sz[] = {"none", "popout", "runshoot", "safety"};
 			m_sNumStrings = 4;
 			m_papszStrings = ms_sz;
 			}
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			pPerson->Logic_PylonDetect();
 			if (pPerson->m_bPylonPopoutAvailable)
 			{
@@ -287,12 +292,12 @@ class CLogTabVar_PylonAvailable : CLogTabVar<CPerson*>
 			{
 				if (pPerson->m_bPylonRunShootAvailable)
 				{
-					sResult = 2;
+					sResult = FAILURE * 2;
 				}
 				else
 				{
 					if (pPerson->m_bPylonSafeAvailable)
-						sResult = 3;
+						sResult = FAILURE * 3;
 				}
 			}
 					
@@ -301,6 +306,7 @@ class CLogTabVar_PylonAvailable : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_pylonavailable;
 
@@ -316,7 +322,7 @@ class CLogTabVar_MyHealth : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"low", "med", "high"};
+         static const char* ms_sz[] = {"low", "med", "high"};
 			m_sNumStrings = 3;
 			m_papszStrings = ms_sz;
 			}
@@ -328,6 +334,7 @@ class CLogTabVar_MyHealth : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_myhealth;
 
@@ -344,29 +351,29 @@ class CLogTabVar_DudeHealth : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"dead", "low", "med", "high"};
+         static const char* ms_sz[] = {"dead", "low", "med", "high"};
 			m_sNumStrings = 4;
 			m_papszStrings = ms_sz;
 			}
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			if (pPerson->SelectDude() == SUCCESS)
 			{
 				CDude*	pdude;
-				if (pPerson->m_pRealm->m_idbank.GetThingByID((CThing**)&pdude, pPerson->m_idDude) == 0)
+				if (pPerson->m_pRealm->m_idbank.GetThingByID((CThing**)&pdude, pPerson->m_idDude) == SUCCESS)
 				{
 					int16_t sHitPoints = pdude->GetHealth();
 					if (sHitPoints > 80)
 					{
-						sResult = 3;
+						sResult = FAILURE * 3;
 					}
 					else
 					{
 						if (sHitPoints > 40)
-							sResult = 2;
+							sResult = FAILURE * 2;
 						else
 							sResult = 1;
 					}
@@ -378,6 +385,7 @@ class CLogTabVar_DudeHealth : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_dudehealth;
 
@@ -394,18 +402,19 @@ class CLogTabVar_IsTriggered : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			return (pPerson->m_pPylonStart != NULL && pPerson->m_pPylonStart->Triggered());
+			return (pPerson->m_pPylonStart != nullptr && pPerson->m_pPylonStart->Triggered());
 			}
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_istriggered;
 
@@ -422,7 +431,7 @@ class CLogTabVar_UserState1 : CLogTabVar<CPerson*>
 
 			// Feel free to add as many states as you need, but remember that the 
 			// WHOLE table assumes only ONE of these varables right now
-			static char* ms_sz[] = {"default","active"};
+         static const char* ms_sz[] = {"default","active"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -450,7 +459,7 @@ class CLogTabVar_RecentlyShot : CLogTabVar<CPerson*>
 			m_sOutputWidth = 13;
 
 			// This var is number-based, so turn off string stuff
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -462,6 +471,7 @@ class CLogTabVar_RecentlyShot : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_recentlyshot;
 
@@ -477,7 +487,7 @@ class CLogTabVar_RecentlyStuck : CLogTabVar<CPerson*>
 			 m_sOutputWidth = 14;
 
 			 // This var is a bool
-			 static char* ms_sz[] = {"false", "true"};
+          static const char* ms_sz[] = {"false", "true"};
 			 m_sNumStrings = 2;
 			 m_papszStrings = ms_sz;
 			}
@@ -511,7 +521,7 @@ class CLogTabVar_IsPanic : CLogTabVar<CPerson*>
 			m_sOutputWidth = 8;
 
 			// This var is true/false
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -523,6 +533,7 @@ class CLogTabVar_IsPanic : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_ispanic;
 
@@ -538,7 +549,7 @@ class CLogTabVar_HelpCall : CLogTabVar<CPerson*>
 			m_sOutputWidth = 8;
 
 			// This var is true/false
-			static char* ms_sz[] = {"false", "true"};
+         static const char* ms_sz[] = {"false", "true"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}
@@ -553,6 +564,7 @@ class CLogTabVar_HelpCall : CLogTabVar<CPerson*>
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
+        UNUSED(pPerson, sVal);
 			}
 	} givename_helpcall;
 
@@ -570,7 +582,7 @@ class CLogTabVar_UserGlobal : CLogTabVar<CPerson*>
 
 			// Feel free to add as many states as you need, but remember that the 
 			// WHOLE table assumes only ONE of these varables right now
-			static char* ms_sz[] = {"normal","attack"};
+         static const char* ms_sz[] = {"normal","attack"};
 			m_sNumStrings = 2;
 			m_papszStrings = ms_sz;
 			}

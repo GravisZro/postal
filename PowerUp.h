@@ -103,7 +103,7 @@ class CPowerUp : public CItem3d
 	//---------------------------------------------------------------------------
 	public:
 		// Powerup anim names.
-		static char*	ms_apszPowerUpResNames[CStockPile::NumStockPileItems + 2];
+      static const char*	ms_apszPowerUpResNames[CStockPile::NumStockPileItems + 2];
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
@@ -145,11 +145,11 @@ class CPowerUp : public CItem3d
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CPowerUp(pRealm);
-			if (*ppNew == 0)
+         if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CPowerUp::Construct(): Couldn't construct CPowerUp (that's a bad thing)\n");
 				}
 			return sResult;

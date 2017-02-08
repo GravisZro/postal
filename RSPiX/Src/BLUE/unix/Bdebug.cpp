@@ -88,11 +88,12 @@
 // Used to extract the filename from __FILE__.
 //
 ///////////////////////////////////////////////////////////////////////////////
-char* Debug_FileName(char* pszPath)
+const char* Debug_FileName(const char* pszPath)
 	{
 	// Start at end of string and work toward beginning or '\\'.
-	char *p;
-	for (p = pszPath + (strlen(pszPath) - 1); p > pszPath && *p != '\\'; p--);
+   const char *p = pszPath + strlen(pszPath) - 1;
+   while(p > pszPath && *p != '\\')
+     p--;
 
 	if (*p == '\\')
 		p++;
@@ -109,7 +110,7 @@ char* Debug_FileName(char* pszPath)
 // Output a formatted debug string to the debug terminal/window.
 //
 ///////////////////////////////////////////////////////////////////////////////
-void rspTrace(char *frmt, ... )
+void rspTrace(const char *frmt, ... )
 	{
 	static int16_t	sSem	= 0;
 
@@ -131,11 +132,11 @@ void rspTrace(char *frmt, ... )
 #endif
 
 #if defined(RSP_DEBUG_OUT_FILE)
-		static FILE*	fs	= NULL;	// NOTE that we never fclose this so we can get 
+		static FILE*	fs	= nullptr;	// NOTE that we never fclose this so we can get 
 											// EVERY LAST TRACE -- so this may show up as
 											// a leak.  The system will close it though.
 		// If not yet open . . . 
-		if (fs == NULL)
+		if (fs == nullptr)
 			{
 			// Attempt to open (Note that we never close this -- the system does).
 			// This will probably show up as a leak.
@@ -143,7 +144,7 @@ void rspTrace(char *frmt, ... )
 			if (fs)
 			{
 				fprintf(fs, "======== Postal Plus build %s %s ========\n", __DATE__, __TIME__);
-				time_t sysTime = time(NULL);
+				time_t sysTime = time(nullptr);
 				fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
 			}
 			}

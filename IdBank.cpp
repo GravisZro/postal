@@ -95,8 +95,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 void CIdBank::Insert(	// Returns nothing.
-	U16	u16Id,			// ID to insert.
-	U16*	pu16IdHead)		// Head of list to add to.
+	uint16_t	u16Id,			// ID to insert.
+	uint16_t*	pu16IdHead)		// Head of list to add to.
 	{
 	// Point this node's next at the current head of the free list.
 	m_aids[u16Id].u16IdNext			= *pu16IdHead;
@@ -120,8 +120,8 @@ void CIdBank::Insert(	// Returns nothing.
 //
 //////////////////////////////////////////////////////////////////////////////
 void CIdBank::Add(	// Returns nothing.
-	U16	u16Id,		// ID to add.
-	U16*	pu16IdTail)	// Tail of list to add to.
+	uint16_t	u16Id,		// ID to add.
+	uint16_t*	pu16IdTail)	// Tail of list to add to.
 	{
 	// Point this node's prev at the current tail of the free list.
 	m_aids[u16Id].u16IdPrev			= *pu16IdTail;
@@ -145,9 +145,9 @@ void CIdBank::Add(	// Returns nothing.
 //
 //////////////////////////////////////////////////////////////////////////////
 void CIdBank::Remove(	// Returns nothing.
-	U16	u16Id,			// ID to remove.
-	U16*	pu16IdHead,		// Head of list to remove from.
-	U16*	pu16IdTail)		// Tail of list to remove from.
+	uint16_t	u16Id,			// ID to remove.
+	uint16_t*	pu16IdHead,		// Head of list to remove from.
+	uint16_t*	pu16IdTail)		// Tail of list to remove from.
 	{
 	// If this was the head . . .
 	if (*pu16IdHead == u16Id)
@@ -196,13 +196,13 @@ void CIdBank::Reset(void)
 	{
 	// Reset all IDs.
 	// Initialize all IDs regardless of current contents.
-	U16	u16Cur;
-	U16	u16Prev;
+	uint16_t	u16Cur;
+	uint16_t	u16Prev;
 	for (u16Cur	= 0, u16Prev = IdNil; u16Cur < NumIds; u16Cur++, u16Prev++)
 		{
 		m_aids[u16Cur].u16IdPrev	= u16Prev;
 		m_aids[u16Cur].u16IdNext	= u16Cur + 1;
-		m_aids[u16Cur].pthing		= NULL;
+		m_aids[u16Cur].pthing		= nullptr;
 		}
 
 	// Last item's next should indicate end.
@@ -223,9 +223,9 @@ void CIdBank::Reset(void)
 int16_t CIdBank::Get(	// Returns 0 on success.
 	CThing*	pthing,	// In:  Thing that wants to get an ID and be put in
 							// the ID table.
-	U16*		pu16ID)	// Out: ID for this particular CThing.
+	uint16_t*		pu16ID)	// Out: ID for this particular CThing.
 	{
-	int16_t	sRes	= 0;	// Assume success.
+   int16_t sResult = SUCCESS;	// Assume success.
 
 	// Make sure there's one left . . .
 	if (m_u16HeadFreeId != IdNil)
@@ -242,10 +242,10 @@ int16_t CIdBank::Get(	// Returns 0 on success.
 	else
 		{
 		TRACE("GetUniqueID(): Out of IDs!\n");
-		sRes	= -1;
+		sResult = FAILURE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -256,15 +256,15 @@ int16_t CIdBank::Get(	// Returns 0 on success.
 int16_t CIdBank::Take(	// Returns 0 on success.
 	CThing*	pthing,	// In:  Thing that wants to take an ID and be put in
 							// the ID table.
-	U16		u16ID)	// In:  ID for this particular CThing.
+	uint16_t		u16ID)	// In:  ID for this particular CThing.
 	{
-	int16_t	sRes	= 0;	// Assume success.
+   int16_t sResult = SUCCESS;	// Assume success.
 
 	// Range check.
 	ASSERT(u16ID < NumIds);
 
 	// Make sure the ID is available . . .
-	if (m_aids[u16ID].pthing == NULL)
+	if (m_aids[u16ID].pthing == nullptr)
 		{
 		// Set IDs value.
 		m_aids[u16ID].pthing		= pthing;
@@ -275,10 +275,10 @@ int16_t CIdBank::Take(	// Returns 0 on success.
 	else
 		{
 		TRACE("TakeUniqueID(): ID not available!\n");
-		sRes	= -1;
+		sResult = FAILURE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -287,7 +287,7 @@ int16_t CIdBank::Take(	// Returns 0 on success.
 //
 //////////////////////////////////////////////////////////////////////////////
 void CIdBank::Release(	// Returns nothing.
-	U16		u16ID)		// ID to release.
+	uint16_t		u16ID)		// ID to release.
 	{
 	// If a valid ID . . .
 	if (u16ID != IdNil)
@@ -295,10 +295,10 @@ void CIdBank::Release(	// Returns nothing.
 		// Range check.
 		ASSERT(u16ID < NumIds);
 		// The ID should be in use.  If not, something has hosened.
-		ASSERT(m_aids[u16ID].pthing != NULL);
+		ASSERT(m_aids[u16ID].pthing != nullptr);
 
 		// Clear ID.
-		m_aids[u16ID].pthing		= NULL;
+		m_aids[u16ID].pthing		= nullptr;
 
 		// Add to free list.
 		Add(u16ID, &m_u16TailFreeId);
@@ -312,9 +312,9 @@ void CIdBank::Release(	// Returns nothing.
 //////////////////////////////////////////////////////////////////////////////
 int16_t CIdBank::GetThingByID(	// Returns 0 on success.
 	CThing**	ppthing,				// Out: Ptr to CThing identified by u16ID.
-	U16		u16ID)				// In:  ID of thing to get.
+	uint16_t		u16ID)				// In:  ID of thing to get.
 	{
-	int16_t	sRes	= 0;	// Assume success.
+   int16_t sResult = SUCCESS;	// Assume success.
 
 	if (u16ID != IdNil)
 		{
@@ -325,23 +325,23 @@ int16_t CIdBank::GetThingByID(	// Returns 0 on success.
 		*ppthing	= m_aids[u16ID].pthing;
 		
 		// This ID should be used.
-		if (*ppthing != NULL)
+		if (*ppthing != nullptr)
 			{
 			// Success.
 			}
 		else
 			{
 //			TRACE("GetThingByID(): No such ID.\n");
-			sRes	= -2;
+         sResult = FAILURE * 2;
 			}
 		}
 	else
 		{
-		*ppthing	= NULL;
-		sRes	= -1;
+		*ppthing	= nullptr;
+		sResult = FAILURE;
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

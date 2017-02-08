@@ -142,7 +142,7 @@
 // This redefines main() to something else, since libSDLmain-osx.a will have
 //  the actual application entry point...that will setup some Cocoa stuff and
 //  then call the redefined main() in this file...
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #endif
 
 #if WITH_STEAMWORKS
@@ -180,7 +180,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 	int16_t	sDeviceWidth,						// In:  Desired video hardware width.
 	int16_t	sDeviceHeight)						// In:  Desired video hardware height.
 	{
-	int16_t	sResult	= 0;
+	int16_t sResult = SUCCESS;
 
 #ifdef MOBILE
 	wideScreenWidth = 850;
@@ -203,7 +203,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 	// If "use current settings" is specified, we get the current device settings
 	// instead of using those specified in the prefs file.
 	if (sUseCurrentDeviceDimensions != FALSE)
-		rspGetVideoMode(NULL, &sDeviceWidth, &sDeviceHeight);
+		rspGetVideoMode(nullptr, &sDeviceWidth, &sDeviceHeight);
 
 	// Try setting video mode using device size specified in prefs file
 	sResult = rspSetVideoMode(
@@ -214,7 +214,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 		MAIN_WINDOW_HEIGHT,
 		MAIN_SCREEN_PAGES,
 		MAIN_SCREEN_SCALING);
-	if (sResult != 0)
+	if (sResult != SUCCESS)
 		{
 
 		// Create description of video mode for error messages
@@ -246,8 +246,8 @@ static int16_t SetupVideo(					// Returns 0 on success.
 			MAIN_SCREEN_SCALING,
 			&sDeviceWidth,
 			&sDeviceHeight,
-			NULL);
-		if (sResult == 0)
+			nullptr);
+		if (sResult == SUCCESS)
 			{
 
 			// Try to set suggested mode
@@ -259,7 +259,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 				MAIN_WINDOW_HEIGHT,
 				MAIN_SCREEN_PAGES,
 				MAIN_SCREEN_SCALING);
-			if (sResult != 0)
+			if (sResult != SUCCESS)
 				{
 
 				// If current depth is different from required depth, then that is most likely the
@@ -300,12 +300,12 @@ static int16_t SetupVideo(					// Returns 0 on success.
 					&sDeviceWidth,
 					&sDeviceHeight,
 					&sDevicePages);
-				} while ((sResult == 0) && (sDeviceDepth < MAIN_SCREEN_DEPTH));
-			if ((sResult == 0) && (sDeviceDepth == MAIN_SCREEN_DEPTH))
+				} while ((sResult == SUCCESS) && (sDeviceDepth < MAIN_SCREEN_DEPTH));
+			if ((sResult == SUCCESS) && (sDeviceDepth == MAIN_SCREEN_DEPTH))
 				{
 				// We got the depth, now find a mode with the requested resolution.  If
 				// there isn't one, then resolution at this depth is the problem.
-				while ( (sResult == 0) &&
+				while ( (sResult == SUCCESS) &&
 						  (sDeviceDepth == MAIN_SCREEN_DEPTH) &&
 						  ((sDeviceWidth < MAIN_WINDOW_WIDTH) || (sDeviceHeight < MAIN_WINDOW_HEIGHT)) )
 					{
@@ -315,7 +315,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 						&sDeviceHeight,
 						&sDevicePages);
 					}
-				if ( (sResult == 0) &&
+				if ( (sResult == SUCCESS) &&
 					  (sDeviceDepth == MAIN_SCREEN_DEPTH) &&
 					  (sDeviceWidth >= MAIN_WINDOW_WIDTH) &&
 					  (sDeviceHeight >= MAIN_WINDOW_HEIGHT) )
@@ -325,7 +325,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 					// and probably never will, so if we eliminate that with an ASSERT(),
 					// then we can assume that the problem is the number of pages.
 					ASSERT(MAIN_SCREEN_SCALING == 0);
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("SetupVideo(): No video modes available at %dx%d, %d-bit, with %d pages!\n",
 						MAIN_WINDOW_WIDTH , MAIN_WINDOW_HEIGHT, MAIN_SCREEN_DEPTH, MAIN_SCREEN_PAGES);
 					rspMsgBox(
@@ -336,7 +336,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 					}
 				else
 					{
-					sResult = -1;
+					sResult = FAILURE;
 					TRACE("SetupVideo(): No %hd-bit video modes go up to %hdx%hd resolution!\n",
 						(int16_t)MAIN_SCREEN_DEPTH, (int16_t)MAIN_WINDOW_WIDTH, (int16_t)MAIN_WINDOW_HEIGHT);
 					rspMsgBox(
@@ -348,7 +348,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 				}
 			else
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("SetupVideo(): No %hd-bit video modes are available!\n",
 					(int16_t)MAIN_SCREEN_DEPTH);
 				rspMsgBox(
@@ -362,7 +362,7 @@ static int16_t SetupVideo(					// Returns 0 on success.
 
 	return sResult;
 	}
-
+#ifdef UNUSED_FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
 // Allocates a chunk and resizes so that we may be able to have some large
 // blocks of contiguous memory.
@@ -384,24 +384,24 @@ static char* CreateChunk(	// Returns the memory ptr that will hold the chunk
 		return pcOrig;
 		}
 	}
-
+#endif
 
 static void assert_types_are_sane(void)
 {
-    ASSERT(sizeof (S8) == 1);
-    ASSERT(sizeof (U8) == 1);
-    ASSERT(sizeof (S16) == 2);
-    ASSERT(sizeof (U16) == 2);
-    ASSERT(sizeof (S32) == 4);
-    ASSERT(sizeof (U32) == 4);
-    ASSERT(sizeof (S64) == 8);
-    ASSERT(sizeof (U64) == 8);
+    static_assert(sizeof ( int8_t ) == 1, "your compiler is broken");
+    static_assert(sizeof (uint8_t ) == 1, "your compiler is broken");
+    static_assert(sizeof ( int16_t) == 2, "your compiler is broken");
+    static_assert(sizeof (uint16_t) == 2, "your compiler is broken");
+    static_assert(sizeof ( int32_t) == 4, "your compiler is broken");
+    static_assert(sizeof (uint32_t) == 4, "your compiler is broken");
+    static_assert(sizeof ( int64_t) == 8, "your compiler is broken");
+    static_assert(sizeof (uint64_t) == 8, "your compiler is broken");
 
-    U32 val = 0x02000001;
+    uint32_t val = 0x02000001;
 #if SYS_ENDIAN_BIG
-    ASSERT(*((U8*) &val) == 0x02);
+    ASSERT(*((uint8_t*) &val) == 0x02);
 #else
-    ASSERT(*((U8*) &val) == 0x01);
+    ASSERT(*((uint8_t*) &val) == 0x01);
 #endif
 }
 
@@ -413,7 +413,7 @@ static void assert_types_are_sane(void)
 
 // Global versions of argc/argv...
 int _argc = 0;
-char **_argv = NULL;
+char **_argv = nullptr;
 
 int32_t playthroughMS = 0;
 
@@ -463,7 +463,7 @@ static const char *GetAchievementName(const Achievement ach)
         case ACHIEVEMENT_MAX: break;  // not a real achievement, keep compiler happy.
     }
 
-    return NULL;
+    return nullptr;
 }
 
 class SteamworksEvents
@@ -529,7 +529,7 @@ static bool touchFile(const char *fname, const int64 stamp)
 {
 #ifdef WIN32
     HANDLE hFile = CreateFileA(fname, GENERIC_READ | FILE_WRITE_ATTRIBUTES,
-                               FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+                               FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
     if (hFile == INVALID_HANDLE_VALUE)
         return false;
 
@@ -540,14 +540,14 @@ static bool touchFile(const char *fname, const int64 stamp)
     FILETIME ft;
     ft.dwLowDateTime = val.LowPart;
     ft.dwHighDateTime = val.HighPart;
-    const BOOL rc = SetFileTime(hFile, NULL, NULL, &ft);
+    const BOOL rc = SetFileTime(hFile, nullptr, nullptr, &ft);
     CloseHandle(hFile);
     return (rc != 0);
 #else
     timeval ft[2];
     ft[0].tv_sec = ft[1].tv_sec = (time_t) stamp;
     ft[0].tv_usec = ft[1].tv_usec = 0;
-    return (utimes(fname, ft) == 0);
+    return (utimes(fname, ft) == SUCCESS);
 #endif
 }
 
@@ -556,7 +556,7 @@ static bool prepareSteamworks()
 {
     ISteamUtils *utils;
 
-    if ((!SteamAPI_Init()) || ((utils = SteamUtils()) == NULL))
+    if ((!SteamAPI_Init()) || ((utils = SteamUtils()) == nullptr))
     {
         rspMsgBox(RSP_MB_BUT_OK | RSP_MB_ICN_STOP,
                   "Error!", "%s", "Can't initialize Steamworks, aborting...");
@@ -573,7 +573,7 @@ static bool prepareSteamworks()
 
     if (EnableSteamAchievements)
     {
-        bool nukeAchievements = rspCommandLine("nukesteamachievements") != 0;
+        bool nukeAchievements = rspCommandLine("nukesteamachievements") != SUCCESS;
         if (nukeAchievements)
         {
             if (rspMsgBox(RSP_MB_BUT_OKCANCEL | RSP_MB_ICN_QUERY, "Whoa!", "%s", "Really nuke your Steam Achievements? This can't be undone!") != RSP_MB_RET_OK)
@@ -595,7 +595,7 @@ static bool prepareSteamworks()
 
     if (EnableSteamCloud)
     {
-        bool nukeCloud = rspCommandLine("nukesteamcloud") != 0;
+        bool nukeCloud = rspCommandLine("nukesteamcloud") != SUCCESS;
         if (nukeCloud)
         {
             if (rspMsgBox(RSP_MB_BUT_OKCANCEL | RSP_MB_ICN_QUERY, "Whoa!", "%s", "Really nuke the Steam Cloud? This can't be undone!") != RSP_MB_RET_OK)
@@ -623,7 +623,7 @@ static bool prepareSteamworks()
                 char fname[64];
                 snprintf(fname, sizeof (fname), "savegame/%d.gme", i);
                 FILE *io = fopen(FindCorrectFile(fname, "rb"), "rb");
-                if (io != NULL)
+                if (io != nullptr)
                 {
                     char buf[1024];
                     const size_t br = fread(buf, 1, sizeof (buf), io);
@@ -752,7 +752,7 @@ void RunSteamworksUpkeep()
 
 int main(int argc, char **argv)
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
     _argc = argc;
     _argv = argv;
@@ -776,7 +776,7 @@ int main(int argc, char **argv)
 	// directory is the current directory.  This will be the case unless the
 	// user does something stupid.
 	RPrefs prefs;
-	if (prefs.Open(g_pszPrefFileName, "rt") == 0)
+   if (prefs.Open(g_pszPrefFileName, "rt") == SUCCESS)
 		{
 		// Get video preferences
 		int16_t sDeviceWidth;
@@ -800,13 +800,13 @@ int main(int argc, char **argv)
 		prefs.Close();
 
 		// Make sure no errors occurred
-		if (prefs.IsError() == 0)
+      if (prefs.IsError() == FALSE)
 			{
 
 			//---------------------------------------------------------------------------
 			// Init blue layer
 			//---------------------------------------------------------------------------
-			if (rspInitBlue() == 0)
+         if (rspInitBlue() == SUCCESS)
 				{
 
 // Turn on profile (if enabled via macro)
@@ -839,7 +839,7 @@ rspSetProfileOutput("profile.out");
 					sDeviceWidth,						// In:  Desired video hardware width.
 					sDeviceHeight);					// In:  Desired video hardware height.
 
-				if (sResult == 0)
+				if (sResult == SUCCESS)
 					{
 					// Set Win32 static colors and lock them.
 					rspSetWin32StaticColors(1);
@@ -910,7 +910,7 @@ rspSetProfileOutput("profile.out");
 							} while (bDone == false);
 
 						// If it worked, clear the retry flag
-						if (sResult == 0)
+						if (sResult == SUCCESS)
 							{
 							bRetry = false;
 							}
@@ -924,7 +924,7 @@ rspSetProfileOutput("profile.out");
 								(MAIN_AUDIO_CHANNELS == 1) ? "Mono" : "Stereo");
 							
 							// Default to generic error.
-							char*	pszMsg;
+                     const char*	pszMsg;
 							uint16_t usFlags; 
 							// Try to find a better one, though, based on the return value.
 							switch (sResult)
@@ -981,19 +981,19 @@ rspSetProfileOutput("profile.out");
 									break;
 								case RSP_MB_RET_RETRY:
 									// To retry, just clear the error (not really necessary, but seems like a good thing)
-									sResult = 0;
+									sResult = SUCCESS;
 									break;
 								case RSP_MB_RET_YES:
 								case RSP_MB_RET_IGNORE:
 									// To ignore, just clear the error and the retry flag
-									sResult = 0;
+									sResult = SUCCESS;
 									bRetry = false;
 									break;
 								}
 							}
 						}
 
-					if (sResult == 0)
+					if (sResult == SUCCESS)
 						{
 
 						//------------------------------------------------------------
@@ -1044,7 +1044,7 @@ rspProfileOff();
 		rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszPrefOpenError);
 		}
 
-    return 0;
+    return SUCCESS;
 	}
 
 

@@ -118,11 +118,12 @@ public:
 	// Due to the planar nature of the indirection, all values
 	// may be present at the same time.  Currently, you supply a
 	// uint8_t array that is at least m_sMaxPlanes+1 in size.  You
-	// will recieve a NULL terminated string of dereferenced
+	// will recieve a nullptr terminated string of dereferenced
 	// palette hits for that point.
 	//
 	int16_t	GetVal(uint8_t*	pszResult,int16_t sX, int16_t sY,char ucClipVal = -1)
 		{
+     UNUSED(ucClipVal);
 		//-----------------------------------------------------------------
 		ASSERT(m_pmg);
 		ASSERT(m_pucPalette);
@@ -137,7 +138,7 @@ public:
 			}
 
 		*pszResult = 0;
-		return NULL;
+      return SUCCESS;
 		}
 
 	// Load a compressed data set from disk
@@ -164,7 +165,7 @@ public:
 	// Low level palette access
 	// Just get the current byte array of MGI_MAX_PLANES size:
 	//
-	uint8_t*	GetPalette(int16_t sX,int16_t sY, uint8_t* pucOnError = NULL)
+	uint8_t*	GetPalette(int16_t sX,int16_t sY, uint8_t* pucOnError = nullptr)
 		{
 		ASSERT(m_pucPalette);
 
@@ -215,7 +216,7 @@ public:
 
 	#ifdef	MGI_CLIP
 		if ( (sX < 0) || (sY < 0) || (sX >= m_sWidth) || (sY >= m_sHeight) ) 
-			return -1;
+         return FAILURE;
 	#endif
 
 		*(m_ppucAccessY[sY] + m_plAccessX[sX] + sEntry) = ucVal;
@@ -236,13 +237,13 @@ public:
 	void	Clear()	
 		{
 		m_sWidth = m_sHeight = m_sGridW = m_sGridH = m_sTileW = m_sTileH = 0;
-		m_pmg = NULL;
-		m_pucPalette = NULL;
-		m_ppucAccessY = NULL;
-		m_plAccessX = NULL;
-		m_pimTempTile = NULL;
+		m_pmg = nullptr;
+		m_pucPalette = nullptr;
+		m_ppucAccessY = nullptr;
+		m_plAccessX = nullptr;
+		m_pimTempTile = nullptr;
 		m_lTileLen = 0;
-		m_pimBuffer = NULL;
+		m_pimBuffer = nullptr;
 		}
 
 	void	Free()
@@ -283,7 +284,7 @@ public:
 		// 2) do a fully clipping opaque copy into the temp tile:
         RRect rrect(0,0,pimSrc->m_sWidth,pimSrc->m_sHeight);
 		rspBlit(pimSrc,m_pimTempTile,sSrcX,sSrcY,0,0,
-			m_sTileW,m_sTileH,NULL,&rrect);
+			m_sTileW,m_sTileH,nullptr,&rrect);
 		}
 
 	// This is a linear check to see if you have a null cache:

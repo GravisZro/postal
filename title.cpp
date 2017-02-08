@@ -214,10 +214,10 @@ int32_t m_lCummUnits;		// I will brace myself for an onslaught of jokes.
 double m_adTitlePercent[MAX_TITLES+1];
 static int16_t	m_sValid			= FALSE;
 
-static int32_t		ms_lTitleRFileCallbackTime = 0;
+static uint32_t		ms_lTitleRFileCallbackTime = 0;
 
 // Indicates the currently displayed image.
-static int16_t	ms_sImageNum		= 0;
+static size_t	ms_sImageNum		= 0;
 
 // The instance of the title musak sample.
 static SampleMaster::SoundInstance	ms_siMusak;
@@ -226,7 +226,7 @@ static SampleMaster::SoundInstance  ms_siEndingAudio;
 static bool	ms_bDisableRipcordStaticLogo	= false;
 
 // These are the images (in the order) to display.
-static char*	ms_apszFiles[]	=
+static const char*	ms_apszFiles[]	=
 	{
 	// Even the rating disclaimer is too violent for some countries.
 	#if VIOLENT_LOCALE
@@ -237,8 +237,13 @@ static char*	ms_apszFiles[]	=
 	#ifdef TITLE_SHOW_DISTRIBUTOR
 		"Title/distrib.bmp",
 	#endif
-	"Title/Logo2.bmp",
-	"Title/Postal.bmp"
+#if TARGET == POSTAL_1997
+  #warning Proceeding without updated copyright screen notice.
+   "Title/Logo.bmp",
+#else
+   "Title/Logo2.bmp",
+#endif
+   "Title/Postal.bmp"
 	};				 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -253,8 +258,9 @@ static char*	ms_apszFiles[]	=
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void TitleRFileCallback(int32_t lBytes)
+static void TitleRFileCallback(size_t lBytes)
 {
+  UNUSED(lBytes);
 	int32_t lCurrentTime = rspGetMilliseconds();
 	if ((lCurrentTime - ms_lTitleRFileCallbackTime) > TITLE_SOUND_UPDATE_INTERVAL)
 	{
@@ -268,8 +274,8 @@ static void TitleRFileCallback(int32_t lBytes)
 // Returns true if the specified string is in the comma separated list.
 ////////////////////////////////////////////////////////////////////////////////
 static bool IsInList(	// Returns true if in list.  false otherwise.
-	char*	pszSearchFor,	// In:  String to search for in pszSearchIn.
-	char*	pszSearchIn)	// In:  Comma delimited list of strings to search in for
+   const char*	pszSearchFor,	// In:  String to search for in pszSearchIn.
+   const char*	pszSearchIn)	// In:  Comma delimited list of strings to search in for
 								// pszSearchFor.
 	{
 	bool	bFound	= false;	// Assume not found.
@@ -281,7 +287,7 @@ static bool IsInList(	// Returns true if in list.  false otherwise.
 
 	// Tokenize.
 	char*	pszToken	= strtok(szTokenize, TOKEN_DELIMITERS);
-	while (pszToken != NULL)
+	while (pszToken != nullptr)
 		{
 		if (rspStricmp(pszToken, pszSearchFor) == 0)
 			{
@@ -290,7 +296,7 @@ static bool IsInList(	// Returns true if in list.  false otherwise.
 			break;
 			}
 
-		pszToken	= strtok(NULL, TOKEN_DELIMITERS);
+		pszToken	= strtok(nullptr, TOKEN_DELIMITERS);
 		}
 
 	return bFound;
@@ -300,7 +306,7 @@ static bool IsInList(	// Returns true if in list.  false otherwise.
 // Loads, displays, and disgards image from specified file.
 ////////////////////////////////////////////////////////////////////////////////
 static int16_t DisplayImage(	// Returns nothing.
-	char*	pszImageFile)		// Filename of image (relative path).
+   const char*	pszImageFile)		// Filename of image (relative path).
 	{
 	// Store the original callback.
 	RFile::CritiCall	criticallRestore	= RFile::ms_criticall;
@@ -311,29 +317,29 @@ static int16_t DisplayImage(	// Returns nothing.
 
 	RImage*	pimTitle;
 	int16_t sResult = rspGetResource(&g_resmgrShell, pszImageFile, &pimTitle);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// Determine position for new image.
 		int16_t	sX	= g_pimScreenBuf->m_sWidth / 2 - pimTitle->m_sWidth / 2;
 		int16_t	sY	= g_pimScreenBuf->m_sHeight / 2 - pimTitle->m_sHeight / 2;
 
 		// Set palette
-		ASSERT(pimTitle->m_pPalette != NULL);
+		ASSERT(pimTitle->m_pPalette != nullptr);
 		ASSERT(pimTitle->m_pPalette->m_type == RPal::PDIB);
 
 		// Get the new palette.
-		U8*	pu8NewRed	= pimTitle->m_pPalette->Red(0);
-		U8*	pu8NewGreen	= pimTitle->m_pPalette->Green(0);
-		U8*	pu8NewBlue	= pimTitle->m_pPalette->Blue(0);
+		uint8_t*	pu8NewRed	= pimTitle->m_pPalette->Red(0);
+		uint8_t*	pu8NewGreen	= pimTitle->m_pPalette->Green(0);
+		uint8_t*	pu8NewBlue	= pimTitle->m_pPalette->Blue(0);
 
 		int16_t	sStartIndex	= pimTitle->m_pPalette->m_sStartIndex;
 		int16_t	sNumEntries	= pimTitle->m_pPalette->m_sNumEntries;
 		int16_t	sEntrySize	= pimTitle->m_pPalette->m_sPalEntrySize;
 
 		// Get the current palette.
-		U8		au8CurRed[256];
-		U8		au8CurGreen[256];
-		U8		au8CurBlue[256];
+		uint8_t		au8CurRed[256];
+		uint8_t		au8CurGreen[256];
+		uint8_t		au8CurBlue[256];
 		rspGetPaletteEntries(
 			sStartIndex,
 			sNumEntries,
@@ -345,12 +351,12 @@ static int16_t DisplayImage(	// Returns nothing.
 		// Compare.
 		bool	bSetPalette	= false;	// true to set new palette.
 		int16_t	i;
-		U8*	pu8NewRedEntry		= pu8NewRed;
-		U8*	pu8NewGreenEntry	= pu8NewGreen;
-		U8*	pu8NewBlueEntry	= pu8NewBlue;
-		U8*	pu8CurRedEntry		= au8CurRed;
-		U8*	pu8CurGreenEntry	= au8CurGreen;
-		U8*	pu8CurBlueEntry	= au8CurBlue;
+		uint8_t*	pu8NewRedEntry		= pu8NewRed;
+		uint8_t*	pu8NewGreenEntry	= pu8NewGreen;
+		uint8_t*	pu8NewBlueEntry	= pu8NewBlue;
+		uint8_t*	pu8CurRedEntry		= au8CurRed;
+		uint8_t*	pu8CurGreenEntry	= au8CurGreen;
+		uint8_t*	pu8CurBlueEntry	= au8CurBlue;
 		for (i = 0; i < sNumEntries; i++)
 			{
 			if (	*pu8CurRedEntry++		!= *pu8NewRedEntry
@@ -435,9 +441,9 @@ static int16_t DisplayImage(	// Returns nothing.
 // Loads, displays, and disgards image from file specified via image num.
 ////////////////////////////////////////////////////////////////////////////////
 static int16_t DisplayImageNum(	// Returns nothing.
-	int16_t	sImageNum)				// In:  Image Num to show [1..n].
+   uint16_t	sImageNum)				// In:  Image Num to show [1..n].
 	{
-	int16_t	sRes	= 0;	// Assume success.
+	int16_t sResult = SUCCESS;	// Assume success.
 	
 	// Switch to array indexing mode.
 	sImageNum--;
@@ -455,10 +461,10 @@ static int16_t DisplayImageNum(	// Returns nothing.
 
 	if (sImageNum < NUM_ELEMENTS(ms_apszFiles) )
 		{
-		sRes	= DisplayImage(ms_apszFiles[sImageNum]);
+		sResult	= DisplayImage(ms_apszFiles[sImageNum]);
 		}
 
-	return sRes;
+	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -476,12 +482,11 @@ extern int16_t StartTitle(							// Returns 0 if successfull, non-zero otherwise
 	bool	bPlayMusak /*= false*/,					// In:  true to play title musak.
 	SampleMaster::SoundInstance* psi /*= 0*/)	// Out:  Sound instance of musak.
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Save total units and reset other stuff
-	int16_t i;
 	m_lTotalUnits = 0;
-	for (i = 0; i < NUM_ELEMENTS(ms_apszFiles); i++)
+   for (size_t i = 0; i < NUM_ELEMENTS(ms_apszFiles); i++)
 		m_lTotalUnits += g_GameSettings.m_alTitleDurations[i];
 
 	// Avoid divide by zero and other possible screw-ups.
@@ -491,7 +496,7 @@ extern int16_t StartTitle(							// Returns 0 if successfull, non-zero otherwise
 		}
 
 	m_adTitlePercent[0] = 0;
-	for (i = 0; i < NUM_ELEMENTS(ms_apszFiles); i++)
+   for (size_t i = 0; i < NUM_ELEMENTS(ms_apszFiles); i++)
 		m_adTitlePercent[i+1] = ((double) g_GameSettings.m_alTitleDurations[i] / (double) m_lTotalUnits) + m_adTitlePercent[i];
 
 	m_lCummUnits = 0;
@@ -503,6 +508,7 @@ extern int16_t StartTitle(							// Returns 0 if successfull, non-zero otherwise
 		// It specifies a value relative to the end.
 		sStartImage	+= NUM_ELEMENTS(ms_apszFiles);
 		}
+   ASSERT(sStartImage > 0); // paranoia
 
 	// Force this sample to load now
 //	CacheSample(g_smidTitle);
@@ -510,7 +516,7 @@ extern int16_t StartTitle(							// Returns 0 if successfull, non-zero otherwise
 
 	// Display title screen
 	sResult = DisplayImageNum(sStartImage);
-	if (sResult == 0)
+	if (sResult == SUCCESS)
 		{
 		// If told to play sample . . .
 		if (bPlayMusak)
@@ -524,7 +530,7 @@ extern int16_t StartTitle(							// Returns 0 if successfull, non-zero otherwise
 					SampleMaster::BackgroundMusic,		// In:  Sound Volume Category for user adjustment
 					255,											// In:  Initial Sound Volume (0 - 255)
 					&ms_siMusak,								// Out: Handle for adjusting sound volume
-					NULL,											// Out: Sample duration in ms, if not NULL.
+					nullptr,											// Out: Sample duration in ms, if not nullptr.
 					MUSAK_START_TIME,							// In:  Where to loop back to in milliseconds.
 																	//	-1 indicates no looping (unless m_sLoop is
 																	// explicitly set).
@@ -558,7 +564,7 @@ extern int16_t StartTitle(							// Returns 0 if successfull, non-zero otherwise
 // TitleGetNumTitles - give the number of title screens in use
 ////////////////////////////////////////////////////////////////////////////////
 
-extern int16_t TitleGetNumTitles(void)
+extern size_t TitleGetNumTitles(void)
 	{
 	return NUM_ELEMENTS(ms_apszFiles);
 	}
@@ -573,7 +579,7 @@ extern int16_t TitleGetNumTitles(void)
 extern int16_t DoTitle(						// Returns 0 if successfull, non-zero otherwise
 	int32_t lUnits)								// In:  Additional progess units
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// Can't call this if StartTitle() didn't work
 	if (m_sValid)
@@ -609,7 +615,7 @@ extern int16_t DoTitle(						// Returns 0 if successfull, non-zero otherwise
 		}
 	else
 		{
-		sResult = -1;
+      sResult = FAILURE;
 		TRACE("DoTitle(): It appears that StartTitle() wasn't called or didn't complete successfully!\n");
 		}
 
@@ -626,14 +632,14 @@ extern int16_t DoTitle(						// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 extern int16_t EndTitle(void)				// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult = 0;
+	int16_t sResult = SUCCESS;
 
 	// It's okay to call this even if StartTitle() didn't work
 	if (m_sValid)
 		{
 		// Display this stuff so we can easily tune the total units based on the
 		// actual units that were passed to this module.
-		TRACE("EndTitle(): lTotalUnits = %ld, lCummUnits = %ld\n", m_lTotalUnits, m_lCummUnits);
+		TRACE("EndTitle(): lTotalUnits = %i, lCummUnits = %i\n", m_lTotalUnits, m_lCummUnits);
 
 		// Always pretend we made it, even if we didn't.
 		DoTitle(ABS(m_lTotalUnits - m_lCummUnits) );
@@ -692,7 +698,7 @@ void Title_GameEndSequence(void)
 		SampleMaster::Unspecified,				// In:  Sound Volume Category for user adjustment
 		255,											// In:  Initial Sound Volume (0 - 255)
 		&ms_siEndingAudio,						// Out: Handle for adjusting sound volume
-		&lTotalTime,								// Out: Sample duration in ms, if not NULL.
+		&lTotalTime,								// Out: Sample duration in ms, if not nullptr.
 		-1,											// In:  Where to loop back to in milliseconds.
 														//	-1 indicates no looping (unless m_sLoop is
 														// explicitly set).

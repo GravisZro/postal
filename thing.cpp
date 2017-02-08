@@ -308,9 +308,9 @@ CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
 		{ CHood::Construct,					0,								"Hood",					false	},
 		{ CDude::Construct,					0,								"Dude",					false	},
 		{ CDoofus::Construct,				0,								"Doofus",				false	},
-		{ NULL, /* Tkachuk */				0,								"Tkachuk",				false },
-		{ NULL, /* CRocketMan */			0,								"RocketMan",			false	},
-		{ NULL, /* CGrenader */				0,								"Grenader",				false	},
+		{ nullptr, /* Tkachuk */				0,								"Tkachuk",				false },
+		{ nullptr, /* CRocketMan */			0,								"RocketMan",			false	},
+		{ nullptr, /* CGrenader */				0,								"Grenader",				false	},
 		{ CRocket::Construct,				CRocket::Preload,			"Rocket",				false	},
 		{ CGrenade::Construct,				CGrenade::Preload,		"Grenade",				false	},
 		{ CBall::Construct,					0,								"Ball",					false	},
@@ -320,22 +320,22 @@ CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
 		{ CGameEditThing::Construct,		0,								"GameEditThing",		false },
 		{ CNapalm::Construct,				CNapalm::Preload,			"Napalm",				false },
 		{ CFire::Construct,					CFire::Preload,			"Fire",					false },
-		{ NULL, /* CImbecile */				0,								"Imbecile",				false	},
+		{ nullptr, /* CImbecile */				0,								"Imbecile",				false	},
 		{ CFirebomb::Construct,				CFirebomb::Preload,		"Firebomb",				false },
 		{ CFirefrag::Construct,				0,								"Firefrag",				false },
 		{ CAnimThing::Construct,			0,								"AnimThing",			true	},
 		{ CSoundThing::Construct,			0,								"SoundThing",			true	},
-		{ NULL, /* CGunner */				0,								"Gunner",				false	},
+		{ nullptr, /* CGunner */				0,								"Gunner",				false	},
 		{ CBand::Construct,					0,								"Band",					true  },
 		{ CItem3d::Construct,				0,								"Item3d",				true	},
 		{ CBarrel::Construct,				0,								"Barrel",				true	},
 		{ CMine::ConstructProximity,		0,								"ProximityMine",		true  },
 		{ CDispenser::Construct,			0,								"Dispenser",			true	},
 		{ CFireball::Construct,				CFireball::Preload,		"Fireball",				false },
-		{ NULL, /* CCop */					0,								"Cop",					false	},
-		{ NULL, /* CPistol */				0,								"Pistol",				false },
-		{ NULL, /* CMachineGun */			0,								"MachineGun",			false },
-		{ NULL, /* CShotGun */				0,								"ShotGun",				false },
+		{ nullptr, /* CCop */					0,								"Cop",					false	},
+		{ nullptr, /* CPistol */				0,								"Pistol",				false },
+		{ nullptr, /* CMachineGun */			0,								"MachineGun",			false },
+		{ nullptr, /* CShotGun */				0,								"ShotGun",				false },
 		{ CPerson::Construct,				0,								"Person",				true	},
 		{ CMine::ConstructTimed,			CMine::Preload,			"TimedMine",			true	},
 		{ CMine::ConstructBouncingBetty,	0,/*CMine::Preload*/		"BouncingBettyMine",	true	},
@@ -346,21 +346,21 @@ CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
 		{ CTrigger::Construct,				0,								"Trigger",				false },
 		{ CHeatseeker::Construct,			CHeatseeker::Preload,	"Heatseeker",			false },
 		{ CChunk::Construct,					0,								"Chunk",					false },
-		{ NULL, /* CAssault */				0,								"AssaultWeapon",		false },
+		{ nullptr, /* CAssault */				0,								"AssaultWeapon",		false },
 		{ CSentry::Construct,				0,								"Sentry",				true	},
-		{ NULL, /* CSentryGun */			0,								"CentryGun",			false	},
+		{ nullptr, /* CSentryGun */			0,								"CentryGun",			false	},
 		{ CWarp::Construct,					0,								"Warp",					true	},
 		{ CDemon::Construct,					CDemon::Preload,			"Demon",					true  },
-		{ NULL, /* CCharacter */			CCharacter::Preload,		"Character",			false	},
-		{ NULL, /*CGoalTimer */				0,								"GoalTimer",			false },
+		{ nullptr, /* CCharacter */			CCharacter::Preload,		"Character",			false	},
+		{ nullptr, /*CGoalTimer */				0,								"GoalTimer",			false },
 		{ CFlag::Construct,					0,								"Flag",					true  },
 		{ CFlagbase::Construct,				0,								"Flagbase",				true  },
 		{ CFirestream::Construct,			0,								"Firestream",			false },
 		{ CDeathWad::Construct,				CDeathWad::Preload,		"DeathWad",				false	},
-		{ NULL, /*CDoubleBarrel */			0,								"DoubleBarrel",		false	},
-		{ NULL, /*CUziID */			0,										"Uzi",					false	},
-		{ NULL, /*CAutoRifleID */			0,								"AutoRifle",			false	},
-		{ NULL, /*CSmallPistolID */		0,								"SmallPistol",			false	},
+		{ nullptr, /*CDoubleBarrel */			0,								"DoubleBarrel",		false	},
+		{ nullptr, /*CUziID */			0,										"Uzi",					false	},
+		{ nullptr, /*CAutoRifleID */			0,								"AutoRifle",			false	},
+		{ nullptr, /*CSmallPistolID */		0,								"SmallPistol",			false	},
 		{ CGrenade::ConstructDynamite,	0,								"Dynamite",				false	},
 		{ CSndRelay::Construct,				0,								"SndRelay",				true	},
 	};
@@ -393,11 +393,11 @@ CThing::CThing(
 	m_pRealm = pRealm;
 
 	m_everything.m_powner = this;
-	m_everything.m_pnNext = NULL;
-	m_everything.m_pnPrev = NULL;
+	m_everything.m_pnNext = nullptr;
+	m_everything.m_pnPrev = nullptr;
 	m_nodeClass.m_powner = this;
-	m_nodeClass.m_pnNext = NULL;
-	m_nodeClass.m_pnPrev = NULL;
+	m_nodeClass.m_pnNext = nullptr;
+	m_nodeClass.m_pnPrev = nullptr;
 
 	// Add this object to realm and save its assigned position in realm's container
 //	pRealm->AddThing(this, id, &m_iterEvery, &m_iterClass);
@@ -407,7 +407,7 @@ CThing::CThing(
 	m_u16InstanceId	= CIdBank::IdNil;
 
 	// Clear editor's RHot*.
-	m_phot				= NULL;
+	m_phot				= nullptr;
 	}
 
 
@@ -452,7 +452,7 @@ int32_t CThing::SysUpdate(			// Returns a non-zero ID to abort or zero
 	UpdateSystem();
 	rspGetNextInputEvent(pie);
 
-	return 0;
+   return SUCCESS;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -495,6 +495,7 @@ int16_t CThing::Load(										// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,										// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)									// In:  File version being loaded.
 	{
+  UNUSED(bEditMode, sFileCount);
 	// Switch on the file version.
 	switch (ulFileVersion)
 		{
@@ -509,7 +510,7 @@ int16_t CThing::Load(										// Returns 0 if successfull, non-zero otherwise
 
 	// If this ID is not yet claimed . . .
 	CThing*	pthing;
-	if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16InstanceId) != 0)
+	if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16InstanceId) != SUCCESS)
 		{
 		// Reserve ID.
 		m_pRealm->m_idbank.Take(this, m_u16InstanceId);
@@ -531,7 +532,7 @@ int16_t CThing::Load(										// Returns 0 if successfull, non-zero otherwise
 //
 ////////////////////////////////////////////////////////////////////////////////
 void CThing::SetInstanceID(	// Returns nothing.
-	U16	u16Id)					// New id for this instance.
+	uint16_t	u16Id)					// New id for this instance.
 	{
 	// Safety.
 	if (m_u16InstanceId != CIdBank::IdNil)
@@ -550,16 +551,15 @@ void CThing::SetInstanceID(	// Returns nothing.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, U16 u16ID)
-	{
-	int16_t sResult = SUCCESS;
-	CThing* pThing = NULL;
+int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, uint16_t u16ID)
+   {
+	CThing* pThing = nullptr;
 
 	m_pRealm->m_idbank.GetThingByID(&pThing, u16ID);
 	if (pThing)
 		return SendThingMessage(pMessage, sPriority, pThing);
 	else
-		return -1;
+      return FAILURE;
 	}
 
 int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, CThing* pThing)
@@ -568,12 +568,12 @@ int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, CThin
 
 	// Make sure this has been initialized.
 	// If you were using 0xebeb as your priority, stop that.
-	ASSERT(sPriority != 0xebeb);
+//	ASSERT(sPriority != 0xebeb);
 
-	if (pThing != NULL)
+	if (pThing != nullptr)
 		pThing->m_MessageQueue.EnQ(pMessage, &sPriority);
 	else
-		sResult = -1;
+		sResult = FAILURE;
 
 	return sResult;
 	}
@@ -620,12 +620,12 @@ int16_t CThing::Construct(								// Returns 0 if successfull, non-zero otherwis
 		if (ms_aClassInfo[id].funcConstruct)
 			return (*(ms_aClassInfo[id].funcConstruct))(pRealm, ppNew);
 		else
-			return -1;
+         return FAILURE;
 		}
 	else
 		{
 		TRACE("Construct(): id %d is out of bounds.\n", id);
-		return -2;
+      return FAILURE * 2;
 		}
 	}
 
@@ -639,17 +639,17 @@ int16_t CThing::ConstructWithID(						// Returns 0 if successfull, non-zero othe
 	CRealm* pRealm,										// In:  Pointer to realm this object belongs to
  	CThing** ppNew)										// Out: Pointer to new object
 	{
-	int16_t	sResult	= Construct(id, pRealm, ppNew);
-	if (sResult == 0)
+	int16_t sResult	= Construct(id, pRealm, ppNew);
+	if (sResult == SUCCESS)
 		{
 		// If new thing has no ID . . .
 		if ((*ppNew)->m_u16InstanceId == CIdBank::IdNil)
 			{
 			sResult = pRealm->m_idbank.Get(*ppNew, &((*ppNew)->m_u16InstanceId) );
-			if (sResult != 0)
+			if (sResult != SUCCESS)
 				{
 				delete *ppNew;
-				*ppNew	= NULL;
+				*ppNew	= nullptr;
 				}
 			}
 		}

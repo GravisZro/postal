@@ -113,9 +113,9 @@ inline void GetSocketAddress(
 			RProtocolBSDIP::AddressIP* p = (RProtocolBSDIP::AddressIP*)paddress;
 			pBuf->Get(&p->address.sin_family);
 			// Don't byte-swap these!!!  They are always in network order on all systems!
-			pBuf->Get((U8*)&p->address.sin_port, sizeof(p->address.sin_port));
-			pBuf->Get((U8*)&p->address.sin_addr, sizeof(p->address.sin_addr));
-			pBuf->Get((U8*)&p->address.sin_zero, sizeof(p->address.sin_zero));
+			pBuf->Get((uint8_t*)&p->address.sin_port, sizeof(p->address.sin_port));
+			pBuf->Get((uint8_t*)&p->address.sin_addr, sizeof(p->address.sin_addr));
+			pBuf->Get((uint8_t*)&p->address.sin_zero, sizeof(p->address.sin_zero));
 			}
 			break;
 
@@ -143,9 +143,9 @@ inline void PutSocketAddress(
 			RProtocolBSDIP::AddressIP* p = (RProtocolBSDIP::AddressIP*)paddress;
 			pBuf->Put(p->address.sin_family);
 			// Don't let these byte-swap!!!  They are always in network order on all systems!
-			pBuf->Put((U8*)&p->address.sin_port, sizeof(p->address.sin_port));
-			pBuf->Put((U8*)&p->address.sin_addr, sizeof(p->address.sin_addr));
-			pBuf->Put((U8*)&p->address.sin_zero, sizeof(p->address.sin_zero));
+			pBuf->Put((uint8_t*)&p->address.sin_port, sizeof(p->address.sin_port));
+			pBuf->Put((uint8_t*)&p->address.sin_addr, sizeof(p->address.sin_addr));
+			pBuf->Put((uint8_t*)&p->address.sin_zero, sizeof(p->address.sin_zero));
 			}
 			break;
 
@@ -173,7 +173,7 @@ class NetMsg
 
 		// Message types.  Do NOT change the order without making the same changes
 		// to the CNetMsgr static array of info corersponding to these values!!!
-		typedef enum
+      enum
 			{
 			NOTHING,				// 0
 			STAT,					// 1
@@ -214,7 +214,7 @@ class NetMsg
 			};
 
 		// Reasons client can't join
-		typedef enum
+      enum
 			{
 			TooManyPlayers,
 			BandwidthTooLow,
@@ -222,7 +222,7 @@ class NetMsg
 			};
 
 		// Reasons why game was aborted
-		typedef enum
+      enum
 			{
 			UserAbortedGame,
 			ErrorAbortedGame
@@ -296,12 +296,14 @@ class NetMsg
 
 			static void Read(NetMsg* pmsg, CBufQ* pBuf)
 				{
+           UNUSED(pmsg, pBuf);
 				TRACE("ERROR!  NOTHING message is not intended to be transmitted!\n");
 				ASSERT(0);
 				}
 
 			static void Write(NetMsg* pmsg, CBufQ* pBuf)
 				{
+           UNUSED(pmsg, pBuf);
 				TRACE("ERROR!  NOTHING message is not intended to be transmitted!\n");
 				ASSERT(0);
 				}
@@ -315,12 +317,14 @@ class NetMsg
 
 			static void Read(NetMsg* pmsg, CBufQ* pBuf)
 				{
+           UNUSED(pmsg, pBuf);
 				TRACE("ERROR!  STAT message is not intended to be transmitted!\n");
 				ASSERT(0);
 				}
 
 			static void Write(NetMsg* pmsg, CBufQ* pBuf)
 				{
+           UNUSED(pmsg, pBuf);
 				TRACE("ERROR!  STAT message is not intended to be transmitted!\n");
 				ASSERT(0);
 				}
@@ -338,12 +342,14 @@ class NetMsg
 
 			static void Read(NetMsg* pmsg, CBufQ* pBuf)
 				{
+           UNUSED(pmsg, pBuf);
 				TRACE("ERROR!  ERR message is not intended to be transmitted!\n");
 				ASSERT(0);
 				}
 
 			static void Write(NetMsg* pmsg, CBufQ* pBuf)
 				{
+           UNUSED(pmsg, pBuf);
 				TRACE("ERROR!  ERR message is not intended to be transmitted!\n");
 				ASSERT(0);
 				}
@@ -723,7 +729,7 @@ class NetMsg
 			Net::SEQ seqStart;									// Starting seq of range
 			int16_t sNum;												// Number of seq's in range
 			UINPUT* pInputs;										// Pointer used to read/write actual input data
-			U8*		pFrameTimes;									// Pointer to read/write actual frame time data *SPA
+			uint8_t*		pFrameTimes;									// Pointer to read/write actual frame time data *SPA
 
 			static void Read(NetMsg* pmsg, CBufQ* pBuf)
 				{
@@ -788,7 +794,7 @@ class NetMsg
 			enum { Size = 1 + 2 + Net::MaxChatSize };
 
 			uint8_t	ucType;								// Message type
-			U16				u16Mask;								// Who will get this chat text
+			uint16_t				u16Mask;								// Who will get this chat text
 			char				acText[Net::MaxChatSize];		// Chat text
 
 			static void Read(NetMsg* pmsg, CBufQ* pBuf)
@@ -882,7 +888,7 @@ class NetMsg
 			char				acRealmFile[Net::MaxRealmNameSize];			// Name of realm file to load
 			int16_t				sDifficulty;										// Difficulty level
 			int16_t				sRejuvenate;
-			int16_t				sTimeLimit;
+         uint16_t				sTimeLimit;
 			int16_t				sKillLimit;
 			int16_t				sCoopLevels;										// Non-zero for cooperative levels, zero for deathmatch levels.
 			int16_t				sCoopMode;											// Non-zero for cooperative mode, zero for deathmatch mode.
@@ -1080,8 +1086,8 @@ class NetMsg
 			{
 			enum { Size = 1 + 4 + 4 };
 			uint8_t	ucType;								// Message type
-			int32_t				lTimeStamp;							// Timestap for this ping
-			int32_t				lLatestPingResult;				// Latest ping result (round trip time)
+         uint32_t				lTimeStamp;							// Timestap for this ping
+         uint32_t				lLatestPingResult;				// Latest ping result (round trip time)
 
 			static void Read(NetMsg* pmsg, CBufQ* pBuf)
 				{
@@ -1175,7 +1181,7 @@ class NetMsg
 		// This is not sent as part of the message.  It is used by variable-length
 		// messages that require a separate memory block for their data.  Note that
 		// the size refers to the size of this data, not the whole msg.
-		U8*	m_pVarData;
+		uint8_t*	m_pVarData;
 		int32_t	m_lVarSize;
 
 	//------------------------------------------------------------------------------
@@ -1200,12 +1206,12 @@ class NetMsg
 			msg.nothing.ucType = NOTHING;
 			}
 
-		U8* AllocVar(
+		uint8_t* AllocVar(
 			int32_t lSize)
 			{
 			FreeVar();
 			m_lVarSize = lSize;
-			m_pVarData = new U8[lSize];
+			m_pVarData = new uint8_t[lSize];
 			return m_pVarData;
 			}
 
@@ -1216,7 +1222,7 @@ class NetMsg
 			m_lVarSize = 0;
 			}
 
-		static U8* AllocVar(
+		static uint8_t* AllocVar(
 			NetMsg* pmsg,
 			int32_t lSize)
 			{
@@ -1263,7 +1269,7 @@ class CNetMsgr
 	//------------------------------------------------------------------------------
 	public:
 		// Miscellaneous values
-		typedef enum
+      enum
 			{
 			MagicNum				= 0x5655595a,					// Magic number
 			MacVersionBit		= 0x1000,						// Bit that indicates a Mac platform.
@@ -1374,7 +1380,7 @@ class CNetMsgr
 			{
 			ASSERT(m_state == Disconnected);
 
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 
 			// Reset to make sure we're starting with a clean slate
 			Reset();
@@ -1388,7 +1394,7 @@ class CNetMsgr
 				RSocket::typStream,
 				RSocket::optDontWaitOnClose | RSocket::optDontCoalesce | RSocket::optDontBlock,
 				callback);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				m_state = Connecting;
 				}
@@ -1410,7 +1416,7 @@ class CNetMsgr
 			ASSERT(m_state == Disconnected);
 
 			int16_t sResult = psocketListen->Accept(&m_socket, &m_address);
-			if (sResult == 0)
+			if (sResult == SUCCESS)
 				{
 				m_socket.SetCallback(callback);
 				m_state = Connected;

@@ -184,7 +184,7 @@
 // Module specific (static) variables / Instantiate class statics.
 //////////////////////////////////////////////////////////////////////////////
 
-U8	CBulletFest::ms_u8TracerIndex	= 0;	// The color index to use for tracers.
+uint8_t	CBulletFest::ms_u8TracerIndex	= 0;	// The color index to use for tracers.
 													// This value is gotten only once per
 													// execution of this program; therefore,
 													// it is gotten from the group of colors
@@ -251,7 +251,7 @@ int16_t GetMaxHeight(
 			// FEEDBACK.
 			// Create a line sprite.
 			CSpriteLine2d*	psl2d	= new CSpriteLine2d;
-			if (psl2d != NULL)
+			if (psl2d != nullptr)
 				{
 				psl2d->m_sX2		= sIterX, 
 				psl2d->m_sY2		= sIterZ;
@@ -297,6 +297,7 @@ bool GetTerrainAngle(			// true, if terrain angle determined.
 	int16_t* psAngle)				// Out: Angle of terrain at specified location
 										// on X/Z plane.
 	{
+  UNUSED(sMaxOutIterations, sNumScanIterations, sInAngle);
 	bool bFoundAngle	= false;	// Assume not found.
 #if 0  // NOT WORKING CORRECTLY.
 
@@ -448,16 +449,17 @@ bool CBulletFest::FireDeluxe(	// Returns what and as Fire() would.
 	CSmash::Bits bitsInclude,	// In:  Mask of CSmash masks that this bullet can hit.
 	CSmash::Bits bitsDontCare,	// In:  Mask of CSmash masks that this bullet does not care to hit.
 	CSmash::Bits bitsExclude,	// In:  Mask of CSmash masks that this bullet cannot hit.
-	int16_t	sMaxRicochetAngle,	// In:  Maximum angle with terrain that can cause
+   int16_t	sMaxRicochetAngle,	// In:  Maximum angle with terrain that can cause
 										// a ricochet (on X/Z plane).
 	int16_t	sMaxRicochets,			// In:  The maximum number of ricochets.
 	int16_t* psX,						// Out: Hit position.
 	int16_t* psY,						// Out: Hit position.
 	int16_t* psZ,						// Out: Hit position.
-	CThing** ppthing,				// Out: Ptr to thing hit or NULL.
+	CThing** ppthing,				// Out: Ptr to thing hit or nullptr.
 	bool	bTracer /*= true*/,	// In:  Draw a tracer at random point along path.
 	SampleMasterID	smid	/*= g_smidBulletFire*/)	// In:  Use ammo sample.
 	{
+  UNUSED(sMaxRicochetAngle);
 	bool bHit	= false;	// Assume no collision with CThing within u32ThingMask.
 
 	// Create a muzzle flare.
@@ -465,7 +467,7 @@ bool CBulletFest::FireDeluxe(	// Returns what and as Fire() would.
 
 	int16_t	sRicochets		= 0;
 	bool	bImpact			= false;
-	int16_t	sTerrainAngle	= 0;
+//	int16_t	sTerrainAngle	= 0;
 	// While no hits and not out of ricochets . . .
 	while (bHit == false && sRicochets <= sMaxRicochets && bImpact == false)
 		{
@@ -485,7 +487,7 @@ bool CBulletFest::FireDeluxe(	// Returns what and as Fire() would.
 			psX,				// Out: Hit position.
 			psY,				// Out: Hit position.
 			psZ,				// Out: Hit position.
-			ppthing,			// Out: Ptr to thing hit or NULL.
+			ppthing,			// Out: Ptr to thing hit or nullptr.
 			bTracer);		// In:  Draw a tracer at random point along path.
 
 		// If no hit . . .
@@ -602,9 +604,10 @@ void CBulletFest::Flare(		// Returns nothing.
 	CRealm* pRealm,				// In:  Realm in which to fire.
 	SampleMasterID	smid	/*= g_smidBulletFire*/)	// In:  Use ammo sample.
 	{
+  UNUSED(sAngle);
 	// Create the animator . . .
 	CAnimThing*	pat	= new CAnimThing(pRealm);
-	ASSERT(pat != NULL);
+	ASSERT(pat != nullptr);
 
 	strcpy(pat->m_szResName, FLARE_RES_NAME);
 
@@ -634,9 +637,10 @@ void CBulletFest::Impact(	// Returns nothing.
 	int16_t	sZ,					// In:  Launch position.
 	CRealm* pRealm)			// In:  Realm in which to fire.
 	{
+  UNUSED(sAngle);
 	// Create the animator . . .
 	CAnimThing*	pat	= new CAnimThing(pRealm);
-	ASSERT(pat != NULL);
+	ASSERT(pat != nullptr);
 
 	strcpy(pat->m_szResName, IMPACT_RES_NAME);
 
@@ -660,9 +664,10 @@ void CBulletFest::Ricochet(	// Returns nothing.
 	int16_t	sZ,						// In:  Launch position.
 	CRealm* pRealm)				// In:  Realm in which to fire.
 	{
+  UNUSED(sAngle);
 	// Create the animator . . .
 	CAnimThing*	pat	= new CAnimThing(pRealm);
-	ASSERT(pat != NULL);
+	ASSERT(pat != nullptr);
 
 	strcpy(pat->m_szResName, RICOCHET_RES_NAME);
 
@@ -699,7 +704,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 	int16_t* psX,						// Out: Hit position.
 	int16_t* psY,						// Out: Hit position.
 	int16_t* psZ,						// Out: Hit position.
-	CThing** ppthing,				// Out: Ptr to thing hit or NULL.
+	CThing** ppthing,				// Out: Ptr to thing hit or nullptr.
 	bool	bTracer /*= true*/)	// In:  Draw a tracer at random point along path.
 	{
 	bool bHit	= false;	// Assume no collision with CThing within u32ThingMask.
@@ -812,7 +817,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 	else
 		{
 		// Clear thing ptr.
-		*ppthing	= NULL;
+		*ppthing	= nullptr;
 		// Set end pt.
 		*psX		= fPosX;
 		*psY		= fPosY;
@@ -823,7 +828,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 		{
 		// Create a line sprite.
 		CSpriteLine2d*	psl2d	= new CSpriteLine2d;
-		if (psl2d != NULL)
+		if (psl2d != nullptr)
 			{
 			// Get distance.  Since an interception may have occurred, we need to redetermine the
 			// distance.
@@ -854,7 +859,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 				sRand	= m_sCurTracerPos	= (m_sCurTracerPos + GetRand() % TRACER_ACCUMMULATION_STEP_MAX) % sDistance;
 				}
 
-#else	METHOD == 3	// Method 3:  Multiple Method 1 and Method 2's.
+#elif	METHOD == 3	// Method 3:  Multiple Method 1 and Method 2's.
 			
 			// Reduce distance.
 			sDistance	-= TRACER_ACCUMMULATION_STEP_MAX;
@@ -863,14 +868,14 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 				{
 				sRand	+= (GetRand() % (TRACER_ACCUMMULATION_STEP_MAX - TRACER_ACCUMMULATION_STEP_MIN)) + TRACER_ACCUMMULATION_STEP_MIN;
 				// If no current sprite . . . 
-				if (psl2d == NULL)
+				if (psl2d == nullptr)
 					{
 					// Create a line sprite.
 					psl2d	= new CSpriteLine2d;
 					}
 
 				// If we have a sprite . . .
-				if (psl2d != NULL)
+				if (psl2d != nullptr)
 					{
 #endif
 
@@ -902,7 +907,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 #if METHOD == 3
 					
 					// Done with this 'sprite'.
-					psl2d	= NULL;
+					psl2d	= nullptr;
 					}
 				}
 #endif
@@ -917,7 +922,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 	// FEEDBACK.
 	// Create a line sprite.
 	CSpriteLine2d*	psl2d	= new CSpriteLine2d;
-	if (psl2d != NULL)
+	if (psl2d != nullptr)
 		{
 		pRealm->Map3Dto2D(
 			sX, 
@@ -957,6 +962,7 @@ void CBulletFest::UpdateTarget(	// Returns nothing.
 	int16_t	sZ,							// In:  Aim position.
 	CRealm* pRealm)					// In:  Realm in which to target.
 	{
+  UNUSED(sAngle, sX, sY, sZ, pRealm);
 	// NYI!
 	}
 
@@ -996,19 +1002,19 @@ int16_t CBulletFest::Preload(
 	CRealm* prealm)				// In:  Calling realm.
 	{
 	CAnimThing::ChannelAA*	paaCache;
-	int16_t	sResult	= 0;
+	int16_t sResult = SUCCESS;
 
-	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(IMPACT_RES_NAME), &paaCache) == 0)
+	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(IMPACT_RES_NAME), &paaCache) == SUCCESS)
 		rspReleaseResource(&g_resmgrGame, &paaCache);
 	else
 		sResult |= 1;
 
-	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(RICOCHET_RES_NAME), &paaCache) == 0)
+	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(RICOCHET_RES_NAME), &paaCache) == SUCCESS)
 		rspReleaseResource(&g_resmgrGame, &paaCache);
 	else
 		sResult |= 1;
 		
-	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(FLARE_RES_NAME), &paaCache) == 0)
+	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(FLARE_RES_NAME), &paaCache) == SUCCESS)
 		rspReleaseResource(&g_resmgrGame, &paaCache);
 	else
 		sResult |= 1;

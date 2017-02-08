@@ -69,7 +69,7 @@ class CBarrel : public CThing3d
 	// Variables
 	//---------------------------------------------------------------------------
 	public:
-		U16		m_u16ShooterID;				// Variable for storing the shooter ID
+		uint16_t		m_u16ShooterID;				// Variable for storing the shooter ID
 														// to pass along in the messages.
 
 	protected:
@@ -108,7 +108,7 @@ class CBarrel : public CThing3d
 			m_dRot = 0;
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
 			m_sScreenRadius = 20;
-			m_panimCur = m_pPreviousAnim = NULL;
+			m_panimCur = m_pPreviousAnim = nullptr;
 			m_sprite.m_pthing	= this;
 			m_bSpecial = false;
 			}
@@ -135,11 +135,11 @@ class CBarrel : public CThing3d
 			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
 			CThing** ppNew)										// Out: Pointer to new object
 			{
-			int16_t sResult = 0;
+			int16_t sResult = SUCCESS;
 			*ppNew = new CBarrel(pRealm);
-			if (*ppNew == 0)
+			if (*ppNew == nullptr)
 				{
-				sResult = -1;
+				sResult = FAILURE;
 				TRACE("CBarrel::Construct(): Couldn't construct CBarrel (that's a bad thing)\n");
 				}
 			return sResult;
