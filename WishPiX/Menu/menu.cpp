@@ -129,9 +129,9 @@
 
 #include <ORANGE/color/colormatch.h>
 #include <ORANGE/MsgBox/MsgBox.h>
-#include <CYAN/cyan.h>
+#include <CYAN/Cyan.h>
 
-#include "input.h"
+#include "../../input.h" // FIXME
 
 //////////////////////////////////////////////////////////////////////////////
 // Module specific macros.
@@ -155,7 +155,7 @@
 // the number of items.
 #define ITEMINDEX(sIndex)	(((sIndex) < 0) ? ms_sNumMenuItems + (sIndex) : (sIndex))
 
-#define INVALID_MENU_ITEM	0x7fff
+#define INVALID_MENU_ITEM	INT16_MAX
 
 #define SHADOW_X_PIXELS	1
 #define SHADOW_Y_PIXELS	1

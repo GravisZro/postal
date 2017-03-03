@@ -228,7 +228,7 @@ inline void MySeedRandom(int32_t seed)
 
 inline int32_t MyRandom(void)
 	{
-	return (((ms_lRandom = ms_lRandom * 214013L + 2531011L) >> 16) & 0x7fff);
+   return (((ms_lRandom = ms_lRandom * 214013L + 2531011L) >> 16) & 0x7FFF);
 	}
 
 
@@ -1198,7 +1198,7 @@ static void CutScene_RFileCallback(size_t lBytes)
 
 							// Draw an alpha'd pixel at this location
 							uint8_t u8dst = *(ms_pCut->m_pimBGLayer->m_pData + (sY * ms_pCut->m_pimBGLayer->m_lPitch) + sX);
-							rspPlot(
+                     rspPlot<uint8_t>(
 								rspBlendColor(150, ms_pCut->m_pmaAlpha, ms_pCut->m_u8BloodColor, u8dst),
 								ms_pCut->m_pimBGLayer,
 								sX,

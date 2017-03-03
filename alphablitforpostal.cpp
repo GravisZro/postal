@@ -35,12 +35,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <ORANGE/color/colormatch.h>
-#include <GREEN/BLiT/alphablit.h>
-#include <WishPiX/ResourceManager/resmgr.h>
-
 #include "alphablitforpostal.h"
+
+#include <ORANGE/color/colormatch.h>
+#include <GREEN/Blit/AlphaBlit.h>
+#include <ResourceManager/resmgr.h>
+
 #include "game.h"
 #include "update.h"
 
@@ -295,7 +295,7 @@ void test(RImage* pimF,RImage* pimB)
 	rspSetBMPColors(pimF,10,118);
 	rspSetBMPColors(pimB,128,118);
 
-	int16_t sHot = (int16_t) ((pimF->m_sHeight)/rspSQRT2/2.0);
+   int16_t sHot = int16_t(pimF->m_sHeight/rspSQRT2/2.0);
 //---------------------------------------------------------------
 #define sNumStates 3
 	int16_t x[sNumStates],y[sNumStates];

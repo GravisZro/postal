@@ -15,7 +15,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
-// AnimThing.H
+// AnimThing.h
 // Project: Nostril (aka Postal)
 // 
 // History:
@@ -210,13 +210,13 @@ class CAnimThing : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-		double GetX(void)	{ return m_dX; }
+      double GetX(void)	const { return m_dX; }
 
 		virtual					// Overriden here.
-		double GetY(void)	{ return m_dY; }
+      double GetY(void)	const { return m_dY; }
 
 		virtual					// Overriden here.
-		double GetZ(void)	{ return m_dZ; }
+      double GetZ(void)	const { return m_dZ; }
 
 	//---------------------------------------------------------------------------
 	// Internal functions

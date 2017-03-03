@@ -15,7 +15,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
-// Chunk.H
+// Chunk.h
 // Project: Nostril (aka Postal)
 // 
 // History:
@@ -199,7 +199,7 @@ class CChunk : public CThing
 		// GetRand().
 		static int32_t GetChunkRand(void)
 			{
-			return (((ms_lGetRandomSeed = ms_lGetRandomSeed * 214013L + 2531011L) >> 16) & 0x7fff);
+         return (((ms_lGetRandomSeed = ms_lGetRandomSeed * 214013L + 2531011L) >> 16) & 0x7FFF);
 			}
 
 	//---------------------------------------------------------------------------

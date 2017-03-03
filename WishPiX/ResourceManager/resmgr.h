@@ -202,7 +202,7 @@
 
 #include <BLUE/System.h>
 
-#include <CYAN/cyan.h>
+#include <CYAN/Cyan.h>
 #include <ORANGE/File/file.h>
 #include <ORANGE/RString/rstring.h>
 
@@ -219,7 +219,7 @@
 # include <set.h>
 #endif
 
-#define SAK_COOKIE 0x204b4153		// Looks like "SAK " in the file
+#define SAK_COOKIE 0x204B4153		// Looks like "SAK " in the file
 #define SAK_CURRENT_VERSION 1		// Current version of SAK file format
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1276,7 +1276,7 @@ extern bool GetDudeFireAngle(double* d_Angle);
 
 // This value indicates no strafe motion and must be a totally invalid
 // strafe angle value.
-#define INVALID_STRAFE_ANGLE			0x7fff
+#define INVALID_STRAFE_ANGLE			INT16_MAX
 
 #define VEST_HIT_SWAY					10
 
@@ -1506,23 +1506,23 @@ CStockPile	CDude::ms_stockpileDefault	=
 static CCrawler::Nub ms_anubs[] =
 	{
 		// Hard nubs
-		{	  8,   0, 1, 180, 1.0 },
-		{	  6,  -6, 1, 225, 1.0 },
-		{	  0,  -8, 1, 270, 1.0 },
-		{	 -6,  -6, 1, 315, 1.0 },
-		{	 -8,   0, 1,   0, 1.0 },
-		{	 -6,   6, 1,  45, 1.0 },
-		{	  0,   8, 1,  90, 1.0 },
-		{	  6,   6, 1, 135, 1.0 },
+      {	  8,   0, 1, 180, 1.0, 0.0, 0.0, 0 },
+      {	  6,  -6, 1, 225, 1.0, 0.0, 0.0, 0 },
+      {	  0,  -8, 1, 270, 1.0, 0.0, 0.0, 0 },
+      {	 -6,  -6, 1, 315, 1.0, 0.0, 0.0, 0 },
+      {	 -8,   0, 1,   0, 1.0, 0.0, 0.0, 0 },
+      {	 -6,   6, 1,  45, 1.0, 0.0, 0.0, 0 },
+      {	  0,   8, 1,  90, 1.0, 0.0, 0.0, 0 },
+      {	  6,   6, 1, 135, 1.0, 0.0, 0.0, 0 },
 		// Soft nubs
-		{	 12,   0, 0, 180, 1.0 },
-		{	  9,  -9, 0, 225, 1.0 },
-		{	  0, -12, 0, 270, 1.0 },
-		{	 -9,  -9, 0, 315, 1.0 },
-		{	-12,   0, 0,   0, 1.0 },
-		{	 -9,   9, 0,  45, 1.0 },
-		{	  0,  12, 0,  90, 1.0 },
-		{	  9,   9, 0, 135, 1.0 }
+      {	 12,   0, 0, 180, 1.0, 0.0, 0.0, 0 },
+      {	  9,  -9, 0, 225, 1.0, 0.0, 0.0, 0 },
+      {	  0, -12, 0, 270, 1.0, 0.0, 0.0, 0 },
+      {	 -9,  -9, 0, 315, 1.0, 0.0, 0.0, 0 },
+      {	-12,   0, 0,   0, 1.0, 0.0, 0.0, 0 },
+      {	 -9,   9, 0,  45, 1.0, 0.0, 0.0, 0 },
+      {	  0,  12, 0,  90, 1.0, 0.0, 0.0, 0 },
+      {	  9,   9, 0, 135, 1.0, 0.0, 0.0, 0 }
 	};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2746,7 +2746,7 @@ if (!demoCompat)
 		
 		case INPUT_CHEAT_11:	// Restore health.
 			{
-			CStockPile	stockpile	= { 0, };
+         CStockPile	stockpile	= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sHitPoints	= MAX(0, m_sOrigHitPoints - m_stockpile.m_sHitPoints);
 
 			CreateCheat(&stockpile);
@@ -2754,7 +2754,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_12:	// Full kevlar.
 			{
-			CStockPile	stockpile		= { 0, };
+         CStockPile	stockpile		= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sKevlarLayers	= CStockPile::ms_stockpileBackPackMax.m_sKevlarLayers;
 
 			CreateCheat(&stockpile);
@@ -2762,7 +2762,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_13:	// Backpack.
 			{
-			CStockPile	stockpile	= { 0, };
+         CStockPile	stockpile	= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sBackpack	= 1;
 
 			CreateCheat(&stockpile);
@@ -2770,7 +2770,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_14:	// Full weaponry, full ammo, backpack, and full kevlar.
 			{
-			CStockPile	stockpile	= { 0, };
+         CStockPile	stockpile	= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sHitPoints	= MAX(0, m_sOrigHitPoints - m_stockpile.m_sHitPoints);
 
 			stockpile.m_sNumGrenades		= CStockPile::ms_stockpileBackPackMax.m_sNumGrenades;
@@ -2814,7 +2814,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_16:	// DeathWadLauncher and ammo.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumGrenades		= CStockPile::ms_stockpileBackPackMax.m_sNumGrenades;
 			stockpile.m_sNumMissiles		= CStockPile::ms_stockpileBackPackMax.m_sNumMissiles;
 			stockpile.m_sNumNapalms			= CStockPile::ms_stockpileBackPackMax.m_sNumNapalms;
@@ -2829,7 +2829,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_17:	// DoubleBarrel and shells.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sDoubleBarrel		= 1;
 
@@ -2854,7 +2854,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_19:	// Shell weapons and ammo.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sShotGun				= 1;
 			stockpile.m_sSprayCannon		= 1;
@@ -2865,7 +2865,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_20:	// Explosive weapons and ammo.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumGrenades		= CStockPile::ms_stockpileBackPackMax.m_sNumGrenades;
 			stockpile.m_sNumMissiles		= CStockPile::ms_stockpileBackPackMax.m_sNumMissiles;
 			stockpile.m_sNumHeatseekers	= CStockPile::ms_stockpileBackPackMax.m_sNumHeatseekers;
@@ -2877,7 +2877,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_21:	// Flame weapons and ammo.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumFireBombs		= CStockPile::ms_stockpileBackPackMax.m_sNumFireBombs;
 			stockpile.m_sNumNapalms			= CStockPile::ms_stockpileBackPackMax.m_sNumNapalms;
 			stockpile.m_sNumFuel				= CStockPile::ms_stockpileBackPackMax.m_sNumFuel;
@@ -2890,7 +2890,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_22:	// Shotgun and shells.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sShotGun				= 1;
 			
@@ -2900,7 +2900,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_23:	// Spray cannon and shells.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sSprayCannon		= 1;
 
@@ -2910,7 +2910,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_24:	// Grenades and cocktails.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumGrenades		= CStockPile::ms_stockpileBackPackMax.m_sNumGrenades;
 			stockpile.m_sNumFireBombs		= CStockPile::ms_stockpileBackPackMax.m_sNumFireBombs;
 
@@ -2920,7 +2920,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_25:	// Missile launcher and missiles (including heatseekers).
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumMissiles		= CStockPile::ms_stockpileBackPackMax.m_sNumMissiles;
 			stockpile.m_sNumHeatseekers	= CStockPile::ms_stockpileBackPackMax.m_sNumHeatseekers;
 			stockpile.m_sMissileLauncher	= 1;
@@ -2931,7 +2931,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_26:	// Napalm launcher and napalm canisters.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumNapalms			= CStockPile::ms_stockpileBackPackMax.m_sNumNapalms;
 			stockpile.m_sNapalmLauncher	= 1;
 
@@ -2941,7 +2941,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_27:	// Flame thrower and fuel canisters.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumFuel				= CStockPile::ms_stockpileBackPackMax.m_sNumFuel;
 			stockpile.m_sFlameThrower		= 1;
 
@@ -2951,7 +2951,7 @@ if (!demoCompat)
 			}
 		case INPUT_CHEAT_28:	// Mines.
 			{
-			CStockPile	stockpile			= { 0, };
+         CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumMines			= CStockPile::ms_stockpileBackPackMax.m_sNumMines;
 
 			CreateCheat(&stockpile);
@@ -2961,7 +2961,7 @@ if (!demoCompat)
 		case INPUT_CHEAT_29:	// Unused except for SALES demo.
 			{
 #ifdef SALES_DEMO
-			CStockPile	stockpile	= { 0, };
+         CStockPile	stockpile	= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sHitPoints	= MAX(0, m_sOrigHitPoints - m_stockpile.m_sHitPoints);
 
 			stockpile.m_sNumGrenades		= CStockPile::ms_stockpileBackPackMax.m_sNumGrenades;
@@ -5858,24 +5858,20 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
 			dVictimZ	= pthing->GetZ();
 			}
 
-		int16_t	sDistX			= dVictimX - m_dX;
-		int16_t	sDistZ			= m_dZ - dVictimZ;
-		double	dSqrDistanceXZ	= ABS2(sDistX, sDistZ);
+      double sDistX         = dVictimX - m_dX;
+      double sDistZ         = m_dZ - dVictimZ;
+      double dSqrDistanceXZ = ABS2(sDistX, sDistZ);
 
 		// Determine angle to target.
-		double	dRot		= rspATan(sDistZ, sDistX);
+      double dRot	  = rspATan(sDistZ, sDistX);
 		// Determine which rotation direction to target is smaller.
-		double	dDelta	= rspDegDelta(m_dRot, dRot);
+      double dDelta = rspDegDelta(m_dRot, dRot);
 
 		// If turning counter clockwise . . .
-		if (dDelta > 0.0)
-			{
-			m_dRot	+= MIN(dDelta, g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
-			}
-		else
-			{
-			m_dRot	+= MAX(dDelta, -g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
-			}
+      if (dDelta > 0.0)
+         m_dRot += MIN(dDelta, g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
+      else
+        m_dRot	+= MAX(dDelta, -g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
 
 #if 1
 		// If too close . . .

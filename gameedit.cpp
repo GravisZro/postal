@@ -1013,8 +1013,8 @@
 // Amount paste buffer grows as it gets larger.
 #define PASTE_BUFFER_GROW_SIZE		1024
 
-#define MAX_ALPHA_LEVEL					255
-#define MIN_ALPHA_LEVEL					15
+#define MAX_ALPHA_LEVEL					0xFF
+#define MIN_ALPHA_LEVEL					0x0F
 
 #define INCDEC_ALPHA_LEVEL				10
 
@@ -2256,8 +2256,8 @@ static bool DoInput(		// Returns true when done.
 			if (ie.type == RInputEvent::Key && ie.sUsed == FALSE)
 				{
 				// Force alpha keys to upper keys
-				if (isalpha(ie.lKey & 0xffff))
-					ie.lKey = (ie.lKey & 0xffff0000) | toupper(ie.lKey & 0xffff);
+            if (isalpha(ie.lKey & 0xFFFF))
+               ie.lKey = (ie.lKey & 0xFFFF0000) | toupper(ie.lKey & 0xFFFF);
 
 				// In case we're gonna scroll, set amount based on CTRL key status
 				int16_t sScrollX = EDIT_SCROLL_AMOUNT;
@@ -3528,7 +3528,7 @@ static void DrawCursor(
 		short sMin = MIN(sCursorZ, (short)(sCursorZ - sCursorY));
 		short sMax = MAX(sCursorZ, (short)(sCursorZ - sCursorY));
 		for (short y = sMin; y <= sMax; y++)
-			rspPlot((uint8_t)255, pimDst, sCursorX, y);
+         rspPlot<uint8_t>(255, pimDst, sCursorX, y);
 #else
 		rspLine(
 			(uint8_t)255,
@@ -4376,8 +4376,8 @@ static void PlayRealm(
 							if (ie.type == RInputEvent::Key)
 								{
 								// Force alpha keys to upper keys
-								if (isalpha(ie.lKey & 0xffff))
-									ie.lKey = (ie.lKey & 0xffff0000) | toupper(ie.lKey & 0xffff);
+                        if (isalpha(ie.lKey & 0xFFFF))
+                           ie.lKey = (ie.lKey & 0xFFFF0000) | toupper(ie.lKey & 0xFFFF);
 
 								switch (ie.lKey)
 									{

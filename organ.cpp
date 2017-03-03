@@ -42,7 +42,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <RSPiX.h>
-#include <WishPiX/ResourceManager/resmgr.h>
+#include <ResourceManager/resmgr.h>
 
 #include "SampleMaster.h"
 #include "game.h"
@@ -93,7 +93,7 @@ void	PlayWithMyOrgan()
 					PlaySample(
 						*CSoundCatalogue::ms_ppsmNameList[sCurSample],
 						SampleMaster::Unspecified,
-						255);	// initial volume
+                  SampleMaster::MaxVolume);	// initial volume
 					}
 
 				// Clear key.
