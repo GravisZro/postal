@@ -103,8 +103,8 @@
 #define NONSHADE_LEN			((NONSHADE_END - NONSHADE_BEG) + 1)
 
 // just in case the values are changed
-static_assert(SHADE_END    < UINT8_MAX);
-static_assert(NONSHADE_END < UINT8_MAX);
+static_assert(SHADE_END    < UINT8_MAX, "value too large!");
+static_assert(NONSHADE_END < UINT8_MAX, "value too large!");
 
 ////////////////////////////////////////////////////////////////////////////////
 // Variables/data
