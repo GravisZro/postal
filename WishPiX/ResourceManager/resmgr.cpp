@@ -606,57 +606,48 @@ void RResMgr::FreeAllResources(void)
 
 int16_t RResMgr::Statistics(RString strStatFile)
 {
-#if defined(__unix__)
-    UNUSED(strStatFile);
-    fprintf(stderr, "STUBBED: %s:%d\n", __FILE__, __LINE__);
-    return FAILURE;
-#else
-	int16_t sReturn = SUCCESS;
+  int16_t sReturn = SUCCESS;
   std::ofstream txtout;
-	resclassMap::iterator i;
+  resclassMap::iterator i;
 
-	m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
-   txtout.open(strStatFile);
-//	txtout.open(strStatFile.c_str());
-	if (txtout.is_open())
-	{
-		txtout << ";\n";
-    txtout << "; Resource manager statistics file" << std::endl;
-    txtout << ";" << std::endl;
-		txtout << "; List of files in access order\n";
-		txtout << ";------------------------------------------------------------------\n";
+  m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
+  txtout.open(strStatFile.operator std::string());
+  if (txtout.is_open())
+  {
+    txtout << std::endl << ";";
+    txtout << std::endl << "; Resource manager statistics file";
+    txtout << std::endl << ";";
+    txtout << std::endl << "; List of files in access order";
+    txtout << std::endl << ";------------------------------------------------------------------";
 
-		accessVector::iterator j;
-    std::pair<dupSet::iterator, bool> p(m_duplicateSet.begin(), false);
-		for (j = m_accessList.begin(); j != m_accessList.end(); j++)
-		{
-			p = m_duplicateSet.insert((*j));
-			// If its not in the set, then its ok to print it out 
-			if (p.second)
-        txtout << *j << std::endl;
-		}
+    for(std::string& str : m_accessList)
+    {
+      m_duplicateSet.insert(str);
+      txtout << std::endl << str.c_str();
+    }
 
+    txtout << std::endl;
+    txtout << std::endl << "; Statistics on each file";
+    txtout << std::endl << ";";
+    txtout << std::endl << ";Access";
+    txtout << std::endl << ";Count	Filename";
+    txtout << std::endl << ";------------------------------------------------------------------";
 
-		txtout << "\n\n; Statistics on each file\n;\n";
-		txtout << ";Access\n";
-    txtout << ";Count	Filename" << std::endl;
-		txtout << ";------------------------------------------------------------------\n";
-
-		for (i = m_map.begin(); i != m_map.end(); i++)
-		{
-      txtout << "; " << (*i).second.m_sAccessCount << "\t" << (*i).first << std::endl;
-		}		
-		txtout.close();
-	}
-	else
-	{
-		TRACE("RResMgr::Statistics - Break Yo Self! Error - unable to open stat file %s\n",
-            strStatFile);
-//		      strStatFile.c_str());
-		sReturn = FAILURE;
-	}
-	return sReturn;
-#endif
+    for (i = m_map.begin(); i != m_map.end(); i++)
+    {
+      txtout << std::endl << "; " << (*i).second.m_sAccessCount << "\t" << (*i).first;
+    }
+    txtout << std::endl;
+    txtout.close();
+  }
+  else
+  {
+    TRACE("RResMgr::Statistics - Break Yo Self! Error - unable to open stat file %s\n",
+          strStatFile);
+    //		      strStatFile.c_str());
+    sReturn = FAILURE;
+  }
+  return sReturn;
 }
 
 
