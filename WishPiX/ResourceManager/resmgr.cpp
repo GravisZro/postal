@@ -695,7 +695,7 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 			{
 				NormalizeResName(&resname);
 				m_LoadList.push_back(resname);
-				m_DirectoryMap.insert(dirMap::value_type(resname, 0));
+            m_DirectoryMap.insert(dirMap::value_type(resname.operator std::string(), 0));
 			}
 /*
 			script >> line;
