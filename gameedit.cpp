@@ -1811,7 +1811,7 @@ extern void GameEdit(
 				if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
 					{
 					// Add string for each item to listbox.
-					pguiItem	= plbPicker->AddString((char*)CThing::ms_aClassInfo[idCur].pszClassName);
+               pguiItem	= plbPicker->AddString(CThing::ms_aClassInfo[idCur].pszClassName);
 					if (pguiItem != nullptr)
 						{
 						pguiItem->m_lId			= LIST_ITEM_GUI_ID_BASE + idCur;

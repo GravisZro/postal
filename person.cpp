@@ -836,7 +836,7 @@ void CPerson::Render(void)
 		m_rstrLogicName = ms_apszStateNames[m_state];
 		m_rstrLogicName += "/";
 		m_rstrLogicName += ms_apszActionNames[m_eCurrentAction];
-		m_sprite.m_pszText = (char*) m_rstrLogicName;
+      m_sprite.m_pszText = m_rstrLogicName;
 //		m_sprite.m_pszText = ms_apszStateNames[m_state];
 	}
 	else
@@ -866,7 +866,7 @@ void CPerson::EditRender(void)
 			m_rstrLogicName	+= "Invalid weapon";
 			}
 
-		m_sprite.m_pszText = (char*) m_rstrLogicName;
+      m_sprite.m_pszText = m_rstrLogicName;
 		}
 	else
 		{
@@ -1173,7 +1173,7 @@ int16_t CPerson::EditModify(void)
 			pmbtnShowState->Compose();
 
 			// Set current logic file.
-			peditLogicFile->SetText("%s", (char*) m_rstrLogicFile);
+         peditLogicFile->SetText("%s", m_rstrLogicFile);
 			// Reflect changes.
 			peditLogicFile->Compose();
 
@@ -1237,7 +1237,7 @@ int16_t CPerson::EditModify(void)
 
 					// Copy logic file to use.
 					m_rstrLogicFile.Grow(256);
-					peditLogicFile->GetText((char*) m_rstrLogicFile, 255);
+               peditLogicFile->GetText(m_rstrLogicFile, 255);
 					m_rstrLogicFile.Update();
 
 					// Get the bouy settings
@@ -1652,7 +1652,7 @@ int16_t CPerson::GetResources(void)						// Returns 0 if successfull, non-zero o
 		}
 
 	// Get Logic Table
-	sResult |= rspGetResource(&g_resmgrRes, (char*) m_rstrLogicFile, &m_pLogicTable);
+   sResult |= rspGetResource(&g_resmgrRes, m_rstrLogicFile, &m_pLogicTable);
 
 	// Get base class resources.
 	sResult |= CDoofus::GetResources();

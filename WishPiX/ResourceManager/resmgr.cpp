@@ -252,7 +252,7 @@ int16_t RResMgr::Get(									// Returns 0 on success.
 	// Map iterator (one of the best things about STL is how readable it is)
   std::pair<resclassMap::iterator, bool> p(m_map.begin(), false);
 	#ifdef DEBUG
-	if (strcmp((char *) strFilename, "menu/menu_md.bmp") == 0)
+   if (strcmp((const char *) strFilename, "menu/menu_md.bmp") == 0)
 	{
 		TRACE("It's the final countdown!\n");
 		nowheretogo = 1;
@@ -300,7 +300,7 @@ int16_t RResMgr::Get(									// Returns 0 on success.
 			m_accessList.push_back(strFilename);	
 #ifdef _DEBUG
 			if (m_bTraceUncachedLoads)
-				TRACE("RResMgr::Get - Loading uncached resource %s\n", (char *) strFilename);
+            TRACE("RResMgr::Get - Loading uncached resource %s\n", strFilename);
 #endif //_DEBUG
 			}
 		else
@@ -339,7 +339,7 @@ int16_t RResMgr::Get(									// Returns 0 on success.
 		*hRes = (*(p.first)).second.m_vpRes;
 		// Add a mapping indexed by pointer to make it easy to find the
 		// name of this resource later by using the resource pointer.
-		m_ptrMap[*hRes] = strFilename;
+      m_ptrMap[*hRes] = strFilename.operator std::string();
 		}
 	else
 		{
@@ -577,9 +577,9 @@ void RResMgr::FreeAllResources(void)
 	for (i = m_map.begin(); i != m_map.end(); i++)
 	{
 		if ((*i).second.m_sRefCount > 0)
-			TRACE("RResMgr::FreeAllResources - %s ref count = %d - Releasing anyway\n",
-			      (char*) (*i).second.m_strFilename, (*i).second.m_sRefCount);
-//			      (char*) (*i).second.m_strFilename.c_str(), (*i).second.m_sRefCount);
+         TRACE("RResMgr::FreeAllResources - %s ref count = %d - Releasing anyway\n",
+               (*i).second.m_strFilename, (*i).second.m_sRefCount);
+//			      (*i).second.m_strFilename.c_str(), (*i).second.m_sRefCount);
 		(*i).second.FreeResource();
 		(*i).second.m_sRefCount = 0;
 	}	
@@ -616,8 +616,8 @@ int16_t RResMgr::Statistics(RString strStatFile)
 	resclassMap::iterator i;
 
 	m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
-	txtout.open((char*) strStatFile);
-//	txtout.open((char*) strStatFile.c_str());
+   txtout.open(strStatFile);
+//	txtout.open(strStatFile.c_str());
 	if (txtout.is_open())
 	{
 		txtout << ";\n";
@@ -651,8 +651,8 @@ int16_t RResMgr::Statistics(RString strStatFile)
 	else
 	{
 		TRACE("RResMgr::Statistics - Break Yo Self! Error - unable to open stat file %s\n",
-		      (char*) strStatFile);
-//		      (char*) strStatFile.c_str());
+            strStatFile);
+//		      strStatFile.c_str());
 		sReturn = FAILURE;
 	}
 	return sReturn;
@@ -695,10 +695,10 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 	char buffer[256];
 	RFile sak;
 
-	script.open((char*) strScriptFile);
-//	script.open((char*) strScriptFile.c_str());
-	sak.Open((char*) strSakFile, "wb", SAK_FILE_ENDIAN);
-//	sak.Open((char*) strSakFile.c_str(), "wb", SAK_FILE_ENDIAN);
+   script.open(strScriptFile);
+//	script.open(strScriptFile.c_str());
+   sak.Open(strSakFile, "wb", SAK_FILE_ENDIAN);
+//	sak.Open(strSakFile.c_str(), "wb", SAK_FILE_ENDIAN);
 	if (script.is_open() && sak.IsOpen())
 	{
 		// Load in all of the resource names to be added to SAK file
@@ -754,8 +754,8 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 				m_DirectoryMap[(*iFilename)] = sak.Tell();
 
 				// Open disk file . . .
-//				if (fileRes.Open( FromSystempath((char*) (*iFilename).c_str() ), "rb", SAK_FILE_ENDIAN) == 0)
-				if (fileRes.Open( FromSystempath((char*) (*iFilename) ), "rb", SAK_FILE_ENDIAN) == 0)
+//				if (fileRes.Open( FromSystempath((*iFilename).c_str() ), "rb", SAK_FILE_ENDIAN) == 0)
+            if (fileRes.Open( FromSystempath(*iFilename), "rb", SAK_FILE_ENDIAN) == 0)
 				{
 					do
 					{
@@ -797,8 +797,8 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 	else
 	{
 		TRACE("RResMgr::CreateSak - Break Yo Self! Error opening script file %s or sak file %s", 
-		      (char*) strScriptFile, (char*) strSakFile);
-//		      (char*) strScriptFile.c_str(), (char*) strSakFile.c_str());
+            strScriptFile, strSakFile);
+//		      strScriptFile.c_str(), strSakFile.c_str());
 		sReturn = FAILURE;
 	}
 	return sReturn;
@@ -844,8 +844,8 @@ int16_t RResMgr::WriteSakHeader(RFile* prf)
 		for (m = m_DirectoryMap.begin(); m != m_DirectoryMap.end(); m++)
 		{
 			// Write resource name
-			prf->Write((char*) (*m).first);
-//			prf->Write((char*) (*m).first.c_str());
+         prf->Write((*m).first.c_str());
+//			prf->Write((const char*) (*m).first.c_str());
 			// Write offset
 			prf->Write((*m).second);	
 		}
@@ -896,8 +896,8 @@ int16_t RResMgr::OpenSak(RString strSakFile)
 		CloseSak();
 	}
 
-//	if (m_rfSak.Open((char*) strSakFile.c_str(), "rb", SAK_FILE_ENDIAN) == SUCCESS)
-	if (m_rfSak.Open((char*) strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
+//	if (m_rfSak.Open(strSakFile.c_str(), "rb", SAK_FILE_ENDIAN) == SUCCESS)
+   if (m_rfSak.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
 	{
 		m_rfSak.ClearError();
 		m_rfSak.Read(&ulFileType);
@@ -938,8 +938,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
 	}
 	else
 	{
-		TRACE("RResMgr::OpenSak - Break Yo Self! Error opening sak file %s\n", 
-		      (char*) strSakFile);
+      TRACE("RResMgr::OpenSak - Break Yo Self! Error opening sak file %s\n", strSakFile);
 		sReturn = FAILURE;
 	}
 
@@ -1027,7 +1026,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
 	}
 	if(strScriptFile) 
 	{
-		script.open((char*) strScriptFile);
+      script.open(strScriptFile.operator std::string());
 		if (script.is_open())
 		{
 			// Load in all of the resource names to be added to SAK file
@@ -1075,7 +1074,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
 		}
 	}
 
-	if (m_rfSakAlt.Open((char*) strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
+   if (m_rfSakAlt.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
 	{
 		m_rfSakAlt.ClearError();
 		m_rfSakAlt.Read(&ulFileType);
@@ -1117,8 +1116,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
 	}
 	else
 	{
-		TRACE("RResMgr::OpenSak - Break Yo Self! Error opening sak file %s\n", 
-		      (char*) strSakFile);
+      TRACE("RResMgr::OpenSak - Break Yo Self! Error opening sak file %s\n", strSakFile);
 		sReturn = FAILURE;
 	}
 

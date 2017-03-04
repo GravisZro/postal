@@ -1977,20 +1977,20 @@ static int16_t GameCore(void)		// Returns 0 on success.
 									else
 										{
 										TRACE("GameCore(): Couldn't load demo data!\n");
-										rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, (char*) m_szDemoFile);
+                              rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, m_szDemoFile);
 										}
 									}
 								else
 									{
 									TRACE("GameCore(): Couldn't load realm name!\n");
-									rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, (char*) m_szDemoFile);
+                           rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, m_szDemoFile);
 									}
 								fileDemo.Close();
 								}
 							else
 								{
 								TRACE("GameCore(): Couldn't open demo file: '%s'\n", m_szDemoFile);
-								rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileOpenError_s, (char*) m_szDemoFile);
+                        rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileOpenError_s, m_szDemoFile);
 								}
 							}
 						else
@@ -3574,20 +3574,20 @@ void GameEndingSequence(void)
 				else
 					{
 					TRACE("GameCore(): Couldn't load demo data!\n");
-					rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, (char*) m_szDemoFile);
+               rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, m_szDemoFile);
 					}
 				}
 			else
 				{
 				TRACE("GameCore(): Couldn't load realm name!\n");
-				rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, (char*) m_szDemoFile);
+            rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileReadError_s, m_szDemoFile);
 				}
 			fileDemo.Close();
 			}
 		else
 			{
 			TRACE("GameCore(): Couldn't open demo file: '%s'\n", m_szDemoFile);
-			rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileOpenError_s, (char*) m_szDemoFile);
+         rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszAppName, g_pszFileOpenError_s, m_szDemoFile);
 			}
 		// Reset demo file name for next time.
 		m_szDemoFile[0] = 0;

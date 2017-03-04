@@ -785,16 +785,16 @@ int16_t CRealm::Open(										// Returns 0 if successfull, non-zero otherwise
 			// Try the given path first since it may already have a full path in the
 			// case of loading a level, then try the path with the HD path prepended, 
 			// then try the CD path.
-			sResult = pfile->Open(rspPathToSystem((char*)pszFileName), "rb", RFile::LittleEndian);
+         sResult = pfile->Open(rspPathToSystem(pszFileName), "rb", RFile::LittleEndian);
 			if (sResult != SUCCESS)
 				{
             char pszFullPath[PATH_MAX];
-				strcpy(pszFullPath, FullPathHD((char*) pszFileName));
-				sResult = pfile->Open((char*)pszFullPath, "rb", RFile::LittleEndian);
+            strcpy(pszFullPath, FullPathHD(pszFileName));
+            sResult = pfile->Open(pszFullPath, "rb", RFile::LittleEndian);
 				if (sResult != SUCCESS)
 					{
-					strcpy(pszFullPath, FullPathCD((char*) pszFileName));
-					sResult = pfile->Open((char*)pszFullPath, "rb", RFile::LittleEndian);
+               strcpy(pszFullPath, FullPathCD(pszFileName));
+               sResult = pfile->Open(pszFullPath, "rb", RFile::LittleEndian);
 					}
 				}
 		#else

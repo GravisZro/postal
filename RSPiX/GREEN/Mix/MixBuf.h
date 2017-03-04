@@ -173,7 +173,7 @@ class	CDVA	// a complete dummy
 public:
 	//////////////////////////////////////////////////////////////////////////////
 	//  Allow use of mixing volume for other applications:
-   //  A level of MaxVolume is identity.
+   //  A level of 255 is identity.
 	//////////////////////////////////////////////////////////////////////////////
 	inline	uint8_t	ScaleByte(uint8_t ucByte,uint8_t	ucLevel)
 		{

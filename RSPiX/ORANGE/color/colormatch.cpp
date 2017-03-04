@@ -359,7 +359,7 @@ int16_t RAlpha::Alloc(int16_t sDepth)
 RAlpha::RAlpha()
 	{
 	//m_pAlphas = nullptr;
-	for (int16_t i = 0 ;i<256;i++)
+   for (int16_t i = 0 ;i < 256; ++i)
 		m_pAlphas[i] = nullptr;
 	m_sAlphaDepth = 0;
 	}
@@ -368,7 +368,7 @@ void RAlpha::Erase()
 	{
 	if (m_pAlphas)
 		{
-		for (int16_t i=0;i<256 /*m_sAlphaDepth*/;i++)
+      for (int16_t i = 0; i < 256; ++i)
 			{
 			if (m_pAlphas[i]) 
 				{
@@ -401,7 +401,7 @@ void RAlpha::Dump(RImage* pimDst,int16_t sX,int16_t sY)
 #endif
 
    for (j = 0; j < m_sAlphaDepth; ++j)
-      for (i = 0 ;i < 256; ++i)
+      for (i = 0 ;i < 0x00FF; ++i)
          rspPlot<uint8_t>(m_pAlphas[i][j], pimDst, sX + i, sY + j);
 	}
 
@@ -449,14 +449,14 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 	RFixedU16 r,g,b;
 
 	int16_t s,d;
-	for (s=0;s<256;s++)
+   for (s = 0; s < 256; ++s)
 		{
-		for (d = 0;d < 256;d++)
+      for (d = 0; d < 256; ++d)
 			{
 			// This can be replaced with a 256K table
-			r.val = uint16_t( ms_red[s] * lSrc + ms_red[d] * lDst);
+         r.val = uint16_t( ms_red  [s] * lSrc + ms_red  [d] * lDst);
 			g.val = uint16_t( ms_green[s] * lSrc + ms_green[d] * lDst);
-			b.val = uint16_t( ms_blue[s] * lSrc + ms_blue[d] * lDst);
+         b.val = uint16_t( ms_blue [s] * lSrc + ms_blue [d] * lDst);
 
 			m_pAlphas[s][d] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
@@ -501,9 +501,9 @@ int16_t RAlpha::CreateLightEffectRGB(channel_t* pa,
 			lSrc = int32_t(pa[f]);
 			lFog = 255 - lSrc;
 			// This can be replaced with a 256K table
-			r.val = uint16_t( ms_red[s] * lSrc + pr[f] * lFog);
+         r.val = uint16_t( ms_red  [s] * lSrc + pr[f] * lFog);
 			g.val = uint16_t( ms_green[s] * lSrc + pg[f] * lFog);
-			b.val = uint16_t( ms_blue[s] * lSrc + pb[f] * lFog);
+         b.val = uint16_t( ms_blue [s] * lSrc + pb[f] * lFog);
 
 			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
@@ -535,9 +535,9 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 			lFog = 255 - lSrc;
 
 			// This can be replaced with a 256K table
-			r.val = uint16_t( ms_red[s] * lSrc + ms_r[f] * lFog);
+         r.val = uint16_t( ms_red  [s] * lSrc + ms_r[f] * lFog);
 			g.val = uint16_t( ms_green[s] * lSrc + ms_g[f] * lFog);
-			b.val = uint16_t( ms_blue[s] * lSrc + ms_b[f] * lFog);
+         b.val = uint16_t( ms_blue [s] * lSrc + ms_b[f] * lFog);
 
 			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
@@ -612,7 +612,7 @@ int16_t RMultiAlpha::Alloc(uint8_t sDepth)
 
   m_sNumLevels = sDepth;
   m_pAlphaList = (RAlpha**)calloc(m_sNumLevels,sizeof(RAlpha*));
-  m_pLevelOpacity = (uint8_t*)calloc(m_sNumLevels,1);
+  m_pLevelOpacity = (uint8_t*)calloc(m_sNumLevels, 1);
 
   return SUCCESS;
 }
@@ -667,13 +667,18 @@ int16_t RMultiAlpha::Load(RFile* pFile)
       return FAILURE;
 		}
 
-	pFile->Read(&m_sNumLevels);
-	Alloc(m_sNumLevels);
+   pFile->Read(&m_sNumLevels);
+
+   uint8_t empty_data = 0;
+   pFile->Read(&empty_data);
+   ASSERT(empty_data == 0); // ensure data is unused
+
+   Alloc(m_sNumLevels);
 
 	// General table information:
 	pFile->Read(&m_sGeneral);
 	// Opacity data
-	pFile->Read(m_pLevelOpacity,m_sNumLevels);
+   pFile->Read(m_pLevelOpacity, m_sNumLevels);
 	// Level Data
    pFile->Read(m_pSaveLevels, palette::size);
 
@@ -688,7 +693,7 @@ int16_t RMultiAlpha::Load(RFile* pFile)
 	// Now the challange... restore the pointer list:
    for (i = 0; i < palette::size; ++i)
 		{
-		if ((m_pSaveLevels[i]==0) || (m_pSaveLevels[i] > m_sNumLevels)) 
+      if (m_pSaveLevels[i]==0 || m_pSaveLevels[i] > m_sNumLevels)
 			m_pGeneralAlpha[i] = nullptr;
 		else m_pGeneralAlpha[i] = m_pAlphaList[m_pSaveLevels[i] - 1]->m_pAlphas;
 		}
@@ -702,13 +707,14 @@ int16_t RMultiAlpha::Save(RFile* pFile)
 	int16_t sVer = 2;
 
 	pFile->Write(type);
-	pFile->Write(&sVer);
-	pFile->Write(&m_sNumLevels);
+   pFile->Write(&sVer);
+   pFile->Write(&m_sNumLevels);
+   pFile->Write(uint8_t(0));
 
 	// General table information:
 	pFile->Write(&m_sGeneral);
 	// Opacity data
-	pFile->Write(m_pLevelOpacity,m_sNumLevels);
+   pFile->Write(m_pLevelOpacity, m_sNumLevels);
 	// Level Data
    pFile->Write(m_pSaveLevels, palette::size);
 

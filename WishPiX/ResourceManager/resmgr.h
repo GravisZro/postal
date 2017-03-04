@@ -376,13 +376,13 @@ class CResourceBlock
   typedef std::map<RString, int32_t, std::less<RString>, std::allocator<int32_t> > dirMap;
   typedef std::set<int32_t, std::less<int32_t>, std::allocator<int32_t> > dirOffsets;
 #else
-  typedef std::map<RString, CResourceBlock, std::less<RString> > resclassMap;
-  typedef std::map<void*, RString, std::less<void*> > ptrLookupMap;
-  typedef std::vector<RString > accessVector;
-  typedef std::set<RString, std::less<RString> > dupSet;
-  typedef std::vector<uint16_t > typeVector;
-  typedef std::map<RString, int32_t, std::less<RString> > dirMap;
-  typedef std::set<int32_t, std::less<int32_t> > dirOffsets;
+  typedef std::map<std::string, CResourceBlock> resclassMap;
+  typedef std::map<void*, std::string, std::less<void*>> ptrLookupMap;
+  typedef std::vector<std::string> accessVector;
+  typedef std::set<std::string> dupSet;
+  typedef std::vector<uint16_t> typeVector;
+  typedef std::map<std::string, int32_t> dirMap;
+  typedef std::set<int32_t, std::less<int32_t>> dirOffsets;
 #endif
 
 
@@ -495,9 +495,9 @@ class RResMgr
 		void SetBasePath(RString strBase);
 
 		// This function returns the base path.
-		char* GetBasePath(void)
+      const char* GetBasePath(void)
 			{
-			return (char*)m_strBasepath;
+         return (const char*)m_strBasepath;
 			}
 
 		// Helper function to position m_rfSak at correct position
@@ -507,7 +507,7 @@ class RResMgr
 			RFile* prf = nullptr;
 			if (m_rfSakAlt.IsOpen()) 
 			  {
-				int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
+            int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
 				if (lResSeekPos > 0)
 					{
 					if (m_rfSakAlt.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
@@ -537,8 +537,8 @@ class RResMgr
             }
 			else
             TRACE("RResMgr::FromSak - Resource %s is not in this SAK file\n",
-				      (char*) strResourceName);
-//				      (char*) strResourceName.c_str());
+                  (const char*) strResourceName);
+//				      (const char*) strResourceName.c_str());
 
 			return prf;
 		}
@@ -652,13 +652,13 @@ class RResMgr
 
 		// Helper function to combine the resource name and the base pathname
 		// to load your file.
-		char* FromSystempath(RString strResourceName)
+      const char* FromSystempath(RString strResourceName)
 			{
-			RString strSystemPartial = rspPathToSystem((char*) strResourceName);
+         RString strSystemPartial = rspPathToSystem(strResourceName);
 			m_strFullpath = m_strBasepath + strSystemPartial;
 			// Make sure that the RString is not too long for rspix functions
 			ASSERT(m_strFullpath.GetLen() < PATH_MAX);
-			return (char*) m_strFullpath;
+         return m_strFullpath;
 			}
 
 		// Purge all resources even if reference count is not

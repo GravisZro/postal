@@ -248,7 +248,7 @@ extern bool EnableSteamCloud;
 CScoreboard g_scoreboard;
 RPrint		ms_print;
 
-#if defined(HIGH_SCORE_DLG) && !defined(MULTIPLAYER_REMOVED)
+#if defined(HIGH_SCORE_DLG)
 static milliseconds_t	ms_lScoreMaxTimeOut;		// Optional score timeout (max time spent
 												// on score screen).
 #endif
@@ -272,7 +272,7 @@ inline char* CreateTimeString(	// Returns time string.  No failures.
 	return szTime;
 	}
 
-#if defined(HIGH_SCORE_DLG) && !defined(MULTIPLAYER_REMOVED)
+#if defined(HIGH_SCORE_DLG)
 //////////////////////////////////////////////////////////////////////////////
 // GuiReleaseRes - Release a resource that the requesting GUI wants to 
 // discard.
@@ -345,7 +345,7 @@ static void EditInputUserFeedback(	// Called when a user input notification
 	}
 #endif
 
-#if defined(HIGH_SCORE_DLG) && !defined(MULTIPLAYER_REMOVED)
+#if defined(HIGH_SCORE_DLG)
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Callback from RProcessGui for system update.
@@ -1050,7 +1050,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 				sprintf(szKeyName, "Player%d", sSrcIndex);
 
 				if (sOpenRes == 0)
-					scores.GetVal((char*) pRealm->m_rsRealmString, szKeyName, "<Empty>", astrNames[sDstIndex]);
+               scores.GetVal(pRealm->m_rsRealmString, szKeyName, "<Empty>", astrNames[sDstIndex]);
 				else
 					strcpy(astrNames[sDstIndex], "<Empty>");
 					
@@ -1062,7 +1062,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 				if (vtScoringUnit == Value)
 					{
 					if (sOpenRes == 0)
-						scores.GetVal((char*) pRealm->m_rsRealmString, szKeyName, (int32_t) 0, &(alScores[sDstIndex]));
+                  scores.GetVal(pRealm->m_rsRealmString, szKeyName, (int32_t) 0, &(alScores[sDstIndex]));
 					else
 						alScores[sDstIndex] = 0;
 						
@@ -1075,7 +1075,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 				else
 					{
 					if (sOpenRes == 0)
-						scores.GetVal((char*) pRealm->m_rsRealmString, szKeyName, (int32_t) 3600000, &(alScores[sDstIndex]));
+                  scores.GetVal(pRealm->m_rsRealmString, szKeyName, (int32_t) 3600000, &(alScores[sDstIndex]));
 					else
 						alScores[sDstIndex] = (int32_t) 3600000;
 			
@@ -1429,9 +1429,9 @@ void ScoreDisplayHighScores(	// Returns nothing.
                   for (int16_t i = 0; i < MAX_HIGH_SCORES; i++)
 							{
 							sprintf(szKeyName, "Player%d", i);
-							prefsScores.SetVal((char*) pRealm->m_rsRealmString, szKeyName, astrNames[i]);
+                     prefsScores.SetVal(pRealm->m_rsRealmString, szKeyName, astrNames[i]);
 							sprintf(szKeyName, "Score%d", i);
-							prefsScores.SetVal((char*) pRealm->m_rsRealmString, szKeyName, alScores[i]);
+                     prefsScores.SetVal(pRealm->m_rsRealmString, szKeyName, alScores[i]);
 							}
 						}
 					prefsScores.Close();

@@ -283,6 +283,8 @@ int16_t RPrefs::Read()		// Returns 0 if successfull, non-zero otherwise
                   int16_t len = strlen(pszFixedLine);
                   if (pszFixedLine[len - 1] == '\n')
                     pszFixedLine[len - 1] = '\0';
+                  if (pszFixedLine[len - 2] == '\r')
+                    pszFixedLine[len - 2] = '\0';
 
 						// Find first non-space char
 						char* pszToken = pszFixedLine;

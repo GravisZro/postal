@@ -349,7 +349,7 @@ int16_t CNavigationNet::EditPostLoad(void)
 	RListBox* plb = peditor->m_plbNavNetList;
 	if (plb != nullptr)
 	{
-		RGuiItem* pgui = plb->AddString((char*) m_rstrNetName);
+      RGuiItem* pgui = plb->AddString(m_rstrNetName);
 		pgui->m_lId = GetInstanceID();
 		pgui->m_bcUser = NavNetListPressedCall;
       pgui->m_ulUserInstance = (uintptr_t) this;
@@ -390,7 +390,7 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
 		RListBox* plb = peditor->m_plbNavNetList;
 		if (plb != nullptr)
 		{
-			RGuiItem* pgui = plb->AddString((char*) m_rstrNetName);
+         RGuiItem* pgui = plb->AddString(m_rstrNetName);
 			pgui->m_lId = GetInstanceID();
 			pgui->m_bcUser = NavNetListPressedCall;
          pgui->m_ulUserInstance = (uintptr_t) this;
@@ -429,20 +429,20 @@ int16_t CNavigationNet::EditModify(void)
 	RGuiItem* pGui = RGuiItem::LoadInstantiate(FullPathVD("res/editor/network.gui"));
 	if (pGui)
 	{
-		SetText(pGui, 3, (char*) m_rstrNetName);
+      SetText(pGui, 3, m_rstrNetName);
 
 		sResult = DoGui(pGui);
 		if (sResult == 1)
 		{
 			SetAsDefault();
 			m_rstrNetName.Grow(256);
-			pGui->GetText(3, (char*) m_rstrNetName, 255);
+         pGui->GetText(3, m_rstrNetName, 255);
 			m_rstrNetName.Update();
 
 			CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
 			CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 			RListBox* plb = peditor->m_plbNavNetList;			
-			SetText(plb, GetInstanceID(), (char*) m_rstrNetName);
+         SetText(plb, GetInstanceID(), m_rstrNetName);
 			plb->SetSel(plb->GetItemFromId(GetInstanceID()));
 //			RGuiItem* pguiRemove = plb->GetItemFromId(GetInstanceID());
 //			SetText(pguiRemove, 
