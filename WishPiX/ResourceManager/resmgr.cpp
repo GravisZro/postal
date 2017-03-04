@@ -269,7 +269,7 @@ int16_t RResMgr::Get(									// Returns 0 on success.
 	// p is a pair of <iterator, bool> where p.first (iterator) is
 	// referencing the map either where the strFilename was found
 	// or where it was inserted if it did not previously exist.
-	p = m_map.insert(resclassMap::value_type (strFilename, resBlock));
+   p = m_map.insert(resclassMap::value_type (strFilename.operator std::string(), resBlock));
 	// If the requested resource does not already exist, create the resource now and load it
    if ((*(p.first)).second.m_vpRes == nullptr)
 		{
