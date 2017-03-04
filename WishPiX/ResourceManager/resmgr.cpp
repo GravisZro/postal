@@ -629,8 +629,7 @@ int16_t RResMgr::Statistics(RString strStatFile)
     txtout << std::endl;
     txtout << std::endl << "; Statistics on each file";
     txtout << std::endl << ";";
-    txtout << std::endl << ";Access";
-    txtout << std::endl << ";Count	Filename";
+    txtout << std::endl << "; Access Count   Filename";
     txtout << std::endl << ";------------------------------------------------------------------";
 
     for (i = m_map.begin(); i != m_map.end(); i++)
@@ -674,10 +673,6 @@ int16_t RResMgr::Statistics(RString strStatFile)
 
 int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 {
-#if defined(__unix__)
-    UNUSED(strScriptFile, strSakFile);
-    return FAILURE;
-#else
 	int16_t sReturn = SUCCESS;
   std::ifstream script;
 	RString line;
@@ -686,7 +681,7 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 	char buffer[256];
 	RFile sak;
 
-   script.open(strScriptFile);
+   script.open(strScriptFile.operator std::string());
 //	script.open(strScriptFile.c_str());
    sak.Open(strSakFile, "wb", SAK_FILE_ENDIAN);
 //	sak.Open(strSakFile.c_str(), "wb", SAK_FILE_ENDIAN);
@@ -792,8 +787,7 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 //		      strScriptFile.c_str(), strSakFile.c_str());
 		sReturn = FAILURE;
 	}
-	return sReturn;
-#endif
+   return sReturn;
 }
 
 //////////////////////////////////////////////////////////////////////

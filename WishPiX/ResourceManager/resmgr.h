@@ -640,9 +640,9 @@ class RResMgr
 
 		// Helper function to combine the resource name and the base pathname
 		// to load your file.
-      const char* FromSystempath(RString strResourceName)
+      const char* FromSystempath(const std::string& strResourceName)
 			{
-         RString strSystemPartial = rspPathToSystem(strResourceName);
+         RString strSystemPartial = rspPathToSystem(strResourceName.c_str());
 			m_strFullpath = m_strBasepath + strSystemPartial;
 			// Make sure that the RString is not too long for rspix functions
 			ASSERT(m_strFullpath.GetLen() < PATH_MAX);
