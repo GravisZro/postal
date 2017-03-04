@@ -898,7 +898,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
 					strFilename = char_buffer;
 					// Read the offset
 					m_rfSak.Read(&lOffset);
-					m_SakDirectory.insert(dirMap::value_type (strFilename, lOffset));
+               m_SakDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
 					m_SakDirOffset.insert(lOffset);
 				}			
 				// Insert end of SAK file into offset Set container so there is
@@ -1025,7 +1025,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
 				if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
 				{
 					num++;
-					altNames.insert(dirMap::value_type(strFilename, num));
+               altNames.insert(dirMap::value_type(strFilename.operator std::string(), num));
 					// now get the number of substitutions
 					script.getline(char_buffer, 256);
 					//clean the \r that can still be there
@@ -1079,10 +1079,10 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
 					if (alt>0)
 					{
 						for (int i=0; i<altMap[alt].cnt; i++)
-							m_SakAltDirectory.insert(dirMap::value_type (altMap[alt].names[i], lOffset));
+                     m_SakAltDirectory.insert(dirMap::value_type (altMap[alt].names[i].operator std::string(), lOffset));
 					}
 					else
-						m_SakAltDirectory.insert(dirMap::value_type (strFilename, lOffset));
+                  m_SakAltDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
 				}			
 			}
 			else
