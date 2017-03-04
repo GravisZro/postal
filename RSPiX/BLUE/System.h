@@ -310,31 +310,31 @@ typedef uint16_t RPixel16;
 
 struct RPixel24
 {
-  channel_t	u8Red;
-  channel_t	u8Green;
-  channel_t	u8Blue;
+  channel_t	red;
+  channel_t	green;
+  channel_t	blue;
 
   constexpr bool operator==(const RPixel24& other)
   {
-    return u8Blue  == other.u8Blue  &&
-           u8Green == other.u8Green &&
-           u8Red   == other.u8Red;
+    return blue  == other.blue  &&
+           green == other.green &&
+           red   == other.red;
   }
 };
 
 struct RPixel32
 {
-  channel_t	u8Alpha;
-  channel_t	u8Red;
-  channel_t	u8Green;
-  channel_t	u8Blue;
+  channel_t	alpha;
+  channel_t	red;
+  channel_t	green;
+  channel_t	blue;
 
   constexpr bool operator==(const RPixel32& other)
   {
-    return u8Blue  == other.u8Blue  &&
-           u8Green == other.u8Green &&
-           u8Red   == other.u8Red   &&
-           u8Alpha == other.u8Alpha;
+    return blue  == other.blue  &&
+           green == other.green &&
+           red   == other.red   &&
+           alpha == other.alpha;
   }
 };
 

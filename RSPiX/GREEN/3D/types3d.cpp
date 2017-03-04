@@ -181,9 +181,9 @@ void RTexture::Remap(
 	for (int16_t i = 0; i < m_sNum; i++)
 		{
 		m_pIndices[i] = rspMatchColorRGB(
-			int32_t(m_pColors[i].u8Red),
-			int32_t(m_pColors[i].u8Green),
-			int32_t(m_pColors[i].u8Blue),
+			int32_t(m_pColors[i].red),
+			int32_t(m_pColors[i].green),
+			int32_t(m_pColors[i].blue),
 			sStartIndex,sNumIndex,
 			pr,pg,pb,linc);
 		}
@@ -212,9 +212,9 @@ RTexture::Unmap(
 	int16_t	sCount		= m_sNum;
 	while (sCount--)
 		{
-		ppix->u8Red		= pr[*pu8];
-		ppix->u8Green	= pg[*pu8];
-		ppix->u8Blue	= pb[*pu8];
+		ppix->red		= pr[*pu8];
+		ppix->green	= pg[*pu8];
+		ppix->blue	= pb[*pu8];
 
 		ppix++;
 		pu8++;
@@ -240,14 +240,14 @@ RTexture::Adjust(
 	float	fColor;
 	while (sCount--)
 		{
-      fColor = ppix->u8Red * fAdjustment;
-      CLAMP8BIT(ppix->u8Red, fColor);
+      fColor = ppix->red * fAdjustment;
+      CLAMP8BIT(ppix->red, fColor);
 
-      fColor = ppix->u8Green * fAdjustment;
-      CLAMP8BIT(ppix->u8Green, fColor);
+      fColor = ppix->green * fAdjustment;
+      CLAMP8BIT(ppix->green, fColor);
 
-      fColor = ppix->u8Blue * fAdjustment;
-      CLAMP8BIT(ppix->u8Blue, fColor);
+      fColor = ppix->blue * fAdjustment;
+      CLAMP8BIT(ppix->blue, fColor);
 
 		ppix += lInc;
 		}

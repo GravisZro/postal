@@ -752,7 +752,7 @@ void RunSteamworksUpkeep()
 
 
 int main(int argc, char **argv)
-	{
+   {
 	int16_t sResult = SUCCESS;
 
     _argc = argc;
