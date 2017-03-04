@@ -364,18 +364,7 @@ class CResourceBlock
 
 };
 
-#if _MSC_VER >= 1020 || __MWERKS__ >= 0x1100
-	#if __MWERKS__ >= 0x1100
-		ITERATOR_TRAIT(const RString);
-	#endif
-  typedef std::map<RString, CResourceBlock, std::less<RString>, std::allocator<CResourceBlock> > resclassMap;
-  typedef std::map<void*, RString, std::less<void*>, std::allocator<RString> > ptrLookupMap;
-  typedef std::vector<RString, std::allocator<RString> > accessVector;
-  typedef std::set<RString, std::less<RString>, std::allocator<RString> > dupSet;
-  typedef std::vector<uint16_t, std::allocator<uint16_t> > typeVector;
-  typedef std::map<RString, int32_t, std::less<RString>, std::allocator<int32_t> > dirMap;
-  typedef std::set<int32_t, std::less<int32_t>, std::allocator<int32_t> > dirOffsets;
-#else
+
   typedef std::map<std::string, CResourceBlock> resclassMap;
   typedef std::map<void*, std::string, std::less<void*>> ptrLookupMap;
   typedef std::vector<std::string> accessVector;
@@ -383,7 +372,6 @@ class CResourceBlock
   typedef std::vector<uint16_t> typeVector;
   typedef std::map<std::string, int32_t> dirMap;
   typedef std::set<int32_t, std::less<int32_t>> dirOffsets;
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
