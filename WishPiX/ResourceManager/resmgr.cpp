@@ -632,10 +632,9 @@ int16_t RResMgr::Statistics(RString strStatFile)
     txtout << std::endl << "; Access Count   Filename";
     txtout << std::endl << ";------------------------------------------------------------------";
 
-    for (i = m_map.begin(); i != m_map.end(); i++)
-    {
-      txtout << std::endl << "; " << (*i).second.m_sAccessCount << "\t" << (*i).first;
-    }
+    for(const std::pair<std::string, CResourceBlock>& data : m_map)
+      txtout << std::endl << "; " << data.second.m_sAccessCount << "\t" << data.first.c_str();
+
     txtout << std::endl;
     txtout.close();
   }

@@ -371,7 +371,6 @@ class CResourceBlock
   typedef std::set<std::string> dupSet;
   typedef std::vector<uint16_t> typeVector;
   typedef std::map<std::string, int32_t> dirMap;
-  typedef std::set<int32_t, std::less<int32_t>> dirOffsets;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -614,7 +613,7 @@ class RResMgr
 		// the last resource in the file and thus having to search for EOF
 		// rather than reading to the next offset, this set will put in the
 		// tell position for the end of the SAK file.  
-		dirOffsets	m_SakDirOffset;
+      std::set<int32_t, std::less<int32_t>>	m_SakDirOffset;
 
 		// This is the RFile that is used for SAK files
 		RFile m_rfSak;
