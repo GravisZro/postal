@@ -219,7 +219,7 @@ int16_t RPal::CreatePalette(
 		// Set number of entries to 256.  This would probably only change
 		// if we add support for 1-, 2- or 4-bit image formats that would
 		// require smaller palettes.
-		int16_t entries = 256;
+      int16_t entries = palette::size;
 		CreateData(
 			size * entries,
 			typeNew,
@@ -677,9 +677,9 @@ int16_t RPal::Load(RFile* pcf)
 int16_t RPal::GetEntries(
 	int16_t sStart,								// In:  Starting palette entry
 	int16_t sCount,								// In:  Number of entries to do
-	uint8_t* pDstRed,					// Out: Starting destination red value
-	uint8_t* pDstGreen,				// Out: Starting destination green value
-	uint8_t* pDstBlue,				// Out: Starting destination blue value
+   channel_t* pDstRed,					// Out: Starting destination red value
+   channel_t* pDstGreen,				// Out: Starting destination green value
+   channel_t* pDstBlue,				// Out: Starting destination blue value
 	int32_t lAddToPointers)						// In:  What to add to pointers to move to next value
 	{
 	// Validate parameters
@@ -701,8 +701,8 @@ int16_t RPal::GetEntries(
 	int16_t sResult = SUCCESS;
 
 	// Calculate pointer to first entry to be modified
-	uint8_t* pucSrc = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
-	uint8_t green;
+   channel_t* pucSrc = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
+   channel_t green;
 
 	switch(m_type)
 		{
@@ -832,9 +832,9 @@ int16_t RPal::GetEntries(
 int16_t RPal::SetEntries(
 	int16_t sStart,								// In:  Starting palette entry
 	int16_t sCount,								// In:  Number of entries to do
-	uint8_t* pSrcRed,					// In:  Starting source red value
-	uint8_t* pSrcGreen,				// In:  Starting source green value
-	uint8_t* pSrcBlue,				// In:  Starting source blue value
+   channel_t* pSrcRed,					// In:  Starting source red value
+   channel_t* pSrcGreen,				// In:  Starting source green value
+   channel_t* pSrcBlue,				// In:  Starting source blue value
 	int32_t lAddToPointers)						// In:  What to add to pointers to move to next value
 	{
 	// Validate parameters
@@ -856,7 +856,7 @@ int16_t RPal::SetEntries(
 	int16_t sResult = SUCCESS;
 
 	// Calculate pointer to first entry to be modified
-	uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
+   channel_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
 	switch(m_type)
 		{

@@ -188,7 +188,7 @@
 
 #define PLAY_BUF_SIZE	4096	// In bytes.
 
-#define SET(ptr, val)	((ptr) ? *(ptr) = val : 0)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 // If not a violent locale . . . 
 #if !VIOLENT_LOCALE
@@ -196,7 +196,7 @@
    #define CAN_PLAY_SAMPLE(id)	( (id.usDescFlags & (SMDF_FEMALE_PAIN | SMDF_POLICE_REF)  ) == 0)
 #else
 	// All sounds can be played.
-	#define CAN_PLAY_SAMPLE(id)	(1)
+   #define CAN_PLAY_SAMPLE(id)	true
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

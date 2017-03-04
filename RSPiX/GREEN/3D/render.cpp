@@ -43,7 +43,7 @@ void	DrawTri_ZColorFog(uint8_t* pDstOffset,int32_t lDstP,
 	RRenderPt32 *pv1 = &pt1;
 	RRenderPt32 *pv2 = &pt2;
 	RRenderPt32 *pv3 = &pt3;
-	// Cast from REAL to short in fp32 format:
+	// Cast from real_t to short in fp32 format:
 	pt1.x.mod = int16_t(p1->x);
 	pt1.y.mod = int16_t(p1->y);
 	pt1.z.mod = int16_t(p1->z);
@@ -487,7 +487,7 @@ void	DrawTri_ZColor(uint8_t* pDstOffset,int32_t lDstP,
 	RRenderPt32 *pv1 = &pt1;
 	RRenderPt32 *pv2 = &pt2;
 	RRenderPt32 *pv3 = &pt3;
-	// Cast from REAL to short in fp32 format:
+	// Cast from real_t to short in fp32 format:
 	pt1.x.mod = int16_t(p1->x);
 	pt1.y.mod = int16_t(p1->y);
 	pt1.z.mod = int16_t(p1->z);
@@ -827,7 +827,7 @@ void	DrawTri(uint8_t* pDstOffset,int32_t lDstP,
 	RRenderPt32 *pv1 = &pt1;
 	RRenderPt32 *pv2 = &pt2;
 	RRenderPt32 *pv3 = &pt3;
-	// Cast from REAL to short in fp32 format:
+	// Cast from real_t to short in fp32 format:
 	pt1.x.mod = int16_t(p1->x);
 	pt1.y.mod = int16_t(p1->y);
 	pt2.x.mod = int16_t(p2->x);

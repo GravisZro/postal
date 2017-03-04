@@ -87,7 +87,7 @@ typedef struct
 //////////////////////////////////////////////////////////////////////////////
 
 // Only set value if not nullptr.
-#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0 )
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 // The new table utilizes 3 entries:
 // 1) The two new pixel values, when used as an index.

@@ -1794,7 +1794,7 @@ void CScene::SetupPipeline(						// Returns nothing.
 	m_pipeline.m_tScreen.Scale(
 		double(sScreenSize) / dModelSize,
 		double(sScreenSize) / dModelSize,
-		REAL(65535.0 / MODEL_ZSPAN));	 // Use MODEL_ZSPAN for consistent fog thickness
+      real_t(65535.0 / MODEL_ZSPAN));	 // Use MODEL_ZSPAN for consistent fog thickness
 	// Mimic this in transform that contains no Z scaling.
 	m_transNoZScreen.Scale(
 		double(sScreenSize) / dModelSize,

@@ -335,25 +335,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "realm.h"
+
+
+#include <RSPiX.h>
+
+#include <ctime>
+
 #include "game.h"
 #include "reality.h"
 #include "score.h"
-#include <ctime>
 #include "MemFileFest.h"
 
 //#define RSP_PROFILE_ON
 
 
-#include "ORANGE/Debug/profile.h"
+#include <ORANGE/Debug/profile.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
 ////////////////////////////////////////////////////////////////////////////////
 
 // Sets the specified value into the data pointed, if the ptr is not nullptr.
-#define SET(ptr, val)	( (ptr != nullptr) ? *ptr = val : val)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 // Time, in ms, between status updates.
 #define STATUS_UPDATE_INTERVAL	1000
@@ -515,7 +519,7 @@ void MapY2DtoZ3D(		// Returns nothing.
 	{
 	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
 
-	REAL	rSin	= SINQ[sViewAngle];
+	real_t	rSin	= SINQ[sViewAngle];
 	if (rSin != 0.0)
 		{
 		*ptZOut	= tYIn / rSin;
@@ -553,7 +557,7 @@ void MapY2DtoY3D(		// Returns nothing.
 	{
 	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
 
-	REAL	rCos	= COSQ[sViewAngle];
+	real_t	rCos	= COSQ[sViewAngle];
 	if (rCos != 0.0)
 		{
 		*ptYOut	= tYIn / rCos;

@@ -35,8 +35,8 @@
 //						24-bit palette entries rather than the 32-bit
 //						that it was using.
 //
-//	11/07/95	JMI	Changed all occurrences of RGBQUAD to IM_RGBQUAD &
-//						RGBTRIPLE to IM_RGBTRIPLE.
+//	11/07/95	JMI	Changed all occurrences of RGBQUAD to color32_t &
+//						RGBTRIPLE to color24_t.
 //
 // 11/08/95 BRH	Added several direct conversions to BMP8 and BMP24.
 //						Previously we had BMP8 and BMP24 as our two base
@@ -162,11 +162,11 @@
 //
 // Palette Conversions:
 //
-// BMP8 (IM_RGBQUAD)	-> 555 Palette
-// BMP8 (IM_RGBQUAD) -> 565 Palette
-// BMP8 (IM_RGBQUAD) -> 888 Palette
-// BMP8 (IM_RGBQUAD) -> SYSTEM Palette (for setting colors on a platform
-//							basis) Windows = IM_RGBQUAD, Mac = Mac System Pal
+// BMP8 (color32_t) -> 555 Palette
+// BMP8 (color32_t) -> 565 Palette
+// BMP8 (color32_t) -> 888 Palette
+// BMP8 (color32_t) -> SYSTEM Palette (for setting colors on a platform
+//							basis) Windows = color32_t, Mac = Mac System Pal
 //							
 //
 //////////////////////////////////////////////////////////////////////
@@ -348,24 +348,24 @@ int16_t	ConvertToBMP8(RImage* pImage)
 			p888Pal->m_pData = pImage->m_pPalette->DetachData();
 
 			// Create new palette data for the pImage
-			pImage->m_pPalette->CreateData((p888Pal->m_sStartIndex + p888Pal->m_sNumEntries) * sizeof(IM_RGBQUAD));
+         pImage->m_pPalette->CreateData((p888Pal->m_sStartIndex + p888Pal->m_sNumEntries) * sizeof(color32_t));
 			pImage->m_pPalette->m_type = RPal::PDIB;
 			pImage->m_pPalette->m_sPalEntrySize = RPal::GetPalEntrySize(RPal::PDIB);
 
-			IM_RGBTRIPLE* tp888 = (IM_RGBTRIPLE*) p888Pal->m_pData;
-			IM_RGBQUAD* qpDib = (IM_RGBQUAD*) pImage->m_pPalette->m_pData;
+			color24_t* tp888 = (color24_t*) p888Pal->m_pData;
+         color32_t* qpDib = (color32_t*) pImage->m_pPalette->m_pData;
 		
 			int16_t i;
 
-			// The DIB format when viewed as a IM_RGBQUAD = B|G|R|Reserved
-			// The 888 palette     viewed as IM_RGBTRIPLE   B|G|R
+         // The DIB format when viewed as a color32_t = B|G|R|Reserved
+			// The 888 palette     viewed as color24_t   B|G|R
 
 			for (i = p888Pal->m_sStartIndex; i < p888Pal->m_sStartIndex + p888Pal->m_sNumEntries; i++)
 			{
-			 	qpDib[i].rgbBlue = tp888[i].rgbtBlue;
-				qpDib[i].rgbGreen = tp888[i].rgbtGreen;
-				qpDib[i].rgbRed = tp888[i].rgbtRed;
-				qpDib[i].rgbReserved = 0;
+            qpDib[i].blue  = tp888[i].blue;
+            qpDib[i].green = tp888[i].green;
+            qpDib[i].red   = tp888[i].red;
+            qpDib[i].alpha = 0;
 			}
 
 			delete p888Pal;
@@ -583,7 +583,7 @@ int16_t	ConvertToBMP24(RImage* pImage)
 // This convert function will depened on what platform it is complied
 // on.  Our standard load formats are Windows BMP.  This function for
 // Windows will only change the type from RImage::BMP8 to RImage::SYSTEM8.  On a Mac
-// it would convert the palette from IM_RGBQUAD to the Mac's system
+// it would convert the palette from color32_t to the Mac's system
 // palette.
 //
 //////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ int16_t ConvertToSystem(RImage* pImage)
 // ConvertToSCREEN8_555
 //
 // Converts from RImage::BMP8 to SCREEN8_555 which means that it transforms
-// the palette entries from IM_RGBQUAD to the 555 "Screen Format" palette
+// the palette entries from color32_t to the 555 "Screen Format" palette
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -721,7 +721,7 @@ int16_t	ConvertToSCREEN8_555(RImage* pImage)
 // ConvertToSCREEN8_565
 //
 // Converts from RImage::BMP8 to SCREEN8_565 which means that it transforms 
-// the palette entries from IM_RGBQUAD to the 565 "Screen Format" palette
+// the palette entries from color32_t to the 565 "Screen Format" palette
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -802,7 +802,7 @@ int16_t ConvertToSCREEN8_565(RImage* pImage)
 // ConvertToSCREEN8_888
 //
 // Converts from RImage::BMP8 to SCREEN8_888 which means that it transforms
-// the palette entries from IM_RGBQUAD to the 888 "Screen Format" palette
+// the palette entries from color32_t to the 888 "Screen Format" palette
 //
 // The normal RImage::BMP8 DIB palette
 //		when viewed as uint32_t is Reserved|R|G|B
@@ -832,23 +832,23 @@ int16_t ConvertToSCREEN8_888(RImage* pImage)
 			pDibPal->m_pData = pImage->m_pPalette->DetachData();
 
 			// Create new palette data for the pImage
-			pImage->m_pPalette->CreateData((pDibPal->m_sStartIndex + pDibPal->m_sNumEntries) * sizeof(IM_RGBTRIPLE));
+			pImage->m_pPalette->CreateData((pDibPal->m_sStartIndex + pDibPal->m_sNumEntries) * sizeof(color24_t));
 			pImage->m_pPalette->m_type = RPal::P888;
 			pImage->m_pPalette->m_sPalEntrySize = RPal::GetPalEntrySize(RPal::P888);
 
-			IM_RGBQUAD* qpDib = (IM_RGBQUAD*) pDibPal->m_pData;
-			IM_RGBTRIPLE* tp888 = (IM_RGBTRIPLE*) pImage->m_pPalette->m_pData;
+         color32_t* qpDib = (color32_t*) pDibPal->m_pData;
+			color24_t* tp888 = (color24_t*) pImage->m_pPalette->m_pData;
 
 			int16_t i;
 
-			// The DIB format when viewed as a IM_RGBQUAD = B|G|R|Reserved
-			// Converting to 888 viewed as IM_RGBTRIPLE as  B|G|R
+         // The DIB format when viewed as a color32_t = B|G|R|Reserved
+			// Converting to 888 viewed as color24_t as  B|G|R
 
 			for (i = pDibPal->m_sStartIndex; i < pDibPal->m_sStartIndex + pDibPal->m_sNumEntries; i++)
 			{
-				tp888[i].rgbtBlue = qpDib[i].rgbBlue;
-				tp888[i].rgbtGreen = qpDib[i].rgbGreen;
-				tp888[i].rgbtRed = qpDib[i].rgbRed;
+            tp888[i].blue = qpDib[i].blue;
+            tp888[i].green = qpDib[i].green;
+            tp888[i].red = qpDib[i].red;
 			}
 
 			delete pDibPal;
@@ -1282,7 +1282,7 @@ int16_t ConvertToSCREEN24_RGB(RImage* pImage)
 // Converts from RImage::BMP8 or BMP24 to SCREEN32_RGBA.  For RImage::BMP8 it creates
 // a 32-bit buffer and then dereferences the color palette for each
 // pixel value in the 8-bit buffer.  For BMP24 it creates a 32-bit
-// buffer and then translates the IM_RGBQUAD pixel values into RGBAlpha
+// buffer and then translates the color32_t pixel values into RGBAlpha
 // "Screen Format" pixel values.
 //
 //////////////////////////////////////////////////////////////////////

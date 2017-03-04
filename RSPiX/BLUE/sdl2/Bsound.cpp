@@ -34,14 +34,15 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// Blue //////////////////////////////////////////////////////////////////////
+// RSPix /////////////////////////////////////////////////////////////////////
 #include <BLUE/Blue.h>
 
 // Platform //////////////////////////////////////////////////////////////////
 #include <SDL2/SDL.h>
 
+
 // Only set value if not nullptr.
-#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 static uint32_t callback_data = 0;
 
@@ -194,7 +195,7 @@ extern int16_t rspIsSoundOutPaused(void)	// Returns TRUE if paused, FALSE otherw
     if (!audio_opened)
         return TRUE;
 
-    return((SDL_GetAudioStatus() == SDL_AUDIO_PAUSED) ? TRUE : FALSE);
+    return SDL_GetAudioStatus() == SDL_AUDIO_PAUSED ? TRUE : FALSE;
 }
 
 extern int32_t rspGetSoundOutPos(void)		// Returns sound output position in bytes

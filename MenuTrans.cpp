@@ -160,11 +160,11 @@ extern void StartMenuTrans(
 	m_bFinishASAP = false;
 
 	// Allocate lots of stuff
-	m_pOrig = new rgb[256];
-	m_pWork = new rgb[256];
-	m_pSaveStep4 = new rgb[256];
-	m_pUnmapStep4 = new uint8_t[256];
-	m_pUnmapStep5 = new uint8_t[256];
+   m_pOrig = new rgb[palette::size];
+   m_pWork = new rgb[palette::size];
+   m_pSaveStep4 = new rgb[palette::size];
+   m_pUnmapStep4 = new uint8_t[palette::size];
+   m_pUnmapStep5 = new uint8_t[palette::size];
 	m_pim = new RImage;
 	if (m_pOrig && m_pWork && m_pSaveStep4 && m_pUnmapStep4 && m_pUnmapStep5 && m_pim)
 		{
@@ -204,7 +204,7 @@ extern bool DoPreMenuTrans(void)
 	if (m_sStep == 1)
 		{
 		// Get the "original" palette
-		rspGetPaletteEntries(0, 256, &(m_pOrig[0].r), &(m_pOrig[0].g), &(m_pOrig[0].b), sizeof(rgb));
+      rspGetPaletteEntries(0, palette::size, &(m_pOrig[0].r), &(m_pOrig[0].g), &(m_pOrig[0].b), sizeof(rgb));
 
 		// Lock the buffer before reading from it.
 		rspLockBuffer();
@@ -280,8 +280,8 @@ extern bool DoPreMenuTrans(void)
 	else if (m_sStep == 3)
 		{
 		// Start mapping table out as an "identity map" (pixels map to themselves)
-		uint8_t aucMap[256];
-		for (int16_t m = 0; m < 256; m++)
+      uint8_t aucMap[palette::size];
+      for (int16_t m = 0; m < palette::size; m++)
 			aucMap[m] = m;
 
 		// Scan through the palette mapping each entry onto the first entry with the
@@ -318,8 +318,8 @@ extern bool DoPreMenuTrans(void)
 	else if (m_sStep == 4)
 		{
 		// Start mapping table out as an "identity map" (pixels map to themselves)
-		uint8_t aucMap[256];
-		for (int16_t m = 0; m < 256; m++)
+      uint8_t aucMap[palette::size];
+      for (int16_t m = 0; m < palette::size; m++)
 			{
 			aucMap[m] = m;
 			m_pUnmapStep4[m] = m;
@@ -358,7 +358,7 @@ extern bool DoPreMenuTrans(void)
 		rspUpdateDisplay();
 
 		// Save current palette so we can run the effect backwards
-		for (int16_t p = 0; p < 256; p++)
+      for (int16_t p = 0; p < palette::size; p++)
 			m_pSaveStep4[p] = m_pWork[p];
 
 		// Go to next step
@@ -381,8 +381,8 @@ extern bool DoPreMenuTrans(void)
 		rspUpdatePalette();
 
 		// Start mapping table out as an "identity map" (pixels map to themselves)
-		uint8_t aucMap[256];
-		for (int16_t m = 0; m < 256; m++)
+      uint8_t aucMap[palette::size];
+      for (int16_t m = 0; m < palette::size; m++)
 			{
 			aucMap[m] = m;
 			m_pUnmapStep5[m] = m;
@@ -436,7 +436,7 @@ extern bool DoPostMenuTrans(void)
 	if (m_sStep == 6)
 		{
 		// Restore palette to where it was prior to step 5
-		for (int16_t p = 0; p < 256; p++)
+      for (int16_t p = 0; p < palette::size; p++)
 			m_pWork[p] = m_pSaveStep4[p];
 
 		// Set only the non-shade portion of the palette until we remap the pixels

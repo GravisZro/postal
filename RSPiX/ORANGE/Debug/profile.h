@@ -263,12 +263,12 @@ public:
 		m_eState = Inactive;
 		m_sInError = FALSE;
 		}
-	RProfileNode() 
+   RProfileNode(void)
 		{ 
 		Init();
 		}
 
-	~RProfileNode(){};
+   ~RProfileNode(void){}
 	//----------------------------
 	char m_szFieldName[PF_MAX_LEN];
    int64_t	m_lNumCalls;

@@ -160,10 +160,10 @@ int32_t ReadBitmapInfo(	BITMAPINFO*	pbmi, CNFile* pfile)
 	lNumColors	/= 4L;
 	for (int32_t l = 0; l < lNumColors; l++)
 		{
-		pfile->Read(&pbmi->bmiColors[l].rgbBlue);
-		pfile->Read(&pbmi->bmiColors[l].rgbGreen);
-		pfile->Read(&pbmi->bmiColors[l].rgbRed);
-		pfile->Read(&pbmi->bmiColors[l].rgbReserved);
+    pfile->Read(&pbmi->bmiColors[l].blue);
+    pfile->Read(&pbmi->bmiColors[l].green);
+    pfile->Read(&pbmi->bmiColors[l].red);
+    pfile->Read(&pbmi->bmiColors[l].alpha);
 		}
 
 	return pfile->Tell() - lPos;

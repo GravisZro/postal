@@ -410,7 +410,7 @@
 #define BORDER_EFFECTS_THICKNESS		2
 
 // Sets a value pointed to if ptr is not nullptr.
-#define SET(pval, val)					((pval != nullptr) ? *pval = val : val)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 // Finger print for GUI files.
 #define GUI_FINGER_PRINT				MAKE_IFF_FCC('R', 'G', 'u', 'i')

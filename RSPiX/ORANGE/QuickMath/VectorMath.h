@@ -47,33 +47,33 @@ RP3d; // This is a 3d point.
 inline void rspMakeHom(RP3d& p) // do if in question
 inline void rspCopy(RP3d& a,RP3d& b)
 inline void rspMakeUnit(RP3d& p)
-inline REAL rspDot(RP3d& a,RP3d& b)
+inline real_t rspDot(RP3d& a,RP3d& b)
 inline void rspCross(RP3d& a,RP3d& b,RP3d& c) // c = a x b
 RTransform 
 	{ T[16],
 	RTransform() // init to an identity transform
-	RTransform(REAL* M) // init to a copy of another transform
+   RTransform(real_t* M) // init to a copy of another transform
 	void Make1()
 	void Make0()
-	void PreMulBy(REAL* M)
-	void Mul(REAL* A,REAL* B) // 4x4 transforms:
+   void PreMulBy(real_t* M)
+   void Mul(real_t* A,real_t* B) // 4x4 transforms:
 	void Transform(RP3d &p)
 	void TransformInto(RP3d &XF, RP3d& p) XF = this x p
-	void Trans(REAL x,REAL y,REAL z)
-	void Scale(REAL a,REAL b, REAL c)
+   void Trans(real_t x,real_t y,real_t z)
+   void Scale(real_t a,real_t b, real_t c)
 	void Rz(short sDeg) // CCW!
 	void Rx(short sDeg) // CCW!
 	void Ry(short sDeg) // CCW!
 	void MakeScreenXF(
-		REAL x1,REAL y1,REAL w1,REAL h1,
-		REAL x2,REAL y2,REAL w2,REAL h2)
+      real_t x1,real_t y1,real_t w1,real_t h1,
+      real_t x2,real_t y2,real_t w2,real_t h2)
 	void MakeRotTo(RP3d point,RP3d up)
 	void MakeRotFrom(RP3d point,RP3d up)
 	}
 //=================================*/
 
-#define REAL float // float conserves internal memory..
-// Note that if REAL is double, than it should somehow hook
+typedef float real_t; // float conserves internal memory..
+// Note that if real_t is double, than it should somehow hook
 // double sized quick trig, so it doesn't have to do
 // conversions each time!
 
@@ -82,13 +82,13 @@ typedef union
 	{
 	// 06/30/97 MJR - For the metrowerks compiler, initializations don't
 	// seem to work right unless the array comes before the struct!
-	REAL v[4];
+   real_t v[4];
 	struct
 		{
-		REAL x;
-		REAL y;
-		REAL z;
-		REAL w;
+      real_t x;
+      real_t y;
+      real_t z;
+      real_t w;
 		};
 
 	int16_t Load(RFile* pfile)
@@ -118,7 +118,7 @@ inline void rspMakeHom(RP3d& p)
 		}
 #endif
 	
-	REAL w = p.w;
+   real_t w = p.w;
 	p.x /= w;
 	p.y /= w;
 	p.z /= w;
@@ -129,7 +129,7 @@ inline void rspMakeHom(RP3d& p)
 // adjusts the length of a vector, ignoring w component
 inline void rspMakeUnit(RP3d& p)
 	{
-	REAL l = sqrt(SQR(p.x)+SQR(p.y)+SQR(p.z));
+   real_t l = sqrt(SQR(p.x)+SQR(p.y)+SQR(p.z));
 #ifdef _DEBUG
 	if (l == 0.0)
 		{
@@ -143,7 +143,7 @@ inline void rspMakeUnit(RP3d& p)
 	}
 
 // returns a dot b
-inline REAL rspDot(RP3d& a,RP3d& b)
+inline real_t rspDot(RP3d& a,RP3d& b)
 	{
 	return a.x*b.x + a.y*b.y + a.z*b.z;
 	}
@@ -181,7 +181,7 @@ inline void rspAdd(RP3d& a,RP3d& b)
 	}
 
 // a += s;
-inline void rspScale(RP3d& a,REAL s)
+inline void rspScale(RP3d& a,real_t s)
 	{
 	a.x *= s;
 	a.y *= s;
@@ -191,16 +191,16 @@ inline void rspScale(RP3d& a,REAL s)
 
 
 // And some useful constants for manipulation:
-const int16_t ROW[4] = {0,4,8,12};
+const int16_t ROW[4] = { 0, 4, 8, 12 };
 const int16_t ROW0 = 0;
 const int16_t ROW1 = 4;
 const int16_t ROW2 = 8;
 const int16_t ROW3 = 12;
 
-const REAL Identity[16] = {1.0,0.0,0.0,0.0, 
-									0.0,1.0,0.0,0.0,
-									0.0,0.0,1.0,0.0,
-									0.0,0.0,0.0,1.0};
+const real_t Identity[16] = { 1.0,0.0,0.0,0.0,
+                              0.0,1.0,0.0,0.0,
+                              0.0,0.0,1.0,0.0,
+                              0.0,0.0,0.0,1.0 };
 
 // NOW, the class based transform allows matrix
 // multiplication to occur WITHOUT multiplying
@@ -210,20 +210,20 @@ const REAL Identity[16] = {1.0,0.0,0.0,0.0,
 class RTransform
 	{
 public:
-	REAL T[16]; // This is compatible with the aggregate transform
+   real_t T[16]; // This is compatible with the aggregate transform
 	RTransform() // init to an identity transform
 		{ 
-		for (int16_t i=0;i<16;i++) 
+      for (int16_t i = 0; i < 16; ++i)
 			T[i]=Identity[i];
 		}
 
-	RTransform(REAL* M) // init to a copy of another transform
+   RTransform(real_t* M) // init to a copy of another transform
 		{ 
-		for (int16_t i=0;i<16;i++) 
+      for (int16_t i = 0; i < 16; ++i)
 			T[i]=M[i];
 		}
 
-	~RTransform(){};
+   ~RTransform(void){}
 
 	int operator==(const RTransform& rhs) const
 		{
@@ -234,55 +234,55 @@ public:
 
 	void Make1() // identity matrix
 		{
-		for (int16_t i=0;i<16;i++) 
+      for (uint8_t i = 0; i < 16; ++i)
 			T[i]=Identity[i];
 		}
 
 	void Make0() // null matrix
 		{
-		for (int16_t i=0;i<15;i++) 
-			T[i]=(REAL)0;
-		T[15] = (REAL)1;
+      for (uint8_t i = 0; i < 15; ++i)
+         T[i] = 0;
+      T[15] = 1;
 		}
 
 	//------------------------
 	// ALL TRANSFORMATIONS ARE PRE-MULTIPLIES,
 	// A Partial transform, assuming R3 = {0,0,0,1};
 	// 
-	void PreMulBy(REAL* M)
+   void PreMulBy(real_t* M)
 		{
-		//REAL* MLine = M;
-		//REAL* TCol = T;
-		//REAL tot;
+      //real_t* MLine = M;
+      //real_t* TCol = T;
+      //real_t tot;
 		int16_t r,c;
 		// Unroll this puppy!
 		// Much optimizing needed!
-		for (r = 0;r<3;r++) // 3/4 XFORM!
-			for (c=0;c<4;c++)
+      for (r = 0; r < 3; ++r) // 3/4 XFORM!
+         for (c = 0; c < 4; ++c)
 				{
-				T[ ROW[r] + c] =
-					M[ ROW[r]] * T[c] + 
-					M[ ROW[r] + 1] * T[ ROW1 + c] + 
-					M[ ROW[r] + 2] * T[ ROW2 + c] + 
-					M[ ROW[r] + 3] * T[ ROW3 + c];
+            T[ROW[r] + c] =
+               M[ROW[r]] * T[c] +
+               M[ROW[r] + 1] * T[ROW1 + c] +
+               M[ROW[r] + 2] * T[ROW2 + c] +
+               M[ROW[r] + 3] * T[ROW3 + c];
 				}
 		}
 
 	// Oversets the current Transform with the resultant!
 	// = A * B
-	void Mul(REAL* A,REAL* B) // 4x4 transforms:
+   void Mul(real_t* A,real_t* B) // 4x4 transforms:
 		{
 		int16_t r,c;
 		// Unroll this puppy!
 		// Much optimizing needed!
-		for (r = 0;r<3;r++) // 3/4 XFORM!
-			for (c=0;c<4;c++)
+      for (r = 0; r < 3; ++r) // 3/4 XFORM!
+         for (c = 0; c < 4; ++c)
 				{
-				T[ ROW[r] + c] =
-					A[ ROW[r]] * B[c] + 
-					A[ ROW[r] + 1] * B[ ROW1 + c] + 
-					A[ ROW[r] + 2] * B[ ROW2 + c] + 
-					A[ ROW[r] + 3] * B[ ROW3 + c];
+            T[ROW[r] + c] =
+               A[ROW[r]] * B[c] +
+               A[ROW[r] + 1] * B[ROW1 + c] +
+               A[ROW[r] + 2] * B[ROW2 + c] +
+               A[ROW[r] + 3] * B[ROW3 + c];
 				}
 		}
 
@@ -290,27 +290,26 @@ public:
 	// Doex a premultiply!
 	void Transform(RP3d &p)
 		{
-		RP3d temp = {0.0F,0.0F,0.0F,1.0F}; // asume 3 row form!
-		REAL *pT = T,*pV;
+      RP3d temp = { 0.0, 0.0, 0.0, 1.0 }; // asume 3 row form!
+      real_t *pT = T,*pV;
 		int16_t i,j;
 
-		for (j=0;j<3;j++) // asume 3 row form!
-			for (i=0,pV = p.v;i<4;i++)
-				{
-				temp.v[j] += (*pV++) * (*pT++);
-				}
+      for (j = 0; j < 3; ++j) // asume 3 row form!
+         for (i = 0,pV = p.v; i < 4; ++i)
+            temp.v[j] += (*pV++) * (*pT++);
 		// overwrite original
-		for (i=0;i<4;i++) p.v[i] = temp.v[i];
+      for (i = 0; i < 4; ++i)
+        p.v[i] = temp.v[i];
 		}
 
 	// Transform an actual point, and places the answer into a different pt
 	// Doex a premultiply!
 	void TransformInto(RP3d& vSrc, RP3d& vDst)
 		{
-		vDst.v[0] = vDst.v[1] = vDst.v[2] = REAL(0.);
-		vDst.v[3] = REAL(1.);
+      vDst.v[0] = vDst.v[1] = vDst.v[2] = 0.0;
+      vDst.v[3] = 1.0;
 
-		REAL *pT = T,*pV;
+      real_t *pT = T,*pV;
 		int16_t i,j;
 
 		for (j=0;j<3;j++) // asume 3 row form!
@@ -321,66 +320,66 @@ public:
 		}
 
 	// Assumes R3 = {0,0,0,1}
-	void Trans(REAL x,REAL y,REAL z)
+   void Trans(real_t x,real_t y,real_t z)
 		{
-		T[ROW0+3] += x;
-		T[ROW1+3] += y;
-		T[ROW2+3] += z;
+      T[ROW0 + 3] += x;
+      T[ROW1 + 3] += y;
+      T[ROW2 + 3] += z;
 		}
 
-	void Scale(REAL a,REAL b, REAL c)
+   void Scale(real_t a,real_t b, real_t c)
 		{
-		for (int16_t i=0;i<4;i++)
+      for (int16_t i = 0; i < 4; ++i)
 			{
-			T[ ROW0 + i] *= a;	
-			T[ ROW1 + i] *= b;	
-			T[ ROW2 + i] *= c;	
+         T[ROW0 + i] *= a;
+         T[ROW1 + i] *= b;
+         T[ROW2 + i] *= c;
 			}
 		}
 
 	void Rz(int16_t sDeg) // CCW!
 		{
-		REAL S = rspfSin(sDeg);
-		REAL C = rspfCos(sDeg);
-		REAL NewVal; // two vertical numbers depend on each other
+      real_t S = rspfSin(sDeg);
+      real_t C = rspfCos(sDeg);
+      real_t NewVal; // two vertical numbers depend on each other
 
-		for (int16_t i=0;i<4;i++)
-			{
-			NewVal = T[ ROW0 + i] * C - T[ ROW1 + i] * S;
-			T[ ROW1 + i] = T[ ROW0 + i] * S + T[ ROW1 + i] * C;
-			T[ ROW0 + i] = NewVal;
+      for (int16_t i = 0; i < 4; ++i)
+         {
+         NewVal = T[ROW0 + i] * C - T[ROW1 + i] * S;
+         T[ROW1 + i] = T[ROW0 + i] * S + T[ROW1 + i] * C;
+         T[ROW0 + i] = NewVal;
 			}
 		}
 
 	void Rx(int16_t sDeg) // CCW!
 		{
-		REAL S = rspfSin(sDeg);
-		REAL C = rspfCos(sDeg);
-		REAL NewVal; // two vertical numbers depend on each other
+      real_t S = rspfSin(sDeg);
+      real_t C = rspfCos(sDeg);
+      real_t NewVal; // two vertical numbers depend on each other
 
-		for (int16_t i=0;i<4;i++)
+      for (int16_t i = 0; i < 4; ++i)
 			{
-			NewVal = T[ ROW1 + i] * C - T[ ROW2 + i] * S;
-			T[ ROW2 + i] = T[ ROW1 + i] * S + T[ ROW2 + i] * C;
-			T[ ROW1 + i] = NewVal;
+         NewVal = T[ROW1 + i] * C - T[ROW2 + i] * S;
+         T[ROW2 + i] = T[ROW1 + i] * S + T[ROW2 + i] * C;
+         T[ROW1 + i] = NewVal;
 			}
 		}
 
 	void Ry(int16_t sDeg) // CCW!
 		{
-		REAL S = rspfSin(sDeg);
-		REAL C = rspfCos(sDeg);
-		REAL NewVal; // two vertical numbers depend on each other
+      real_t S = rspfSin(sDeg);
+      real_t C = rspfCos(sDeg);
+      real_t NewVal; // two vertical numbers depend on each other
 
-		for (int16_t i=0;i<4;i++)
+      for (int16_t i = 0; i < 4; ++i)
 			{
-			NewVal = T[ ROW0 + i] * C + T[ ROW2 + i] * S;
-			T[ ROW2 + i] =-T[ ROW0 + i] * S + T[ ROW2 + i] * C;
-			T[ ROW0 + i] = NewVal;
+         NewVal = T[ROW0 + i] * C + T[ROW2 + i] * S;
+         T[ROW2 + i] = -T[ROW0 + i] * S + T[ROW2 + i] * C;
+         T[ROW0 + i] = NewVal;
 			}
 		}
 
-	// a 3d ORTHOGONAL mapping from REAL box1 to box2
+   // a 3d ORTHOGONAL mapping from real_t box1 to box2
 	// useful in screen and orthogonal view xforms
 	// Use rspSub to create w vertices (w,h,d)
 	// x1 BECOMES x2.  Note that w1 must NOT have any 0's.
@@ -405,17 +404,17 @@ public:
 		rspCross(third,point,up);
 		// store as columns
 		Make0();
-		T[0 + ROW[0] ] = point.x;
-		T[0 + ROW[1] ] = point.y;
-		T[0 + ROW[2] ] = point.z;
+      T[0 + ROW[0]] = point.x;
+      T[0 + ROW[1]] = point.y;
+      T[0 + ROW[2]] = point.z;
 
-		T[1 + ROW[0] ] = up.x;
-		T[1 + ROW[1] ] = up.y;
-		T[1 + ROW[2] ] = up.z;
+      T[1 + ROW[0]] = up.x;
+      T[1 + ROW[1]] = up.y;
+      T[1 + ROW[2]] = up.z;
 
-		T[2 + ROW[0] ] = third.x;
-		T[2 + ROW[1] ] = third.y;
-		T[2 + ROW[2] ] = third.z;
+      T[2 + ROW[0]] = third.x;
+      T[2 + ROW[1]] = third.y;
+      T[2 + ROW[2]] = third.z;
 
 		}
 
@@ -430,17 +429,17 @@ public:
 		rspCross(third,point,up);
 		// store as rows
 		Make0();
-		T[0 + ROW[0] ] = point.x;
-		T[1 + ROW[0] ] = point.y;
-		T[2 + ROW[0] ] = point.z;
+      T[0 + ROW[0]] = point.x;
+      T[1 + ROW[0]] = point.y;
+      T[2 + ROW[0]] = point.z;
 
-		T[0 + ROW[1] ] = up.x;
-		T[1 + ROW[1] ] = up.y;
-		T[2 + ROW[1] ] = up.z;
+      T[0 + ROW[1]] = up.x;
+      T[1 + ROW[1]] = up.y;
+      T[2 + ROW[1]] = up.z;
 
-		T[0 + ROW[2] ] = third.x;
-		T[1 + ROW[2] ] = third.y;
-		T[2 + ROW[2] ] = third.z;
+      T[0 + ROW[2]] = third.x;
+      T[1 + ROW[2]] = third.y;
+      T[2 + ROW[2]] = third.z;
 		}
 
 	// Loads instance data for this Transform from the specified

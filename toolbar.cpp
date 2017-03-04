@@ -324,11 +324,13 @@ public:
 #if 0	// checking for palette errors:
 		rspSetWindowColors();
 
-		uint8_t r[256],g[256],b[256];	// for palette checking:
-		rspGetPaletteEntries(0,256,r,g,b,1);
+      channel_t r[palette::size],
+                g[palette::size],
+                b[palette::size]; // for palette checking:
+      rspGetPaletteEntries(0,palette::size,r,g,b,1);
 		short i;
 
-		for (i=0;i < 256;i++)
+      for (i = 0; i < palette::size; ++i)
 			{
 			if ( (*pHood->m_pimBackground->m_pPalette->Red(i) != r[i]) ||
 				 (*pHood->m_pimBackground->m_pPalette->Green(i) != g[i]) ||

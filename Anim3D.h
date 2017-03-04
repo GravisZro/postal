@@ -49,7 +49,7 @@ typedef RChannel<RTexture> ChanTexture;		// Channel of textures.
 typedef RChannel<RP3d> ChanHot;					// Channel of hotspots.
 typedef RChannel<RP3d> ChanBounds;				// Channel of bounding
 															// cylinders for collision.
-typedef RChannel<REAL> ChanFloor;				// Channel of floor circles
+typedef RChannel<real_t> ChanFloor;				// Channel of floor circles
 															// for attribute map..?
 typedef RChannel<RTransform> ChanTransform;	// Channel of transforms.
 typedef RChannel<uint8_t> ChanEvent;					// Channel of event states.

@@ -182,7 +182,8 @@ extern int16_t rspExec(			// Returns 0 on success.
    int16_t (*waitcall)(void)		// App callback to call during wait, if not nullptr.
                = nullptr);			// Returns 0 to continue waiting,
 										// non-zero otherwise.
-#endif
+#endif // NO_IMPLEMENTATION
+
 ///////////////////////////////////////////////////////////////////////////////
 // File Path API
 ///////////////////////////////////////////////////////////////////////////////
@@ -270,7 +271,7 @@ extern void rspSetQuitStatusFlags(
 ///////////////////////////////////////////////////////////////////////////////
 // Printer API
 ///////////////////////////////////////////////////////////////////////////////
-
+#ifdef NO_IMPLEMENTATION
 extern int16_t rspSetPrinterResolution(		// Returns 0 if successfull, non-zero otherwise
 	int32_t lReqHorzRes,								// In:  Requested horizontal resolution (dpi)
 	int32_t lReqVertRes,								// In:  Requested vertical resolution (dpi)
@@ -333,9 +334,9 @@ extern int16_t rspPrintToPage(					// Returns 0 if successfull, non-zero otherwi
 	int16_t sDepth,									// In:  Source depth (1 or 8 - if 8, palette info must be valid!)
    int16_t sSrcPalStartIndex,					// In:  Starting palette index (0x00 to 0xFF)
 	int16_t sSrcPalEntries,						// In:  Number of palette entries (1 to 256)
-	uint8_t* pu8SrcPalRed,								// In:  Pointer to starting source red value
-	uint8_t* pu8SrcPalGreen,							// In:  Pointer to starting source green value
-	uint8_t* pu8SrcPalBlue,							// In:  Pointer to starting source blue value
+   channel_t* pu8SrcPalRed,								// In:  Pointer to starting source red value
+   channel_t* pu8SrcPalGreen,							// In:  Pointer to starting source green value
+   channel_t* pu8SrcPalBlue,							// In:  Pointer to starting source blue value
 	int32_t lSrcPalIncBytes,						// In:  What to add to pointers to move to next value
 	int32_t lSrcX,										// In:  Source (image) X coord
 	int32_t lSrcY,										// In:  Source (image) Y coord
@@ -345,6 +346,7 @@ extern int16_t rspPrintToPage(					// Returns 0 if successfull, non-zero otherwi
 	int32_t lDstY,										// In:  Destination (page) Y coord
 	int32_t lDstW,										// In:  Destination (page) width
 	int32_t lDstH);									// In:  Distination (page) height
+#endif // NO_IMPLEMENTATION
 
 #endif // CYAN_H
 ///////////////////////////////////////////////////////////////////////////////

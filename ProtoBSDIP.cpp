@@ -336,7 +336,7 @@ int16_t RProtocolBSDIP::Open(							// Returns 0 if successful, non-zero otherwi
 
 #if defined(__unix__)
   UNUSED(usPort, sType, sOptionFlags, callback);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -496,7 +496,7 @@ int16_t RProtocolBSDIP::Close(							// Returns 0 if successfull, non-zero other
 	{
 #if defined(__unix__)
   UNUSED(bForceNow);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -563,7 +563,7 @@ int16_t RProtocolBSDIP::Close(							// Returns 0 if successfull, non-zero other
 int16_t RProtocolBSDIP::Broadcast(void)				// Returns 0 if successfull, non-zero otherwise
 	{
 #if defined(__unix__)
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -610,7 +610,7 @@ int16_t RProtocolBSDIP::Listen(							// Returns 0 if successfull, non-zero othe
 	{
 #if defined(__unix__)
   UNUSED(sMaxQueued);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -672,7 +672,7 @@ int16_t RProtocolBSDIP::Accept(						// Returns 0 on success, non-zero otherwise
 	{
 #if defined(__unix__)
   UNUSED(pProtocolClient, paddressClient);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -762,7 +762,7 @@ int16_t RProtocolBSDIP::Connect(						// Returns 0 if successfull, non-zero othe
 	{
 #if defined(__unix__)
   UNUSED(paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -881,7 +881,7 @@ int16_t RProtocolBSDIP::Send(							// Returns 0 on success, non-zero otherwise
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lNumBytes, plActualBytes);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -945,7 +945,7 @@ int16_t RProtocolBSDIP::SendTo(							// Returns 0 on success, non-zero otherwis
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lNumBytes, plActualBytes, paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -1017,7 +1017,7 @@ int16_t RProtocolBSDIP::Receive(						// Returns 0 on success, non-zero otherwis
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lMaxBytes, plActualBytes);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -1081,7 +1081,7 @@ int16_t RProtocolBSDIP::ReceiveFrom(					// Returns 0 on success, non-zero other
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lMaxBytes, plActualBytes, paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -1194,7 +1194,7 @@ bool RProtocolBSDIP::CanAcceptWithoutBlocking(void)
 bool RProtocolBSDIP::CanSendWithoutBlocking(void)
 	{
 #if defined(__unix__)
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	bool bResult = false;
 	
@@ -1245,7 +1245,7 @@ bool RProtocolBSDIP::CanSendWithoutBlocking(void)
 bool RProtocolBSDIP::CanReceiveWithoutBlocking(void)
 	{
 #if defined(__unix__)
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	bool bResult = false;
 	
@@ -1453,7 +1453,7 @@ int16_t RProtocolBSDIP::GetAddress(					// Returns 0 if successfull, non-zero ot
 	{
 #if defined(__unix__)
   UNUSED(pszName, usPort, paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 

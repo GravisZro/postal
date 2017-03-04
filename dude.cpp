@@ -1183,7 +1183,7 @@ extern bool GetDudeFireAngle(double* d_Angle);
 
 // The color range that is the same on all hoods.
 #define CONSTANT_COLOR_START_INDEX	95
-#define NUM_CONSTANT_COLOR_INDICES	(256 - CONSTANT_COLOR_START_INDEX)
+#define NUM_CONSTANT_COLOR_INDICES	(palette::size - CONSTANT_COLOR_START_INDEX)
 
 // Size of font used for status updates.
 #define STATUS_FONT_SIZE				15

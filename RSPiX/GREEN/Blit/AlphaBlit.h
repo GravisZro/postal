@@ -133,7 +133,7 @@ extern	void rspAlphaBlitT(
 //
 //====================================================================
 extern	void rspAlphaBlitT(
-                  int16_t sAlphaLevel,		// 0xFF = opaque
+                  uint8_t sAlphaLevel,		// 0xFF = opaque
 						RMultiAlpha* pMultiX,	// For current palette
 						RImage* pimSrc,			// BMP8 source image
 						RImage* pimDst,			// BMP8 destination
@@ -167,7 +167,7 @@ extern	void rspGeneralAlphaBlit(
 //
 //====================================================================
 extern	void rspGeneralAlphaBlit(
-                     int16_t sLevel,		// 0-0xFF, 0xFF = unchanged
+                     uint8_t sLevel,		// 0-0xFF, 0xFF = unchanged
 							RMultiAlpha* pX,	// for current palette
 							RImage* pimMask,	// BMP8 alpha channel mask
 							RImage* pimSrc,	// BMP8 source
@@ -192,7 +192,7 @@ extern	void rspGeneralAlphaBlit(
 //
 //====================================================================
 extern	void rspGeneralAlphaBlitT(
-                     int16_t sLevel,		// 0-0xFF, 0xFF = unchanged
+                     uint8_t sLevel,		// 0-0xFF, 0xFF = unchanged
 							RMultiAlpha* pX,	// for current palette
 							RImage* pimMask,	// BMP8 alpha channel mask
 							RImage* pimSrc,	// BMP8 source
@@ -225,7 +225,7 @@ extern	void rspGeneralAlphaBlitT(
 //
 //====================================================================
 extern	void rspFastAlphaBlitT(			
-                  int16_t sAlphaLevel,	// 0-0xFF, 0xFF = unchanged
+                  uint8_t sAlphaLevel,	// 0-0xFF, 0xFF = unchanged
 						uint8_t*** pMultiX,		// A fast multialpha table
 						RImage* pimSrc,		// BMP8 source	
 						RImage* pimDst,		// BMP8 destination

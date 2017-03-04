@@ -203,8 +203,8 @@ public:
 	// we can also scale 16-bit values, but this is not yet accessible to the user.
 
 	//----------------------------------------------------------------------
-	CDVA();
-	~CDVA(){};	// nothing to do....
+   CDVA(void);
+   ~CDVA(void){}	// nothing to do....
 	//----------------------------------------------------------------------
 	// To save on registers, make this the same array:
 	static int16_t	ms_asHighByte[DVA_SIZE * 2][256];	// for 16-bit sound

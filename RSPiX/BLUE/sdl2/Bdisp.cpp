@@ -27,14 +27,15 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <cctype>
-
-// Blue //////////////////////////////////////////////////////////////////////
+// RSPix /////////////////////////////////////////////////////////////////////
 #include <BLUE/Blue.h>
 #include <ORANGE/CDT/slist.h>
 
 // Platform //////////////////////////////////////////////////////////////////
 #include <SDL2/SDL.h>
+
+// C++ ///////////////////////////////////////////////////////////////////////
+#include <cctype>
 
 
 extern SDL_Window *sdlWindow;
@@ -54,15 +55,15 @@ typedef struct		// Stores information on usable video modes.
 	int16_t				sHeight;
 	int16_t				sColorDepth;
 	int16_t				sPages;
-	} VIDEO_MODE, *PVIDEO_MODE;
+   } video_mode_t;
 
-static RSList<VIDEO_MODE, int16_t>	slvmModes;	// List of available video modes.
+static RSList<video_mode_t, int16_t>	slvmModes;	// List of available video modes.
 
 typedef union { struct { uint8_t b; uint8_t g; uint8_t r; uint8_t a; }; uint32_t argb; } ArgbColor;
-static ArgbColor	apeApp[256];				// App's palette.  The palette
+static ArgbColor	apeApp[palette::size];				// App's palette.  The palette
 														// entries the App actually set.
 
-//static ArgbColor	apeMapped[256];			// Tweaked palette.
+//static ArgbColor	apeMapped[palette::size];			// Tweaked palette.
 														// This is the palette updated to
 														// the hardware.  apeApp is trans-
 														// lated through au8MapRed, Green,
@@ -70,11 +71,11 @@ static ArgbColor	apeApp[256];				// App's palette.  The palette
 														// updating to the hardware on
 														// rspUpdatePalette().
 
-static uint8_t au8MapRed  [256] = { 0 }; // Map of red   intensities to hardware values.  Initially an identity mapping.
-static uint8_t au8MapGreen[256] = { 0 }; // Map of green intensities to hardware values.  Initially an identity mapping.
-static uint8_t au8MapBlue [256] = { 0 }; // Map of blue  intensities to hardware values.  Initially an identity mapping.
+static channel_t au8MapRed  [palette::size] = { 0 }; // Map of red   intensities to hardware values.  Initially an identity mapping.
+static channel_t au8MapGreen[palette::size] = { 0 }; // Map of green intensities to hardware values.  Initially an identity mapping.
+static channel_t au8MapBlue [palette::size] = { 0 }; // Map of blue  intensities to hardware values.  Initially an identity mapping.
 
-static int16_t asPalEntryLocks[256];	// TRUE, if an indexed entry is locked.
+static int8_t asPalEntryLocks[palette::size];	// TRUE, if an indexed entry is locked.
 														// FALSE, if not.  Implemented as 
 														// shorts in case we ever do levels of
 														// locking.
@@ -86,141 +87,10 @@ extern bool mouse_grabbed;
 //////////////////////////////////////////////////////////////////////////////
 
 // Only set value if not nullptr.
-#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Clips [(*px,*py),(*pw,*ph)] into [(sx,sy),(sw, sh)].
-//
-//////////////////////////////////////////////////////////////////////////////
-extern int16_t Clip(	// Returns non-zero if image entirely clipped out.
-	int16_t*	px,		// Rectangle to be clipped.
-	int16_t*	py, 
-	int16_t*	pw, 
-	int16_t*	ph,
-	int16_t		sx,		// Bounding rectangle.
-	int16_t		sy, 
-	int16_t		sw, 
-	int16_t		sh)
-	{
-	if (*px < sx)
-		{
-		TRACE("Clip(): x too small.\n");
-		// Adjust width.
-		*pw -= sx - *px;
-		// Adjust x.
-		*px = sx;
-		}
-
-	if (*py < sy)
-		{
-		TRACE("Clip(): y too small.\n");
-		// Adjust height.
-		*ph -= sy - *py;
-		// Adjust y.
-		*py = sy;
-		}
-
-	if (*px + *pw > sw)
-		{
-		TRACE("Clip(): Width or x too large.\n");
-		// Adjust width.
-		*pw -= ((*px + *pw) - sw);
-		}
-
-	if (*py + *ph > sh)
-		{
-		TRACE("Clip(): Height or y too large.\n");
-		// Adjust height.
-		*ph -= ((*py + *ph) - sh);
-		}
-	
-	// Return 0 (success) if there's a width and a height left.	
-	return (int16_t)(*pw > 0 && *ph > 0 ? 0 : -1);
-	}
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Clips [(*px,*py),(*pw,*ph)] into [(sx,sy),(sw, sh)].
-//
-//////////////////////////////////////////////////////////////////////////////
-extern int16_t ClipQuiet(	// Returns non-zero if image entirely clipped out.
-	int16_t*	px,			// Rectangle to be clipped.
-	int16_t*	py, 
-	int16_t*	pw, 
-	int16_t*	ph,
-	int16_t		sx,			// Bounding rectangle.
-	int16_t		sy, 
-	int16_t		sw, 
-	int16_t		sh)
-	{
-	if (*px < sx)
-		{
-		// Adjust width.
-		*pw -= sx - *px;
-		// Adjust x.
-		*px = sx;
-		}
-
-	if (*py < sy)
-		{
-		// Adjust height.
-		*ph -= sy - *py;
-		// Adjust y.
-		*py = sy;
-		}
-
-	if (*px + *pw > sw)
-		{
-		// Adjust width.
-		*pw -= ((*px + *pw) - sw);
-		}
-
-	if (*py + *ph > sh)
-		{
-		// Adjust height.
-		*ph -= ((*py + *ph) - sh);
-		}
-	
-	// Return 0 (success) if there's a width and a height left.	
-	return (int16_t)(*pw > 0 && *ph > 0 ? 0 : -1);
-	}
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Clips [(*px,*py),(*pw,*ph)] into [(sx,sy),(sw, sh)].
-// Uses short version of function ClipQuiet(...).
-//
-//////////////////////////////////////////////////////////////////////////////
-extern int16_t ClipQuiet(	// Returns non-zero if image entirely clipped out.
-	int32_t* px,				// Rectangle to be clipped.
-	int32_t* py, 
-	int32_t*	pw, 
-	int32_t*	ph,
-	int32_t	sx,			// Bounding rectangle.
-	int32_t	sy, 
-	int32_t	sw, 
-	int32_t	sh)
-	{
-	int16_t	sX	= (int16_t)(*px);
-	int16_t sY	= (int16_t)(*py);
-	int16_t	sW	= (int16_t)(*pw);
-	int16_t	sH	= (int16_t)(*ph);
-
-	int16_t sResult	= ClipQuiet(&sX, &sY, &sW, &sH, 
-									(int16_t)sx, (int16_t)sy, (int16_t)sw, (int16_t)sh);
-
-	*px	= sX;
-	*py	= sY;
-	*pw	= sW;
-	*ph	= sH;
-
-	return sResult;
-	}
-
-
-int16_t CompareModes(PVIDEO_MODE pvm1, PVIDEO_MODE pvm2);
+int16_t CompareModes(video_mode_t* pvm1, video_mode_t* pvm2);
 
 extern void Disp_Init(void)	// Returns nothing.
 {
@@ -232,7 +102,7 @@ extern void Disp_Init(void)	// Returns nothing.
             RequestedWidth = RequestedHeight = 0;
     }
 
-    if ((RequestedWidth <= 0) || (RequestedHeight <= 0))
+    if (RequestedWidth <= 0 || RequestedHeight <= 0)
     {
         if (rspCommandLine("windowed"))
         {
@@ -274,62 +144,61 @@ extern void rspSetApplicationName(
 //
 // Compares two video modes in order of sColorDepth, sWidth, sHeight,
 // sPageFlippage.
-// Returns 0			if *pvm1 == *pvm2.
-// Returns negative	if *pvm1 < *pvm2.
-// Returns positive	if *pvm1 > *pvm2.
+// Returns 0            if *pvm1 == *pvm2.
+// Returns negative    if *pvm1 < *pvm2.
+// Returns positive    if *pvm1 > *pvm2.
 //
 //////////////////////////////////////////////////////////////////////////////
-extern int16_t CompareModes(	// Returns as described above.
-		PVIDEO_MODE	pvm1,		// First video mode to compare.
-		PVIDEO_MODE	pvm2)		// Second video mode to compare.
-	{
-   int16_t sReturn = 1;	// Assume *pvm1 > *pvm2.
+extern int16_t CompareModes(            // Returns as described above.
+        video_mode_t* pvm1,               // First video mode to compare.
+        video_mode_t* pvm2)               // Second video mode to compare.
+{
+  int16_t sReturn = 1;    // Assume *pvm1 > *pvm2.
 
-	if (pvm1->sColorDepth == pvm2->sColorDepth)
-		{
-		if (pvm1->sWidth == pvm2->sWidth)
-			{
-			if (pvm1->sHeight == pvm2->sHeight)
-				{
-				if (pvm1->sPages == pvm2->sPages)
-					{
-               sReturn = 0;
-					}
-				else
-					{
-					if (pvm1->sPages < pvm2->sPages)
-						{
-                  sReturn = -1;
-						}
-					}
-				}
-			else
-				{
-				if (pvm1->sHeight < pvm2->sHeight)
-					{
-               sReturn = -1;
-					}
-				}
-			}
-		else
-			{
-			if (pvm1->sWidth < pvm2->sWidth)
-				{
+  if (pvm1->sColorDepth == pvm2->sColorDepth)
+  {
+    if (pvm1->sWidth == pvm2->sWidth)
+    {
+      if (pvm1->sHeight == pvm2->sHeight)
+      {
+        if (pvm1->sPages == pvm2->sPages)
+        {
+          sReturn = 0;
+        }
+        else
+        {
+          if (pvm1->sPages < pvm2->sPages)
+          {
             sReturn = -1;
-				}
-			}
-		}
-	else
-		{
-		if (pvm1->sColorDepth < pvm2->sColorDepth)
-			{
-         sReturn = -1;
-			}
-		}
+          }
+        }
+      }
+      else
+      {
+        if (pvm1->sHeight < pvm2->sHeight)
+        {
+          sReturn = -1;
+        }
+      }
+    }
+    else
+    {
+      if (pvm1->sWidth < pvm2->sWidth)
+      {
+        sReturn = -1;
+      }
+    }
+  }
+  else
+  {
+    if (pvm1->sColorDepth < pvm2->sColorDepth)
+    {
+      sReturn = -1;
+    }
+  }
 
-   return sReturn;
-	}
-
+  return sReturn;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -361,7 +230,7 @@ extern int16_t rspSuggestVideoMode(		// Returns 0 if successfull, non-zero other
 	int16_t sResult = SUCCESS;	// Assume success.
 
 	// Store video mode that the app is currently iterating.
-//	PVIDEO_MODE	pvmOldModeQuery	= slvmModes.GetCurrent();
+//	video_mode_t*	pvmOldModeQuery	= slvmModes.GetCurrent();
 
 	rspQueryVideoModeReset();
 
@@ -488,11 +357,11 @@ extern int16_t rspGetVideoMode(
 
 static void addMode(int w, int h, int depth)
 {
-    PVIDEO_MODE pvm;
+    video_mode_t* pvm;
 
     if (depth >= 8)
     {
-        pvm = new VIDEO_MODE;
+        pvm = new video_mode_t;
         pvm->sWidth = w;
         pvm->sHeight = h;
         pvm->sColorDepth = 8;
@@ -502,7 +371,7 @@ static void addMode(int w, int h, int depth)
 
     if (depth >= 16)
     {
-        pvm = new VIDEO_MODE;
+        pvm = new video_mode_t;
         pvm->sWidth = w;
         pvm->sHeight = h;
         pvm->sColorDepth = 16;
@@ -512,7 +381,7 @@ static void addMode(int w, int h, int depth)
 
     if (depth >= 24)
     {
-        pvm = new VIDEO_MODE;
+        pvm = new video_mode_t;
         pvm->sWidth = w;
         pvm->sHeight = h;
         pvm->sColorDepth = 32;
@@ -566,7 +435,7 @@ extern int16_t rspQueryVideoMode(			// Returns 0 for each valid mode, then non-z
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
-	PVIDEO_MODE	pvm	= slvmModes.GetCurrent();
+   video_mode_t*	pvm	= slvmModes.GetCurrent();
 
 	if (pvm != nullptr)
 		{
@@ -658,7 +527,7 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
         //ASSERT(sWidth == 640);
         ASSERT(sHeight == 480);
 
-        for (size_t i = 0; i < 256; i++)
+        for (uint16_t i = 0; i < palette::size; i++)
             apeApp[i].a = 0xFF;
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
@@ -993,18 +862,18 @@ extern int16_t rspAllowPageFlip(void)	// Returns 0 on success.
 extern void rspSetPaletteEntries(
 	int16_t sStartIndex,			// Palette entry to start copying to (has no effect on source!)
 	int16_t sCount,					// Number of palette entries to do
-	uint8_t* pucRed,		// Pointer to first red component to copy from
-	uint8_t* pucGreen,	// Pointer to first green component to copy from
-	uint8_t* pucBlue,		// Pointer to first blue component to copy from
+   channel_t* pucRed,		// Pointer to first red component to copy from
+   channel_t* pucGreen,	// Pointer to first green component to copy from
+   channel_t* pucBlue,		// Pointer to first blue component to copy from
 	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up destination pointers.
-	uint8_t*	pucDstRed	= &(apeApp[sStartIndex].r);
-	uint8_t*	pucDstGreen	= &(apeApp[sStartIndex].g);
-	uint8_t*	pucDstBlue	= &(apeApp[sStartIndex].b);
+   channel_t*	pucDstRed	= &(apeApp[sStartIndex].r);
+   channel_t*	pucDstGreen	= &(apeApp[sStartIndex].g);
+   channel_t*	pucDstBlue	= &(apeApp[sStartIndex].b);
 
 	// Set up lock pointer.
-	int16_t*	psLock		= &(asPalEntryLocks[sStartIndex]);
+   int8_t* psLock = asPalEntryLocks + sStartIndex;
 
 	while (sCount-- > 0)
 		{
@@ -1039,7 +908,7 @@ void rspSetPaletteEntry(
    uint8_t ucGreen,				// Green component (0x00 to 0xFF)
    uint8_t ucBlue)				// Blue component (0x00 to 0xFF)
 	{
-	ASSERT(sEntry >= 0 && sEntry < 256);
+   ASSERT(sEntry >= 0 && sEntry < palette::size);
 
 	if (asPalEntryLocks[sEntry] == 0)
 		{
@@ -1061,7 +930,7 @@ void rspGetPaletteEntry(
    int16_t* psGreen,			// Green component (0x00 to 0xFF) returned if not nullptr.
    int16_t* psBlue)				// Blue component (0x00 to 0xFF) returned if not nullptr.
 	{
-	ASSERT(sEntry >= 0 && sEntry < 256);
+   ASSERT(sEntry >= 0 && sEntry < palette::size);
 
 	SET(psRed,		apeApp[sEntry].r);
 	SET(psGreen,	apeApp[sEntry].g);
@@ -1080,15 +949,15 @@ void rspGetPaletteEntry(
 extern void rspGetPaletteEntries(
 	int16_t sStartIndex,			// Palette entry to start copying from
 	int16_t sCount,					// Number of palette entries to do
-	uint8_t* pucRed,		// Pointer to first red component to copy to
-	uint8_t* pucGreen,	// Pointer to first green component to copy to
-	uint8_t* pucBlue,		// Pointer to first blue component to copy to
+   channel_t* pucRed,		// Pointer to first red component to copy to
+   channel_t* pucGreen,	// Pointer to first green component to copy to
+   channel_t* pucBlue,		// Pointer to first blue component to copy to
 	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up source pointers.
-	uint8_t*	pucSrcRed	= &(apeApp[sStartIndex].r);
-	uint8_t*	pucSrcGreen	= &(apeApp[sStartIndex].g);
-	uint8_t*	pucSrcBlue	= &(apeApp[sStartIndex].b);
+   channel_t*	pucSrcRed	= &(apeApp[sStartIndex].r);
+   channel_t*	pucSrcGreen	= &(apeApp[sStartIndex].g);
+   channel_t*	pucSrcBlue	= &(apeApp[sStartIndex].b);
 
 	while (sCount-- > 0)
 		{
@@ -1130,15 +999,15 @@ extern void rspUpdatePalette(void)
 extern void rspSetPaletteMaps(
 	int16_t sStartIndex,			// Map entry to start copying to (has no effect on source!)
 	int16_t sCount,					// Number of map entries to do
-	uint8_t* pucRed,		// Pointer to first red component to copy from
-	uint8_t* pucGreen,	// Pointer to first green component to copy from
-	uint8_t* pucBlue,		// Pointer to first blue component to copy from
+   channel_t* pucRed,		// Pointer to first red component to copy from
+   channel_t* pucGreen,	// Pointer to first green component to copy from
+   channel_t* pucBlue,		// Pointer to first blue component to copy from
 	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up destination pointers.
-	uint8_t*	pucDstRed	= &(au8MapRed[sStartIndex]);
-	uint8_t*	pucDstGreen	= &(au8MapGreen[sStartIndex]);
-	uint8_t*	pucDstBlue	= &(au8MapBlue[sStartIndex]);
+   channel_t*	pucDstRed	= &(au8MapRed[sStartIndex]);
+   channel_t*	pucDstGreen	= &(au8MapGreen[sStartIndex]);
+   channel_t*	pucDstBlue	= &(au8MapBlue[sStartIndex]);
 
 	while (sCount-- > 0)
 		{
@@ -1165,15 +1034,15 @@ extern void rspSetPaletteMaps(
 extern void rspGetPaletteMaps(
 	int16_t sStartIndex,			// Map entry to start copying from (has no effect on dest!)
 	int16_t sCount,					// Number of map entries to do
-	uint8_t* pucRed,		// Pointer to first red component to copy to
-	uint8_t* pucGreen,	// Pointer to first green component to copy to
-	uint8_t* pucBlue,		// Pointer to first blue component to copy to
+   channel_t* pucRed,		// Pointer to first red component to copy to
+   channel_t* pucGreen,	// Pointer to first green component to copy to
+   channel_t* pucBlue,		// Pointer to first blue component to copy to
 	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up source pointers.
-	uint8_t*	pucSrcRed	= &(au8MapRed[sStartIndex]);
-	uint8_t*	pucSrcGreen	= &(au8MapGreen[sStartIndex]);
-	uint8_t*	pucSrcBlue	= &(au8MapBlue[sStartIndex]);
+   channel_t*	pucSrcRed	= &(au8MapRed[sStartIndex]);
+   channel_t*	pucSrcGreen	= &(au8MapGreen[sStartIndex]);
+   channel_t*	pucSrcBlue	= &(au8MapBlue[sStartIndex]);
 
 	while (sCount-- > 0)
 		{
@@ -1197,7 +1066,7 @@ extern void rspLockPaletteEntries(
 	int16_t	sCount)					// Number of palette entries to lock.
 	{
 	// Set up iterator pointer.
-	int16_t*	psLock	= &(asPalEntryLocks[sStartIndex]);
+   int8_t* psLock = asPalEntryLocks + sStartIndex;
 
 	while (sCount-- > 0)
 		{
@@ -1213,7 +1082,7 @@ extern void rspUnlockPaletteEntries(
 	int16_t	sCount)					// Number of palette entries to lock.
 	{
 	// Set up iterator pointer.
-	int16_t*	psLock	= &(asPalEntryLocks[sStartIndex]);
+   int8_t* psLock	= asPalEntryLocks + sStartIndex;
 
 	while (sCount-- > 0)
 		{
