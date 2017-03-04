@@ -213,7 +213,7 @@ extern bool DoPreMenuTrans(void)
     // unused member of the struct to store the goal.
     for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
       //    m_pOrig[i].alpha = (unsigned char)((double)(0xFF - m_pOrig[i].red) * m_dReduce) & SHADE_MASK;
-      m_pOrig[i].alpha = (uint8_t)((double)(m_pOrig[i].red) * m_dReduce) & SHADE_MASK;
+      m_pOrig[i].alpha = uint8_t((double)(m_pOrig[i].red) * m_dReduce) & SHADE_MASK;
 
     // Get base time for next step
     m_lBaseTime = rspGetMilliseconds();
@@ -557,9 +557,9 @@ extern bool DoPostMenuTrans(void)
     for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
     {
       double dRedDiff = m_pOrig[i].red - m_pOrig[i].alpha;
-      m_pWork[i].red = m_pOrig[i].alpha + (uint8_t)(dRedDiff * dPercent);
-      m_pWork[i].green = (uint8_t)((double)m_pOrig[i].green * dPercent);
-      m_pWork[i].blue = (uint8_t)((double)m_pOrig[i].blue * dPercent);
+      m_pWork[i].red = m_pOrig[i].alpha + uint8_t(dRedDiff * dPercent);
+      m_pWork[i].green = uint8_t((double)m_pOrig[i].green * dPercent);
+      m_pWork[i].blue = uint8_t((double)m_pOrig[i].blue * dPercent);
     }
 
     // Set new palette
