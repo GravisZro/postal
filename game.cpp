@@ -1806,8 +1806,7 @@ static int16_t GameCore(void)		// Returns 0 on success.
 #endif
 #endif // SPAWN
 					break;
-#if TARGET == POSTAL_2015
-#ifndef SPAWN
+#if TARGET == POSTAL_2015 && !defined(SPAWN)
 				case ACTION_PLAY_ADDON2:
 					// Remember menu to go back to.
 					pmenuStart	= GetCurrentMenu();
@@ -1845,7 +1844,9 @@ static int16_t GameCore(void)		// Returns 0 on success.
 	AndroidSetScreenMode(TOUCH_SCREEN_MENU);
 #endif
 					break;
-				case ACTION_PLAY_ALL:
+#endif
+#ifndef SPAWN
+            case ACTION_PLAY_ALL:
 					// Remember menu to go back to.
 					pmenuStart	= GetCurrentMenu();
 					// End the menu.
@@ -1890,7 +1891,6 @@ static int16_t GameCore(void)		// Returns 0 on success.
 						g_bLastLevelDemo = false;
 					break;			
 #endif // SPAWN
-#endif // POSTAL_2015		
 
 				
 				//------------------------------------------------------------------------------
