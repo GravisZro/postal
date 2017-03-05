@@ -361,7 +361,7 @@
 
 #include <list>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 # include "log.h"
 // For file timestamp.
 # include <windows.h>
@@ -5060,7 +5060,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 
 
 					/*** 12/5/97 AJC ***/
-	#ifdef WIN32
+	#if defined(_WIN32)
 					if (info.IsMP())
 						OpenLogFile();
 	#endif
@@ -5407,7 +5407,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 						} while (!sResult && !info.IsGameOver() && !g_bLastLevelDemo);
 
 					/*** 12/5/97 AJC ***/
-	#ifdef WIN32
+	#if defined(_WIN32)
 					if (info.IsMP())
 						CloseLogFile();
 	#endif
@@ -5764,7 +5764,7 @@ void Play_GetApplicationDescriptor(			// Returns nothing.
 	ASSERT(strlen(DEFAULT_APP_TIMESTAMP) < sMaxBytes);
 	strcpy(pszText, DEFAULT_APP_TIMESTAMP);
 
-	#if defined(WIN32)
+	#if defined(_WIN32)
       char	szModuleFileName[PATH_MAX];
 		if (GetModuleFileName(nullptr, szModuleFileName, sizeof(szModuleFileName)) > 0)
 			{

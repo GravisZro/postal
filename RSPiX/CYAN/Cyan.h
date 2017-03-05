@@ -34,7 +34,7 @@
 #ifndef CYAN_H
 #define CYAN_H
 
-#ifndef WIN32
+#if defined(__unix__)
 #include <sys/param.h>
 #endif
 

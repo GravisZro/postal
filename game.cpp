@@ -553,7 +553,7 @@
 
 #include <ctime>
 
-#if defined(WIN32)
+#if defined(_WIN32)
    #include <direct.h>
 #else
    #include <unistd.h>
@@ -1185,7 +1185,7 @@ extern void TheGame(void)
           const char* pszDevelopmentPath = "\\\\narnia\\projects\\";
          if (strncasecmp(FullPathCD("."), pszDevelopmentPath, strlen(pszDevelopmentPath)) != 0)
 				{
-#if defined(WIN32)
+#if defined(_WIN32)
 				if (GetDriveType(FullPathCD(".") ) != DRIVE_CDROM)
 #else
 				#error MUST_BE_ON_CD feature is currently implemented only for Win32
@@ -1336,11 +1336,11 @@ static int16_t GameCore(void)		// Returns 0 on success.
    uint16_t usDemoCount = 0;
 
 #ifdef CHECK_EXPIRATION_DATE
-	#ifdef WIN32
+# if defined(_WIN32)
 		char acTime[100];
 		strcpy(acTime, asctime(gmtime(&g_lExpTime)));
 		#define NEXT_LINE "\n\n"
-	#else
+# else
 		char acTime[100];
 		uint32_t lTime = g_lExpTime + (((365 * 70UL) + 17) * 24 * 60 * 60); // time_fudge 1900->1970
 		strcpy(acTime, ctime(&lTime));
@@ -1348,7 +1348,7 @@ static int16_t GameCore(void)		// Returns 0 on success.
       if (pCR != nullptr)
 			*pCR = 0;
 		#define NEXT_LINE "\r\r"
-	#endif	// WIN32
+# endif	// _WIN32
 
 	rspMsgBox(
 		RSP_MB_ICN_INFO | RSP_MB_BUT_OK,
@@ -1383,9 +1383,9 @@ static int16_t GameCore(void)		// Returns 0 on success.
 		acTime);
 #endif	// CHECK_EXPIRATION_DATE
 
-	#ifndef _WIN32
+# if !defined(_WIN32)
 	UnlockAchievement(ACHIEVEMENT_PLAY_ON_NON_WINDOWS_PLATFORM);
-	#endif
+# endif
 
 	// Clear end of game flag - play will set the flag if the player wins the game
 	g_bLastLevelDemo = false;
@@ -2372,7 +2372,7 @@ extern int16_t SubPathOpenBox(		// Returns 0 on success, negative on error, 1 if
     if (sLastIndex > 0)
       sLastIndex--;
 
-#ifdef WIN32
+#if defined(_WIN32)
     // If base path doesn't end with a slash, add one
     if (szBasePath[sLastIndex] != SYSTEM_PATH_SEPARATOR)
     {
@@ -3878,7 +3878,7 @@ static void GameGetRegistry(void)
    szKey[35] = 0xFE;
 	szKey[36] = 0x00;
 
-#ifdef WIN32
+#if defined(_WIN32)
 
 	DWORD dwDisposition;
 	DWORD dwType;
@@ -3977,7 +3977,7 @@ static void GameGetRegistry(void)
 		g_lRegTime = EXPIRATION_DATE;
  	}
 
-#else // WIN32
+#else // _WIN32
 	// Do mac version here.
 	char szPath[512];
 	time( &lTime );
@@ -4031,7 +4031,7 @@ static void GameGetRegistry(void)
 	}
 	
 
-#endif // WIN32
+#endif // _WIN32
 	if (g_lRegTime < RELEASE_DATE)
 		g_lRegTime = EXPIRATION_DATE;
 
@@ -4092,7 +4092,7 @@ static void GameSetRegistry(void)
    szKey[35] = 0xF5;
 	szKey[36] = 0x00;
 
-#ifdef WIN32
+#if defined(_WIN32)
 
 	char szTime[40];
 	DWORD dwDisposition;
@@ -4157,7 +4157,7 @@ static void GameSetRegistry(void)
 		// Free the buffer.
 		LocalFree( lpMsgBuf );
  	}
-#else // WIN32
+#else // _WIN32
 	// Do the Mac version here
 	char szPath[512];
 	RFile rfPref;
@@ -4181,7 +4181,7 @@ static void GameSetRegistry(void)
  	}
 	// Open the prefs file and write the value here.
 
-#endif // WIN32
+#endif // _WIN32
 
 #endif // CHECK_EXPIRATION_DATE
 }
@@ -4280,7 +4280,7 @@ extern void SeedRand(
 // generates a fatal "multiple definitions of rand()" error.  For now, only
 // do this in debug mode.
 #ifdef _DEBUG
-#if defined(WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__)
 extern int rand(void)
 	{
 	rspMsgBox(
@@ -4777,7 +4777,7 @@ int16_t CorrectifyBasePath(								// Returns 0 if successfull, non-zero otherwi
         if (sLastIndex > 0)
           sLastIndex--;
 
-#if 1 //def WIN32
+#if 1 //def _WIN32
         // If base path doesn't end with a slash, add one
         if (pszBasePath[sLastIndex] != SYSTEM_PATH_SEPARATOR)
         {

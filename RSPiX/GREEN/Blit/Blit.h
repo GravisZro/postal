@@ -168,7 +168,7 @@ extern	int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 // The direction flags are non-zero to operate a direction.  They refer to
 // the side shrinking.
 //
-#ifdef WIN32
+#if defined(_WIN32)
 	template <class PIXSIZE>
 	extern	int16_t	rspLasso(PIXSIZE ignoreColor,RImage* pimSrc,int16_t &x,int16_t &y,int16_t &w,int16_t &h,
 						int lFlag=1,int rFlag=1,int tFlag=1,int bFlag=1);
@@ -180,7 +180,7 @@ extern	int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 
 
 /* no restrictions
-#ifdef WIN32
+#if defined(_WIN32)
 	template <class PIXSIZE>
 	extern	void rspPlot(PIXSIZE color, RImage* pimDst,short sX,short sY);
 #else	// MAC
@@ -198,7 +198,7 @@ constexpr void rspPlot(PIXSIZE color, RImage* pimDst, int16_t sX, int16_t sY)
 }
 
 // no restrictions
-#ifdef WIN32
+#if defined(_WIN32)
 	template <class PIXSIZE>
 	extern	void rspClipPlot(PIXSIZE color, RImage* pimDst,int16_t sX,int16_t sY,const RRect* prClip);
 #else	// MAC

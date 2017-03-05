@@ -630,9 +630,9 @@ inline int16_t Add(					// Returns 0 on success.
 //
 ///////////////////////////////////////////////////////////////////////////
 template <class COLOR>		// Can be uint8_t, uint16_t, or uint32_t.
-#ifdef WIN32	// Mac assumes extern.
+#if defined(_WIN32)	// Mac assumes extern.
 	extern 
-#endif // WIN32
+#endif // _WIN32
 int16_t rspLassoNext(	// Returns 0 if a polygon found,
 									// 1 if no polygon found,
 									// negative if an error occurred (most likely

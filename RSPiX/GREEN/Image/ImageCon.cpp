@@ -592,7 +592,7 @@ int16_t ConvertToSystem(RImage* pImage)
 {
 	int16_t sReturn = RImage::NOT_SUPPORTED;
 
-#ifdef WIN32
+#if defined(_WIN32)
 	switch (pImage->m_type)
 	{
 		case RImage::SYSTEM8:

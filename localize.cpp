@@ -211,7 +211,7 @@ extern const char g_pszCriticalErrorTitle[] = APP_NAME;
 extern const char g_pszBadBlueInit[] =
 	"A system incompatibility has been detected."
 	"\n\n"
-#ifdef WIN32
+#if defined(_WIN32)
 	"Updating your video and/or sound drivers may solve this problem."
 	"\n\n"
 #endif

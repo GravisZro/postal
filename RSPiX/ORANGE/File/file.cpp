@@ -152,7 +152,7 @@
 #include <cctype>
 #endif
 
-#ifdef WIN32
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
 #include <io.h>
@@ -181,7 +181,7 @@ typedef HRESULT (WINAPI *fnSHGetFolderPathW)(HWND hwnd, int nFolder, HANDLE hTok
 //////////////////////////////////////////////////////////////////////////////
 // Module specific pragmas.
 //////////////////////////////////////////////////////////////////////////////
-#if defined(WIN32)
+#if defined(_WIN32)
 	#pragma warning (disable: 4127) // conditional expression is constant.
 #endif
 
@@ -349,7 +349,7 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
         }
         else
         {
-#ifdef WIN32
+#if defined(_WIN32)
             /*
              * Vista and later has a new API for this, but SHGetFolderPath works there,
              *  and apparently just wraps the new API. This is the new way to do it:
@@ -466,11 +466,11 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
                 if (access(finalname, F_OK) == -1)
                 {
                     TRACE("Making directory \"%s\"\n", finalname);
-                    #ifdef WIN32
+#if defined(_WIN32)
                     mkdir(finalname);
-                    #else
+#else
                     mkdir(finalname, S_IRWXU);
-                    #endif
+#endif
                 }
                 *ptr = '/';
             }

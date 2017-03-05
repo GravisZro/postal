@@ -430,7 +430,7 @@ const char* g_pszNetStat_LoginDeniedError				= "Login failed";
 const char* g_pszNetStat_JoinDeniedError				= "Host refused join request";
 const char* g_pszNetStat_UnknownError					= "Network error (general failure)";
 const char* g_pszNetStat_ProgramError					= "Network error (generic failure)";
-#if defined(WIN32)
+#if defined(_WIN32)
    const char* g_pszNetStat_ClientPlatformMismatchError	= "Cannot login to host because it is a Mac";
    const char* g_pszNetStat_ServerPlatformMismatchError	= "Cannot allow client to connect because it is a Mac";
 #else

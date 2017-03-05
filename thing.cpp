@@ -35,7 +35,7 @@
 //							Also, now first item in list of children is given the focus
 //							instead of OK item.
 //							Also, also, RDirtyRect is given a clip rect so we don't
-//							have to hear Blue complain about it.	
+//							have to hear Blue complain about it.
 //
 //		01/29/97	CMI	Added m_u16InstanceId, an identifier unique to each instance
 //							of CThing within its Realm.  Also, added the initialization
@@ -259,7 +259,7 @@
 #include "SoundThing.h"
 #include "band.h"
 #include "item3d.h"
-#include "barrel.h"					
+#include "barrel.h"
 #include "mine.h"
 #include "dispenser.h"
 #include "fireball.h"
@@ -293,7 +293,7 @@
 int16_t CThing::ms_sDetectStaticInits = 1;
 
 // This is used by DoGui() to perform GUI processing.
-RProcessGui	CThing::ms_pgDoGui;
+RProcessGui   CThing::ms_pgDoGui;
 
 
 // Array of class info
@@ -302,67 +302,67 @@ RProcessGui	CThing::ms_pgDoGui;
 // include the headers for each class.  Sounds like an RImage-style solution
 // might work, but I'm not sure exactly how.
 CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
-	{	// Object Allocator					Preload function			Object Name				User can create in Editor
-		// =====================			=====================	================
-		{ CHood::Construct,					0,								"Hood",					false	},
-		{ CDude::Construct,					0,								"Dude",					false	},
-		{ CDoofus::Construct,				0,								"Doofus",				false	},
-		{ nullptr, /* Tkachuk */				0,								"Tkachuk",				false },
-		{ nullptr, /* CRocketMan */			0,								"RocketMan",			false	},
-		{ nullptr, /* CGrenader */				0,								"Grenader",				false	},
-		{ CRocket::Construct,				CRocket::Preload,			"Rocket",				false	},
-		{ CGrenade::Construct,				CGrenade::Preload,		"Grenade",				false	},
-		{ CBall::Construct,					0,								"Ball",					false	},
-		{ CExplode::Construct,				CExplode::Preload,		"Explode",				false	},
-		{ CBouy::Construct,					0,								"Buoy",					true  },
-		{ CNavigationNet::Construct,		0,								"NavNet",				true  },
-		{ CGameEditThing::Construct,		0,								"GameEditThing",		false },
-		{ CNapalm::Construct,				CNapalm::Preload,			"Napalm",				false },
-		{ CFire::Construct,					CFire::Preload,			"Fire",					false },
-		{ nullptr, /* CImbecile */				0,								"Imbecile",				false	},
-		{ CFirebomb::Construct,				CFirebomb::Preload,		"Firebomb",				false },
-		{ CFirefrag::Construct,				0,								"Firefrag",				false },
-		{ CAnimThing::Construct,			0,								"AnimThing",			true	},
-		{ CSoundThing::Construct,			0,								"SoundThing",			true	},
-		{ nullptr, /* CGunner */				0,								"Gunner",				false	},
-		{ CBand::Construct,					0,								"Band",					true  },
-		{ CItem3d::Construct,				0,								"Item3d",				true	},
-		{ CBarrel::Construct,				0,								"Barrel",				true	},
-		{ CMine::ConstructProximity,		0,								"ProximityMine",		true  },
-		{ CDispenser::Construct,			0,								"Dispenser",			true	},
-		{ CFireball::Construct,				CFireball::Preload,		"Fireball",				false },
-		{ nullptr, /* CCop */					0,								"Cop",					false	},
-		{ nullptr, /* CPistol */				0,								"Pistol",				false },
-		{ nullptr, /* CMachineGun */			0,								"MachineGun",			false },
-		{ nullptr, /* CShotGun */				0,								"ShotGun",				false },
-		{ CPerson::Construct,				0,								"Person",				true	},
-		{ CMine::ConstructTimed,			CMine::Preload,			"TimedMine",			true	},
-		{ CMine::ConstructBouncingBetty,	0,/*CMine::Preload*/		"BouncingBettyMine",	true	},
-		{ CMine::ConstructRemoteControl,	0,/*CMine::Preload*/		"RemoteControlMine",	false	},
-		{ CPylon::Construct,					0,								"Pylon",					true  },
-		{ CPowerUp::Construct,				CPowerUp::Preload,		"PowerUp",				true  },
-		{ COstrich::Construct,				0,								"Ostrich",				true  },
-		{ CTrigger::Construct,				0,								"Trigger",				false },
-		{ CHeatseeker::Construct,			CHeatseeker::Preload,	"Heatseeker",			false },
-		{ CChunk::Construct,					0,								"Chunk",					false },
-		{ nullptr, /* CAssault */				0,								"AssaultWeapon",		false },
-		{ CSentry::Construct,				0,								"Sentry",				true	},
-		{ nullptr, /* CSentryGun */			0,								"CentryGun",			false	},
-		{ CWarp::Construct,					0,								"Warp",					true	},
-		{ CDemon::Construct,					CDemon::Preload,			"Demon",					true  },
-		{ nullptr, /* CCharacter */			CCharacter::Preload,		"Character",			false	},
-		{ nullptr, /*CGoalTimer */				0,								"GoalTimer",			false },
-		{ CFlag::Construct,					0,								"Flag",					true  },
-		{ CFlagbase::Construct,				0,								"Flagbase",				true  },
-		{ CFirestream::Construct,			0,								"Firestream",			false },
-		{ CDeathWad::Construct,				CDeathWad::Preload,		"DeathWad",				false	},
-		{ nullptr, /*CDoubleBarrel */			0,								"DoubleBarrel",		false	},
-		{ nullptr, /*CUziID */			0,										"Uzi",					false	},
-		{ nullptr, /*CAutoRifleID */			0,								"AutoRifle",			false	},
-		{ nullptr, /*CSmallPistolID */		0,								"SmallPistol",			false	},
-		{ CGrenade::ConstructDynamite,	0,								"Dynamite",				false	},
-		{ CSndRelay::Construct,				0,								"SndRelay",				true	},
-	};
+{ // Object Allocator               Preload function         Object Name            User can create in Editor
+  // =====================         =====================   ================
+   { CHood::Construct,                0,                        "Hood",               false   },
+   { CDude::Construct,                0,                        "Dude",               false   },
+   { CDoofus::Construct,              0,                        "Doofus",             false   },
+   { nullptr, /* Tkachuk */           0,                        "Tkachuk",            false   },
+   { nullptr, /* CRocketMan */        0,                        "RocketMan",          false   },
+   { nullptr, /* CGrenader */         0,                        "Grenader",           false   },
+   { CRocket::Construct,              CRocket::Preload,         "Rocket",             false   },
+   { CGrenade::Construct,             CGrenade::Preload,        "Grenade",            false   },
+   { CBall::Construct,                0,                        "Ball",               false   },
+   { CExplode::Construct,             CExplode::Preload,        "Explode",            false   },
+   { CBouy::Construct,                0,                        "Buoy",               true    },
+   { CNavigationNet::Construct,       0,                        "NavNet",             true    },
+   { CGameEditThing::Construct,       0,                        "GameEditThing",      false   },
+   { CNapalm::Construct,              CNapalm::Preload,         "Napalm",             false   },
+   { CFire::Construct,                CFire::Preload,           "Fire",               false   },
+   { nullptr, /* CImbecile */         0,                        "Imbecile",           false   },
+   { CFirebomb::Construct,            CFirebomb::Preload,       "Firebomb",           false   },
+   { CFirefrag::Construct,            0,                        "Firefrag",           false   },
+   { CAnimThing::Construct,           0,                        "AnimThing",          true    },
+   { CSoundThing::Construct,          0,                        "SoundThing",         true    },
+   { nullptr, /* CGunner */           0,                        "Gunner",             false   },
+   { CBand::Construct,                0,                        "Band",               true    },
+   { CItem3d::Construct,              0,                        "Item3d",             true    },
+   { CBarrel::Construct,              0,                        "Barrel",             true    },
+   { CMine::ConstructProximity,       0,                        "ProximityMine",      true    },
+   { CDispenser::Construct,           0,                        "Dispenser",          true    },
+   { CFireball::Construct,            CFireball::Preload,       "Fireball",           false   },
+   { nullptr, /* CCop */              0,                        "Cop",                false   },
+   { nullptr, /* CPistol */           0,                        "Pistol",             false   },
+   { nullptr, /* CMachineGun */       0,                        "MachineGun",         false   },
+   { nullptr, /* CShotGun */          0,                        "ShotGun",            false   },
+   { CPerson::Construct,              0,                        "Person",             true    },
+   { CMine::ConstructTimed,           CMine::Preload,           "TimedMine",          true    },
+   { CMine::ConstructBouncingBetty,   0,/*CMine::Preload*/      "BouncingBettyMine",  true    },
+   { CMine::ConstructRemoteControl,   0,/*CMine::Preload*/      "RemoteControlMine",  false   },
+   { CPylon::Construct,               0,                        "Pylon",              true    },
+   { CPowerUp::Construct,             CPowerUp::Preload,        "PowerUp",            true    },
+   { COstrich::Construct,             0,                        "Ostrich",            true    },
+   { CTrigger::Construct,             0,                        "Trigger",            false   },
+   { CHeatseeker::Construct,          CHeatseeker::Preload,     "Heatseeker",         false   },
+   { CChunk::Construct,               0,                        "Chunk",              false   },
+   { nullptr, /* CAssault */          0,                        "AssaultWeapon",      false   },
+   { CSentry::Construct,              0,                        "Sentry",             true    },
+   { nullptr, /* CSentryGun */        0,                        "CentryGun",          false   },
+   { CWarp::Construct,                0,                        "Warp",               true    },
+   { CDemon::Construct,               CDemon::Preload,          "Demon",              true    },
+   { nullptr, /* CCharacter */        CCharacter::Preload,      "Character",          false   },
+   { nullptr, /*CGoalTimer */         0,                        "GoalTimer",          false   },
+   { CFlag::Construct,                0,                        "Flag",               true    },
+   { CFlagbase::Construct,            0,                        "Flagbase",           true    },
+   { CFirestream::Construct,          0,                        "Firestream",         false   },
+   { CDeathWad::Construct,            CDeathWad::Preload,       "DeathWad",           false   },
+   { nullptr, /*CDoubleBarrel */      0,                        "DoubleBarrel",       false   },
+   { nullptr, /*CUziID */             0,                        "Uzi",                false   },
+   { nullptr, /*CAutoRifleID */       0,                        "AutoRifle",          false   },
+   { nullptr, /*CSmallPistolID */     0,                        "SmallPistol",        false   },
+   { CGrenade::ConstructDynamite,     0,                        "Dynamite",           false   },
+   { CSndRelay::Construct,            0,                        "SndRelay",           true    },
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -373,55 +373,55 @@ CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
 ////////////////////////////////////////////////////////////////////////////////
 // Default (and only) constructor
 ////////////////////////////////////////////////////////////////////////////////
-CThing::CThing(
-	CRealm* pRealm,										// In:  Pointer to realm
-	ClassIDType id)										// In:  Class ID
-	{
-	// Make sure CThing static's have been initialized by C++ runtime
-	if (ms_sDetectStaticInits != 1)
-		TRACE("CThing::CThing(): Can't create global/static objects based on CThing!\n");
+CThing::CThing(                   // Contructor
+    CRealm* pRealm,                 // In:  Pointer to realm
+    ClassIDType id)                 // In:  Class ID
+{
+  // Make sure CThing static's have been initialized by C++ runtime
+  if (ms_sDetectStaticInits != 1)
+    TRACE("CThing::CThing(): Can't create global/static objects based on CThing!\n");
 
-	// Save class id so we have it quickly avaiable in destructor
-	m_id = id;
+  // Save class id so we have it quickly avaiable in destructor
+  m_id = id;
 
-	// Default to calling startup and shutdown.  What could be the harm?!
-	m_sCallStartup		= TRUE;
-	m_sCallShutdown	= TRUE;
+  // Default to calling startup and shutdown.  What could be the harm?!
+  m_sCallStartup  = TRUE;
+  m_sCallShutdown = TRUE;
 
-	// Save realm
-	m_pRealm = pRealm;
+  // Save realm
+  m_pRealm = pRealm;
 
-	m_everything.m_powner = this;
-	m_everything.m_pnNext = nullptr;
-	m_everything.m_pnPrev = nullptr;
-	m_nodeClass.m_powner = this;
-	m_nodeClass.m_pnNext = nullptr;
-	m_nodeClass.m_pnPrev = nullptr;
+  m_everything.m_powner = this;
+  m_everything.m_pnNext = nullptr;
+  m_everything.m_pnPrev = nullptr;
+  m_nodeClass.m_powner  = this;
+  m_nodeClass.m_pnNext  = nullptr;
+  m_nodeClass.m_pnPrev  = nullptr;
 
-	// Add this object to realm and save its assigned position in realm's container
-//	pRealm->AddThing(this, id, &m_iterEvery, &m_iterClass);
-	pRealm->AddThing(this, id);
+  // Add this object to realm and save its assigned position in realm's container
+  //   pRealm->AddThing(this, id, &m_iterEvery, &m_iterClass);
+  pRealm->AddThing(this, id);
 
-	// Start out with no ID.
-	m_u16InstanceId	= CIdBank::IdNil;
+  // Start out with no ID.
+  m_u16InstanceId = CIdBank::IdNil;
 
-	// Clear editor's RHot*.
-	m_phot				= nullptr;
-	}
+  // Clear editor's RHot*.
+  m_phot = nullptr;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
 ////////////////////////////////////////////////////////////////////////////////
 CThing::~CThing()
-	{
-	// Remove this object from realm
-//	m_pRealm->RemoveThing(m_id, m_iterEvery, m_iterClass);
-	m_pRealm->RemoveThing(this);
-	
-	// Release this fellow's ID.
-	m_pRealm->m_idbank.Release(m_u16InstanceId);
-	}
+{
+  // Remove this object from realm
+  //   m_pRealm->RemoveThing(m_id, m_iterEvery, m_iterClass);
+  m_pRealm->RemoveThing(this);
+
+  // Release this fellow's ID.
+  m_pRealm->m_idbank.Release(m_u16InstanceId);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -432,27 +432,26 @@ CThing::~CThing()
 //
 ////////////////////////////////////////////////////////////////////////////////
 // static
-void CThing::SetGuiToNotify(	// Returns nothing.
-	RGuiItem* pguiNotifier)		// In:  The pressed GUI.
-	{
-	ms_pgDoGui.SetGuiToNotify(pguiNotifier);
-	}
+void CThing::SetGuiToNotify(      // Returns nothing.
+    RGuiItem* pguiNotifier)         // In:  The pressed GUI.
+{
+  ms_pgDoGui.SetGuiToNotify(pguiNotifier);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Callback from ms_pgDoGui for system update.
 //
 ////////////////////////////////////////////////////////////////////////////////
-// static							// Static for use as a callback.
-int32_t CThing::SysUpdate(			// Returns a non-zero ID to abort or zero
-										// to continue.                          
-	RInputEvent*	pie)			// Out: Next input event to process.     
-	{
-	UpdateSystem();
-	rspGetNextInputEvent(pie);
+// static                         // Static for use as a callback.
+int32_t CThing::SysUpdate(        // Returns a non-zero ID to abort or zero to continue.
+    RInputEvent* pie)               // Out: Next input event to process.
+{
+  UpdateSystem();
+  rspGetNextInputEvent(pie);
 
-   return SUCCESS;
-	}
+  return SUCCESS;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -467,20 +466,20 @@ int32_t CThing::SysUpdate(			// Returns a non-zero ID to abort or zero
 // (static).
 //
 ////////////////////////////////////////////////////////////////////////////////
-int32_t CThing::DoGui(			// Returns ID of item that terminated looping.
-									// Returns 0 if rspGetQuitStatus() is nonzero.
-									// Returns negative on error.
-	RGuiItem*	pguiRoot)	// Root of GUI items to process through user.
-	{
-	// Get two controls that can end the processing.
-	RGuiItem*	pguiOk		= pguiRoot->GetItemFromId(1);
-	RGuiItem*	pguiCancel	= pguiRoot->GetItemFromId(2);
+int32_t CThing::DoGui(            // Returns ID of item that terminated looping.
+                                  // Returns 0 if rspGetQuitStatus() is nonzero.
+                                  // Returns negative on error.
+    RGuiItem*   pguiRoot)           // Root of GUI items to process through user.
+{
+  // Get two controls that can end the processing.
+  RGuiItem* pguiOk      = pguiRoot->GetItemFromId(1);
+  RGuiItem* pguiCancel  = pguiRoot->GetItemFromId(2);
 
-	// Use the update function.
-	ms_pgDoGui.m_fnUpdate	= SysUpdate;
+  // Use the update function.
+  ms_pgDoGui.m_fnUpdate = SysUpdate;
 
-	return ms_pgDoGui.DoModal(pguiRoot, pguiOk, pguiCancel);
-	}
+  return ms_pgDoGui.DoModal(pguiRoot, pguiOk, pguiCancel);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -488,61 +487,61 @@ int32_t CThing::DoGui(			// Returns ID of item that terminated looping.
 // (virtual).
 //
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CThing::Load(										// Returns 0 if successfull, non-zero otherwise
-	RFile* pFile,											// In:  File to load from
-	bool bEditMode,										// In:  True for edit mode, false otherwise
-	int16_t sFileCount,										// In:  File count (unique per file, never 0)
-	uint32_t	ulFileVersion)									// In:  File version being loaded.
-	{
+int16_t CThing::Load(             // Returns 0 if successfull, non-zero otherwise
+    RFile* pFile,                   // In:  File to load from
+    bool bEditMode,                 // In:  True for edit mode, false otherwise
+    int16_t sFileCount,             // In:  File count (unique per file, never 0)
+    uint32_t ulFileVersion)         // In:  File version being loaded.
+{
   UNUSED(bEditMode, sFileCount);
-	// Switch on the file version.
-	switch (ulFileVersion)
-		{
-		default:	// Newer versions where this format has not changed.
-		case 1:
-			// Load this thing's ID.  The ID is unique to this 'thing' within its realm
-			// (i.e., no other CThing or derived class has this same ID within this realm).
-			// This is assigned by the editor via a call to the realm's m_idbank.Get().
-			pFile->Read(&m_u16InstanceId);
-			break;
-		}
+  // Switch on the file version.
+  switch (ulFileVersion)
+  {
+    default:   // Newer versions where this format has not changed.
+    case 1:
+      // Load this thing's ID.  The ID is unique to this 'thing' within its realm
+      // (i.e., no other CThing or derived class has this same ID within this realm).
+      // This is assigned by the editor via a call to the realm's m_idbank.Get().
+      pFile->Read(&m_u16InstanceId);
+      break;
+  }
 
-	// If this ID is not yet claimed . . .
-	CThing*	pthing;
-	if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16InstanceId) != SUCCESS)
-		{
-		// Reserve ID.
-		m_pRealm->m_idbank.Take(this, m_u16InstanceId);
-		}
-	else
-		{
-		// No ID for you!  Currently the only way I know this happens is via the
-		// dispenser.  In that case, this is fine b/c the dispenser never uses the
-		// id from the file.
-		m_u16InstanceId	= CIdBank::IdNil;
-		}
+  // If this ID is not yet claimed . . .
+  CThing*   pthing;
+  if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16InstanceId) != SUCCESS)
+  {
+    // Reserve ID.
+    m_pRealm->m_idbank.Take(this, m_u16InstanceId);
+  }
+  else
+  {
+    // No ID for you!  Currently the only way I know this happens is via the
+    // dispenser.  In that case, this is fine b/c the dispenser never uses the
+    // id from the file.
+    m_u16InstanceId = CIdBank::IdNil;
+  }
 
-	return pFile->Error();
-	}
+  return pFile->Error();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Set object instance's unique ID.
 //
 ////////////////////////////////////////////////////////////////////////////////
-void CThing::SetInstanceID(	// Returns nothing.
-	uint16_t	u16Id)					// New id for this instance.
-	{
-	// Safety.
-	if (m_u16InstanceId != CIdBank::IdNil)
-		{
-//		TRACE("SetInstanceID(): This thing already had an ID!\n");
-		// Release existing ID.
-		m_pRealm->m_idbank.Release(m_u16InstanceId);
-		}
+void CThing::SetInstanceID(       // Returns nothing.
+    uint16_t u16Id)                 // New id for this instance.
+{
+  // Safety.
+  if (m_u16InstanceId != CIdBank::IdNil)
+  {
+    //      TRACE("SetInstanceID(): This thing already had an ID!\n");
+    // Release existing ID.
+    m_pRealm->m_idbank.Release(m_u16InstanceId);
+  }
 
-	m_u16InstanceId	= u16Id;
-	}
+  m_u16InstanceId = u16Id;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -551,110 +550,110 @@ void CThing::SetInstanceID(	// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 
 int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, uint16_t u16ID)
-   {
-	CThing* pThing = nullptr;
+{
+  CThing* pThing = nullptr;
 
-	m_pRealm->m_idbank.GetThingByID(&pThing, u16ID);
-	if (pThing)
-		return SendThingMessage(pMessage, sPriority, pThing);
-	else
-      return FAILURE;
-	}
+  m_pRealm->m_idbank.GetThingByID(&pThing, u16ID);
+  if (pThing)
+    return SendThingMessage(pMessage, sPriority, pThing);
+  else
+    return FAILURE;
+}
 
 int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, CThing* pThing)
-	{
-	int16_t sResult = SUCCESS;
+{
+  int16_t sResult = SUCCESS;
 
-	// Make sure this has been initialized.
-	// If you were using 0xebeb as your priority, stop that.
-//	ASSERT(sPriority != 0xebeb);
+  // Make sure this has been initialized.
+  // If you were using 0xebeb as your priority, stop that.
+  //   ASSERT(sPriority != 0xebeb);
 
-	if (pThing != nullptr)
-		pThing->m_MessageQueue.EnQ(pMessage, &sPriority);
-	else
-		sResult = FAILURE;
+  if (pThing != nullptr)
+    pThing->m_MessageQueue.EnQ(pMessage, &sPriority);
+  else
+    sResult = FAILURE;
 
-	return sResult;
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Maps a 3D coordinate onto the viewing plane.
-////////////////////////////////////////////////////////////////////////////////
-void CThing::Map3Dto2D(	// Returns nothing.
-	int16_t sX,				// In.
-	int16_t	sY,				// In.
-	int16_t	sZ,				// In.
-	int16_t* psX,				// Out.
-	int16_t* psY)				// Out.
-	{
-	m_pRealm->Map3Dto2D(sX, sY, sZ, psX, psY); 
-	}
+  return sResult;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Maps a 3D coordinate onto the viewing plane.
 ////////////////////////////////////////////////////////////////////////////////
-void CThing::Map3Dto2D(	// Returns nothing.
-	double	dX,			// In.
-	double	dY,			// In.
-	double	dZ,			// In.
-	double* pdX,			// Out.
-	double* pdY)			// Out.
-	{
-	m_pRealm->Map3Dto2D(dX, dY, dZ, pdX, pdY); 
-	}
+void CThing::Map3Dto2D(           // Returns nothing.
+    int16_t  sX,                    // In.
+    int16_t  sY,                    // In.
+    int16_t  sZ,                    // In.
+    int16_t* psX,                   // Out.
+    int16_t* psY)                   // Out.
+{
+  m_pRealm->Map3Dto2D(sX, sY, sZ, psX, psY);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Maps a 3D coordinate onto the viewing plane.
+////////////////////////////////////////////////////////////////////////////////
+void CThing::Map3Dto2D(           // Returns nothing.
+    double  dX,                     // In.
+    double  dY,                     // In.
+    double  dZ,                     // In.
+    double* pdX,                    // Out.
+    double* pdY)                    // Out.
+{
+  m_pRealm->Map3Dto2D(dX, dY, dZ, pdX, pdY);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Construct object
 // (static).
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CThing::Construct(								// Returns 0 if successfull, non-zero otherwise
-	ClassIDType id,										// In:  Class ID
-	CRealm* pRealm,										// In:  Pointer to realm this object belongs to
- 	CThing** ppNew)										// Out: Pointer to new object
-	{
-	// If in bounds (note ClassIDType is unsigned) . . .
-	if (id < TotalIDs)
-		{
-		// If there is a Construct func . . .
-		if (ms_aClassInfo[id].funcConstruct)
-			return (*(ms_aClassInfo[id].funcConstruct))(pRealm, ppNew);
-		else
-         return FAILURE;
-		}
-	else
-		{
-		TRACE("Construct(): id %d is out of bounds.\n", id);
-      return FAILURE * 2;
-		}
-	}
+int16_t CThing::Construct(        // Returns 0 if successfull, non-zero otherwise
+    ClassIDType id,                 // In:  Class ID
+    CRealm* pRealm,                 // In:  Pointer to realm this object belongs to
+    CThing** ppNew)                 // Out: Pointer to new object
+{
+  // If in bounds (note ClassIDType is unsigned) . . .
+  if (id < TotalIDs)
+  {
+    // If there is a Construct func . . .
+    if (ms_aClassInfo[id].funcConstruct)
+      return (*(ms_aClassInfo[id].funcConstruct))(pRealm, ppNew);
+    else
+      return FAILURE;
+  }
+  else
+  {
+    TRACE("Construct(): id %d is out of bounds.\n", id);
+    return FAILURE * 2;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Construct object and assign it an ID from the Realm's ID bank,
 // if it does not already have one.
 // (static).
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CThing::ConstructWithID(						// Returns 0 if successfull, non-zero otherwise
-	ClassIDType id,										// In:  Class ID
-	CRealm* pRealm,										// In:  Pointer to realm this object belongs to
- 	CThing** ppNew)										// Out: Pointer to new object
-	{
-	int16_t sResult	= Construct(id, pRealm, ppNew);
-	if (sResult == SUCCESS)
-		{
-		// If new thing has no ID . . .
-		if ((*ppNew)->m_u16InstanceId == CIdBank::IdNil)
-			{
-			sResult = pRealm->m_idbank.Get(*ppNew, &((*ppNew)->m_u16InstanceId) );
-			if (sResult != SUCCESS)
-				{
-				delete *ppNew;
-				*ppNew	= nullptr;
-				}
-			}
-		}
+int16_t CThing::ConstructWithID(  // Returns 0 if successfull, non-zero otherwise
+    ClassIDType id,                 // In:  Class ID
+    CRealm* pRealm,                 // In:  Pointer to realm this object belongs to
+    CThing** ppNew)                 // Out: Pointer to new object
+{
+  int16_t sResult   = Construct(id, pRealm, ppNew);
+  if (sResult == SUCCESS)
+  {
+    // If new thing has no ID . . .
+    if ((*ppNew)->m_u16InstanceId == CIdBank::IdNil)
+    {
+      sResult = pRealm->m_idbank.Get(*ppNew, &((*ppNew)->m_u16InstanceId) );
+      if (sResult != SUCCESS)
+      {
+        delete *ppNew;
+        *ppNew = nullptr;
+      }
+    }
+  }
 
-	return sResult;
-	}
+  return sResult;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

@@ -7547,7 +7547,7 @@ static int16_t TmpFileName(								// Returns 0 if successfull, non-zero otherwi
 	{
    int16_t sResult = SUCCESS;
 
-	#if defined(WIN32)
+#if defined(_WIN32)
    UNUSED(sMaxSize);
 
       char	szPath[PATH_MAX];
@@ -7569,13 +7569,13 @@ static int16_t TmpFileName(								// Returns 0 if successfull, non-zero otherwi
 			sResult = FAILURE;
 			}
 
-	#else
+#else
    UNUSED(pszFileName, sMaxSize);
 
 		// Impliment for some other system!
 		ASSERT(0);
 
-	#endif
+#endif
 
 	return sResult;
 	}

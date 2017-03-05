@@ -522,11 +522,12 @@ class RResMgr
 						lResSeekPos);
 					}
             }
+#ifdef RESMGR_VERBOSE
 			else
             TRACE("RResMgr::FromSak - Resource %s is not in this SAK file\n",
                   (const char*) strResourceName);
 //				      (const char*) strResourceName.c_str());
-
+#endif
 			return prf;
 		}
 

@@ -473,7 +473,7 @@
 #   define MULTIPLAYER_DISABLED
 #   define ENABLE_PLAY_SPECIFIC_REALMS_ONLY
 #   define SHOW_EXIT_SCREEN
-#  elif defined(WIN32)
+#  elif defined(_WIN32)
 //#   define MUST_BE_ON_CD
 //#   define START_MENU_ADDON_ITEM
 #  endif
@@ -486,21 +486,9 @@
 #endif
 
 // Turn off multiplayer on MacOSX/Linux...not worth it.  --ryan.
-
-// these are to be moved to the project build files
-#ifndef MULTIPLAYER_REMOVED
-#define MULTIPLAYER_REMOVED
-#endif
-
-#ifndef EDITOR_REMOVED
-#define EDITOR_REMOVED
-#endif
-
-#ifndef LOADLEVEL_REMOVED
-#define LOADLEVEL_REMOVED  // bleh, no file dialog thingey.  :/
-#endif
-
-#ifndef ALLOW_TWINSTICK
+#if defined(_WIN32)
+# define MULTIPLAYER_REMOVED
+# define EDITOR_REMOVED
 # define ALLOW_TWINSTICK // enable extended joystick support
 #endif
 

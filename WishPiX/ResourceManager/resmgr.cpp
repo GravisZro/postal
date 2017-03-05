@@ -895,9 +895,10 @@ int16_t RResMgr::OpenSak(RString strSakFile)
 				{
 					// Read the filename
 					m_rfSak.Read(char_buffer);
-					strFilename = char_buffer;
+               strFilename = char_buffer;
 					// Read the offset
 					m_rfSak.Read(&lOffset);
+//               TRACE("%s @ 0x%08x : %s\n", strSakFile.operator const char *(), lOffset, char_buffer);
                m_SakDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
 					m_SakDirOffset.insert(lOffset);
 				}			

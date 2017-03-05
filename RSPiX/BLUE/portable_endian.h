@@ -49,8 +49,8 @@
 // *************************************************************************
 
 // OS identifiers
-# if !defined(WIN32) && (defined(_WIN16) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__) || defined(_WIN32_WCE))
-#  define WIN32
+# if !defined(_WIN32) && (defined(_WIN16) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__) || defined(__TOS_WIN__))
+#  define _WIN32
 # elif !defined(__DOS__) && (defined(MSDOS) || defined(_MSDOS) || defined(__MSDOS__))
 #  define __DOS__
 # elif !defined(__BSD__) && (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || defined(__DragonFly__))
@@ -61,9 +61,8 @@
 # endif
 
 // OS includes
-# if defined(WIN32) // Windows variant
+# if defined(_WIN32) // Windows variant
 #  include <winsock2.h>
-//#  include <sys/param.h>
 # elif defined(__linux__) || defined(__CYGWIN__) // Linux/Cygwin
 #  include <endian.h>
 #  include <byteswap.h>
@@ -174,7 +173,7 @@
 #  define le32toh(x) letoh32(x)
 #  define be64toh(x) betoh64(x)
 #  define le64toh(x) letoh64(x)
-# elif defined(WIN32) // Windows variant
+# elif defined(_WIN32) // Windows variant
 #  if BYTE_ORDER == LITTLE_ENDIAN
 #   define htobe16(x) htons(x)
 #   define htole16(x) (x)
