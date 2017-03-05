@@ -86,6 +86,8 @@
 #  define BYTE_ORDER __BYTE_ORDER
 #  elif defined(__BYTE_ORDER__)
 #   define BYTE_ORDER __BYTE_ORDER__
+#  else
+#   error Unable to determine system endianness!
 #  endif
 # else
 #  if !defined(__BYTE_ORDER)
@@ -101,6 +103,8 @@
 #   define LITTLE_ENDIAN __LITTLE_ENDIAN
 #  elif defined(__LITTLE_ENDIAN__)
 #   define LITTLE_ENDIAN __LITTLE_ENDIAN__
+#  else
+#   error No system value for LITTLE_ENDIAN!
 #  endif
 # else
 #  if !defined(__LITTLE_ENDIAN)
@@ -116,6 +120,8 @@
 #   define BIG_ENDIAN __BIG_ENDIAN
 #  elif defined(__BIG_ENDIAN__)
 #   define BIG_ENDIAN __BIG_ENDIAN__
+#  else
+#   error No system value for BIG_ENDIAN!
 #  endif
 # else
 #  if !defined(__BIG_ENDIAN)
@@ -140,6 +146,7 @@
 #   define __PDP_ENDIAN__ PDP_ENDIAN
 #  endif
 # endif
+
 
 // OS fixups
 # if defined(__APPLE__) && !defined(__arm__) // Mac OSX
