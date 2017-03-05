@@ -324,111 +324,83 @@ int16_t CPerson::Load(				// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount,					// In:  File count (unique per file, never 0)
 	uint32_t	ulFileVersion)				// In:  Version of file format to load.
 {
-	int16_t sResult = SUCCESS;
-	sResult = CDoofus::Load(pFile, bEditMode, sFileCount, ulFileVersion);
-	
-	if (sResult == SUCCESS)
-	{
-		// Load common data just once per file (not with each object)
-		if (ms_sFileCount != sFileCount)
-		{
-			ms_sFileCount = sFileCount;
+  int16_t sResult = SUCCESS;
+  sResult = CDoofus::Load(pFile, bEditMode, sFileCount, ulFileVersion);
 
-			// Load static data
-			switch (ulFileVersion)
-			{
-				default:
-				case 1:
-					pFile->Read(&ms_dLongRange);
-					pFile->Read(&ms_dInRangeLow);
-					pFile->Read(&ms_dInRangeHigh);
-					pFile->Read(&ms_lRandomAvoidTime);
-					pFile->Read(&ms_lReseekTime);
-					pFile->Read(&ms_lWatchWaitTime);
-					pFile->Read(&ms_lReselectDudeTime);
-					break;
-			}
-		}
+  if (sResult == SUCCESS)
+  {
+    // Load common data just once per file (not with each object)
+    if (ms_sFileCount != sFileCount)
+    {
+      ms_sFileCount = sFileCount;
 
-		uint8_t uc;
+      // Load static data
+      pFile->Read(&ms_dLongRange);
+      pFile->Read(&ms_dInRangeLow);
+      pFile->Read(&ms_dInRangeHigh);
+      pFile->Read(&ms_lRandomAvoidTime);
+      pFile->Read(&ms_lReseekTime);
+      pFile->Read(&ms_lWatchWaitTime);
+      pFile->Read(&ms_lReselectDudeTime);
+    }
 
-		// Load data specific to CPerson (if any)
-		switch (ulFileVersion)
-		{
-			default:
-			case 14:
-				pFile->Read(&uc);
-				m_ePersonType = (Personatorium::Index) uc;
-				pFile->Read(&m_sShowState);
-				m_rstrLogicFile.Load(pFile);
-				break;
+    // Load data specific to CPerson (if any)
+    uint8_t uc;
+    pFile->Read(&uc);
+    m_ePersonType = (Personatorium::Index) uc;
+    ASSERT(ulFileVersion); // just in case that condition exists
+    if(ulFileVersion > 13)
+    {
+      pFile->Read(&m_sShowState);
+      m_rstrLogicFile.Load(pFile);
+    }
 
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-			case 12:
-			case 13:
-			{
-				pFile->Read(&uc);
-				m_ePersonType = (Personatorium::Index) uc;
-				break;
-			}
-		}
+    // Cache the samples that this type of person uses
+    TRACE("m_ePersonType = %d\n", m_ePersonType);
+    TRACE("NUM_ELEMENTS(g_apersons) = %d\n", NUM_ELEMENTS(g_apersons));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering3));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering4));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot3));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot4));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBlownup1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBlownup2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBurning1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBurning2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidDying1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidDying2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting3));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting4));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom1));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom2));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom3));
+    CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom4));
 
-		// Cache the samples that this type of person uses
-		TRACE("m_ePersonType = %d\n", m_ePersonType);
-		TRACE("NUM_ELEMENTS(g_apersons) = %d\n", NUM_ELEMENTS(g_apersons));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering3));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidSuffering4));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot3));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShot4));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBlownup1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBlownup2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBurning1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidBurning2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidDying1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidDying2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting3));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidShooting4));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom1));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom2));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom3));
-		CacheSample(*(g_apersons[m_ePersonType].Sample.psmidRandom4));
+    m_bCivilian = (g_apersons[m_ePersonType].eLifestyle == Personatorium::Civilian);
 
-		m_bCivilian = (g_apersons[m_ePersonType].eLifestyle == Personatorium::Civilian);
-		
-		// Make sure there were no file errors or format errors . . .
-		if (!pFile->Error() && sResult == SUCCESS)
-		{
-			// Get resources
-			sResult = GetResources();
-		}
-		else
-		{
-			sResult = FAILURE;
-			TRACE("CPerson::Load(): Error reading from file!\n");
-		}
-	}
-	else
-	{
-		TRACE("CPerson::Load():  CDoofus::Load() failed.\n");
-	}
+    // Make sure there were no file errors or format errors . . .
+    if (!pFile->Error() && sResult == SUCCESS)
+    {
+      // Get resources
+      sResult = GetResources();
+    }
+    else
+    {
+      sResult = FAILURE;
+      TRACE("CPerson::Load(): Error reading from file!\n");
+    }
+  }
+  else
+  {
+    TRACE("CPerson::Load():  CDoofus::Load() failed.\n");
+  }
 
-	return sResult;
+  return sResult;
 }
 
 
