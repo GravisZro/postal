@@ -200,7 +200,7 @@
 
 RResMgr::RResMgr(void)
 {
-	m_bTraceUncachedLoads = false;
+  m_bTraceUncachedLoads = false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -211,10 +211,10 @@ RResMgr::RResMgr(void)
 
 RResMgr::~RResMgr(void)
 {
-	// Closes the SAK file if one was open.
-	CloseSak();
-	// Free resources even if they are in use
-	FreeAllResources();
+  // Closes the SAK file if one was open.
+  CloseSak();
+  // Free resources even if they are in use
+  FreeAllResources();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -237,127 +237,92 @@ RResMgr::~RResMgr(void)
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t RResMgr::Get(									// Returns 0 on success.
-	RString strFilename,								// In:  Resource name
-	void** hRes,										// Out: Pointer to resource returned here
-	RFile::Endian	endian,							// In:  Endian nature of resource file
-	GenericCreateResFunc* pfnCreate,				// In:  Pointer to "create" function object
-	GenericDestroyResFunc* pfnDestroy,			// In:  Pointer to "destroy" function object
-	GenericLoadResFunc* pfnLoad)					// In:  Pointer to "load" function object
-	{
-	int16_t sReturn = SUCCESS;
-	#ifdef DEBUG
-		int16_t nowheretogo = 0;
-	#endif // DEBUG
-	// Map iterator (one of the best things about STL is how readable it is)
+int16_t RResMgr::Get(                       // Returns 0 on success.
+    RString strFilename,                      // In:  Resource name
+    void** hRes,                              // Out: Pointer to resource returned here
+    RFile::Endian	endian,                     // In:  Endian nature of resource file
+    GenericCreateResFunc* pfnCreate,          // In:  Pointer to "create" function object
+    GenericDestroyResFunc* pfnDestroy,        // In:  Pointer to "destroy" function object
+    GenericLoadResFunc* pfnLoad)              // In:  Pointer to "load" function object
+{
+  int16_t sReturn = SUCCESS;
+  // Map iterator (one of the best things about STL is how readable it is)
   std::pair<resclassMap::iterator, bool> p(m_map.begin(), false);
-	#ifdef DEBUG
-   if (strcmp((const char *) strFilename, "menu/menu_md.bmp") == 0)
-	{
-		TRACE("It's the final countdown!\n");
-		nowheretogo = 1;
-	}
-	#endif // DEBUG
-	// Create a temporary resource block.  Be carefull to set ONLY THE NAME
-	// at this point.  Any other values should be set only if it turns out
-	// that we need to create and load the requested resource!
-	CResourceBlock resBlock;
-	// TRACE("Getting %s\n", (char*)strFilename);
-	NormalizeResName(&strFilename);
-	resBlock.m_strFilename	= strFilename;
-
-	// p is a pair of <iterator, bool> where p.first (iterator) is
-	// referencing the map either where the strFilename was found
-	// or where it was inserted if it did not previously exist.
-   p = m_map.insert(resclassMap::value_type (strFilename.operator std::string(), resBlock));
-	// If the requested resource does not already exist, create the resource now and load it
-   if ((*(p.first)).second.m_vpRes == nullptr)
-		{
-		sReturn = GetInstance(	// Returns 0 on success.
-				strFilename,		// In:  Resource name
-				hRes,					// Out: Pointer to resource returned here
-				endian,				// In:  Endian nature of resource file
-				pfnCreate,			// In:  Pointer to "create" function object
-				pfnDestroy,			// In:  Pointer to "destroy" function object
-				pfnLoad);			// In:  Pointer to "load" function object
-		if (sReturn == 0)		
-			{
-			#ifdef DEBUG
-				if (nowheretogo == 1)
-				{
-					TRACE("Tito Dick 'Dickman', baby!\n");
-				}
-			#endif
-			// Fill in the resource block.
-			(*(p.first)).second.m_vpRes = *hRes;
-			(*(p.first)).second.m_pfnDestroy	= pfnDestroy;
-
-			// Clear pointer so that the object won't be deleted on exit from this function.
-			// The responsibility for deleting the object now lies with the resource block.
-			pfnDestroy = 0;
-
-			// Add to the access order list
-			m_accessList.push_back(strFilename);	
+  // Create a temporary resource block.  Be carefull to set ONLY THE NAME
+  // at this point.  Any other values should be set only if it turns out
+  // that we need to create and load the requested resource!
+  CResourceBlock resBlock;
+#ifdef RESMGR_VERBOSE
+  TRACE("Getting %s\n", (char*)strFilename);
+#endif // RESMGR_VERBOSE
+  NormalizeResName(&strFilename);
+  resBlock.m_strFilename	= strFilename;
+  
+  // p is a pair of <iterator, bool> where p.first (iterator) is
+  // referencing the map either where the strFilename was found
+  // or where it was inserted if it did not previously exist.
+  p = m_map.insert(resclassMap::value_type (strFilename.operator std::string(), resBlock));
+  // If the requested resource does not already exist, create the resource now and load it
+  if ((*(p.first)).second.m_vpRes == nullptr)
+  {
+    sReturn = GetInstance(    // Returns 0 on success.
+                strFilename,    // In:  Resource name
+                hRes,           // Out: Pointer to resource returned here
+                endian,         // In:  Endian nature of resource file
+                pfnCreate,      // In:  Pointer to "create" function object
+                pfnDestroy,     // In:  Pointer to "destroy" function object
+                pfnLoad);       // In:  Pointer to "load" function object
+    if (sReturn == 0)
+    {
+      // Fill in the resource block.
+      (*(p.first)).second.m_vpRes = *hRes;
+      (*(p.first)).second.m_pfnDestroy	= pfnDestroy;
+      
+      // Clear pointer so that the object won't be deleted on exit from this function.
+      // The responsibility for deleting the object now lies with the resource block.
+      pfnDestroy = 0;
+      
+      // Add to the access order list
+      m_accessList.push_back(strFilename);
 #ifdef _DEBUG
-			if (m_bTraceUncachedLoads)
-            TRACE("RResMgr::Get - Loading uncached resource %s\n", strFilename);
+      if (m_bTraceUncachedLoads)
+        TRACE("RResMgr::Get - Loading uncached resource %s\n", strFilename);
 #endif //_DEBUG
-			}
-		else
-			{
-			#ifdef DEBUG
-				if (nowheretogo == 1)
-				{
-					TRACE("He raised Phil and loves the ladies.\n");
-				}
-			#endif // DEBUG
-			#ifdef RESMGR_VERBOSE
-				TRACE("RResMgr::Get - Break Yo Selfen hosen!  GetInstance() failed.\n");
-			#endif // RESMGR_VERBOSE
-			}
-		}
-		#ifdef DEBUG
-		else {
-			
-				if (nowheretogo == 1)
-				{
-					TRACE("It's the Al Peck's Quality Used Fruitshack\n");
-				}
-		}
-		#endif // DEBUG
+    }
+    else
+    {
+#ifdef RESMGR_VERBOSE
+      TRACE("RResMgr::Get - GetInstance() failed.\n");
+#endif // RESMGR_VERBOSE
+    }
+  }
+  
+  if (sReturn == SUCCESS)
+  {
+    (*(p.first)).second.m_sRefCount++;
+    (*(p.first)).second.m_sAccessCount++;
+    *hRes = (*(p.first)).second.m_vpRes;
+    // Add a mapping indexed by pointer to make it easy to find the
+    // name of this resource later by using the resource pointer.
+    m_ptrMap[*hRes] = strFilename.operator std::string();
+  }
+  else
+  {
+    *hRes = nullptr;
+    // In this case, m_vpRes is also nullptr, so we don't have to worry about a
+    // double delete.
+    m_map.erase(strFilename);
+  }
+  
+  // Delete the create and load function objects, and POSSIBLY the destroy function,
+  // if its pointer hasn't been cleared to 0 (which indicates that responsibility for
+  // deleting it no longer lies with this function, but with a newly created ResourceBlock.
+  delete pfnCreate;
+  delete pfnDestroy;	// Might be 0 (which is safe for delete)!  See comments above!
+  delete pfnLoad;
 
-	if (sReturn == SUCCESS)
-		{
-		#ifdef DEBUG
-			if (nowheretogo == 1)
-			{
-				TRACE("Hoo-ugh!\n");
-			}
-		#endif // DEBUG
-		(*(p.first)).second.m_sRefCount++;
-		(*(p.first)).second.m_sAccessCount++;
-		*hRes = (*(p.first)).second.m_vpRes;
-		// Add a mapping indexed by pointer to make it easy to find the
-		// name of this resource later by using the resource pointer.
-      m_ptrMap[*hRes] = strFilename.operator std::string();
-		}
-	else
-		{
-      *hRes = nullptr;
-      // In this case, m_vpRes is also nullptr, so we don't have to worry about a
-		// double delete.
-		m_map.erase(strFilename);
-		}
-
-	// Delete the create and load function objects, and POSSIBLY the destroy function,
-	// if its pointer hasn't been cleared to 0 (which indicates that responsibility for
-	// deleting it no longer lies with this function, but with a newly created ResourceBlock.
-	delete pfnCreate;
-	delete pfnDestroy;	// Might be 0 (which is safe for delete)!  See comments above!
-	delete pfnLoad;
-	
-	return sReturn;
-	}
+  return sReturn;
+}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -379,84 +344,84 @@ int16_t RResMgr::Get(									// Returns 0 on success.
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t RResMgr::GetInstance(						// Returns 0 on success.
-	RString strFilename,								// In:  Resource name
-	void** hRes,										// Out: Pointer to resource returned here
-	RFile::Endian	endian,							// In:  Endian nature of resource file
-	GenericCreateResFunc* pfnCreate,				// In:  Pointer to "create" function object
-	GenericDestroyResFunc* pfnDestroy,			// In:  Pointer to "destroy" function object
-	GenericLoadResFunc* pfnLoad)					// In:  Pointer to "load" function object
-	{
-	int16_t	sReturn	= SUCCESS;	// Assume success for return.
-	// Assume failure for safety.
-   *hRes	= nullptr;
-	NormalizeResName(&strFilename);
+int16_t RResMgr::GetInstance(               // Returns 0 on success.
+    RString strFilename,                      // In:  Resource name
+    void** hRes,                              // Out: Pointer to resource returned here
+    RFile::Endian endian,                     // In:  Endian nature of resource file
+    GenericCreateResFunc* pfnCreate,          // In:  Pointer to "create" function object
+    GenericDestroyResFunc* pfnDestroy,        // In:  Pointer to "destroy" function object
+    GenericLoadResFunc* pfnLoad)              // In:  Pointer to "load" function object
+{
+  int16_t	sReturn	= SUCCESS;	// Assume success for return.
+  // Assume failure for safety.
+  *hRes	= nullptr;
+  NormalizeResName(&strFilename);
 
-	// Create resource using the specified "create" function
-   void* pvInstance = nullptr;
-	if ((*pfnCreate)(&pvInstance) == 0)
-		{
-		RFile		fileNoSak;
-      RFile*	pfileSrc	= nullptr;
-		// If a SAK file is in use, load it from that, otherwise
-		// load it from the disk file.
-		if (m_rfSak.IsOpen())
-			pfileSrc	= FromSak(strFilename);
+  // Create resource using the specified "create" function
+  void* pvInstance = nullptr;
+  if ((*pfnCreate)(&pvInstance) == 0)
+  {
+    RFile		fileNoSak;
+    RFile*	pfileSrc	= nullptr;
+    // If a SAK file is in use, load it from that, otherwise
+    // load it from the disk file.
+    if (m_rfSak.IsOpen())
+      pfileSrc	= FromSak(strFilename);
 
-		// If SAK file fails try loading from disk.
-      if (pfileSrc == nullptr)
-			{
-			if (fileNoSak.Open(/*FromSystempath(strFilename)*/strFilename, "rb", endian ) == 0)
-				pfileSrc	= &fileNoSak;
-			else
-				{
-				#ifdef RESMGR_VERBOSE
-					TRACE("RResMgr::GetInstance - Break Yo Selfen hosen!  Could not open resource file.\n");
-				#endif // RESMGR_VERBOSE
-				}
-			}
+    // If SAK file fails try loading from disk.
+    if (pfileSrc == nullptr)
+    {
+      if (fileNoSak.Open(/*FromSystempath(strFilename)*/strFilename, "rb", endian ) == 0)
+        pfileSrc	= &fileNoSak;
+      else
+      {
+#ifdef RESMGR_VERBOSE
+        TRACE("RResMgr::GetInstance - Could not open resource file.\n");
+#endif // RESMGR_VERBOSE
+      }
+    }
 
-      if (pfileSrc != nullptr)
-			{
-			// Set endian for this file.
-			pfileSrc->SetEndian(endian);
-			// Let resource load itself from the file
-			sReturn	= (*pfnLoad)(pvInstance, pfileSrc);
-			// Restore endian to SAK file mode (although this may or may not be
-			// the SAK file (it can't hurt (can it?) ) ).
-			pfileSrc->SetEndian(SAK_FILE_ENDIAN);
-			// If our local RFile is open, close it
-			if (fileNoSak.IsOpen())
-				fileNoSak.Close();
-			}
-		else
-			{
-			#ifdef RESMGR_VERBOSE
-				TRACE("RResMgr::GetInstance - Break Yo Selfen hosen! Could not get RFile* to resource data.\n");
-			#endif // RESMGR_VERBOSE
-			sReturn	= FAILURE;
-			}
+    if (pfileSrc != nullptr)
+    {
+      // Set endian for this file.
+      pfileSrc->SetEndian(endian);
+      // Let resource load itself from the file
+      sReturn	= (*pfnLoad)(pvInstance, pfileSrc);
+      // Restore endian to SAK file mode (although this may or may not be
+      // the SAK file (it can't hurt (can it?) ) ).
+      pfileSrc->SetEndian(SAK_FILE_ENDIAN);
+      // If our local RFile is open, close it
+      if (fileNoSak.IsOpen())
+        fileNoSak.Close();
+    }
+    else
+    {
+#ifdef RESMGR_VERBOSE
+      TRACE("RResMgr::GetInstance - Could not get RFile* to resource data.\n");
+#endif // RESMGR_VERBOSE
+      sReturn	= FAILURE;
+    }
 
-		// If we fail after allocation . . .
-		if (sReturn != SUCCESS)
-			{
-			// Delete the object.
-			(*pfnDestroy)(pvInstance);
-			}
-		else	// Otherwise, we've succeeded.
-			{
-			// Return the instance.
-			*hRes	= pvInstance;
-			}
-		}
-	else
-		{
-		TRACE("RResMgr::GetInstance - Break Yo Selfen hosen! Error allocating new resource\n");
-		sReturn = FAILURE;
-		}
+    // If we fail after allocation . . .
+    if (sReturn != SUCCESS)
+    {
+      // Delete the object.
+      (*pfnDestroy)(pvInstance);
+    }
+    else	// Otherwise, we've succeeded.
+    {
+      // Return the instance.
+      *hRes	= pvInstance;
+    }
+  }
+  else
+  {
+    TRACE("RResMgr::GetInstance - Error allocating new resource\n");
+    sReturn = FAILURE;
+  }
 
-	return sReturn;
-	}
+  return sReturn;
+}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -475,7 +440,7 @@ int16_t RResMgr::GetInstance(						// Returns 0 on success.
 
 void RResMgr::Release(void* pVoid)
 {
-	m_map[m_ptrMap[pVoid]].m_sRefCount--;
+  m_map[m_ptrMap[pVoid]].m_sRefCount--;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -496,20 +461,20 @@ void RResMgr::Release(void* pVoid)
 
 bool RResMgr::ReleaseAndPurge(void* pVoid)
 {
-	bool bPurged = false;
+  bool bPurged = false;
 
-	m_map[m_ptrMap[pVoid]].m_sRefCount--;
+  m_map[m_ptrMap[pVoid]].m_sRefCount--;
 
-	// If nobody else is using this, then purge it.
-	if (m_map[m_ptrMap[pVoid]].m_sRefCount < 1)
-	{
-		m_map[m_ptrMap[pVoid]].m_sRefCount = 0;
-		m_map[m_ptrMap[pVoid]].FreeResource();
-		bPurged = true;
-		m_map.erase(m_ptrMap[pVoid]);
-	}
+  // If nobody else is using this, then purge it.
+  if (m_map[m_ptrMap[pVoid]].m_sRefCount < 1)
+  {
+    m_map[m_ptrMap[pVoid]].m_sRefCount = 0;
+    m_map[m_ptrMap[pVoid]].FreeResource();
+    bPurged = true;
+    m_map.erase(m_ptrMap[pVoid]);
+  }
 
-	return bPurged;
+  return bPurged;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -529,22 +494,22 @@ bool RResMgr::ReleaseAndPurge(void* pVoid)
 
 void RResMgr::Purge(void)
 {
-	resclassMap::iterator i;
-	resclassMap::iterator del;
+  resclassMap::iterator i;
+  resclassMap::iterator del;
 
-	i = m_map.begin();
+  i = m_map.begin();
 
-	while (i != m_map.end())
-	{
-		del = i;
-		i++;
-		if ((*del).second.m_sRefCount <= 0)
-		{
-			(*del).second.FreeResource();
-			(*del).second.m_sRefCount = 0;
-			m_map.erase(del);
-		}
-	}
+  while (i != m_map.end())
+  {
+    del = i;
+    i++;
+    if ((*del).second.m_sRefCount <= 0)
+    {
+      (*del).second.FreeResource();
+      (*del).second.m_sRefCount = 0;
+      m_map.erase(del);
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -572,18 +537,17 @@ void RResMgr::Purge(void)
 
 void RResMgr::FreeAllResources(void)
 {
-	resclassMap::iterator i;
-	
-	for (i = m_map.begin(); i != m_map.end(); i++)
-	{
-		if ((*i).second.m_sRefCount > 0)
-         TRACE("RResMgr::FreeAllResources - %s ref count = %d - Releasing anyway\n",
-               (*i).second.m_strFilename, (*i).second.m_sRefCount);
-//			      (*i).second.m_strFilename.c_str(), (*i).second.m_sRefCount);
-		(*i).second.FreeResource();
-		(*i).second.m_sRefCount = 0;
-	}	
-	m_map.erase(m_map.begin(), m_map.end());
+  resclassMap::iterator i;
+
+  for (i = m_map.begin(); i != m_map.end(); i++)
+  {
+    if ((*i).second.m_sRefCount > 0)
+      TRACE("RResMgr::FreeAllResources - %s ref count = %d - Releasing anyway\n",
+            (*i).second.m_strFilename, (*i).second.m_sRefCount);
+    (*i).second.FreeResource();
+    (*i).second.m_sRefCount = 0;
+  }
+  m_map.erase(m_map.begin(), m_map.end());
 }
 
 
@@ -640,9 +604,8 @@ int16_t RResMgr::Statistics(RString strStatFile)
   }
   else
   {
-    TRACE("RResMgr::Statistics - Break Yo Self! Error - unable to open stat file %s\n",
+    TRACE("RResMgr::Statistics - Error - unable to open stat file %s\n",
           strStatFile);
-    //		      strStatFile.c_str());
     sReturn = FAILURE;
   }
   return sReturn;
@@ -672,121 +635,117 @@ int16_t RResMgr::Statistics(RString strStatFile)
 
 int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 {
-	int16_t sReturn = SUCCESS;
+  int16_t sReturn = SUCCESS;
   std::ifstream script;
-	RString line;
-	RString resname;
-//	uint16_t usType;
-	char buffer[256];
-	RFile sak;
+  RString line;
+  RString resname;
+  //	uint16_t usType;
+  char buffer[256];
+  RFile sak;
 
-   script.open(strScriptFile.operator std::string());
-//	script.open(strScriptFile.c_str());
-   sak.Open(strSakFile, "wb", SAK_FILE_ENDIAN);
-//	sak.Open(strSakFile.c_str(), "wb", SAK_FILE_ENDIAN);
-	if (script.is_open() && sak.IsOpen())
-	{
-		// Load in all of the resource names to be added to SAK file
-		while (!script.eof())
-		{
-			script.getline(buffer, 256);
-			resname = buffer;
-			if (resname[(int32_t) 0] != ';' && resname[(int32_t) 0] != ' ' && resname.GetLen() > 0)
-			{
-				NormalizeResName(&resname);
-				m_LoadList.push_back(resname);
-            m_DirectoryMap.insert(dirMap::value_type(resname.operator std::string(), 0));
-			}
-/*
-			script >> line;
-			if (line[(long) 0] == ';' || line.GetLen() == 0)
-				script.getline(buffer, 256);
-			else
-			{
-				resname = line;
-				script.getline(buffer, 256);
-				NormalizeResName(&resname);
-				m_LoadList.push_back(resname);
+  script.open(strScriptFile.operator std::string());
+  sak.Open(strSakFile, "wb", SAK_FILE_ENDIAN);
+  if (script.is_open() && sak.IsOpen())
+  {
+    // Load in all of the resource names to be added to SAK file
+    while (!script.eof())
+    {
+      script.getline(buffer, 256);
+      resname = buffer;
+      if (resname[(int32_t) 0] != ';' && resname[(int32_t) 0] != ' ' && resname.GetLen() > 0)
+      {
+        NormalizeResName(&resname);
+        m_LoadList.push_back(resname);
+        m_DirectoryMap.insert(dirMap::value_type(resname.operator std::string(), 0));
+      }
+      /*
+         script >> line;
+         if (line[(long) 0] == ';' || line.GetLen() == 0)
+            script.getline(buffer, 256);
+         else
+         {
+            resname = line;
+            script.getline(buffer, 256);
+            NormalizeResName(&resname);
+            m_LoadList.push_back(resname);
 //				m_TypeList.push_back(usType);
-				m_DirectoryMap.insert(dirMap::value_type(resname, 0));
-			}	
+            m_DirectoryMap.insert(dirMap::value_type(resname, 0));
+         }
 */
-		}
+    }
 
-		// Write SAK header as a placeholder
-		WriteSakHeader(&sak);
+    // Write SAK header as a placeholder
+    WriteSakHeader(&sak);
 
-		// Open each type of resource and write it to the SAK file
-		// keeping track of its offset in the file
-		accessVector::iterator iFilename;
-//		typeVector::iterator iType = m_TypeList.begin();
-		RFile	fileRes;
-		uint8_t	au8Transfer[TRANSFER_BUF_SIZE];
-		int32_t	lNumBytes;
+    // Open each type of resource and write it to the SAK file
+    // keeping track of its offset in the file
+    accessVector::iterator iFilename;
+    //		typeVector::iterator iType = m_TypeList.begin();
+    RFile	fileRes;
+    uint8_t	au8Transfer[TRANSFER_BUF_SIZE];
+    int32_t	lNumBytes;
     std::pair<dupSet::iterator, bool> p(m_duplicateSet.begin(), false);
-		m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
+    m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
 
-		for (iFilename = m_LoadList.begin(); iFilename != m_LoadList.end() && sReturn == SUCCESS; iFilename++) //, iType++)
-		{
-			// Insert this filename into the set.  If its already in there, p.second
-			// will be false.
-			p = m_duplicateSet.insert((*iFilename));
+    for (iFilename = m_LoadList.begin(); iFilename != m_LoadList.end() && sReturn == SUCCESS; iFilename++) //, iType++)
+    {
+      // Insert this filename into the set.  If its already in there, p.second
+      // will be false.
+      p = m_duplicateSet.insert((*iFilename));
 
-			// If the file hasn't been included in the sak yet, then its OK to include it now.
-			if (p.second)
-			{
-				// Set offset position in directory map for this file
-				m_DirectoryMap[(*iFilename)] = sak.Tell();
+      // If the file hasn't been included in the sak yet, then its OK to include it now.
+      if (p.second)
+      {
+        // Set offset position in directory map for this file
+        m_DirectoryMap[(*iFilename)] = sak.Tell();
 
-				// Open disk file . . .
-//				if (fileRes.Open( FromSystempath((*iFilename).c_str() ), "rb", SAK_FILE_ENDIAN) == 0)
-            if (fileRes.Open( FromSystempath(*iFilename), "rb", SAK_FILE_ENDIAN) == 0)
-				{
-					do
-					{
-						// Read chunk.
-						lNumBytes	= fileRes.Read(au8Transfer, sizeof(au8Transfer) );
-						// If we got anything . . .
-						if (lNumBytes > 0)
-						{
-							// Write chunk.
-							sak.Write(au8Transfer, lNumBytes);
-						}
+        // Open disk file . . .
+        if (fileRes.Open( FromSystempath(*iFilename), "rb", SAK_FILE_ENDIAN) == 0)
+        {
+          do
+          {
+            // Read chunk.
+            lNumBytes	= fileRes.Read(au8Transfer, sizeof(au8Transfer) );
+            // If we got anything . . .
+            if (lNumBytes > 0)
+            {
+              // Write chunk.
+              sak.Write(au8Transfer, lNumBytes);
+            }
 
-					} while ( (fileRes.IsEOF() == FALSE) && (fileRes.Error() == FALSE) && (sak.Error() == FALSE) );
+          } while ( (fileRes.IsEOF() == FALSE) && (fileRes.Error() == FALSE) && (sak.Error() == FALSE) );
 
-					fileRes.Close();
-				}
-				else
-				{
-					TRACE("CreateSak(): fileRes.Open() failed.\n");
-					sReturn	= FAILURE;
-				}
-			}
-		}
+          fileRes.Close();
+        }
+        else
+        {
+          TRACE("CreateSak(): fileRes.Open() failed.\n");
+          sReturn	= FAILURE;
+        }
+      }
+    }
 
-		// Go back to the beginning of the SAK file and rewrite
-		// the header so that the proper offset values in the 
-		// directory will be written.
+    // Go back to the beginning of the SAK file and rewrite
+    // the header so that the proper offset values in the
+    // directory will be written.
 
-		sak.Seek(0, SEEK_SET);
-		WriteSakHeader(&sak);
+    sak.Seek(0, SEEK_SET);
+    WriteSakHeader(&sak);
 
-		sak.Close();
+    sak.Close();
 
-		// Free the memory for the maps and lists
-		m_LoadList.erase(m_LoadList.begin(), m_LoadList.end());
-//		m_TypeList.erase(m_TypeList.begin(), m_TypeList.end());
-		m_DirectoryMap.erase(m_DirectoryMap.begin(), m_DirectoryMap.end());
-	}
-	else
-	{
-		TRACE("RResMgr::CreateSak - Break Yo Self! Error opening script file %s or sak file %s", 
-            strScriptFile, strSakFile);
-//		      strScriptFile.c_str(), strSakFile.c_str());
-		sReturn = FAILURE;
-	}
-   return sReturn;
+    // Free the memory for the maps and lists
+    m_LoadList.erase(m_LoadList.begin(), m_LoadList.end());
+    //		m_TypeList.erase(m_TypeList.begin(), m_TypeList.end());
+    m_DirectoryMap.erase(m_DirectoryMap.begin(), m_DirectoryMap.end());
+  }
+  else
+  {
+    TRACE("RResMgr::CreateSak - Error opening script file %s or sak file %s",
+          strScriptFile, strSakFile);
+    sReturn = FAILURE;
+  }
+  return sReturn;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -813,34 +772,33 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
 
 int16_t RResMgr::WriteSakHeader(RFile* prf)
 {
-	int16_t sReturn = SUCCESS;
-	uint32_t ulFileType = SAK_COOKIE;
-	uint32_t ulCurrentVersion = SAK_CURRENT_VERSION;
-	uint16_t usNumPairs = m_DirectoryMap.size();
-	dirMap::iterator m;
+  int16_t sReturn = SUCCESS;
+  uint32_t ulFileType = SAK_COOKIE;
+  uint32_t ulCurrentVersion = SAK_CURRENT_VERSION;
+  uint16_t usNumPairs = m_DirectoryMap.size();
+  dirMap::iterator m;
 
-	if (prf && prf->IsOpen())
-	{
-		prf->ClearError();
-		prf->Write(&ulFileType);
-		prf->Write(&ulCurrentVersion);
-		prf->Write(&usNumPairs);
-		for (m = m_DirectoryMap.begin(); m != m_DirectoryMap.end(); m++)
-		{
-			// Write resource name
-         prf->Write((*m).first.c_str());
-//			prf->Write((const char*) (*m).first.c_str());
-			// Write offset
-			prf->Write((*m).second);	
-		}
-	}
-	else
-	{
-		TRACE("RResMgr::WriteSakHeader - Break Yo Self! Error writing to SAK header\n");
-		sReturn = FAILURE;
-	}
+  if (prf && prf->IsOpen())
+  {
+    prf->ClearError();
+    prf->Write(&ulFileType);
+    prf->Write(&ulCurrentVersion);
+    prf->Write(&usNumPairs);
+    for (m = m_DirectoryMap.begin(); m != m_DirectoryMap.end(); m++)
+    {
+      // Write resource name
+      prf->Write((*m).first.c_str());
+      // Write offset
+      prf->Write((*m).second);
+    }
+  }
+  else
+  {
+    TRACE("RResMgr::WriteSakHeader - Error writing to SAK header\n");
+    sReturn = FAILURE;
+  }
 
-	return sReturn;
+  return sReturn;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -865,69 +823,68 @@ int16_t RResMgr::WriteSakHeader(RFile* prf)
 
 int16_t RResMgr::OpenSak(RString strSakFile)
 {
-	int16_t sReturn = SUCCESS;
-	uint32_t ulFileType;
-	uint32_t ulFileVersion;
-	uint16_t usNumPairs;
-	uint16_t i;
-	char char_buffer[256];
-	int32_t lOffset;
-	RString strFilename;
+  int16_t sReturn = SUCCESS;
+  uint32_t ulFileType;
+  uint32_t ulFileVersion;
+  uint16_t usNumPairs;
+  uint16_t i;
+  char char_buffer[256];
+  int32_t lOffset;
+  RString strFilename;
 
-	if (m_rfSak.IsOpen())
-	{
-		TRACE("RResMgr::OpenSak - The currently open SAK file is being closed before loading the new SAK file\n");
-		CloseSak();
-	}
+  if (m_rfSak.IsOpen())
+  {
+    TRACE("RResMgr::OpenSak - The currently open SAK file is being closed before loading the new SAK file\n");
+    CloseSak();
+  }
 
-//	if (m_rfSak.Open(strSakFile.c_str(), "rb", SAK_FILE_ENDIAN) == SUCCESS)
-   if (m_rfSak.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
-	{
-		m_rfSak.ClearError();
-		m_rfSak.Read(&ulFileType);
-		if (ulFileType == SAK_COOKIE)
-		{
-			m_rfSak.Read(&ulFileVersion);
-			if (ulFileVersion == SAK_CURRENT_VERSION)
-			{
-				m_rfSak.Read(&usNumPairs);
-				for (i = 0; i < usNumPairs; i++)
-				{
-					// Read the filename
-					m_rfSak.Read(char_buffer);
-               strFilename = char_buffer;
-					// Read the offset
-					m_rfSak.Read(&lOffset);
-//               TRACE("%s @ 0x%08x : %s\n", strSakFile.operator const char *(), lOffset, char_buffer);
-               m_SakDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
-					m_SakDirOffset.insert(lOffset);
-				}			
-				// Insert end of SAK file into offset Set container so there is
-				// always a next offset to look up.
-				m_rfSak.Seek(0, SEEK_END);
-				lOffset = m_rfSak.Tell();
-				m_SakDirOffset.insert(lOffset);
-			}
-			else
-			{
-				TRACE("RResMgr::OpenSak - Break Yo Self! This file is version %d and the current SAK version is %d\n", 
-				       ulFileVersion, SAK_CURRENT_VERSION);
-				sReturn = FAILURE;
-			}		
-		}
-		else
-		{
-			TRACE("RResMgr::OpenSak - Not a valid SAK file, cookie should be 'SAK ' - what's up with dat?\n");
-			sReturn = FAILURE;
-		}		
-	}
-	else
-	{
-      TRACE("RResMgr::OpenSak - Break Yo Self! Error opening sak file %s\n", strSakFile);
-		sReturn = FAILURE;
-	}
+  if (m_rfSak.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
+  {
+    m_rfSak.ClearError();
+    m_rfSak.Read(&ulFileType);
+    if (ulFileType == SAK_COOKIE)
+    {
+      m_rfSak.Read(&ulFileVersion);
+      if (ulFileVersion == SAK_CURRENT_VERSION)
+      {
+        m_rfSak.Read(&usNumPairs);
+        for (i = 0; i < usNumPairs; i++)
+        {
+          // Read the filename
+          m_rfSak.Read(char_buffer);
+          strFilename = char_buffer;
+          // Read the offset
+          m_rfSak.Read(&lOffset);
+          //               TRACE("%s @ 0x%08x : %s\n", strSakFile.operator const char *(), lOffset, char_buffer);
+          m_SakDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
+          m_SakDirOffset.insert(lOffset);
+        }
+        // Insert end of SAK file into offset Set container so there is
+        // always a next offset to look up.
+        m_rfSak.Seek(0, SEEK_END);
+        lOffset = m_rfSak.Tell();
+        m_SakDirOffset.insert(lOffset);
+      }
+      else
+      {
+        TRACE("RResMgr::OpenSak - This file is version %d and the current SAK version is %d\n",
+              ulFileVersion, SAK_CURRENT_VERSION);
+        sReturn = FAILURE;
+      }
+    }
+    else
+    {
+      TRACE("RResMgr::OpenSak - Not a valid SAK file, cookie should be 'SAK '\n");
+      sReturn = FAILURE;
+    }
+  }
+  else
+  {
+    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile);
+    sReturn = FAILURE;
+  }
 
-	return sReturn;
+  return sReturn;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -955,16 +912,16 @@ int16_t RResMgr::OpenSak(RString strSakFile)
 
 void RResMgr::SetBasePath(RString strBasepath)
 {
-	int16_t sLast = strBasepath.GetLen();
-	if (sLast > 0)
-		sLast--;
+  int16_t sLast = strBasepath.GetLen();
+  if (sLast > 0)
+    sLast--;
 
-	// If base path doesn't end with a slash, add one
-	if (strBasepath[(int32_t) sLast] != SYSTEM_PATH_SEPARATOR)
-		strBasepath += SYSTEM_PATH_SEPARATOR;
-	// Make sure it is short enough to work with rspix functions
-	ASSERT(strBasepath.GetLen() < PATH_MAX);
-	m_strBasepath = strBasepath;
+  // If base path doesn't end with a slash, add one
+  if (strBasepath[(int32_t) sLast] != SYSTEM_PATH_SEPARATOR)
+    strBasepath += SYSTEM_PATH_SEPARATOR;
+  // Make sure it is short enough to work with rspix functions
+  ASSERT(strBasepath.GetLen() < PATH_MAX);
+  m_strBasepath = strBasepath;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -988,131 +945,131 @@ void RResMgr::SetBasePath(RString strBasepath)
 
 int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
 {
-	int16_t sReturn = SUCCESS;
-	uint32_t ulFileType;
-	uint32_t ulFileVersion;
-	uint16_t usNumPairs;
-	uint16_t i;
-	char char_buffer[256];
-	int32_t lOffset;
-	RString strFilename;
+  int16_t sReturn = SUCCESS;
+  uint32_t ulFileType;
+  uint32_t ulFileVersion;
+  uint16_t usNumPairs;
+  uint16_t i;
+  char char_buffer[256];
+  int32_t lOffset;
+  RString strFilename;
   std::ifstream script;
-	dirMap altNames;
-	struct {
-		int cnt;
-		RString *names;
-	} altMap[1024];
-	int num = 0;
+  dirMap altNames;
+  struct {
+    int cnt;
+    RString *names;
+  } altMap[1024];
+  int num = 0;
 
-	if (m_rfSakAlt.IsOpen())
-	{
-		TRACE("RResMgr::OpenSakAlt - The currently open Alt SAK file is being closed before loading the new Alt SAK file\n");
-		CloseSakAlt();
-	}
-	if(strScriptFile) 
-	{
-      script.open(strScriptFile.operator std::string());
-		if (script.is_open())
-		{
-			// Load in all of the resource names to be added to SAK file
-			while (!script.eof())
-			{
-				script.getline(char_buffer, 256);
-				//clean the \r that can still be there
-				char* p;
+  if (m_rfSakAlt.IsOpen())
+  {
+    TRACE("RResMgr::OpenSakAlt - The currently open Alt SAK file is being closed before loading the new Alt SAK file\n");
+    CloseSakAlt();
+  }
+  if(strScriptFile)
+  {
+    script.open(strScriptFile.operator std::string());
+    if (script.is_open())
+    {
+      // Load in all of the resource names to be added to SAK file
+      while (!script.eof())
+      {
+        script.getline(char_buffer, 256);
+        //clean the \r that can still be there
+        char* p;
+        if((p=strchr(char_buffer,'\r'))!=nullptr)
+          *p = '\0';
+        strFilename = char_buffer;
+        if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
+        {
+          num++;
+          altNames.insert(dirMap::value_type(strFilename.operator std::string(), num));
+          // now get the number of substitutions
+          script.getline(char_buffer, 256);
+          //clean the \r that can still be there
+          char* p;
+          if((p=strchr(char_buffer,'\r'))!=nullptr)
+            *p = '\0';
+          strFilename = char_buffer;
+          strFilename = char_buffer;
+          int cnt = atoi(char_buffer);
+          altMap[num].cnt = cnt;
+          altMap[num].names = new RString[cnt];
+          for(int i=0; i<cnt;)
+          {
+            script.getline(char_buffer, 256);
+            //clean the \r that can still be there
+            char* p;
             if((p=strchr(char_buffer,'\r'))!=nullptr)
-					*p = '\0';
-				strFilename = char_buffer;
-				if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
-				{
-					num++;
-               altNames.insert(dirMap::value_type(strFilename.operator std::string(), num));
-					// now get the number of substitutions
-					script.getline(char_buffer, 256);
-					//clean the \r that can still be there
-					char* p;
-               if((p=strchr(char_buffer,'\r'))!=nullptr)
-						*p = '\0';
-					strFilename = char_buffer;
-					strFilename = char_buffer;
-					int cnt = atoi(char_buffer);
-					altMap[num].cnt = cnt;
-					altMap[num].names = new RString[cnt];					
-					for(int i=0; i<cnt;)
-					{
-						script.getline(char_buffer, 256);
-						//clean the \r that can still be there
-						char* p;
-                  if((p=strchr(char_buffer,'\r'))!=nullptr)
-							*p = '\0';
-						strFilename = char_buffer;
-						strFilename = char_buffer;
-						if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
-						{
-							altMap[num].names[i] = strFilename;
-							i++;
-						}
-					}
-				}
-			}
-			script.close();
-		}
-	}
+              *p = '\0';
+            strFilename = char_buffer;
+            strFilename = char_buffer;
+            if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
+            {
+              altMap[num].names[i] = strFilename;
+              i++;
+            }
+          }
+        }
+      }
+      script.close();
+    }
+  }
 
-   if (m_rfSakAlt.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
-	{
-		m_rfSakAlt.ClearError();
-		m_rfSakAlt.Read(&ulFileType);
-		if (ulFileType == SAK_COOKIE)
-		{
-			m_rfSakAlt.Read(&ulFileVersion);
-			if (ulFileVersion == SAK_CURRENT_VERSION)
-			{
-				m_rfSakAlt.Read(&usNumPairs);
-				for (i = 0; i < usNumPairs; i++)
-				{
-					// Read the filename
-					m_rfSakAlt.Read(char_buffer);
-					strFilename = char_buffer;
-					// Read the offset
-					m_rfSakAlt.Read(&lOffset);
-					int alt = altNames[strFilename];
-					if (alt>0)
-					{
-						for (int i=0; i<altMap[alt].cnt; i++)
-                     m_SakAltDirectory.insert(dirMap::value_type (altMap[alt].names[i].operator std::string(), lOffset));
-					}
-					else
-                  m_SakAltDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
-				}			
-			}
-			else
-			{
-				TRACE("RResMgr::OpenSak - Break Yo Self! This file is version %d and the current SAK version is %d\n", 
-				       ulFileVersion, SAK_CURRENT_VERSION);
-				sReturn = FAILURE;
-			}		
-		}
-		else
-		{
-			TRACE("RResMgr::OpenSak - Not a valid SAK file, cookie should be 'SAK ' - what's up with dat?\n");
-			sReturn = FAILURE;
-		}		
-	}
-	else
-	{
-      TRACE("RResMgr::OpenSak - Break Yo Self! Error opening sak file %s\n", strSakFile);
-		sReturn = FAILURE;
-	}
+  if (m_rfSakAlt.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
+  {
+    m_rfSakAlt.ClearError();
+    m_rfSakAlt.Read(&ulFileType);
+    if (ulFileType == SAK_COOKIE)
+    {
+      m_rfSakAlt.Read(&ulFileVersion);
+      if (ulFileVersion == SAK_CURRENT_VERSION)
+      {
+        m_rfSakAlt.Read(&usNumPairs);
+        for (i = 0; i < usNumPairs; i++)
+        {
+          // Read the filename
+          m_rfSakAlt.Read(char_buffer);
+          strFilename = char_buffer;
+          // Read the offset
+          m_rfSakAlt.Read(&lOffset);
+          int alt = altNames[strFilename];
+          if (alt>0)
+          {
+            for (int i=0; i<altMap[alt].cnt; i++)
+              m_SakAltDirectory.insert(dirMap::value_type (altMap[alt].names[i].operator std::string(), lOffset));
+          }
+          else
+            m_SakAltDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
+        }
+      }
+      else
+      {
+        TRACE("RResMgr::OpenSak - This file is version %d and the current SAK version is %d\n",
+              ulFileVersion, SAK_CURRENT_VERSION);
+        sReturn = FAILURE;
+      }
+    }
+    else
+    {
+      TRACE("RResMgr::OpenSak - Not a valid SAK file, cookie should be 'SAK ' - what's up with dat?\n");
+      sReturn = FAILURE;
+    }
+  }
+  else
+  {
+    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile);
+    sReturn = FAILURE;
+  }
 
-	if(num) 
-	{
-		// clean up the altMap...
-		for (int i=1; i<num; i++)
-			delete[] altMap[i].names;
-	}
+  if(num)
+  {
+    // clean up the altMap...
+    for (int i=1; i<num; i++)
+      delete[] altMap[i].names;
+  }
 
-	return sReturn;
+  return sReturn;
 }
 
 //////////////////////////////////////////////////////////////////////

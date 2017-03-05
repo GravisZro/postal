@@ -263,58 +263,58 @@
 // We had to use a handle to the object instead of just returning a pointer
 // to it because you can't overload functions based soley on return type.
 struct GenericCreateResFunc
-	{
+{
   virtual ~GenericCreateResFunc(void) { }
-	virtual int16_t operator()(void** ppT)
-		{
-		*ppT = 0;
-      return FAILURE;	// generic version should never be called!
-		}
-	};
+  virtual int16_t operator()(void** ppT)
+  {
+    *ppT = 0;
+    return FAILURE;	// generic version should never be called!
+  }
+};
 
 template<class T>
 struct CreateResFunc : GenericCreateResFunc
-	{
-	int16_t operator()(void** ppT)
-		{
-		*ppT = (void*)new T;
-		return *ppT ? 0 : -1;
-		}
-	};
+{
+  int16_t operator()(void** ppT)
+  {
+    *ppT = (void*)new T;
+    return *ppT ? SUCCESS : FAILURE;
+  }
+};
 
 
 // Base class and templated derived class of function object used to
 // destroy a specific type of resource.  The function simply does a "delete". 
 struct GenericDestroyResFunc
-	{
+{
   virtual ~GenericDestroyResFunc(void) { }
-	virtual void operator()(void* /*pT*/)
-		{  }
-	};
+  virtual void operator()(void* /*pT*/)
+  {  }
+};
 
 template<class T>
 struct DestroyResFunc : GenericDestroyResFunc
-	{
-	void operator()(void* pT)
-		{ delete (T*)pT; }
-	};
+{
+  void operator()(void* pT)
+  { delete (T*)pT; }
+};
 
 
 // Base class and templated derived class of function object used to
 // load a specific type of resource.  The function uses rspAnyLoad().
 struct GenericLoadResFunc
-	{
+{
   virtual ~GenericLoadResFunc(void) { }
-	virtual int16_t operator()(void* /*pT*/, RFile* /*pfile*/)
-      { return FAILURE; }	// generic version should never be called!
-	};
+  virtual int16_t operator()(void* /*pT*/, RFile* /*pfile*/)
+  { return FAILURE; }	// generic version should never be called!
+};
 
 template<class T>
 struct LoadResFunc : GenericLoadResFunc
-	{
-	int16_t operator()(void* pT, RFile* pfile)
-		{ return rspAnyLoad((T*)pT, pfile); }
-	};
+{
+  int16_t operator()(void* pT, RFile* pfile)
+  { return rspAnyLoad((T*)pT, pfile); }
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -322,55 +322,52 @@ struct LoadResFunc : GenericLoadResFunc
 // Resource manager block
 //
 ///////////////////////////////////////////////////////////////////////////////
-class CResourceBlock
+struct CResourceBlock
 {
-	public:
+  int16_t  m_sRefCount;
+  int16_t  m_sAccessCount;
+  void*  m_vpRes;
+  RString m_strFilename;
+  GenericDestroyResFunc* m_pfnDestroy;
 
-		int16_t  m_sRefCount;
-		int16_t  m_sAccessCount;
-		void*  m_vpRes;
-		RString m_strFilename;
-		GenericDestroyResFunc* m_pfnDestroy;
+  CResourceBlock()
+  {
+    m_sRefCount = 0;
+    m_sAccessCount = 0;
+    m_vpRes = nullptr;
+    m_pfnDestroy = 0;
+  }
 
-		CResourceBlock()
-			{
-			m_sRefCount = 0;
-			m_sAccessCount = 0;
-			m_vpRes = nullptr;
-			m_pfnDestroy = 0;
-         }
+  ~CResourceBlock()
+  {
+    FreeResource();
 
-		~CResourceBlock()
-			{
-			FreeResource();
+    // Delete the function object
+    delete m_pfnDestroy;
+    m_pfnDestroy = 0;
+  }
 
-			// Delete the function object
-			delete m_pfnDestroy;
-			m_pfnDestroy = 0;
-         }
+  void FreeResource(void)
+  {
+    if (m_vpRes)
+    {
+      // Must have the destroy function.
+      ASSERT(m_pfnDestroy);
 
-		void FreeResource(void)
-			{
-			if (m_vpRes)
-				{
-				// Must have the destroy function.
-				ASSERT(m_pfnDestroy);
-
-				// Destroy resource.
-				(*m_pfnDestroy)(m_vpRes);
-				m_vpRes = 0;
-				}
-			}
-
+      // Destroy resource.
+      (*m_pfnDestroy)(m_vpRes);
+      m_vpRes = 0;
+    }
+  }
 };
 
 
-  typedef std::map<std::string, CResourceBlock> resclassMap;
-  typedef std::map<void*, std::string, std::less<void*>> ptrLookupMap;
-  typedef std::vector<std::string> accessVector;
-  typedef std::set<std::string> dupSet;
-  typedef std::vector<uint16_t> typeVector;
-  typedef std::map<std::string, int32_t> dirMap;
+typedef std::map<std::string, CResourceBlock> resclassMap;
+typedef std::map<void*, std::string, std::less<void*>> ptrLookupMap;
+typedef std::vector<std::string> accessVector;
+typedef std::set<std::string> dupSet;
+typedef std::vector<uint16_t> typeVector;
+typedef std::map<std::string, int32_t> dirMap;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -383,276 +380,273 @@ class RResMgr
 	////////////////////////////////////////////////////////////////////////////
 	// Typedefs.
 	////////////////////////////////////////////////////////////////////////////
-	public:
-		
-	public:
-		
-		// Constructor
-		RResMgr();
+public:
 
-		// Destructor
-		~RResMgr();
+  // Constructor
+  RResMgr();
 
-		// void load
-		int16_t Get(												// Returns 0 on success.
-			RString strFilename,								// In:  Resource name
-			void** hRes,										// Out: Pointer to resource returned here
-			RFile::Endian	endian,							// In:  Endian nature of resource file
-			GenericCreateResFunc* pfnCreate,				// In:  Pointer to "create" function object
-			GenericDestroyResFunc* pfnDestroy,			// In:  Pointer to "destroy" function object
-			GenericLoadResFunc* pfnLoad);					// In:  Pointer to "load" function object
+  // Destructor
+  ~RResMgr();
 
-		int16_t GetInstance(									// Returns 0 on success.
-			RString strFilename,								// In:  Resource name
-			void** hRes,										// Out: Pointer to resource returned here
-			RFile::Endian	endian,							// In:  Endian nature of resource file
-			GenericCreateResFunc* pfnCreate,				// In:  Pointer to "create" function object
-			GenericDestroyResFunc* pfnDestroy,			// In:  Pointer to "destroy" function object
-			GenericLoadResFunc* pfnLoad);					// In:  Pointer to "load" function object
+  // void load
+  int16_t Get(                                  // Returns 0 on success.
+      RString strFilename,                        // In:  Resource name
+      void** hRes,                                // Out: Pointer to resource returned here
+      RFile::Endian endian,                       // In:  Endian nature of resource file
+      GenericCreateResFunc* pfnCreate,            // In:  Pointer to "create" function object
+      GenericDestroyResFunc* pfnDestroy,          // In:  Pointer to "destroy" function object
+      GenericLoadResFunc* pfnLoad);               // In:  Pointer to "load" function object
 
-		// void release
-		void Release(void* pVoid);
+  int16_t GetInstance(                          // Returns 0 on success.
+      RString strFilename,                        // In:  Resource name
+      void** hRes,                                // Out: Pointer to resource returned here
+      RFile::Endian endian,                       // In:  Endian nature of resource file
+      GenericCreateResFunc* pfnCreate,            // In:  Pointer to "create" function object
+      GenericDestroyResFunc* pfnDestroy,          // In:  Pointer to "destroy" function object
+      GenericLoadResFunc* pfnLoad);               // In:  Pointer to "load" function object
 
-		// Purge - deallocate a single resource with a zero reference count
-		bool ReleaseAndPurge(void* pVoid);
+  // void release
+  void Release(void* pVoid);
 
-		// Purge - deallocate all resources with a zero reference count
-		void Purge(void);
+  // Purge - deallocate a single resource with a zero reference count
+  bool ReleaseAndPurge(void* pVoid);
 
-		// Function to turn on or off tracing of non-cached loads
-		void TraceUncachedLoads(bool bShow)
-		{
-			m_bTraceUncachedLoads = bShow;
-		}
+  // Purge - deallocate all resources with a zero reference count
+  void Purge(void);
 
-		// Statistics for analysis purposes to see how well the
-		// resources are being utilized and produce a batch file
-		// that can be used to make a SAK file.  This function takes
-		// a filename and produces a text file giving the list
-		// of files that were accessed and their statistics.
-		int16_t Statistics(RString strStatFile);
+  // Function to turn on or off tracing of non-cached loads
+  void TraceUncachedLoads(bool bShow)
+  {
+    m_bTraceUncachedLoads = bShow;
+  }
 
-		// Just a more obvious function name for creating
-		// the batch files.
-		int16_t CreateSakBatch(RString strBatchFile)
-		{
-			return Statistics(strBatchFile);
-		}
+  // Statistics for analysis purposes to see how well the
+  // resources are being utilized and produce a batch file
+  // that can be used to make a SAK file.  This function takes
+  // a filename and produces a text file giving the list
+  // of files that were accessed and their statistics.
+  int16_t Statistics(RString strStatFile);
 
-		// Read in one of the script files created by Statistics()
-		// and create a SAK file of the given name.  
-		int16_t CreateSak(RString strScriptFile, RString strSakFile);
+  // Just a more obvious function name for creating
+  // the batch files.
+  int16_t CreateSakBatch(RString strBatchFile)
+  {
+    return Statistics(strBatchFile);
+  }
 
-		// Open a SAK file and until it is closed, assume that
-		//	all resource names refer to resources in this SAK file.
-		//	If a resource name is not in the SAK file, then it cannot
-		// be loaded.  It does not attempt to load the resource from
-		// its individual disk file.
-		int16_t OpenSak(RString strSakFile);
+  // Read in one of the script files created by Statistics()
+  // and create a SAK file of the given name.
+  int16_t CreateSak(RString strScriptFile, RString strSakFile);
 
-		// Open an Alternate SAK file
-		// with an optionnal script file to overload name in Alternate SAK
-		// (used for XMas runtime patch)
-		int16_t OpenSakAlt(RString strSakFile, RString strScriptFile = false);
+  // Open a SAK file and until it is closed, assume that
+  //	all resource names refer to resources in this SAK file.
+  //	If a resource name is not in the SAK file, then it cannot
+  // be loaded.  It does not attempt to load the resource from
+  // its individual disk file.
+  int16_t OpenSak(RString strSakFile);
 
-		// This function closes the Alt SAK file and all resource names
-		void CloseSakAlt()
-		  {
-			  if (m_rfSakAlt.IsOpen())
-			    {
-					m_rfSakAlt.Close();
-					m_SakAltDirectory.erase(m_SakAltDirectory.begin(), m_SakAltDirectory.end());
-			    }
-		  }
+  // Open an Alternate SAK file
+  // with an optionnal script file to overload name in Alternate SAK
+  // (used for XMas runtime patch)
+  int16_t OpenSakAlt(RString strSakFile, RString strScriptFile = false);
 
-		// This function closes the SAK file and all resource names
-		// are assumed to refer to individual disk files.
-		void CloseSak()
-			{ if (m_rfSak.IsOpen())
-				{
-					m_rfSak.Close();
-					m_SakDirectory.erase(m_SakDirectory.begin(), m_SakDirectory.end());
-					CloseSakAlt();
-				}
-			}
+  // This function closes the Alt SAK file and all resource names
+  void CloseSakAlt()
+  {
+    if (m_rfSakAlt.IsOpen())
+    {
+      m_rfSakAlt.Close();
+      m_SakAltDirectory.erase(m_SakAltDirectory.begin(), m_SakAltDirectory.end());
+    }
+  }
 
-		// This function sets a base pathname that will be prepended to
-		// the resource name when loading resources from their individaul
-		// files.
-		void SetBasePath(RString strBase);
+  // This function closes the SAK file and all resource names
+  // are assumed to refer to individual disk files.
+  void CloseSak()
+  { if (m_rfSak.IsOpen())
+    {
+      m_rfSak.Close();
+      m_SakDirectory.erase(m_SakDirectory.begin(), m_SakDirectory.end());
+      CloseSakAlt();
+    }
+  }
 
-		// This function returns the base path.
-      const char* GetBasePath(void)
-			{
-         return (const char*)m_strBasepath;
-			}
+  // This function sets a base pathname that will be prepended to
+  // the resource name when loading resources from their individaul
+  // files.
+  void SetBasePath(RString strBase);
 
-		// Helper function to position m_rfSak at correct position
-		// for the file you are trying to get
-		RFile* FromSak(RString strResourceName)
-		{
-			RFile* prf = nullptr;
-			if (m_rfSakAlt.IsOpen()) 
-			  {
-            int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
-				if (lResSeekPos > 0)
-					{
-					if (m_rfSakAlt.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
-						{
-						prf = &m_rfSakAlt;
-						return prf;
-						}
-					else
-						{
-						TRACE("RResMgr::FromSak - m_rfSakAlt.Seek(%i, SEEK_SET) failed.\n", 
-							lResSeekPos);
-						}
-					}
-			  }
-			int32_t	lResSeekPos	= m_SakDirectory[strResourceName];
-			if (lResSeekPos > 0)
-				{
-				if (m_rfSak.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
-					{
-					prf = &m_rfSak;
-					}
-				else
-					{
-					TRACE("RResMgr::FromSak - m_rfSak.Seek(%i, SEEK_SET) failed.\n", 
-						lResSeekPos);
-					}
-            }
+  // This function returns the base path.
+  const char* GetBasePath(void)
+  {
+    return (const char*)m_strBasepath;
+  }
+
+  // Helper function to position m_rfSak at correct position
+  // for the file you are trying to get
+  RFile* FromSak(RString strResourceName)
+  {
+    RFile* prf = nullptr;
+    if (m_rfSakAlt.IsOpen())
+    {
+      int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
+      if (lResSeekPos > 0)
+      {
+        if (m_rfSakAlt.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
+        {
+          prf = &m_rfSakAlt;
+          return prf;
+        }
+        else
+        {
+          TRACE("RResMgr::FromSak - m_rfSakAlt.Seek(%i, SEEK_SET) failed.\n",
+                lResSeekPos);
+        }
+      }
+    }
+    int32_t	lResSeekPos	= m_SakDirectory[strResourceName];
+    if (lResSeekPos > 0)
+    {
+      if (m_rfSak.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
+      {
+        prf = &m_rfSak;
+      }
+      else
+      {
+        TRACE("RResMgr::FromSak - m_rfSak.Seek(%i, SEEK_SET) failed.\n",
+              lResSeekPos);
+      }
+    }
 #ifdef RESMGR_VERBOSE
-			else
-            TRACE("RResMgr::FromSak - Resource %s is not in this SAK file\n",
-                  (const char*) strResourceName);
-//				      (const char*) strResourceName.c_str());
+    else
+      TRACE("RResMgr::FromSak - Resource %s is not in this SAK file\n",
+            (const char*) strResourceName);
+    //				      (const char*) strResourceName.c_str());
 #endif
-			return prf;
-		}
+    return prf;
+  }
 
+private:
 
-	private:
-	
-		// Convert the resource name to an rsp resource name with / slashes, 
-		// and make sure that it is all lower case to avoid compare problems.
+  // Convert the resource name to an rsp resource name with / slashes,
+  // and make sure that it is all lower case to avoid compare problems.
 
-		void NormalizeResName(RString* pstrResourceName)
-		{
-			int32_t i;
-			for (i = 0; i < pstrResourceName->GetLen(); i++)
-			{
-				if (pstrResourceName->GetAt(i) == '\\')
-					pstrResourceName->SetAt(i, '/');
-				pstrResourceName->SetAt(i, tolower(pstrResourceName->GetAt(i)));
-			}
-		}
+  void NormalizeResName(RString* pstrResourceName)
+  {
+    int32_t i;
+    for (i = 0; i < pstrResourceName->GetLen(); i++)
+    {
+      if (pstrResourceName->GetAt(i) == '\\')
+        pstrResourceName->SetAt(i, '/');
+      pstrResourceName->SetAt(i, tolower(pstrResourceName->GetAt(i)));
+    }
+  }
 
-		// This flag will print trace messages of non-cached loads.  You can
-		// turn it on after a point in the app where you expect everything 
-		// should be loaded into the cache, then it will show you what
-		// resources were loaded from disk after that point.
-		bool m_bTraceUncachedLoads;
+  // This flag will print trace messages of non-cached loads.  You can
+  // turn it on after a point in the app where you expect everything
+  // should be loaded into the cache, then it will show you what
+  // resources were loaded from disk after that point.
+  bool m_bTraceUncachedLoads;
 
-		// m_map is a map of filenames to CResourceBlocks for fast
-		// access using the resource filename for lookup
-		resclassMap m_map;
+  // m_map is a map of filenames to CResourceBlocks for fast
+  // access using the resource filename for lookup
+  resclassMap m_map;
 
-		// m_ptrMap is a map of allocated resource pointers to filenames
-		// so that you can lookup the original resource filename once
-		// you have a pointer to that resource.  It is used when freeing
-		// the resource, it looks up the resource name using the pointer
-		// and then looks up the CResouceBlock using the resource name.
-		ptrLookupMap m_ptrMap;
+  // m_ptrMap is a map of allocated resource pointers to filenames
+  // so that you can lookup the original resource filename once
+  // you have a pointer to that resource.  It is used when freeing
+  // the resource, it looks up the resource name using the pointer
+  // and then looks up the CResouceBlock using the resource name.
+  ptrLookupMap m_ptrMap;
 
-		// m_duplicateSet is used in Statistics() to eliminate 
-		// duplicates from the m_accessList so that it prints only
-		// the unique files in the order that they were accessed.  
-		// The access order is preserved to try to minimize seeking 
-		// in the SAK file.
-		dupSet m_duplicateSet;
+  // m_duplicateSet is used in Statistics() to eliminate
+  // duplicates from the m_accessList so that it prints only
+  // the unique files in the order that they were accessed.
+  // The access order is preserved to try to minimize seeking
+  // in the SAK file.
+  dupSet m_duplicateSet;
 
-		// m_accessList keeps track of the access order of the resources
-		// and just adds a resource name each time that file is loaded.  
-		// If Purge was called and then the file was reloaded, it will be
-		// in this list twice, but the duplicates will be eliminated
-		// as the SAK file list is being created.
-		accessVector m_accessList;
+  // m_accessList keeps track of the access order of the resources
+  // and just adds a resource name each time that file is loaded.
+  // If Purge was called and then the file was reloaded, it will be
+  // in this list twice, but the duplicates will be eliminated
+  // as the SAK file list is being created.
+  accessVector m_accessList;
 
-		// These are used for creating a SAK file
+  // These are used for creating a SAK file
 
-		// m_LoadList is the list of filenames to be loaded in
-		// the order that they appear in the SAK script file.  
-		accessVector m_LoadList;
+  // m_LoadList is the list of filenames to be loaded in
+  // the order that they appear in the SAK script file.
+  accessVector m_LoadList;
 
-		// m_TypeList parallels the m_LoadList so we know what 
-		// type of resource needs to be created in order to load
-		// and save this type of resource.
-//		typeVector	 m_TypeList;
+  // m_TypeList parallels the m_LoadList so we know what
+  // type of resource needs to be created in order to load
+  // and save this type of resource.
+  //		typeVector	 m_TypeList;
 
-		// m_DirectoryMap is a mapping of resource names to offsets
-		// within the SAK file.  When reading from a SAK file, the
-		// resource name will give the offset to seek to in order
-		// to load the given resource.
-		dirMap		 m_DirectoryMap;
+  // m_DirectoryMap is a mapping of resource names to offsets
+  // within the SAK file.  When reading from a SAK file, the
+  // resource name will give the offset to seek to in order
+  // to load the given resource.
+  dirMap		 m_DirectoryMap;
 
-		// m_SakDirectory is a mapping of resource names to offsets
-		// within the SAK file.  This is separate from the m_DirectoryMap
-		// just in case someone calls CreateSak while a sak file is already
-		// loaded.  This is the map used for the open SAK file.
-		dirMap		m_SakDirectory;
+  // m_SakDirectory is a mapping of resource names to offsets
+  // within the SAK file.  This is separate from the m_DirectoryMap
+  // just in case someone calls CreateSak while a sak file is already
+  // loaded.  This is the map used for the open SAK file.
+  dirMap		m_SakDirectory;
 
-		// With the addition of the CResVoid class to support generic
-		// data blocks with unknown length, it was necessary to add this
-		// container to keep track of the next offset in the SAK file.  
-		// When a void resource is loaded from a SAK file, it uses the
-		// resource name to get the offset where the data begins, then it
-		// must use this contianer to find the next offset in the directory
-		// so it knows where to stop.  This set is sorted by ascending 
-		// offsets so it can easily find the last one.  Also, to avoid
-		// checking for a special case of the void resource you want being
-		// the last resource in the file and thus having to search for EOF
-		// rather than reading to the next offset, this set will put in the
-		// tell position for the end of the SAK file.  
-      std::set<int32_t, std::less<int32_t>>	m_SakDirOffset;
+  // With the addition of the CResVoid class to support generic
+  // data blocks with unknown length, it was necessary to add this
+  // container to keep track of the next offset in the SAK file.
+  // When a void resource is loaded from a SAK file, it uses the
+  // resource name to get the offset where the data begins, then it
+  // must use this contianer to find the next offset in the directory
+  // so it knows where to stop.  This set is sorted by ascending
+  // offsets so it can easily find the last one.  Also, to avoid
+  // checking for a special case of the void resource you want being
+  // the last resource in the file and thus having to search for EOF
+  // rather than reading to the next offset, this set will put in the
+  // tell position for the end of the SAK file.
+  std::set<int32_t, std::less<int32_t>>	m_SakDirOffset;
 
-		// This is the RFile that is used for SAK files
-		RFile m_rfSak;
+  // This is the RFile that is used for SAK files
+  RFile m_rfSak;
 
-		// This store an alternate SAK files (XMas runtime patch)
-		RFile m_rfSakAlt;
-		// And this will store the name / offset mapping, name beeing the name as expected in FromSak function
-		dirMap		m_SakAltDirectory;
+  // This store an alternate SAK files (XMas runtime patch)
+  RFile m_rfSakAlt;
+  // And this will store the name / offset mapping, name beeing the name as expected in FromSak function
+  dirMap		m_SakAltDirectory;
 
-		// This is the base pathname to prepend to the resource names
-		// when loading a file (not when loading from a SAK file)
-		RString m_strBasepath; 
+  // This is the base pathname to prepend to the resource names
+  // when loading a file (not when loading from a SAK file)
+  RString m_strBasepath;
 
-		// This is a temp variable used by the FromSystempath function to 
-		// store the last called for pathname.  You must use the RString
-		// passed back by FromSystempath before calling it again (where it
-		// will be overwritten)
-		RString m_strFullpath;
+  // This is a temp variable used by the FromSystempath function to
+  // store the last called for pathname.  You must use the RString
+  // passed back by FromSystempath before calling it again (where it
+  // will be overwritten)
+  RString m_strFullpath;
 
-		// Write the SAK file header to the current position in
-		// the given RFile.  
-		int16_t WriteSakHeader(RFile* prf);
+  // Write the SAK file header to the current position in
+  // the given RFile.
+  int16_t WriteSakHeader(RFile* prf);
 
-		// Helper function to combine the resource name and the base pathname
-		// to load your file.
-      const char* FromSystempath(const std::string& strResourceName)
-			{
-         RString strSystemPartial = rspPathToSystem(strResourceName.c_str());
-			m_strFullpath = m_strBasepath + strSystemPartial;
-			// Make sure that the RString is not too long for rspix functions
-			ASSERT(m_strFullpath.GetLen() < PATH_MAX);
-         return m_strFullpath;
-			}
+  // Helper function to combine the resource name and the base pathname
+  // to load your file.
+  const char* FromSystempath(const std::string& strResourceName)
+  {
+    RString strSystemPartial = rspPathToSystem(strResourceName.c_str());
+    m_strFullpath = m_strBasepath + strSystemPartial;
+    // Make sure that the RString is not too long for rspix functions
+    ASSERT(m_strFullpath.GetLen() < PATH_MAX);
+    return m_strFullpath;
+  }
 
-		// Purge all resources even if reference count is not
-		// zero.  This is used only by the destructor to 
-		// clean up.
-		void FreeAllResources(void);
+  // Purge all resources even if reference count is not
+  // zero.  This is used only by the destructor to
+  // clean up.
+  void FreeAllResources(void);
 };
 
 
@@ -665,24 +659,24 @@ class RResMgr
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <class T>
-int16_t rspGetResource(									// Returns 0 on success
-	RResMgr*	presmgr,										// In:  Resource Manager to be used
-	const char*	pszResName,								// In:  Resource name
-	T**	pT,												// Out: Pointer to resource returned here
-	RFile::Endian endian = RFile::LittleEndian)	// In:  Endian nature of resource file
-	{
-	// Create function objects for the specified type.  We have to allocate
-	// them using new because if they're just on the stack, they won't exist
-	// beyond this function.  Instead, we leave it up to the Get() function
-	// to dispose of them when they are no longer needed.  This is very
-	// cheesy, and I hope to figure out a better method soon.
-	GenericCreateResFunc* pcreate = new CreateResFunc<T>;
-	GenericDestroyResFunc* pdestroy = new DestroyResFunc<T>;
-	GenericLoadResFunc* pload = new LoadResFunc<T>;
+int16_t rspGetResource(                         // Returns 0 on success
+    RResMgr* presmgr,                             // In:  Resource Manager to be used
+    const char* pszResName,                       // In:  Resource name
+    T** pT,                                       // Out: Pointer to resource returned here
+    RFile::Endian endian = RFile::LittleEndian)   // In:  Endian nature of resource file
+{
+  // Create function objects for the specified type.  We have to allocate
+  // them using new because if they're just on the stack, they won't exist
+  // beyond this function.  Instead, we leave it up to the Get() function
+  // to dispose of them when they are no longer needed.  This is very
+  // cheesy, and I hope to figure out a better method soon.
+  GenericCreateResFunc* pcreate = new CreateResFunc<T>;
+  GenericDestroyResFunc* pdestroy = new DestroyResFunc<T>;
+  GenericLoadResFunc* pload = new LoadResFunc<T>;
 
-	// Pass everything in generic form to the resource manager
-	return presmgr->Get(pszResName, (void**)pT, endian, pcreate, pdestroy, pload);
-	}
+  // Pass everything in generic form to the resource manager
+  return presmgr->Get(pszResName, (void**)pT, endian, pcreate, pdestroy, pload);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -691,13 +685,13 @@ int16_t rspGetResource(									// Returns 0 on success
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <class T>
-void rspReleaseResource(								// Returns 0 on success
-	RResMgr*	presmgr,										// In:  Resource Manager to be used
-	T** ppres)												// In:  Pointer to resource
-	{
-	presmgr->Release(*ppres);
-	*ppres = nullptr;
-	}
+void rspReleaseResource(                        // Returns 0 on success
+    RResMgr* presmgr,                             // In:  Resource Manager to be used
+    T** ppres)                                    // In:  Pointer to resource
+{
+  presmgr->Release(*ppres);
+  *ppres = nullptr;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -709,15 +703,15 @@ void rspReleaseResource(								// Returns 0 on success
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <class T>
-bool rspReleaseAndPurgeResource(	// Returns true if it was acutally purged, 
-											// false if its reference count prevented it from being purged
-	RResMgr* presmgr,					// In:  Resource Manager to purge resource from
-	T** ppres)
-	{
-	bool bPurged = presmgr->ReleaseAndPurge(*ppres);
-	*ppres = nullptr;
-	return bPurged;
-	}
+bool rspReleaseAndPurgeResource(                // Returns true if it was acutally purged,
+                                                // false if its reference count prevented it from being purged
+    RResMgr* presmgr,                             // In:  Resource Manager to purge resource from
+    T** ppres)
+{
+  bool bPurged = presmgr->ReleaseAndPurge(*ppres);
+  *ppres = nullptr;
+  return bPurged;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -730,21 +724,21 @@ bool rspReleaseAndPurgeResource(	// Returns true if it was acutally purged,
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <class T>
-int16_t rspGetResourceInstance(							// Returns 0 on success
-	RResMgr*	presmgr,										// In:  Resource Manager to be used
-	const char*	pszResName,								// In:  Resource name
-	T**	pT,												// Out: Pointer to resource returned here
-	RFile::Endian endian = RFile::LittleEndian)	// In:  Endian nature of resource file
-	{
-	// Create function objects for the specified type.  We do NOT have to allocate
-	// them using new because they're just needed for a little while.
-	CreateResFunc<T>	create;
-	DestroyResFunc<T>	destroy;
-	LoadResFunc<T>		load;
+int16_t rspGetResourceInstance(                 // Returns 0 on success
+    RResMgr* presmgr,                             // In:  Resource Manager to be used
+    const char* pszResName,                       // In:  Resource name
+    T** pT,                                       // Out: Pointer to resource returned here
+    RFile::Endian endian = RFile::LittleEndian)   // In:  Endian nature of resource file
+{
+  // Create function objects for the specified type.  We do NOT have to allocate
+  // them using new because they're just needed for a little while.
+  CreateResFunc<T>	create;
+  DestroyResFunc<T>	destroy;
+  LoadResFunc<T>		load;
 
-	// Pass everything in generic form to the resource manager
-	return presmgr->GetInstance(pszResName, (void**)pT, endian, &create, &destroy, &load);
-	}
+  // Pass everything in generic form to the resource manager
+  return presmgr->GetInstance(pszResName, (void**)pT, endian, &create, &destroy, &load);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -754,18 +748,19 @@ int16_t rspGetResourceInstance(							// Returns 0 on success
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <class T>
-void rspReleaseResourceInstance(						// Returns 0 on success
-	RResMgr*	/*presmgr*/,								// In:  Resource Manager to be used
-																// DO NOT GET RID OF THIS ARGUMENT
-																// It may be needed in the future
-																// if we ever decide to track these
-																// objects via the resmgr.
-	T** ppres)												// In:  Pointer to resource
-	{
-	// Be gone.
-	delete *ppres;
-	*ppres = nullptr;
-	}
+void rspReleaseResourceInstance(                // Returns 0 on success
+    RResMgr* presmgr,                             // In:  Resource Manager to be used
+                                                  // DO NOT GET RID OF THIS ARGUMENT
+                                                  // It may be needed in the future
+                                                  // if we ever decide to track these
+                                                  // objects via the resmgr.
+    T** ppres)                                    // In:  Pointer to resource
+{
+  UNUSED(presmgr);
+  // Be gone.
+  delete *ppres;
+  *ppres = nullptr;
+}
 
 #endif //RESMGR_H
 
