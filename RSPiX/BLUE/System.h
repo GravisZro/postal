@@ -156,8 +156,8 @@ struct c_string
 #  pragma message("I find your lack of POSIX disturbing. ;)")
 #  include <BaseTsd.h>
 # endif
-typedef SSIZE_T ssize_t;
 # if defined(_MSC_VER) && _MSC_VER < 1900
+typedef SSIZE_T ssize_t;
 #  define constexpr inline
 #  if !defined(snprintf)
 #   define snprintf _snprintf
