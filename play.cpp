@@ -362,7 +362,7 @@
 #include <list>
 
 #if defined(_WIN32)
-# include "log.h"
+# include "Log.h"
 // For file timestamp.
 # include <windows.h>
 # include <time.h>

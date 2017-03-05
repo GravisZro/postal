@@ -49,7 +49,7 @@
 // *************************************************************************
 
 // OS identifiers
-# if !defined(_WIN32) && (defined(_WIN16) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__) || defined(__TOS_WIN__))
+# if !defined(_WIN32) && (defined(_WIN16) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__) || defined(__TOS_WIN__) || defined(__MINGW32__))
 #  define _WIN32
 # elif !defined(__DOS__) && (defined(MSDOS) || defined(_MSDOS) || defined(__MSDOS__))
 #  define __DOS__
@@ -85,10 +85,7 @@
 #  define BYTE_ORDER __BYTE_ORDER
 #  elif defined(__BYTE_ORDER__)
 #   define BYTE_ORDER __BYTE_ORDER__
-#  elif defined(_M_IX86) || defined(_M_ARM) || defined(_M_ARM_FP)
-#   define	LITTLE_ENDIAN   1234
-#   define	BIG_ENDIAN      4321
-#   define	PDP_ENDIAN      3412
+#  elif defined(_WIN32)
 #   define	BYTE_ORDER      LITTLE_ENDIAN
 #  else
 #   error Unable to determine system endianness!
@@ -107,6 +104,8 @@
 #   define LITTLE_ENDIAN __LITTLE_ENDIAN
 #  elif defined(__LITTLE_ENDIAN__)
 #   define LITTLE_ENDIAN __LITTLE_ENDIAN__
+#  elif defined(_WIN32)
+#   define	LITTLE_ENDIAN   1234
 #  else
 #   error No system value for LITTLE_ENDIAN!
 #  endif
@@ -124,6 +123,8 @@
 #   define BIG_ENDIAN __BIG_ENDIAN
 #  elif defined(__BIG_ENDIAN__)
 #   define BIG_ENDIAN __BIG_ENDIAN__
+#  elif defined(_WIN32)
+#   define	BIG_ENDIAN      4321
 #  else
 #   error No system value for BIG_ENDIAN!
 #  endif
@@ -141,6 +142,8 @@
 #   define PDP_ENDIAN __PDP_ENDIAN
 #  elif defined(__PDP_ENDIAN__)
 #   define PDP_ENDIAN __PDP_ENDIAN__
+#  elif defined(_WIN32)
+#   define	PDP_ENDIAN      3412
 #  endif
 # else
 #  if !defined(__PDP_ENDIAN)

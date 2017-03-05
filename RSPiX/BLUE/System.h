@@ -152,10 +152,12 @@ struct c_string
 #include <BLUE/portable_endian.h>
 
 #if defined(_WIN32)
-# pragma message("I find your lack of POSIX disturbing. ;)")
-# include <BaseTsd.h>
+# if defined(_MSC_VER)
+#  pragma message("I find your lack of POSIX disturbing. ;)")
+#  include <BaseTsd.h>
+# endif
 typedef SSIZE_T ssize_t;
-# if !defined(_MSC_VER) || _MSC_VER < 1900
+# if defined(_MSC_VER) && _MSC_VER < 1900
 #  define constexpr inline
 #  if !defined(snprintf)
 #   define snprintf _snprintf
@@ -173,8 +175,13 @@ typedef SSIZE_T ssize_t;
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp
 # endif
-# define NOTE(x) __pragma(message("NOTE: " x))
-# include <BLUE/stdint_msvc.h>
+# if defined(_MSC_VER)
+#  define NOTE(x) __pragma(message("NOTE: " x))
+#  include <BLUE/stdint_msvc.h>
+# else
+# define DO_PRAGMA(x) _Pragma (#x)
+# define NOTE(x) DO_PRAGMA(message("NOTE: " x))
+# endif
 # define SYSTEM_PATH_SEPARATOR	'\\'
 #else
 # include <sys/types.h>
