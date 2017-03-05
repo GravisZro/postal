@@ -86,6 +86,11 @@
 #  define BYTE_ORDER __BYTE_ORDER
 #  elif defined(__BYTE_ORDER__)
 #   define BYTE_ORDER __BYTE_ORDER__
+#  elif defined(_M_IX86) || defined(_M_ARM) || defined(_M_ARM_FP)
+#   define	LITTLE_ENDIAN   1234
+#   define	BIG_ENDIAN      4321
+#   define	PDP_ENDIAN      3412
+#   define	BYTE_ORDER      LITTLE_ENDIAN
 #  else
 #   error Unable to determine system endianness!
 #  endif
