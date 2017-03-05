@@ -394,8 +394,9 @@ int16_t RPrefs::Write()
                      for (RPrefsLineList::Pointer i = m_pllLines.GetHead(); i != nullptr; i = m_pllLines.GetNext(i))
 								{
 								int res = fprintf(pfileTmp, "%s\n", m_pllLines.GetData(i)->GetLine());
-                        if ((res >= 0) && m_sUseCRLF == FALSE)
-									res = fprintf(pfileTmp, "\r");
+// This fix warrants further investigation
+//                        if ((res >= 0) && m_sUseCRLF == FALSE)
+//									res = fprintf(pfileTmp, "\r");
 								if(res < 0)
 									{
 									TRACE("RPrefs::Write(): fprintf() data to temp file: %s\n", strerror(errno));
