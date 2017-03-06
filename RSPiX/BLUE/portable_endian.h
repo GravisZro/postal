@@ -86,6 +86,7 @@
 #  elif defined(__BYTE_ORDER__)
 #   define BYTE_ORDER __BYTE_ORDER__
 #  elif defined(_WIN32)
+#   define	LITTLE_ENDIAN   1234
 #   define	BYTE_ORDER      LITTLE_ENDIAN
 #  else
 #   error Unable to determine system endianness!
