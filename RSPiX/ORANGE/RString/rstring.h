@@ -207,8 +207,10 @@ class RString
 		// If the contents of the string is modified in any way through this pointer
 		// then Update() must be called before using any other string functions!
 		////////////////////////////////////////////////////////////////////////////////
-	   operator char*() const
+      operator const char*() const
 			{ return m_pBuf; }
+
+      operator std::string(void) const { return m_pBuf; }
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Update the internal state of the string.  This must be called if the string

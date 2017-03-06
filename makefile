@@ -245,6 +245,10 @@ ifeq ($(strip $(macosx)),true)
   CFLAGS += -DPLATFORM_MACOSX
 endif
 
+# options
+CFLAGS += -DALLOW_TWINSTICK -DEDITOR_REMOVED -DMULTIPLAYER_REMOVED -DHIGH_SCORE_DLG
+
+
 # defines the game needs...
 CFLAGS += -DLOCALE=US -DTARGET=POSTAL_2015
 

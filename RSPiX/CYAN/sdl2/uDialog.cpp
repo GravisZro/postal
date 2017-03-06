@@ -15,15 +15,19 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
+///////////////////////////////////////////////////////////////////////////////
 
+// RSPix /////////////////////////////////////////////////////////////////////
 #include <BLUE/System.h>
 #include <CYAN/Cyan.h>
 
+// Platform //////////////////////////////////////////////////////////////////
+#include <SDL2/SDL.h>
+
+// C++ ///////////////////////////////////////////////////////////////////////
 #include <cstdio>
 #include <cstdarg>
 
-#if 1
-#include <SDL2/SDL.h>
 
 extern SDL_Window *sdlWindow;
 extern SDL_Surface *sdlShadowSurface;
@@ -139,36 +143,6 @@ extern int16_t rspMsgBox(	// Returns RSP_MB_RET_*.  See switch statement below.
     const int rc = SDL_ShowMessageBox(&data, &button);
     return (rc == 0) ? button : -1;
 }
-#else
-
-//#include <SDL/SDL.h>
-
-extern int16_t rspMsgBox(	// Returns RSP_MB_RET_*.  See switch statement below.
-   uint16_t usFlags,		// MB_BUT/ICO_* flags specifying buttons and icons.
-   const char *pszTitle,		// Title for box.
-   const char *pszFrmt,			// Format for string.
-   ...)						// Various shit.
-{
-#if 0
-  UNUSED(usFlags, pszTitle, pszFrmt);
-#else
-  UNUSED(usFlags);
-
-  char szOutput[4096];
-  va_list varp;
-  // Get pointer to the arguments.
-  va_start(varp, pszFrmt);
-  // Compose string.
-  vsnprintf(szOutput, sizeof(szOutput), pszFrmt, varp);
-  // Done with var arguments.
-  va_end(varp);
-
-  fprintf(stderr, "%s: %s", pszTitle, szOutput);
-#endif
-  fprintf(stderr, "STUBBED: %s:%d\n", __FILE__, __LINE__);
-  return FAILURE;
-}
-#endif
 
 extern int16_t rspOpenBox(								// Returns 0 if successfull, non-zero otherwise
 	const char* pszBoxTitle,							// In:  Title of box

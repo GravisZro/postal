@@ -1811,7 +1811,7 @@ extern void GameEdit(
 				if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
 					{
 					// Add string for each item to listbox.
-					pguiItem	= plbPicker->AddString((char*)CThing::ms_aClassInfo[idCur].pszClassName);
+               pguiItem	= plbPicker->AddString(CThing::ms_aClassInfo[idCur].pszClassName);
 					if (pguiItem != nullptr)
 						{
 						pguiItem->m_lId			= LIST_ITEM_GUI_ID_BASE + idCur;
@@ -7547,7 +7547,7 @@ static int16_t TmpFileName(								// Returns 0 if successfull, non-zero otherwi
 	{
    int16_t sResult = SUCCESS;
 
-	#if defined(WIN32)
+#if defined(_WIN32)
    UNUSED(sMaxSize);
 
       char	szPath[PATH_MAX];
@@ -7569,13 +7569,13 @@ static int16_t TmpFileName(								// Returns 0 if successfull, non-zero otherwi
 			sResult = FAILURE;
 			}
 
-	#else
+#else
    UNUSED(pszFileName, sMaxSize);
 
 		// Impliment for some other system!
 		ASSERT(0);
 
-	#endif
+#endif
 
 	return sResult;
 	}

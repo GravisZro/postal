@@ -120,9 +120,6 @@
 // Sets val to def if val is -1.
 #define DEF(val, def)	((val == -1) ? def : val)
 
-// Sets a value pointed to if ptr is not nullptr.
-#define SET(pval, val)					((pval != nullptr) ? *pval = val : val)
-
 //////////////////////////////////////////////////////////////////////////////
 // Module specific typedefs.
 //////////////////////////////////////////////////////////////////////////////

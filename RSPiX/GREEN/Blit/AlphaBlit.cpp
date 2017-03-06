@@ -125,12 +125,10 @@ void rspGeneralAlphaBlit(RMultiAlpha* pX,RImage* pimMask,
 // Should work on both main types.
 // This does a pre-dimming of the mask based on sLevel -> 0xFF = as is!
 //
-void rspGeneralAlphaBlit(int16_t sLevel,RMultiAlpha* pX,RImage* pimMask,
+void rspGeneralAlphaBlit(uint8_t sLevel,RMultiAlpha* pX,RImage* pimMask,
 									RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 									RRect &rDstClip)
-	{
-   ASSERT(sLevel >= 0 && sLevel < 256);
-
+   {
 	int16_t sSrcX = 0,sSrcY = 0,sDstW = pimSrc->m_sWidth,sDstH = pimSrc->m_sHeight;
 
 	// right here adjust things if you need to clip to other thatn the full dst im
@@ -150,7 +148,7 @@ void rspGeneralAlphaBlit(int16_t sLevel,RMultiAlpha* pX,RImage* pimMask,
 	// MUST ROUND UP!
 	ucTransparent = (ucTransparent+1) >> 1; 
 	// Set up the dimming parameter
-	uint8_t*	pucDim = &RMultiAlpha::ms_aucLiveDimming[sLevel*256];
+   uint8_t*	pucDim = &RMultiAlpha::ms_aucLiveDimming[sLevel * palette::size];
 
 	for (j=0;j<sDstH;j++,pSrcLine += lSrcP,pDstLine += lDstP,pMaskLine += lMaskP)
 		{
@@ -183,12 +181,10 @@ void rspGeneralAlphaBlit(int16_t sLevel,RMultiAlpha* pX,RImage* pimMask,
 // Should work on both main types.
 // This does a pre-dimming of the mask based on sLevel -> 0xFF = as is!
 //
-extern void rspGeneralAlphaBlitT(int16_t sLevel,RMultiAlpha* pX,RImage* pimMask,
+extern void rspGeneralAlphaBlitT(uint8_t sLevel,RMultiAlpha* pX,RImage* pimMask,
 									RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 									RRect &rDstClip)
-	{
-  ASSERT(sLevel >= 0 && sLevel < 256);
-
+   {
 	int16_t sSrcX = 0,sSrcY = 0,sDstW = pimSrc->m_sWidth,sDstH = pimSrc->m_sHeight;
 
 	// right here adjust things if you need to clip to other thatn the full dst im
@@ -208,7 +204,7 @@ extern void rspGeneralAlphaBlitT(int16_t sLevel,RMultiAlpha* pX,RImage* pimMask,
 	// MUST ROUND UP!
 	ucTransparent = (ucTransparent+1) >> 1; 
 	// Set up the dimming parameter
-	uint8_t*	pucDim = &RMultiAlpha::ms_aucLiveDimming[sLevel*256];
+   uint8_t*	pucDim = &RMultiAlpha::ms_aucLiveDimming[sLevel * palette::size];
 
 	for (j=0;j<sDstH;j++,pSrcLine += lSrcP,pDstLine += lDstP,pMaskLine += lMaskP)
 		{
@@ -410,7 +406,7 @@ extern void rspAlphaMaskBlit(RMultiAlpha* pX,RImage* pimMask,
 // sAlphaLevel goes from 0 (you see background) to 0xFF (you see the sprite)
 // As the name implies, this does not consider source colors of index zero.
 //
-void rspAlphaBlitT(int16_t sAlphaLevel,RMultiAlpha* pMultiX,RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
+void rspAlphaBlitT(uint8_t sAlphaLevel,RMultiAlpha* pMultiX,RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 						 RRect* prDst)
 	{
 	int16_t sSrcX = 0,sSrcY = 0,sDstW = pimSrc->m_sWidth,sDstH = pimSrc->m_sHeight;
@@ -437,7 +433,8 @@ void rspAlphaBlitT(int16_t sAlphaLevel,RMultiAlpha* pMultiX,RImage* pimSrc,RImag
 	// Test out trivial conditions:
 	// Check on 1/2 the lowest vales as a cross over point!
 	// Must round up!
-	if (sAlphaLevel <= int16_t((ucTransparent+1)>>1)) return;
+   if (sAlphaLevel <= (ucTransparent + 1) >> 1)
+     return;
 
 	uint8_t** ppucAlpha = pMultiX->m_pGeneralAlpha[sAlphaLevel];
 	if (!ppucAlpha) // it is opaque!
@@ -464,7 +461,7 @@ void rspAlphaBlitT(int16_t sAlphaLevel,RMultiAlpha* pMultiX,RImage* pimSrc,RImag
 // sAlphaLevel goes from 0 (you see background) to 0xFF (you see the sprite)
 // As the name implies, this does not consider source colors of index zero.
 //
-void rspFastAlphaBlitT(int16_t sAlphaLevel,uint8_t*** pMultiX,RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
+void rspFastAlphaBlitT(uint8_t sAlphaLevel,uint8_t*** pMultiX,RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 						 RRect* prDst)
 	{
 	int16_t sSrcX = 0,sSrcY = 0,sDstW = pimSrc->m_sWidth,sDstH = pimSrc->m_sHeight;
@@ -489,7 +486,8 @@ void rspFastAlphaBlitT(int16_t sAlphaLevel,uint8_t*** pMultiX,RImage* pimSrc,RIm
 	uint8_t ucTransparent = *((uint8_t*)pMultiX); // Secret Code
 
 	// Test out trivial conditions:
-	if (sAlphaLevel <= int16_t(ucTransparent)) return;
+   if (sAlphaLevel <= ucTransparent)
+     return;
 
 	uint8_t** ppucAlpha = pMultiX[sAlphaLevel];
 	if (!ppucAlpha) // it is opaque!

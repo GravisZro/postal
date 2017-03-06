@@ -168,9 +168,9 @@ int16_t RTexture::Save(RFile* fp)
 void RTexture::Remap(
 	int16_t sStartIndex,
 	int16_t sNumIndex,
-	uint8_t* pr,
-	uint8_t* pg,
-	uint8_t* pb,
+   channel_t* pr,
+   channel_t* pg,
+   channel_t* pb,
 	int32_t linc)
 	{
 	ASSERT(m_pColors);
@@ -181,9 +181,9 @@ void RTexture::Remap(
 	for (int16_t i = 0; i < m_sNum; i++)
 		{
 		m_pIndices[i] = rspMatchColorRGB(
-			int32_t(m_pColors[i].u8Red),
-			int32_t(m_pColors[i].u8Green),
-			int32_t(m_pColors[i].u8Blue),
+			int32_t(m_pColors[i].red),
+			int32_t(m_pColors[i].green),
+			int32_t(m_pColors[i].blue),
 			sStartIndex,sNumIndex,
 			pr,pg,pb,linc);
 		}
@@ -196,9 +196,9 @@ void RTexture::Remap(
 ////////////////////////////////////////////////////////////////////////////////
 void 
 RTexture::Unmap(
-	uint8_t* pr,
-	uint8_t* pg,
-	uint8_t* pb,
+   channel_t* pr,
+   channel_t* pg,
+   channel_t* pb,
 	int32_t lInc)
 	{
   UNUSED(lInc);
@@ -212,9 +212,9 @@ RTexture::Unmap(
 	int16_t	sCount		= m_sNum;
 	while (sCount--)
 		{
-		ppix->u8Red		= pr[*pu8];
-		ppix->u8Green	= pg[*pu8];
-		ppix->u8Blue	= pb[*pu8];
+		ppix->red		= pr[*pu8];
+		ppix->green	= pg[*pu8];
+		ppix->blue	= pb[*pu8];
 
 		ppix++;
 		pu8++;
@@ -240,14 +240,14 @@ RTexture::Adjust(
 	float	fColor;
 	while (sCount--)
 		{
-      fColor = ppix->u8Red * fAdjustment;
-      CLAMP8BIT(ppix->u8Red, fColor);
+      fColor = ppix->red * fAdjustment;
+      CLAMP8BIT(ppix->red, fColor);
 
-      fColor = ppix->u8Green * fAdjustment;
-      CLAMP8BIT(ppix->u8Green, fColor);
+      fColor = ppix->green * fAdjustment;
+      CLAMP8BIT(ppix->green, fColor);
 
-      fColor = ppix->u8Blue * fAdjustment;
-      CLAMP8BIT(ppix->u8Blue, fColor);
+      fColor = ppix->blue * fAdjustment;
+      CLAMP8BIT(ppix->blue, fColor);
 
 		ppix += lInc;
 		}
@@ -309,7 +309,7 @@ int16_t RMesh::Save(RFile* fp)
 ////////////////////////////////////////////////////////////////////////////////
 // RSop Functions
 ////////////////////////////////////////////////////////////////////////////////
-void RSop::Alloc(int32_t lNum)
+void RSop::Alloc(size_t lNum)
 	{
 	Free();
 	m_lNum = lNum;
@@ -331,11 +331,13 @@ int16_t RSop::Load(RFile* fp)
 	Free();
 
 	int16_t sResult = SUCCESS;
-	if (fp->Read(&m_lNum) == 1)
+   uint32_t val;
+   if (fp->Read(&val) == 1)
 		{
+     m_lNum = val;
 		Alloc(m_lNum);
-		ASSERT(sizeof(RP3d) == (sizeof(REAL) * 4));
-		fp->Read((REAL*)m_pArray, m_lNum * 4);
+      ASSERT(sizeof(RP3d) == sizeof(real_t) * 4);
+      fp->Read((real_t*)m_pArray, m_lNum * 4);
 		}
 	if (fp->Error())
 		{
@@ -350,8 +352,8 @@ int16_t RSop::Save(RFile* fp)
 	{
 	int16_t sResult = SUCCESS;
 	fp->Write(&m_lNum);
-	ASSERT(sizeof(RP3d) == (sizeof(REAL) * 4));
-	fp->Write((REAL*)m_pArray, m_lNum * 4);
+   ASSERT(sizeof(RP3d) == (sizeof(real_t) * 4));
+   fp->Write((real_t*)m_pArray, m_lNum * 4);
 	if (fp->Error())
 		{
 		sResult = FAILURE;

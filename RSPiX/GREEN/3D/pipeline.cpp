@@ -104,9 +104,9 @@ int16_t RPipeLine::CreateShadow(int16_t sAngleY,
 	// Create the shadow transform:
 	m_tShadow.Make1();
 	m_dShadowScale = dTanDeclension;
-   m_tShadow.T[1 + ROW0] = float(m_dShadowScale * rspCos(sAngleY));
+   m_tShadow.T[1 + ROW0] = real_t(m_dShadowScale * rspCos(sAngleY));
 	m_tShadow.T[1 + ROW1] = 0.0;
-   m_tShadow.T[1 + ROW2] = float(m_dShadowScale * rspSin(sAngleY));
+   m_tShadow.T[1 + ROW2] = real_t(m_dShadowScale * rspSin(sAngleY));
 
 	// Allocate the buffer, if applicable:
 	if (sBufSize <= 0)	// default case:
@@ -173,8 +173,7 @@ RPipeLine::~RPipeLine()
 
 void RPipeLine::Transform(RSop* pPts,RTransform& tObj)
 	{
-	RTransform tFull;
-	int32_t i;
+   RTransform tFull;
 	// Use to stretch to z-buffer!
 
 	tFull.Make1();
@@ -183,7 +182,7 @@ void RPipeLine::Transform(RSop* pPts,RTransform& tObj)
 	// trasnform each pt by two transforms separately!
 	tFull.PreMulBy(m_tScreen.T);
 
-	for (i = 0; i < pPts->m_lNum; i++)
+   for (size_t i = 0; i < pPts->m_lNum; i++)
 		{
 		tFull.TransformInto(pPts->m_pArray[i],ms_pPts[i]);
 		// Note that you can now use RP3d directly with the renderers! 
@@ -196,8 +195,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 	{
 	ASSERT(m_pimShadowBuf);
 
-	RTransform tFull;
-	int32_t i;
+   RTransform tFull;
 	// Use to stretch to z-buffer!
 
 	tFull.Make1();
@@ -242,7 +240,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 	// This is hard coded to the postal coordinate system
 	tFull.Trans(0.0,m_pimShadowBuf->m_sHeight-m_tScreen.T[3 + ROW1],0.0);
 
-	for (i = 0; i < pPts->m_lNum; i++)
+   for (size_t i = 0; i < pPts->m_lNum; i++)
 		{
 		tFull.TransformInto(pPts->m_pArray[i],ms_pPts[i]);
 		// Note that you can now use RP3d directly with the renderers! 
@@ -254,7 +252,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 // (to be used AFTER the view or screen transformation)
 int16_t RPipeLine::NotCulled(RP3d *p1,RP3d *p2,RP3d *p3)
 	{
-	REAL ax,ay,bx,by;
+   real_t ax,ay,bx,by;
 	ax = p2->x - p1->x;
 	ay = p2->y - p1->y;
 	bx = p3->x - p1->x;

@@ -61,26 +61,6 @@ class RFile;
 #define PAL_CURRENT_VERSION 3	  // Current file verison of RPal
 #define PAL_COOKIE 0x4C415043	  // Looks like "CPAL" in the file
 
-///////////////////////////////////////////////////////////////////////////////
-// Typedefs.
-///////////////////////////////////////////////////////////////////////////////
-
-typedef struct  
-{
-    uint8_t rgbtBlue;
-    uint8_t rgbtGreen;
-    uint8_t rgbtRed;
-} IM_RGBTRIPLE;
-
-typedef struct 
-{
-    uint8_t    rgbBlue;
-    uint8_t    rgbGreen;
-    uint8_t    rgbRed;
-    uint8_t    rgbReserved;
-} IM_RGBQUAD, *IM_PRGBQUAD;
-
-
 //////////////////////////////////////////////////////////////////////
 //
 //	RPal class
@@ -225,11 +205,11 @@ class RPal
          return nullptr;
 			}
 
-		uint8_t* Green(
+      channel_t* Green(
 			int16_t sStart = 0)							// In:  Starting palette entry
 			{
 			// Calculate pointer to specified entry
-			uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
+         channel_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
          // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
 			if (m_type == PDIB)	// BGR888+reserved
@@ -242,11 +222,11 @@ class RPal
          return nullptr;
 			}
 
-		uint8_t* Blue(
+      channel_t* Blue(
 			int16_t sStart = 0)							// In:  Starting palette entry
 			{
 			// Calculate pointer to specified entry
-			uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
+         channel_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
          // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
 			if (m_type == PDIB)	// BGR888+reserved
@@ -263,17 +243,17 @@ class RPal
 		int16_t GetEntries(
 			int16_t sStart,								// In:  Starting palette entry
 			int16_t sCount,								// In:  Number of entries to do
-			uint8_t* pDstRed,					// Out: Starting destination red value
-			uint8_t* pDstGreen,				// Out: Starting destination green value
-			uint8_t* pDstBlue,				// Out: Starting destination blue value
+         channel_t* pDstRed,					// Out: Starting destination red value
+         channel_t* pDstGreen,				// Out: Starting destination green value
+         channel_t* pDstBlue,				// Out: Starting destination blue value
 			int32_t lAddToPointers);					// In:  What to add to pointers to move to next value
 
 		int16_t SetEntries(
 			int16_t sStart,								// In:  Starting palette entry
 			int16_t sCount,								// In:  Number of entries to do
-			uint8_t* pSrcRed,					// In:  Starting source red value
-			uint8_t* pSrcGreen,				// In:  Starting source green value
-			uint8_t* pSrcBlue,				// In:  Starting source blue value
+         channel_t* pSrcRed,					// In:  Starting source red value
+         channel_t* pSrcGreen,				// In:  Starting source green value
+         channel_t* pSrcBlue,				// In:  Starting source blue value
 			int32_t lAddToPointers);					// In:  What to add to pointers to move to next value
 
 		// Copy operator overload.

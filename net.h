@@ -276,11 +276,11 @@ namespace Net
 
 #ifdef UNUSED_VARIABLES
    // In a namespace this data is extern, but in a class it's static
-	#ifdef WIN32
+# if defined(_WIN32)
 		#define NETCRAPTHING extern
-	#else
+# else
 		#define NETCRAPTHING static
-	#endif
+# endif
 
 	// Lookup tables associated with the NetBandwidth enums.
 	NETCRAPTHING int32_t	lBandwidthValues[Net::NumBandwidths];

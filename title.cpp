@@ -341,18 +341,18 @@ static int16_t DisplayImage(	// Returns nothing.
 		ASSERT(pimTitle->m_pPalette->m_type == RPal::PDIB);
 
 		// Get the new palette.
-		uint8_t*	pu8NewRed	= pimTitle->m_pPalette->Red(0);
-		uint8_t*	pu8NewGreen	= pimTitle->m_pPalette->Green(0);
-		uint8_t*	pu8NewBlue	= pimTitle->m_pPalette->Blue(0);
+      channel_t* pu8NewRed    = pimTitle->m_pPalette->Red  (0);
+      channel_t* pu8NewGreen  = pimTitle->m_pPalette->Green(0);
+      channel_t* pu8NewBlue   = pimTitle->m_pPalette->Blue (0);
 
-		int16_t	sStartIndex	= pimTitle->m_pPalette->m_sStartIndex;
-		int16_t	sNumEntries	= pimTitle->m_pPalette->m_sNumEntries;
-		int16_t	sEntrySize	= pimTitle->m_pPalette->m_sPalEntrySize;
+      int16_t	sStartIndex  = pimTitle->m_pPalette->m_sStartIndex;
+      int16_t	sNumEntries  = pimTitle->m_pPalette->m_sNumEntries;
+      int16_t	sEntrySize   = pimTitle->m_pPalette->m_sPalEntrySize;
 
 		// Get the current palette.
-		uint8_t		au8CurRed[256];
-		uint8_t		au8CurGreen[256];
-		uint8_t		au8CurBlue[256];
+      channel_t au8CurRed  [palette::size];
+      channel_t au8CurGreen[palette::size];
+      channel_t au8CurBlue [palette::size];
 		rspGetPaletteEntries(
 			sStartIndex,
 			sNumEntries,

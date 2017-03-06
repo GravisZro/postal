@@ -1627,7 +1627,7 @@ static int16_t ConvToFlx8_888(CImage* pImage)
 					{
 					CPal*	ppal	= pImage->pPalette;
 					// Detatch the original palette data from the Image's palette.
-					IM_RGBQUAD* prgbq	= (IM_RGBQUAD*)ppal->DetatchData();
+					color32_t* prgbq	= (color32_t*)ppal->DetatchData();
 
 					// Create new palette data for the pImage
 					if (ppal->CreateData((ppal->sStartIndex + ppal->sNumEntries) * CPal::GetPalEntrySize(PFLX)) == 0)
@@ -1635,9 +1635,9 @@ static int16_t ConvToFlx8_888(CImage* pImage)
 						PRGBT8	prgbt		= (PRGBT8)ppal->pData;
 						for (int16_t sIndex	= ppal->sStartIndex; sIndex < ppal->sStartIndex + ppal->sNumEntries; sIndex++)
 							{
-							prgbt[sIndex].ucRed		= prgbq[sIndex].rgbRed;
-							prgbt[sIndex].ucGreen	= prgbq[sIndex].rgbGreen;
-							prgbt[sIndex].ucBlue		= prgbq[sIndex].rgbBlue;
+              prgbt[sIndex].ucRed		= prgbq[sIndex].red;
+              prgbt[sIndex].ucGreen	= prgbq[sIndex].green;
+              prgbt[sIndex].ucBlue		= prgbq[sIndex].blue;
 							}
 
 						// Set new parameters.
@@ -1709,12 +1709,12 @@ static int16_t ConvFromFlx8_888(CImage* pImage)
 			// Create new palette data for the pImage
 			if (ppal->CreateData((ppal->sStartIndex + ppal->sNumEntries) * CPal::GetPalEntrySize(PDIB)) == 0)
 				{
-				IM_RGBQUAD* prgbq	= (IM_RGBQUAD*)ppal->pData;
+				color32_t* prgbq	= (color32_t*)ppal->pData;
 				for (int16_t sIndex	= ppal->sStartIndex; sIndex < ppal->sStartIndex + ppal->sNumEntries; sIndex++)
 					{
-					prgbq[sIndex].rgbRed  	= prgbt[sIndex].ucRed;
-					prgbq[sIndex].rgbGreen	= prgbt[sIndex].ucGreen;	
-					prgbq[sIndex].rgbBlue 	= prgbt[sIndex].ucBlue;
+          prgbq[sIndex].red  	= prgbt[sIndex].ucRed;
+          prgbq[sIndex].green	= prgbt[sIndex].ucGreen;
+          prgbq[sIndex].blue 	= prgbt[sIndex].ucBlue;
 					}
 
 				// Set new parameters.

@@ -29,21 +29,28 @@
 
 //short RAlpha::ms_SetPalette(RImage* pimImage);
 int16_t RAlpha::ms_IsPaletteSet = FALSE;
-uint8_t RAlpha::ms_red[256] = {0,};
-uint8_t RAlpha::ms_green[256] = {0,};
-uint8_t RAlpha::ms_blue[256] = {0,};
+uint8_t RAlpha::ms_red  [palette::size] = { 0 };
+uint8_t RAlpha::ms_green[palette::size] = { 0 };
+uint8_t RAlpha::ms_blue [palette::size] = { 0 };
 
-uint8_t RAlpha::ms_r[256] = {0,};
-uint8_t RAlpha::ms_g[256] = {0,};
-uint8_t RAlpha::ms_b[256] = {0,};
-uint8_t RAlpha::ms_a[256] = {0,};
-uint8_t RAlpha::ms_f[256] = {0,};
+uint8_t RAlpha::ms_r[palette::size] = { 0 };
+uint8_t RAlpha::ms_g[palette::size] = { 0 };
+uint8_t RAlpha::ms_b[palette::size] = { 0 };
+uint8_t RAlpha::ms_a[palette::size] = { 0 };
+uint8_t RAlpha::ms_f[palette::size] = { 0 };
 
 int16_t RMultiAlpha::ms_sIsInitialized = FALSE;
-uint8_t	RMultiAlpha::ms_aucLiveDimming[65536];
+uint8_t RMultiAlpha::ms_aucLiveDimming[65536];
 
-uint8_t rspMatchColorRGB(int32_t r,int32_t g,int32_t b,int16_t sStart,int16_t sNum,
-					 uint8_t* pr,uint8_t* pg,uint8_t* pb,int32_t linc)
+uint8_t rspMatchColorRGB(int32_t r,
+                         int32_t g,
+                         int32_t b,
+                         int16_t sStart,
+                         int16_t sNum,
+                         channel_t* pr,
+                         channel_t* pg,
+                         channel_t* pb,
+                         int32_t linc)
 	{
 	int32_t lMatch = 0,i;
 	int32_t lMax =  int32_t(16777217),lDist;
@@ -352,7 +359,7 @@ int16_t RAlpha::Alloc(int16_t sDepth)
 RAlpha::RAlpha()
 	{
 	//m_pAlphas = nullptr;
-	for (int16_t i = 0 ;i<256;i++)
+   for (int16_t i = 0 ;i < 256; ++i)
 		m_pAlphas[i] = nullptr;
 	m_sAlphaDepth = 0;
 	}
@@ -361,7 +368,7 @@ void RAlpha::Erase()
 	{
 	if (m_pAlphas)
 		{
-		for (int16_t i=0;i<256 /*m_sAlphaDepth*/;i++)
+      for (int16_t i = 0; i < 256; ++i)
 			{
 			if (m_pAlphas[i]) 
 				{
@@ -394,7 +401,7 @@ void RAlpha::Dump(RImage* pimDst,int16_t sX,int16_t sY)
 #endif
 
    for (j = 0; j < m_sAlphaDepth; ++j)
-      for (i = 0 ;i < 256; ++i)
+      for (i = 0 ;i < 0x00FF; ++i)
          rspPlot<uint8_t>(m_pAlphas[i][j], pimDst, sX + i, sY + j);
 	}
 
@@ -442,14 +449,14 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 	RFixedU16 r,g,b;
 
 	int16_t s,d;
-	for (s=0;s<256;s++)
+   for (s = 0; s < 256; ++s)
 		{
-		for (d = 0;d < 256;d++)
+      for (d = 0; d < 256; ++d)
 			{
 			// This can be replaced with a 256K table
-			r.val = uint16_t( ms_red[s] * lSrc + ms_red[d] * lDst);
+         r.val = uint16_t( ms_red  [s] * lSrc + ms_red  [d] * lDst);
 			g.val = uint16_t( ms_green[s] * lSrc + ms_green[d] * lDst);
-			b.val = uint16_t( ms_blue[s] * lSrc + ms_blue[d] * lDst);
+         b.val = uint16_t( ms_blue [s] * lSrc + ms_blue [d] * lDst);
 
 			m_pAlphas[s][d] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
@@ -461,8 +468,14 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 
 // dOpacity for now is between 0 (background) and 255 (foreground)
 // Input description should be arrays at least sAlphaDepth long.
-int16_t RAlpha::CreateLightEffectRGB(uint8_t* pa,uint8_t* pr,uint8_t* pg,uint8_t* pb,int32_t linc,
-			int16_t sPalStart, int16_t sPalLen, int16_t sAlphaDepth)
+int16_t RAlpha::CreateLightEffectRGB(channel_t* pa,
+                                     channel_t* pr,
+                                     channel_t* pg,
+                                     channel_t* pb,
+                                     int32_t linc,
+                                     int16_t sPalStart,
+                                     int16_t sPalLen,
+                                     int16_t sAlphaDepth)
 	{
   UNUSED(linc);
 #ifdef _DEBUG
@@ -488,9 +501,9 @@ int16_t RAlpha::CreateLightEffectRGB(uint8_t* pa,uint8_t* pr,uint8_t* pg,uint8_t
 			lSrc = int32_t(pa[f]);
 			lFog = 255 - lSrc;
 			// This can be replaced with a 256K table
-			r.val = uint16_t( ms_red[s] * lSrc + pr[f] * lFog);
+         r.val = uint16_t( ms_red  [s] * lSrc + pr[f] * lFog);
 			g.val = uint16_t( ms_green[s] * lSrc + pg[f] * lFog);
-			b.val = uint16_t( ms_blue[s] * lSrc + pb[f] * lFog);
+         b.val = uint16_t( ms_blue [s] * lSrc + pb[f] * lFog);
 
 			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
@@ -522,9 +535,9 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 			lFog = 255 - lSrc;
 
 			// This can be replaced with a 256K table
-			r.val = uint16_t( ms_red[s] * lSrc + ms_r[f] * lFog);
+         r.val = uint16_t( ms_red  [s] * lSrc + ms_r[f] * lFog);
 			g.val = uint16_t( ms_green[s] * lSrc + ms_g[f] * lFog);
-			b.val = uint16_t( ms_blue[s] * lSrc + ms_b[f] * lFog);
+         b.val = uint16_t( ms_blue [s] * lSrc + ms_b[f] * lFog);
 
 			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
@@ -541,7 +554,7 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 // **************************************************************************
 // **************************************************************************
 
-RMultiAlpha::RMultiAlpha()
+RMultiAlpha::RMultiAlpha(void)
 	{
 	// Handle the one time initiation of the dimmer control:
 	if (!ms_sIsInitialized)
@@ -551,12 +564,12 @@ RMultiAlpha::RMultiAlpha()
 		uint8_t*	pCur = ms_aucLiveDimming;
 		// This is DimVal major!
 
-		for (lDimVal = 0; lDimVal < 256; lDimVal++)
+      for (lDimVal = 0; lDimVal < 256; lDimVal++)
 			{
 			lNumerator = 127;	// for rounding
 			lCurValue = 0;
 
-			for (lSrcVal = 0; lSrcVal < 256; lSrcVal++,pCur++)
+         for (lSrcVal = 0; lSrcVal < 256; lSrcVal++,pCur++)
 				{
 				lNumerator += lDimVal;
 
@@ -578,7 +591,7 @@ RMultiAlpha::RMultiAlpha()
 
 RMultiAlpha::~RMultiAlpha(void)
 {
-  for (uint8_t i=0;i < m_sNumLevels; ++i)
+  for (uint8_t i = 0; i < m_sNumLevels; ++i)
     if (m_pAlphaList[i] != nullptr)
       delete m_pAlphaList[i];
 
@@ -599,7 +612,7 @@ int16_t RMultiAlpha::Alloc(uint8_t sDepth)
 
   m_sNumLevels = sDepth;
   m_pAlphaList = (RAlpha**)calloc(m_sNumLevels,sizeof(RAlpha*));
-  m_pLevelOpacity = (uint8_t*)calloc(m_sNumLevels,1);
+  m_pLevelOpacity = (uint8_t*)calloc(m_sNumLevels, 1);
 
   return SUCCESS;
 }
@@ -654,28 +667,33 @@ int16_t RMultiAlpha::Load(RFile* pFile)
       return FAILURE;
 		}
 
-	pFile->Read(&m_sNumLevels);
-	Alloc(m_sNumLevels);
+   pFile->Read(&m_sNumLevels);
+
+   uint8_t empty_data = 0;
+   pFile->Read(&empty_data);
+   ASSERT(empty_data == 0); // ensure data is unused
+
+   Alloc(m_sNumLevels);
 
 	// General table information:
 	pFile->Read(&m_sGeneral);
 	// Opacity data
-	pFile->Read(m_pLevelOpacity,m_sNumLevels);
+   pFile->Read(m_pLevelOpacity, m_sNumLevels);
 	// Level Data
-	pFile->Read(m_pSaveLevels,256);
+   pFile->Read(m_pSaveLevels, palette::size);
 
 	// Now load the actual sub-alphas
 	int16_t i;
-	for (i = 0; i < m_sNumLevels; i++)
+   for (i = 0; i < m_sNumLevels; ++i)
 		{
 		m_pAlphaList[i] = new RAlpha;
 		m_pAlphaList[i]->Load(pFile);
 		}
 
 	// Now the challange... restore the pointer list:
-	for (i=0;i<256;i++)
+   for (i = 0; i < palette::size; ++i)
 		{
-		if ((m_pSaveLevels[i]==0) || (m_pSaveLevels[i] > m_sNumLevels)) 
+      if (m_pSaveLevels[i]==0 || m_pSaveLevels[i] > m_sNumLevels)
 			m_pGeneralAlpha[i] = nullptr;
 		else m_pGeneralAlpha[i] = m_pAlphaList[m_pSaveLevels[i] - 1]->m_pAlphas;
 		}
@@ -689,15 +707,16 @@ int16_t RMultiAlpha::Save(RFile* pFile)
 	int16_t sVer = 2;
 
 	pFile->Write(type);
-	pFile->Write(&sVer);
-	pFile->Write(&m_sNumLevels);
+   pFile->Write(&sVer);
+   pFile->Write(&m_sNumLevels);
+   pFile->Write(uint8_t(0));
 
 	// General table information:
 	pFile->Write(&m_sGeneral);
 	// Opacity data
-	pFile->Write(m_pLevelOpacity,m_sNumLevels);
+   pFile->Write(m_pLevelOpacity, m_sNumLevels);
 	// Level Data
-	pFile->Write(m_pSaveLevels,256);
+   pFile->Write(m_pSaveLevels, palette::size);
 
 	// Now save the actual sub-alphas
 	for (int16_t i = 0; i < m_sNumLevels; i++)
@@ -768,7 +787,7 @@ int16_t RMultiAlpha::CreateLayer(int16_t sLayerNumber,
       return FAILURE;
 		}
 	// remember how this level was created.
-	m_pLevelOpacity[sLayerNumber] = uint8_t(255 * dOpacity);
+   m_pLevelOpacity[sLayerNumber] = channel_t(255 * dOpacity);
 	m_pAlphaList[sLayerNumber] = new RAlpha;
 	m_pAlphaList[sLayerNumber]->CreateAlphaRGB(dOpacity,sPalStart,sPalLen);
 
@@ -791,9 +810,10 @@ int16_t RMultiAlpha::Finish(int16_t sGeneral)
 			{
 			m_pSaveLevels[i] = i;
 			// Use nullptr as a code for opacity, 0 is hooked as transparent
-			if (m_pLevelOpacity[i] == 255) m_pGeneralAlpha[i+1] = nullptr;
-			else
-				m_pGeneralAlpha[i+1] = m_pAlphaList[i]->m_pAlphas;
+         if (m_pLevelOpacity[i] == 255)
+           m_pGeneralAlpha[i+1] = nullptr;
+         else
+           m_pGeneralAlpha[i+1] = m_pAlphaList[i]->m_pAlphas;
 			}
 		// make everything off the end opaque
 		m_pSaveLevels[m_sNumLevels] = m_sNumLevels;

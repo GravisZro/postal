@@ -166,7 +166,7 @@
 WSADATA							RProtocolBSDIP::ms_WSAData;
 bool								RProtocolBSDIP::ms_bDidStartup;
 bool								RProtocolBSDIP::ms_bWSAStartup;
-#ifdef WIN32
+#if defined(_WIN32)
 bool								RProtocolBSDIP::ms_bWSASetBlockingHook;
 RSocket::FuncNum				RProtocolBSDIP::ms_funcnum;
 RSocket::BLOCK_CALLBACK		RProtocolBSDIP::ms_callback;
@@ -239,7 +239,7 @@ int16_t RProtocolBSDIP::Startup(void)
 			{
 			ms_bWSAStartup = true;
 			
-			#ifdef WIN32
+#if defined(_WIN32)
 			// Confirm that this winsock implimentation supports 1.1.  If it supports
 			// version greater than 1.1 in addition to 1.1, it will still return 1.1
 			// since that's what we inquired about.
@@ -270,7 +270,7 @@ int16_t RProtocolBSDIP::Startup(void)
 				sResult = FAILURE;
 				TRACE("RProtocolBSDIP::Startup(): Incorrect version of WinSock DLL!\n");
 				}
-			#endif
+#endif
 			}
 		else
 			{
@@ -295,7 +295,7 @@ int16_t RProtocolBSDIP::Startup(void)
 //////////////////////////////////////////////////////////////////////////////
 void RProtocolBSDIP::Shutdown(void)
 	{
-	#ifdef WIN32
+#if defined(_WIN32)
 	if (ms_bWSASetBlockingHook)
 		{
 		// Remove blocking hook
@@ -304,7 +304,7 @@ void RProtocolBSDIP::Shutdown(void)
 
 		ms_bWSASetBlockingHook = false;
 		}
-	#endif
+#endif
 
 	if (ms_bWSAStartup)
 		{
@@ -336,7 +336,7 @@ int16_t RProtocolBSDIP::Open(							// Returns 0 if successful, non-zero otherwi
 
 #if defined(__unix__)
   UNUSED(usPort, sType, sOptionFlags, callback);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -349,13 +349,13 @@ int16_t RProtocolBSDIP::Open(							// Returns 0 if successful, non-zero otherwi
 		if (m_sock == INVALID_SOCKET)
 			{
 			// If callback was specified, use it.
-            #ifdef WIN32
+# if defined(_WIN32)
 			if (callback != nullptr)
 				m_callback = callback;
 
 			// Set current callback
 			ms_callback = m_callback;
-			#endif
+# endif
 
 			// Save type
 			m_sType = sType;
@@ -375,9 +375,9 @@ int16_t RProtocolBSDIP::Open(							// Returns 0 if successful, non-zero otherwi
 				{
 
 				// Create socket
-                #ifdef WIN32
+# if defined(_WIN32)
 				ms_funcnum = RSocket::OtherFunc;
-                #endif
+# endif
 
 				m_sock = socket(AF_INET, iType, 0);
 				if (m_sock != INVALID_SOCKET)
@@ -496,7 +496,7 @@ int16_t RProtocolBSDIP::Close(							// Returns 0 if successfull, non-zero other
 	{
 #if defined(__unix__)
   UNUSED(bForceNow);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -563,7 +563,7 @@ int16_t RProtocolBSDIP::Close(							// Returns 0 if successfull, non-zero other
 int16_t RProtocolBSDIP::Broadcast(void)				// Returns 0 if successfull, non-zero otherwise
 	{
 #if defined(__unix__)
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -610,7 +610,7 @@ int16_t RProtocolBSDIP::Listen(							// Returns 0 if successfull, non-zero othe
 	{
 #if defined(__unix__)
   UNUSED(sMaxQueued);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -672,7 +672,7 @@ int16_t RProtocolBSDIP::Accept(						// Returns 0 on success, non-zero otherwise
 	{
 #if defined(__unix__)
   UNUSED(pProtocolClient, paddressClient);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -762,7 +762,7 @@ int16_t RProtocolBSDIP::Connect(						// Returns 0 if successfull, non-zero othe
 	{
 #if defined(__unix__)
   UNUSED(paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -881,7 +881,7 @@ int16_t RProtocolBSDIP::Send(							// Returns 0 on success, non-zero otherwise
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lNumBytes, plActualBytes);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -945,7 +945,7 @@ int16_t RProtocolBSDIP::SendTo(							// Returns 0 on success, non-zero otherwis
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lNumBytes, plActualBytes, paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -1017,7 +1017,7 @@ int16_t RProtocolBSDIP::Receive(						// Returns 0 on success, non-zero otherwis
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lMaxBytes, plActualBytes);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -1081,7 +1081,7 @@ int16_t RProtocolBSDIP::ReceiveFrom(					// Returns 0 on success, non-zero other
 	{
 #if defined(__unix__)
   UNUSED(pBuf, lMaxBytes, plActualBytes, paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 	
@@ -1194,7 +1194,7 @@ bool RProtocolBSDIP::CanAcceptWithoutBlocking(void)
 bool RProtocolBSDIP::CanSendWithoutBlocking(void)
 	{
 #if defined(__unix__)
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	bool bResult = false;
 	
@@ -1245,7 +1245,7 @@ bool RProtocolBSDIP::CanSendWithoutBlocking(void)
 bool RProtocolBSDIP::CanReceiveWithoutBlocking(void)
 	{
 #if defined(__unix__)
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	bool bResult = false;
 	
@@ -1395,7 +1395,7 @@ int16_t RProtocolBSDIP::GetMaxDatagramSize(			// Returns zero on success, non-ze
 	{
 	int16_t sResult = SUCCESS;
 	
-    #ifdef WIN32
+#if defined(_WIN32)
 	if (ms_bDidStartup)
 		{
 		*plSize = (int32_t)ms_WSAData.iMaxUdpDg;
@@ -1405,9 +1405,9 @@ int16_t RProtocolBSDIP::GetMaxDatagramSize(			// Returns zero on success, non-ze
 		sResult = FAILURE;
 		TRACE("RProtocolBSDIP::GetMaxDatagramSize(): Never called Startup()!\n");
 		}
-    #else
+#else
     *plSize = 1024;   // uh, sure.
-    #endif
+#endif
 
 	return sResult;
 	}
@@ -1424,7 +1424,7 @@ int16_t RProtocolBSDIP::GetMaxSockets(				// Returns 0 if successfull, non-zero 
 	{
 	int16_t sResult = SUCCESS;
 
-	#ifdef WIN32
+#if defined(_WIN32)
 	if (ms_bDidStartup)
 		{
 		*plNum = (int32_t)ms_WSAData.iMaxSockets;
@@ -1434,9 +1434,9 @@ int16_t RProtocolBSDIP::GetMaxSockets(				// Returns 0 if successfull, non-zero 
 		sResult = FAILURE;
 		TRACE("RProtocolBSDIP::GetMaxSockets(): Never called Startup()!\n");
 		}
-	#else
+#else
 	*plNum = 25;  // uh...ok.
-	#endif
+#endif
 	return sResult;
 	}
 
@@ -1453,7 +1453,7 @@ int16_t RProtocolBSDIP::GetAddress(					// Returns 0 if successfull, non-zero ot
 	{
 #if defined(__unix__)
   UNUSED(pszName, usPort, paddress);
-    return(-1);  // !!! FIXME
+    return FAILURE;  // !!! FIXME
 #else
 	int16_t sResult = SUCCESS;
 
@@ -1532,11 +1532,11 @@ void RProtocolBSDIP::CreateBroadcastAddress(
 	pip->address.sin_family = AF_INET;
 	pip->address.sin_port = htons(usPort);
 
-    #ifdef WIN32
+#if defined(_WIN32)
 	pip->address.sin_addr.S_un.S_addr = htonl(INADDR_BROADCAST);
-    #else
+#else
 	pip->address.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-    #endif
+#endif
 	}
 
 
@@ -1574,7 +1574,7 @@ void RProtocolBSDIP::SetAddressPort(
 // while calling this, so it seems like a better idea to return 0 all the time.
 ////////////////////////////////////////////////////////////////////////////////
 /* static */
-#ifdef WIN32
+#if defined(_WIN32)
 intptr_t CALLBACK RProtocolBSDIP::BlockingHook(void)
 	{
 	// !!!

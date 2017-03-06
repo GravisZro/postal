@@ -236,7 +236,7 @@ int16_t CGoalTimer::EditNew(									// Returns 0 if successfull, non-zero other
 		RListBox* plb = peditor->m_plbNavNetList;
 		if (plb != nullptr)
 		{
-			RGuiItem* pgui = plb->AddString((char*) m_rstrNetName);
+         RGuiItem* pgui = plb->AddString(m_rstrNetName);
 			pgui->m_lId = GetInstanceID();
 			pgui->m_bcUser = NavNetListPressedCall;
 			pgui->m_ulUserInstance = (unsigned long) this;

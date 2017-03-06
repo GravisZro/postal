@@ -24,16 +24,17 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 //
-// Handles all SDL specific mouse stuff.
+// Handles all SDL2 specific mouse stuff.
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// Blue //////////////////////////////////////////////////////////////////////
+// RSPix /////////////////////////////////////////////////////////////////////
 #include <BLUE/Blue.h>
 #include <ORANGE/CDT/Queue.h>
 
 // Platform //////////////////////////////////////////////////////////////////
 #include <SDL2/SDL.h>
+
 
 extern SDL_Window *sdlWindow;
 extern SDL_Surface *sdlShadowSurface;
@@ -51,7 +52,7 @@ typedef struct
 
 #define MAX_EVENTS	256
 // Only set value if not nullptr.
-#define SET(ptr, val)		( ((ptr) != nullptr) ? *(ptr) = (val) : 0)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 #define INC_N_WRAP(i, max)	(i = (i + 1) % max)
 
 static RSP_MOUSE_EVENT	ms_ameEvents[MAX_EVENTS];

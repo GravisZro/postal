@@ -32,7 +32,7 @@
 #define PROTOBSDIP_H
 #if !defined(MULTIPLAYER_REMOVED)
 
-#ifdef WIN32
+#if defined(_WIN32)
 #include <winsock.h>
 #else
 // (that should just about cover it... --ryan.)
@@ -120,11 +120,11 @@ class RProtocolBSDIP : public RSocket::RProtocol
 		static bool ms_bDidStartup;					// Whether Startup was called successfully
 		static bool ms_bWSAStartup;					// Whether WSAStartup() was called
 		static WSADATA ms_WSAData;						// Data regarding current socket implimentation
-		#ifdef WIN32
+#if defined(_WIN32)
 		static bool ms_bWSASetBlockingHook;			// Whether WSASetBlockingHook() was called
 		static RSocket::BLOCK_CALLBACK ms_callback;	// Blocking hook callback
 		static RSocket::FuncNum ms_funcnum;			// Which socket function, if any, is being executed
-		#endif
+#endif
 
 	//------------------------------------------------------------------------------
 	// Functions
@@ -261,10 +261,10 @@ class RProtocolBSDIP : public RSocket::RProtocol
 
 	protected:
 
-		#ifdef WIN32
+#if defined(_WIN32)
 		// This is a blocking-hook callback function.
 		static intptr_t CALLBACK BlockingHook(void);
-		#endif
+#endif
 
 		// Do the initialization stuff
 		// NOTE: Derived classes MUST call base class implimentation!

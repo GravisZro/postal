@@ -102,11 +102,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-	#define MAKE_U32_COLOR(u8Red, u8Blue, u8Green, u8Alpha)	\
-		( (u8Alpha << 0) | (u8Red << 8) | (u8Green << 16) | (u8Blue << 24) )
+	#define MAKE_U32_COLOR(red, blue, green, alpha)	\
+		( (alpha << 0) | (red << 8) | (green << 16) | (blue << 24) )
 #elif BYTE_ORDER == BIG_ENDIAN
-	#define MAKE_U32_COLOR(u8Red, u8Blue, u8Green, u8Alpha)	\
-		( (u8Alpha << 24) | (u8Red << 16) | (u8Green << 8) | (u8Blue << 0) )
+	#define MAKE_U32_COLOR(red, blue, green, alpha)	\
+		( (alpha << 24) | (red << 16) | (green << 8) | (blue << 0) )
 #else
 # error NOT IMPLEMENTED
 #endif

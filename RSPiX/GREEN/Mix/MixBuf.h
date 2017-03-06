@@ -173,7 +173,7 @@ class	CDVA	// a complete dummy
 public:
 	//////////////////////////////////////////////////////////////////////////////
 	//  Allow use of mixing volume for other applications:
-   //  A level of MaxVolume is identity.
+   //  A level of 255 is identity.
 	//////////////////////////////////////////////////////////////////////////////
 	inline	uint8_t	ScaleByte(uint8_t ucByte,uint8_t	ucLevel)
 		{
@@ -203,8 +203,8 @@ public:
 	// we can also scale 16-bit values, but this is not yet accessible to the user.
 
 	//----------------------------------------------------------------------
-	CDVA();
-	~CDVA(){};	// nothing to do....
+   CDVA(void);
+   ~CDVA(void){}	// nothing to do....
 	//----------------------------------------------------------------------
 	// To save on registers, make this the same array:
 	static int16_t	ms_asHighByte[DVA_SIZE * 2][256];	// for 16-bit sound

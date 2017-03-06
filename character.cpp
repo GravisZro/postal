@@ -362,9 +362,6 @@
 // Amount of time for character to burn.
 #define BURN_DURATION			2500	// In ms.
 
-// Sets a value pointed to if ptr is not nullptr.
-#define SET(pval, val)					((pval != nullptr) ? *pval = val : val)
-
 // Maximum chunks that can be generated from one MakeBloody().
 #define MAX_CHUNKS				10
 

@@ -151,11 +151,13 @@ struct c_string
 
 #include <BLUE/portable_endian.h>
 
-#if defined(WIN32)
-# pragma message("I find your lack of POSIX disturbing. ;)")
-# include <BaseTsd.h>
+#if defined(_WIN32)
+# if defined(_MSC_VER)
+#  pragma message("I find your lack of POSIX disturbing. ;)")
+#  include <BaseTsd.h>
+# endif
+# if defined(_MSC_VER) && _MSC_VER < 1900
 typedef SSIZE_T ssize_t;
-# if !defined(_MSC_VER) || _MSC_VER < 1900
 #  define constexpr inline
 #  if !defined(snprintf)
 #   define snprintf _snprintf
@@ -173,8 +175,13 @@ typedef SSIZE_T ssize_t;
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp
 # endif
-# define NOTE(x) __pragma(message("NOTE: " x))
-# include <BLUE/stdint_msvc.h>
+# if defined(_MSC_VER)
+#  define NOTE(x) __pragma(message("NOTE: " x))
+#  include <BLUE/stdint_msvc.h>
+# else
+# define DO_PRAGMA(x) _Pragma (#x)
+# define NOTE(x) DO_PRAGMA(message("NOTE: " x))
+# endif
 # define SYSTEM_PATH_SEPARATOR	'\\'
 #else
 # include <sys/types.h>
@@ -220,11 +227,6 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 # define UINT16_MIN 0
 # define UINT32_MIN 0
 # define UINT64_MIN 0
-
-
-
-typedef uint32_t milliseconds_t;
-typedef uint64_t microseconds_t;
 
 // 128-bit got a little trickier...
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -272,37 +274,82 @@ typedef struct {	uint64_t	hi;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// Pixel types
+// Aliases
 ////////////////////////////////////////////////////////////////////////////////
+
+#define MILLISECONDS_MAX UINT32_MAX
+#define MICROSECONDS_MAX UINT64_MAX
+
+typedef uint32_t milliseconds_t;
+typedef uint64_t microseconds_t;
+
+typedef uint8_t volume_t;
+typedef uint8_t channel_t;
+typedef uint8_t palindex_t;
+
+////////////////////////////////////////////////////////////////////////////////
+// Palette/Pixel stuff
+////////////////////////////////////////////////////////////////////////////////
+
+namespace palette
+{
+  static const uint16_t size = 0x0100;
+}
+
+struct color24_t
+{
+  channel_t blue;
+  channel_t green;
+  channel_t red;
+};
+
+struct color32_t
+{
+  channel_t blue;
+  channel_t green;
+  channel_t red;
+  channel_t alpha;
+};
 
 // These pixel types take the endian order of the system into account.
 typedef uint8_t RPixel;
 typedef uint16_t RPixel16;
 
-typedef struct
+struct RPixel24
 {
-  uint8_t	u8Red;
-  uint8_t	u8Green;
-  uint8_t	u8Blue;
-} RPixel24;
+  channel_t	red;
+  channel_t	green;
+  channel_t	blue;
 
-typedef struct
+  constexpr bool operator==(const RPixel24& other)
+  {
+    return blue  == other.blue  &&
+           green == other.green &&
+           red   == other.red;
+  }
+};
+
+struct RPixel32
 {
-  uint8_t	u8Alpha;
-  uint8_t	u8Red;
-  uint8_t	u8Green;
-  uint8_t	u8Blue;
-} RPixel32;
+  channel_t	alpha;
+  channel_t	red;
+  channel_t	green;
+  channel_t	blue;
 
-constexpr bool operator==(const RPixel24& lhs, const RPixel24& rhs)
-  { return (lhs.u8Blue == rhs.u8Blue) && (lhs.u8Green == rhs.u8Green) && (lhs.u8Red == rhs.u8Red); }
-constexpr bool operator==(const RPixel32& lhs, const RPixel32& rhs)
-  { return (lhs.u8Blue == rhs.u8Blue) && (lhs.u8Green == rhs.u8Green) && (lhs.u8Red == rhs.u8Red) && (lhs.u8Alpha == rhs.u8Alpha); }
+  constexpr bool operator==(const RPixel32& other)
+  {
+    return blue  == other.blue  &&
+           green == other.green &&
+           red   == other.red   &&
+           alpha == other.alpha;
+  }
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Usefull Templates
 ////////////////////////////////////////////////////////////////////////////////
+
 #undef MIN
 template <class T>
 constexpr T MIN(T a,T b) { return (a < b) ? a : b; }

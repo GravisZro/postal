@@ -49,8 +49,8 @@
 // *************************************************************************
 
 // OS identifiers
-# if !defined(WIN32) && (defined(_WIN16) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__) || defined(_WIN32_WCE))
-#  define WIN32
+# if !defined(_WIN32) && (defined(_WIN16) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__) || defined(__TOS_WIN__) || defined(__MINGW32__))
+#  define _WIN32
 # elif !defined(__DOS__) && (defined(MSDOS) || defined(_MSDOS) || defined(__MSDOS__))
 #  define __DOS__
 # elif !defined(__BSD__) && (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || defined(__DragonFly__))
@@ -61,9 +61,8 @@
 # endif
 
 // OS includes
-# if defined(WIN32) // Windows variant
+# if defined(_WIN32) // Windows variant
 #  include <winsock2.h>
-//#  include <sys/param.h>
 # elif defined(__linux__) || defined(__CYGWIN__) // Linux/Cygwin
 #  include <endian.h>
 #  include <byteswap.h>
@@ -86,6 +85,11 @@
 #  define BYTE_ORDER __BYTE_ORDER
 #  elif defined(__BYTE_ORDER__)
 #   define BYTE_ORDER __BYTE_ORDER__
+#  elif defined(_WIN32)
+#   define	LITTLE_ENDIAN   1234
+#   define	BYTE_ORDER      LITTLE_ENDIAN
+#  else
+#   error Unable to determine system endianness!
 #  endif
 # else
 #  if !defined(__BYTE_ORDER)
@@ -101,6 +105,10 @@
 #   define LITTLE_ENDIAN __LITTLE_ENDIAN
 #  elif defined(__LITTLE_ENDIAN__)
 #   define LITTLE_ENDIAN __LITTLE_ENDIAN__
+#  elif defined(_WIN32)
+#   define	LITTLE_ENDIAN   1234
+#  else
+#   error No system value for LITTLE_ENDIAN!
 #  endif
 # else
 #  if !defined(__LITTLE_ENDIAN)
@@ -116,6 +124,10 @@
 #   define BIG_ENDIAN __BIG_ENDIAN
 #  elif defined(__BIG_ENDIAN__)
 #   define BIG_ENDIAN __BIG_ENDIAN__
+#  elif defined(_WIN32)
+#   define	BIG_ENDIAN      4321
+#  else
+#   error No system value for BIG_ENDIAN!
 #  endif
 # else
 #  if !defined(__BIG_ENDIAN)
@@ -131,6 +143,8 @@
 #   define PDP_ENDIAN __PDP_ENDIAN
 #  elif defined(__PDP_ENDIAN__)
 #   define PDP_ENDIAN __PDP_ENDIAN__
+#  elif defined(_WIN32)
+#   define	PDP_ENDIAN      3412
 #  endif
 # else
 #  if !defined(__PDP_ENDIAN)
@@ -140,6 +154,7 @@
 #   define __PDP_ENDIAN__ PDP_ENDIAN
 #  endif
 # endif
+
 
 // OS fixups
 # if defined(__APPLE__) && !defined(__arm__) // Mac OSX
@@ -162,7 +177,7 @@
 #  define le32toh(x) letoh32(x)
 #  define be64toh(x) betoh64(x)
 #  define le64toh(x) letoh64(x)
-# elif defined(WIN32) // Windows variant
+# elif defined(_WIN32) // Windows variant
 #  if BYTE_ORDER == LITTLE_ENDIAN
 #   define htobe16(x) htons(x)
 #   define htole16(x) (x)

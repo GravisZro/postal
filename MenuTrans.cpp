@@ -102,25 +102,19 @@
 #define NONSHADE_END			(SHADE_BEG - 1)
 #define NONSHADE_LEN			((NONSHADE_END - NONSHADE_BEG) + 1)
 
-// Simple struct for working with palettes
-typedef struct
-	{
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-	uint8_t x;
-	} rgb;
-
+// just in case the values are changed
+static_assert(SHADE_END    < UINT8_MAX, "value too large!");
+static_assert(NONSHADE_END < UINT8_MAX, "value too large!");
 
 ////////////////////////////////////////////////////////////////////////////////
 // Variables/data
 ////////////////////////////////////////////////////////////////////////////////
 
-static rgb* m_pOrig;
-static rgb* m_pWork;
-static rgb* m_pSaveStep4;
-static uint8_t* m_pUnmapStep4;
-static uint8_t* m_pUnmapStep5;
+static RPixel32* m_pOrig;
+static RPixel32* m_pWork;
+static RPixel32* m_pSaveStep4;
+static channel_t* m_pUnmapStep4;
+static channel_t* m_pUnmapStep5;
 static RImage* m_pim;
 
 static int16_t m_sStep;
@@ -136,53 +130,48 @@ static double m_dReduce = 1.0;
 ////////////////////////////////////////////////////////////////////////////////
 
 static void Remap(
-	uint8_t* aucMap);
+    uint8_t* aucMap);
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Call this to start the menu transition effect
 ////////////////////////////////////////////////////////////////////////////////
 extern void StartMenuTrans(
-	int32_t lTotalTime)										// In:  Effect time (in ms) must be >= 0
-	{
-	// Default to step 0 (nothing) in case something goes wrong
-	m_sStep = 0;
+    milliseconds_t lTotalTime)										// In:  Effect time (in ms) must be >= 0
+{
+  // Default to step 0 (nothing) in case something goes wrong
+  m_sStep = 0;
 
-	// Save total time
-	if (lTotalTime < 0)
-		{
-		TRACE("StartMenuTransIn(): Moronic time specified: %i -- changed to 0!\n", lTotalTime);
-		lTotalTime = 0;
-		}
-	m_lTotalTime = lTotalTime;
+  // Save total time
+  m_lTotalTime = lTotalTime;
 
-	// Clear finish flag
-	m_bFinishASAP = false;
+  // Clear finish flag
+  m_bFinishASAP = false;
 
-	// Allocate lots of stuff
-	m_pOrig = new rgb[256];
-	m_pWork = new rgb[256];
-	m_pSaveStep4 = new rgb[256];
-	m_pUnmapStep4 = new uint8_t[256];
-	m_pUnmapStep5 = new uint8_t[256];
-	m_pim = new RImage;
-	if (m_pOrig && m_pWork && m_pSaveStep4 && m_pUnmapStep4 && m_pUnmapStep5 && m_pim)
-		{
+  // Allocate lots of stuff
+  m_pOrig = new RPixel32[palette::size];
+  m_pWork = new RPixel32[palette::size];
+  m_pSaveStep4 = new RPixel32[palette::size];
+  m_pUnmapStep4 = new channel_t[palette::size];
+  m_pUnmapStep5 = new channel_t[palette::size];
+  m_pim = new RImage;
+  if (m_pOrig && m_pWork && m_pSaveStep4 && m_pUnmapStep4 && m_pUnmapStep5 && m_pim)
+  {
 
-		// Setup image to match screen buffer
-      if (m_pim->CreateImage(g_pimScreenBuf->m_sWidth, g_pimScreenBuf->m_sHeight, RImage::BMP8) == SUCCESS)
-			{
+    // Setup image to match screen buffer
+    if (m_pim->CreateImage(g_pimScreenBuf->m_sWidth, g_pimScreenBuf->m_sHeight, RImage::BMP8) == SUCCESS)
+    {
 
-			// Everything's cool, so set for first step
-			m_sStep = 1;
+      // Everything's cool, so set for first step
+      m_sStep = 1;
 
-			}
-		else
-			TRACE("StartMenuTrans(): Error returned by RImage::CreateImage()!\n");
-		}
-	else
-		TRACE("StartMenuTrans(): Couldn't allocate memory!\n");
-	}
+    }
+    else
+      TRACE("StartMenuTrans(): Error returned by RImage::CreateImage()!\n");
+  }
+  else
+    TRACE("StartMenuTrans(): Couldn't allocate memory!\n");
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,232 +182,258 @@ extern void StartMenuTrans(
 // The return value is true when the effect has completed, false otherwise.
 ////////////////////////////////////////////////////////////////////////////////
 extern bool DoPreMenuTrans(void)
-	{
-	//---------------------------------------------------------------------------
-	// Step 1: Start
-	//
-	// Get the current palette and the current time and go on to the next step.
-	// This could have been done in the init function, but I didn't want the
-	// timing to start then, but rather on the first call to this function.
-	//---------------------------------------------------------------------------
-	if (m_sStep == 1)
-		{
-		// Get the "original" palette
-		rspGetPaletteEntries(0, 256, &(m_pOrig[0].r), &(m_pOrig[0].g), &(m_pOrig[0].b), sizeof(rgb));
+{
+  //---------------------------------------------------------------------------
+  // Step 1: Start
+  //
+  // Get the current palette and the current time and go on to the next step.
+  // This could have been done in the init function, but I didn't want the
+  // timing to start then, but rather on the first call to this function.
+  //---------------------------------------------------------------------------
+  if (m_sStep == 1)
+  {
+    // Get the "original" palette
+    rspGetPaletteEntries(0,
+                         palette::size,
+                         &m_pOrig[0].red,
+        &m_pOrig[0].green,
+        &m_pOrig[0].blue,
+        sizeof(RPixel32));
 
-		// Lock the buffer before reading from it.
-		rspLockBuffer();
+    // Lock the buffer before reading from it.
+    rspLockBuffer();
 
-		// Copy the screen into our image
-		rspBlitA(g_pimScreenBuf, m_pim, 0, 0, m_pim->m_sWidth, m_pim->m_sHeight);
+    // Copy the screen into our image
+    rspBlitA(g_pimScreenBuf, m_pim, 0, 0, m_pim->m_sWidth, m_pim->m_sHeight);
 
-		// Unlock now that we're done with the composite buffer.
-		rspUnlockBuffer();
+    // Unlock now that we're done with the composite buffer.
+    rspUnlockBuffer();
 
-		// Calculate goal for each color's red component.  We use the otherwise
-		// unused member of the struct to store the goal.
-		for (int16_t i = EFFECT_BEG; i <= EFFECT_END; i++)
-//			m_pOrig[i].x = (unsigned char)((double)(0xFF - m_pOrig[i].r) * m_dReduce) & SHADE_MASK;
-			m_pOrig[i].x = (uint8_t)((double)(m_pOrig[i].r) * m_dReduce) & SHADE_MASK;
+    // Calculate goal for each color's red component.  We use the otherwise
+    // unused member of the struct to store the goal.
+    for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
+      //    m_pOrig[i].alpha = (unsigned char)((double)(0xFF - m_pOrig[i].red) * m_dReduce) & SHADE_MASK;
+      m_pOrig[i].alpha = uint8_t((double)(m_pOrig[i].red) * m_dReduce) & SHADE_MASK;
 
-		// Get base time for next step
-		m_lBaseTime = rspGetMilliseconds();
-		
-		// Go to next step
-		m_sStep = 2;
-		}
-	//---------------------------------------------------------------------------
-	// Step 2: Fade colors
-	//
-	// Over the specified period of time, we transform the original palette
-	// entries into MAX_SHADES shades of red.
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 2)
-		{
-		// Calculate how far into the effect we are based on the elapsed time
-		// since we started.  If the total time specified by the user was 0, or
-		// if we're being asked to finish the effect ASAP, we go right to 100%.
-		double dPercent;
-		if ((m_lTotalTime == 0) || m_bFinishASAP)
-			{
-			dPercent = 1.0;
-			}
-		else
-			{
-			dPercent = (double)(rspGetMilliseconds() - m_lBaseTime) / (double)m_lTotalTime;
-			if (dPercent > 1.0)
-				dPercent = 1.0;
-			}
+    // Get base time for next step
+    m_lBaseTime = rspGetMilliseconds();
 
-		// Update all colors to where they should be based on given percentage
-		for (int16_t i = EFFECT_BEG; i <= EFFECT_END; i++)
-			{
-			double dRedDiff = m_pOrig[i].r - m_pOrig[i].x;
-			m_pWork[i].r = m_pOrig[i].x + (uint8_t)(dRedDiff * (1.0 - dPercent));
-			m_pWork[i].g = (uint8_t)((double)m_pOrig[i].g * (1.0 - dPercent));
-			m_pWork[i].b = (uint8_t)((double)m_pOrig[i].b * (1.0 - dPercent));
-			}
+    // Go to next step
+    m_sStep = 2;
+  }
+  //---------------------------------------------------------------------------
+  // Step 2: Fade colors
+  //
+  // Over the specified period of time, we transform the original palette
+  // entries into MAX_SHADES shades of red.
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 2)
+  {
+    // Calculate how far into the effect we are based on the elapsed time
+    // since we started.  If the total time specified by the user was 0, or
+    // if we're being asked to finish the effect ASAP, we go right to 100%.
+    double dPercent;
+    if ((m_lTotalTime == 0) || m_bFinishASAP)
+    {
+      dPercent = 1.0;
+    }
+    else
+    {
+      dPercent = (double)(rspGetMilliseconds() - m_lBaseTime) / (double)m_lTotalTime;
+      if (dPercent > 1.0)
+        dPercent = 1.0;
+    }
 
-		// Set new palette
-		rspSetPaletteEntries(EFFECT_BEG, EFFECT_LEN, &(m_pWork[EFFECT_BEG].r), &(m_pWork[EFFECT_BEG].g), &(m_pWork[EFFECT_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Update all colors to where they should be based on given percentage
+    for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
+    {
+      double dRedDiff = m_pOrig[i].red - m_pOrig[i].alpha;
+      m_pWork[i].red = m_pOrig[i].alpha + uint8_t(dRedDiff * (1.0 - dPercent));
+      m_pWork[i].green = uint8_t((double)m_pOrig[i].green * (1.0 - dPercent));
+      m_pWork[i].blue = uint8_t((double)m_pOrig[i].blue * (1.0 - dPercent));
+    }
 
-		// If we're done with the fade, go to next step
-		if (dPercent == 1.0)
-			m_sStep = 3;
-		}
-	//---------------------------------------------------------------------------
-	// Step 3: Consolidate
-	//
-	// At this point, the palette entries are all set to any of several shades of
-	// red.  Since the range of entries we're dealing with is at least twice the
-	// maximum number of shades of red, there will definitely be some duplicate
-	// entries.  We remap the pixels to get rid of the duplicates, at the same
-	// time creating some unused entries.  We set flags showing which entries are
-	// used and which are free in preperation for the next step.
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 3)
-		{
-		// Start mapping table out as an "identity map" (pixels map to themselves)
-		uint8_t aucMap[256];
-		for (int16_t m = 0; m < 256; m++)
-			aucMap[m] = m;
+    // Set new palette
+    rspSetPaletteEntries(EFFECT_BEG,
+                         EFFECT_LEN,
+                         &m_pWork[EFFECT_BEG].red,
+                         &m_pWork[EFFECT_BEG].green,
+                         &m_pWork[EFFECT_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-		// Scan through the palette mapping each entry onto the first entry with the
-		// same color.  Only checks red since blue and green are always 0.
-		for (int16_t i = EFFECT_BEG; i <= EFFECT_END; i++)
-			{
-			// Loop ends on first match - worst case is that entry matches itself
-			int16_t j;
-			for (j = EFFECT_BEG; m_pWork[i].r != m_pWork[j].r; j++) ;
-			aucMap[i] = j;
+    // If we're done with the fade, go to next step
+    if (dPercent == 1.0)
+      m_sStep = 3;
+  }
+  //---------------------------------------------------------------------------
+  // Step 3: Consolidate
+  //
+  // At this point, the palette entries are all set to any of several shades of
+  // red.  Since the range of entries we're dealing with is at least twice the
+  // maximum number of shades of red, there will definitely be some duplicate
+  // entries.  We remap the pixels to get rid of the duplicates, at the same
+  // time creating some unused entries.  We set flags showing which entries are
+  // used and which are free in preperation for the next step.
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 3)
+  {
+    // Start mapping table out as an "identity map" (pixels map to themselves)
+    uint8_t aucMap[palette::size];
+    uint8_t m = 0;
+    do { aucMap[m] = m; }
+    while(++m); // a sneaky way to enumerate all values
 
-			// Set flag to 0 if this entry will be free after remapping, 1 otherwise.
-			// The next step relies on this!
-			m_pWork[i].x = (j < i) ? 0 : 1;
-			}
+    // Scan through the palette mapping each entry onto the first entry with the
+    // same color.  Only checks red since blue and green are always 0.
+    for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
+    {
+      // Loop ends on first match - worst case is that entry matches itself
+      uint8_t j = EFFECT_BEG;
+      while(m_pWork[i].red != m_pWork[j].red) { ++j; }
+      aucMap[i] = j;
 
-		// Remap screen pixels
-		Remap(aucMap);
-		rspUpdateDisplay();
+      // Set flag to 0 if this entry will be free after remapping, 1 otherwise.
+      // The next step relies on this!
+      m_pWork[i].alpha = (j < i) ? 0 : 1;
+    }
 
-		// Go to next step
-		m_sStep = 4;
-		}
-	//---------------------------------------------------------------------------
-	// Step 4: Clear Official Area
-	//
-	// The image is now only using a small number of entries, and there are at
-	// least that many unused entries.  Unfortunately, the used and unused
-	// entries are scattered around in no particular order, so some of the used
-	// entries may be where we eventually want the "official" set of shades to
-	// reside.  We remap the pixels to move any such entries into unused entries
-	// outside of that "official" area.
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 4)
-		{
-		// Start mapping table out as an "identity map" (pixels map to themselves)
-		uint8_t aucMap[256];
-		for (int16_t m = 0; m < 256; m++)
-			{
-			aucMap[m] = m;
-			m_pUnmapStep4[m] = m;
-			}
+    // Remap screen pixels
+    Remap(aucMap);
+    rspUpdateDisplay();
 
-		// Go through area reserved for "official" shades looking for used entries
-		// and, if found, remap them to unused entries outside of that range.
-		for (int16_t s = SHADE_BEG; s <= SHADE_END; s++)
-			{
-			if (m_pWork[s].x)
-				{
-				int16_t i;
-				for (i = NONSHADE_BEG; i <= NONSHADE_END; i++)
-					{
-					if (m_pWork[i].x == 0)
-						{
-						aucMap[s] = i;
-						m_pUnmapStep4[i] = s;
-						m_pWork[i].r = m_pWork[s].r;
-						m_pWork[i].x = 1;
-						m_pWork[s].x = 0;	// not required but makes table easier to "read" in debugger
-						break;
-						}
-					}
-				// Make sure we found an unused entry to map onto
-				ASSERT(i <= NONSHADE_END);
-				}
-			}
+    // Go to next step
+    m_sStep = 4;
+  }
+  //---------------------------------------------------------------------------
+  // Step 4: Clear Official Area
+  //
+  // The image is now only using a small number of entries, and there are at
+  // least that many unused entries.  Unfortunately, the used and unused
+  // entries are scattered around in no particular order, so some of the used
+  // entries may be where we eventually want the "official" set of shades to
+  // reside.  We remap the pixels to move any such entries into unused entries
+  // outside of that "official" area.
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 4)
+  {
+    // Start mapping table out as an "identity map" (pixels map to themselves)
+    uint8_t aucMap[palette::size];
+    uint8_t m = 0;
+    do
+    {
+      aucMap[m] = m;
+      m_pUnmapStep4[m] = m;
+    }
+    while(++m); // a sneaky way to enumerate all values
 
-		// Set new palette (some entries may have been changed by the above remapping)
-		rspSetPaletteEntries(NONSHADE_BEG, NONSHADE_LEN, &(m_pWork[NONSHADE_BEG].r), &(m_pWork[NONSHADE_BEG].g), &(m_pWork[NONSHADE_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Go through area reserved for "official" shades looking for used entries
+    // and, if found, remap them to unused entries outside of that range.
+    for (uint8_t s = SHADE_BEG; s <= SHADE_END; ++s)
+    {
+      if (m_pWork[s].alpha)
+      {
+        uint8_t i;
+        for (i = NONSHADE_BEG; i <= NONSHADE_END; ++i)
+        {
+          if (m_pWork[i].alpha == 0)
+          {
+            aucMap[s] = i;
+            m_pUnmapStep4[i] = s;
+            m_pWork[i].red = m_pWork[s].red;
+            m_pWork[i].alpha = 1;
+            m_pWork[s].alpha = 0;	// not required but makes table easier to "read" in debugger
+            break;
+          }
+        }
+        // Make sure we found an unused entry to map onto
+        ASSERT(i <= NONSHADE_END);
+      }
+    }
 
-		// Remap screen pixels
-		Remap(aucMap);
-		rspUpdateDisplay();
+    // Set new palette (some entries may have been changed by the above remapping)
+    rspSetPaletteEntries(NONSHADE_BEG,
+                         NONSHADE_LEN,
+                         &m_pWork[NONSHADE_BEG].red,
+                         &m_pWork[NONSHADE_BEG].green,
+                         &m_pWork[NONSHADE_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-		// Save current palette so we can run the effect backwards
-		for (int16_t p = 0; p < 256; p++)
-			m_pSaveStep4[p] = m_pWork[p];
+    // Remap screen pixels
+    Remap(aucMap);
+    rspUpdateDisplay();
 
-		// Go to next step
-		m_sStep = 5;
-		}
-	//---------------------------------------------------------------------------
-	// Step 5: Pack Into Official Area
-	//
-	// We now put the full set of shades at the specified section of the palette
-	// and remap the image so that only those "official" entries are used.
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 5)
-		{
-		// Put full set of shades at proper position in palette
-		for (int16_t s = 0; s < SHADE_LEN; s++)
-			m_pWork[SHADE_BEG + s].r = s * (~SHADE_MASK + 1);
-		
-		// Set new palette (do this before remapping so the shades will be there before they're needed)
-		rspSetPaletteEntries(SHADE_BEG, SHADE_LEN, &(m_pWork[SHADE_BEG].r), &(m_pWork[SHADE_BEG].g), &(m_pWork[SHADE_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Save current palette so we can run the effect backwards
+    for (int16_t p = 0; p < palette::size; ++p)
+      m_pSaveStep4[p] = m_pWork[p];
 
-		// Start mapping table out as an "identity map" (pixels map to themselves)
-		uint8_t aucMap[256];
-		for (int16_t m = 0; m < 256; m++)
-			{
-			aucMap[m] = m;
-			m_pUnmapStep5[m] = m;
-			}
+    // Go to next step
+    m_sStep = 5;
+  }
+  //---------------------------------------------------------------------------
+  // Step 5: Pack Into Official Area
+  //
+  // We now put the full set of shades at the specified section of the palette
+  // and remap the image so that only those "official" entries are used.
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 5)
+  {
+    // Put full set of shades at proper position in palette
+    for (uint8_t s = 0; s < SHADE_LEN; ++s)
+      m_pWork[SHADE_BEG + s].red = s * (~SHADE_MASK + 1);
 
-		// Scan through the palette mapping each used entry onto the first
-		// "official" shade entry with the same color.
-		for (int16_t i = NONSHADE_BEG; i <= NONSHADE_END; i++)
-			{
-			// Only do this for used entries (the mapping would work without
-			// this check, since it wouldn't hurt to map unused entries, but
-			// the unmapping table would be screwed up -- it's really bizarre
-			// to think about, but eventually it makes sense)
-			if (m_pWork[i].x)
-				{
-				// Loop ends on first match (and there always will be a match)
-				int16_t j;
-				for (j = SHADE_BEG; m_pWork[i].r != m_pWork[j].r; j++) ;
-				aucMap[i] = j;
-				m_pUnmapStep5[j] = i;
-				}
-			}
+    // Set new palette (do this before remapping so the shades will be there before they're needed)
+    rspSetPaletteEntries(SHADE_BEG,
+                         SHADE_LEN,
+                         &m_pWork[SHADE_BEG].red,
+                         &m_pWork[SHADE_BEG].green,
+                         &m_pWork[SHADE_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-		// Remap screen pixels
-		Remap(aucMap);
-		rspUpdateDisplay();
+    // Start mapping table out as an "identity map" (pixels map to themselves)
+    uint8_t aucMap[palette::size];
 
-		// Go to next step
-		m_sStep = 6;
-		}
+    uint8_t m = 0;
+    do
+    {
+      aucMap[m] = m;
+      m_pUnmapStep5[m] = m;
+    }
+    while(++m); // a sneaky way to enumerate all values
 
-	// Condition return value based on whether or not we're done
-	if (m_sStep == 6)
-		return true;
-	return false;
-	}
+    // Scan through the palette mapping each used entry onto the first
+    // "official" shade entry with the same color.
+    for (uint8_t i = NONSHADE_BEG; i <= NONSHADE_END; i++)
+    {
+      // Only do this for used entries (the mapping would work without
+      // this check, since it wouldn't hurt to map unused entries, but
+      // the unmapping table would be screwed up -- it's really bizarre
+      // to think about, but eventually it makes sense)
+      if (m_pWork[i].alpha)
+      {
+        // Loop ends on first match (and there always will be a match)
+        uint8_t j = SHADE_BEG;
+        while(m_pWork[i].red != m_pWork[j].red) { ++j; }
+        aucMap[i] = j;
+        m_pUnmapStep5[j] = i;
+      }
+    }
+
+    // Remap screen pixels
+    Remap(aucMap);
+    rspUpdateDisplay();
+
+    // Go to next step
+    m_sStep = 6;
+  }
+
+  // Condition return value based on whether or not we're done
+  if (m_sStep == 6)
+    return true;
+  return false;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -429,211 +444,231 @@ extern bool DoPreMenuTrans(void)
 // The return value is true when the effect has completed, false otherwise.
 ////////////////////////////////////////////////////////////////////////////////
 extern bool DoPostMenuTrans(void)
-	{
-	//---------------------------------------------------------------------------
-	// Step 6: Undo Step 5
-	//---------------------------------------------------------------------------
-	if (m_sStep == 6)
-		{
-		// Restore palette to where it was prior to step 5
-		for (int16_t p = 0; p < 256; p++)
-			m_pWork[p] = m_pSaveStep4[p];
+{
+  //---------------------------------------------------------------------------
+  // Step 6: Undo Step 5
+  //---------------------------------------------------------------------------
+  if (m_sStep == 6)
+  {
+    // Restore palette to where it was prior to step 5
+    for (int16_t p = 0; p < palette::size; p++)
+      m_pWork[p] = m_pSaveStep4[p];
 
-		// Set only the non-shade portion of the palette until we remap the pixels
-		rspSetPaletteEntries(NONSHADE_BEG, NONSHADE_LEN, &(m_pWork[NONSHADE_BEG].r), &(m_pWork[NONSHADE_BEG].g), &(m_pWork[NONSHADE_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Set only the non-shade portion of the palette until we remap the pixels
+    rspSetPaletteEntries(NONSHADE_BEG,
+                         NONSHADE_LEN,
+                         &m_pWork[NONSHADE_BEG].red,
+                         &m_pWork[NONSHADE_BEG].green,
+                         &m_pWork[NONSHADE_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-		// Remap screen pixels
-		Remap(m_pUnmapStep5);
-		rspUpdateDisplay();
+    // Remap screen pixels
+    Remap(m_pUnmapStep5);
+    rspUpdateDisplay();
 
-		// Go to next step
-		m_sStep = 7;
-		}
-	//---------------------------------------------------------------------------
-	// Step 7: Undo Step 4
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 7)
-		{
-		// Set the remainder of the palette now that the pixels are no longer using that part
-		rspSetPaletteEntries(SHADE_BEG, SHADE_LEN, &(m_pWork[SHADE_BEG].r), &(m_pWork[SHADE_BEG].g), &(m_pWork[SHADE_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Go to next step
+    m_sStep = 7;
+  }
+  //---------------------------------------------------------------------------
+  // Step 7: Undo Step 4
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 7)
+  {
+    // Set the remainder of the palette now that the pixels are no longer using that part
+    rspSetPaletteEntries(SHADE_BEG,
+                         SHADE_LEN,
+                         &m_pWork[SHADE_BEG].red,
+                         &m_pWork[SHADE_BEG].green,
+                         &m_pWork[SHADE_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-		// Remap screen pixels
-		Remap(m_pUnmapStep4);
-		rspUpdateDisplay();
+    // Remap screen pixels
+    Remap(m_pUnmapStep4);
+    rspUpdateDisplay();
 
-		// Go to next step
-		m_sStep = 8;
-		}
-	//---------------------------------------------------------------------------
-	// Step 8: 
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 8)
-		{
-		// Use the original palette to figure out what the colors should be like
-		// as we start the reverse fade effect.  If everything went right, we should
-		// come up with the same values that already exist for those entries that
-		// are actually being used by the pixels, and for those entries that aren't
-		// being used, we're getting them ready for when we go back to the original
-		// image.
-		for (int16_t i = EFFECT_BEG; i <= EFFECT_END; i++)
-			{
-			m_pWork[i].r = m_pOrig[i].x;
-			m_pWork[i].g = (uint8_t)0;
-			m_pWork[i].b = (uint8_t)0;
-			}
-		rspSetPaletteEntries(EFFECT_BEG, EFFECT_LEN, &(m_pWork[EFFECT_BEG].r), &(m_pWork[EFFECT_BEG].g), &(m_pWork[EFFECT_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Go to next step
+    m_sStep = 8;
+  }
+  //---------------------------------------------------------------------------
+  // Step 8:
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 8)
+  {
+    // Use the original palette to figure out what the colors should be like
+    // as we start the reverse fade effect.  If everything went right, we should
+    // come up with the same values that already exist for those entries that
+    // are actually being used by the pixels, and for those entries that aren't
+    // being used, we're getting them ready for when we go back to the original
+    // image.
+    for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
+    {
+      m_pWork[i].red = m_pOrig[i].alpha;
+      m_pWork[i].green = 0;
+      m_pWork[i].blue = 0;
+    }
+    rspSetPaletteEntries(EFFECT_BEG,
+                         EFFECT_LEN,
+                         &m_pWork[EFFECT_BEG].red,
+                         &m_pWork[EFFECT_BEG].green,
+                         &m_pWork[EFFECT_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-		// Lock the buffer before writing to it.
-		rspLockBuffer();
+    // Lock the buffer before writing to it.
+    rspLockBuffer();
 
-		// Restore the original image
-		rspBlitA(m_pim, g_pimScreenBuf, 0, 0, m_pim->m_sWidth, m_pim->m_sHeight);
+    // Restore the original image
+    rspBlitA(m_pim, g_pimScreenBuf, 0, 0, m_pim->m_sWidth, m_pim->m_sHeight);
 
-		// Unlock now that we're done with the composite buffer.
-		rspUnlockBuffer();
+    // Unlock now that we're done with the composite buffer.
+    rspUnlockBuffer();
 
-		rspUpdateDisplay();
+    rspUpdateDisplay();
 
-		// Get base time for next step
-		m_lBaseTime = rspGetMilliseconds();
-		
-		// Go to next step
-		m_sStep = 9;
-		}
-	//---------------------------------------------------------------------------
-	// Step 9: Do a reverse-fade of the colors
-	//---------------------------------------------------------------------------
-	else if (m_sStep == 9)
-		{
-		// Calculate how far into the effect we are based on the elapsed time
-		// since we started.  If the total time specified by the user was 0, or
-		// if we're being asked to finish the effect ASAP, we go right to 100%.
-		double dPercent;
-		if ((m_lTotalTime == 0) || m_bFinishASAP)
-			{
-			dPercent = 1.0;
-			}
-		else
-			{
-			dPercent = (double)(rspGetMilliseconds() - m_lBaseTime) / (double)m_lTotalTime;
-			if (dPercent > 1.0)
-				dPercent = 1.0;
-			}
+    // Get base time for next step
+    m_lBaseTime = rspGetMilliseconds();
 
-		// Update all colors to where they should be based on given percentage
-		for (int16_t i = EFFECT_BEG; i <= EFFECT_END; i++)
-			{
-			double dRedDiff = m_pOrig[i].r - m_pOrig[i].x;
-			m_pWork[i].r = m_pOrig[i].x + (uint8_t)(dRedDiff * dPercent);
-			m_pWork[i].g = (uint8_t)((double)m_pOrig[i].g * dPercent);
-			m_pWork[i].b = (uint8_t)((double)m_pOrig[i].b * dPercent);
-			}
+    // Go to next step
+    m_sStep = 9;
+  }
+  //---------------------------------------------------------------------------
+  // Step 9: Do a reverse-fade of the colors
+  //---------------------------------------------------------------------------
+  else if (m_sStep == 9)
+  {
+    // Calculate how far into the effect we are based on the elapsed time
+    // since we started.  If the total time specified by the user was 0, or
+    // if we're being asked to finish the effect ASAP, we go right to 100%.
+    double dPercent;
+    if ((m_lTotalTime == 0) || m_bFinishASAP)
+    {
+      dPercent = 1.0;
+    }
+    else
+    {
+      dPercent = (double)(rspGetMilliseconds() - m_lBaseTime) / (double)m_lTotalTime;
+      if (dPercent > 1.0)
+        dPercent = 1.0;
+    }
 
-		// Set new palette
-		rspSetPaletteEntries(EFFECT_BEG, EFFECT_LEN, &(m_pWork[EFFECT_BEG].r), &(m_pWork[EFFECT_BEG].g), &(m_pWork[EFFECT_BEG].b), sizeof(rgb));
-		rspUpdatePalette();
+    // Update all colors to where they should be based on given percentage
+    for (uint8_t i = EFFECT_BEG; i <= EFFECT_END; ++i)
+    {
+      double dRedDiff = m_pOrig[i].red - m_pOrig[i].alpha;
+      m_pWork[i].red = m_pOrig[i].alpha + uint8_t(dRedDiff * dPercent);
+      m_pWork[i].green = uint8_t((double)m_pOrig[i].green * dPercent);
+      m_pWork[i].blue = uint8_t((double)m_pOrig[i].blue * dPercent);
+    }
 
-		// If we're done with the fade, go to next step
-		if (dPercent == 1.0)
-			m_sStep = 10;
-		}
+    // Set new palette
+    rspSetPaletteEntries(EFFECT_BEG,
+                         EFFECT_LEN,
+                         &m_pWork[EFFECT_BEG].red,
+                         &m_pWork[EFFECT_BEG].green,
+                         &m_pWork[EFFECT_BEG].blue,
+                         sizeof(RPixel32));
+    rspUpdatePalette();
 
-	// Condition return value based on whether or not we're done
-	if (m_sStep == 10)
-		return true;
-	return false;
-	}
+    // If we're done with the fade, go to next step
+    if (dPercent == 1.0)
+      m_sStep = 10;
+  }
+
+  // Condition return value based on whether or not we're done
+  if (m_sStep == 10)
+    return true;
+  return false;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////
 extern void EndMenuTrans(
-	bool bFinish)											// In: true to finish effect, false to abort it
-	{
-	// If step isn't over 0 then there's nothing to do
-	if (m_sStep > 0)
-		{
-		// Check if caller wants to finish effect
-		if (bFinish)
-			{
-			// Finish the effect
-			m_bFinishASAP = bFinish;
-//			while (!DoMenuTrans())
-//				;
-			}
+    bool bFinish)											// In: true to finish effect, false to abort it
+{
+  // If step isn't over 0 then there's nothing to do
+  if (m_sStep > 0)
+  {
+    // Check if caller wants to finish effect
+    if (bFinish)
+    {
+      // Finish the effect
+      m_bFinishASAP = bFinish;
+      //			while (!DoMenuTrans())
+      //				;
+    }
 
-		// Free lots of stuff
-		delete []m_pOrig;
-		delete []m_pWork;
-		delete []m_pSaveStep4;
-		delete []m_pUnmapStep4;
-		delete []m_pUnmapStep5;
-		delete m_pim;
+    // Free lots of stuff
+    delete []m_pOrig;
+    delete []m_pWork;
+    delete []m_pSaveStep4;
+    delete []m_pUnmapStep4;
+    delete []m_pUnmapStep5;
+    delete m_pim;
 
-		// Reset step to "nothing"
-		m_sStep = 0;
-		}
-	}
+    // Reset step to "nothing"
+    m_sStep = 0;
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Remap the pixels using the specified map
 ////////////////////////////////////////////////////////////////////////////////
 static void Remap(
-	uint8_t* aucMap)
-	{
-	// Jon brought up a potential problem with calling rspLockBuffer(), which
-	// is BLiT's version of this.  In debug mode, it apparently doesn't do
-	// anything because it assumes you will be calling a BLiT function, which
-	// would actually do the locking.  Since we don't call a BLiT function
-	// here, the end result would be no locking.  This is only a problem in
-	// debug mode.  We'll have to check into a better solution, but for now
-	// I'm just calling the "real" buffer lock.
-	uint8_t* pu8VideoBuf;
-	int32_t	lPitch;
-// Note that we only need to do this in the case that the buffer is not already
-// locked.  Since we keep it locked while the game is running now, we don't need
-// it (note also regarding the lock comment above that currently rspLockBuffer() 
-// does the lock even in DEBUG mode)
-// IF you comment this back in, remember to comment in the unlock as well!
+    uint8_t* aucMap)
+{
+  // Jon brought up a potential problem with calling rspLockBuffer(), which
+  // is BLiT's version of this.  In debug mode, it apparently doesn't do
+  // anything because it assumes you will be calling a BLiT function, which
+  // would actually do the locking.  Since we don't call a BLiT function
+  // here, the end result would be no locking.  This is only a problem in
+  // debug mode.  We'll have to check into a better solution, but for now
+  // I'm just calling the "real" buffer lock.
+  uint8_t* pu8VideoBuf;
+  int32_t	lPitch;
+  // Note that we only need to do this in the case that the buffer is not already
+  // locked.  Since we keep it locked while the game is running now, we don't need
+  // it (note also regarding the lock comment above that currently rspLockBuffer()
+  // does the lock even in DEBUG mode)
+  // IF you comment this back in, remember to comment in the unlock as well!
 #if 0
-   if (rspLockVideoBuffer((void**)&pu8VideoBuf, &lPitch) ) == SUCCESS)
-		{
+  if (rspLockVideoBuffer((void**)&pu8VideoBuf, &lPitch) ) == SUCCESS)
+  {
 #else
-   if (rspLockBuffer() == SUCCESS)
-		{
-		pu8VideoBuf	= g_pimScreenBuf->m_pData;
-		lPitch		= g_pimScreenBuf->m_lPitch;
+  if (rspLockBuffer() == SUCCESS)
+  {
+    pu8VideoBuf	= g_pimScreenBuf->m_pData;
+    lPitch		= g_pimScreenBuf->m_lPitch;
 #endif
 
-		int16_t sHeight = g_pimScreenBuf->m_sHeight;
-		int16_t sWidth = g_pimScreenBuf->m_sWidth;
-		int16_t sWidth2;
-		int32_t lNextRow = lPitch - (int32_t)sWidth;
-		uint8_t* pBuf = pu8VideoBuf;
-		if ((sHeight > 0) && (sWidth > 0))
-			{
-			do {
-				sWidth2 = sWidth;
-				do	{
-					*pBuf = *(aucMap + (int32_t)*pBuf);	// may be faster than aucMap[*pBuf]
-					pBuf++;
-					} while (--sWidth2);
-				pBuf += lNextRow;
-				} while (--sHeight);
-			}
+    int16_t sHeight = g_pimScreenBuf->m_sHeight;
+    int16_t sWidth = g_pimScreenBuf->m_sWidth;
+    int16_t sWidth2;
+    int32_t lNextRow = lPitch - (int32_t)sWidth;
+    uint8_t* pBuf = pu8VideoBuf;
+    if ((sHeight > 0) && (sWidth > 0))
+    {
+      do {
+        sWidth2 = sWidth;
+        do	{
+          *pBuf = *(aucMap + (int32_t)*pBuf);	// may be faster than aucMap[*pBuf]
+          pBuf++;
+        } while (--sWidth2);
+        pBuf += lNextRow;
+      } while (--sHeight);
+    }
 
 #if 0
-		rspUnlockVideoBuffer();
+    rspUnlockVideoBuffer();
 #else
-		rspUnlockBuffer();
+    rspUnlockBuffer();
 #endif
-		}
-	}
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

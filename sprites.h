@@ -285,16 +285,16 @@ class CSprite
 class CSprite2 : public CSprite
 	{
 	public:
-		RImage*	m_pImage;									// Pointer to image
-		RImage*	m_pimAlpha;									// Alpha image pointer.
-		int16_t		m_sAlphaLevel;								// Constant alpha level to
+      RImage* m_pImage;									// Pointer to image
+      RImage* m_pimAlpha;									// Alpha image pointer.
+      int16_t m_sAlphaLevel;								// Constant alpha level to
 																	// use if no m_pimAlpha.
 
 	CSprite2()
 		{
 		m_pImage			= nullptr;
 		m_pimAlpha		= nullptr;
-      m_sAlphaLevel	= 0x00FF;
+      m_sAlphaLevel	= UINT8_MAX;
 		m_type			= Standard2d;
 		}
 																	

@@ -181,18 +181,18 @@ class RTexture
 		void Remap(
 			int16_t sStartIndex,
 			int16_t sNumIndex,
-			uint8_t* pr,
-			uint8_t* pg,
-			uint8_t* pb,
+         channel_t* pr,
+         channel_t* pg,
+         channel_t* pb,
 			int32_t linc);
 
 		// Unmap colors from the specified palette and put them into the colors
 		// array.  If the array of colors doesn't exist, it will be created.
 		void 
 		Unmap(
-			uint8_t* pr,
-			uint8_t* pg,
-			uint8_t* pb,
+         channel_t* pr,
+         channel_t* pg,
+         channel_t* pb,
 			int32_t lInc)
 			;
 
@@ -329,7 +329,7 @@ class RSop
 	// Variables
 	//------------------------------------------------------------------------------
 	public:
-		int32_t m_lNum;												// Number of points in array (only 65536 currently accessible)
+      size_t m_lNum;												// Number of points in array (only 65536 currently accessible)
 		RP3d*	m_pArray;											// Array of points
 
 	//------------------------------------------------------------------------------
@@ -350,7 +350,7 @@ class RSop
 			}
 
 		// Alternate constructor
-		RSop(int32_t lNum)
+      RSop(size_t lNum)
 			{
 			Init();
 			Alloc(lNum);
@@ -403,7 +403,7 @@ class RSop
          }
 
 		// Allocate specified number of points
-		void Alloc(int32_t lNum);
+      void Alloc(size_t lNum);
 		
 		// Free points
 		void Free(void);

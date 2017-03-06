@@ -335,25 +335,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "realm.h"
+
+
+#include <RSPiX.h>
+
+#include <ctime>
+
 #include "game.h"
 #include "reality.h"
 #include "score.h"
-#include <ctime>
 #include "MemFileFest.h"
 
 //#define RSP_PROFILE_ON
 
 
-#include "ORANGE/Debug/profile.h"
+#include <ORANGE/Debug/profile.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
 ////////////////////////////////////////////////////////////////////////////////
 
 // Sets the specified value into the data pointed, if the ptr is not nullptr.
-#define SET(ptr, val)	( (ptr != nullptr) ? *ptr = val : val)
+#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
 // Time, in ms, between status updates.
 #define STATUS_UPDATE_INTERVAL	1000
@@ -515,7 +519,7 @@ void MapY2DtoZ3D(		// Returns nothing.
 	{
 	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
 
-	REAL	rSin	= SINQ[sViewAngle];
+	real_t	rSin	= SINQ[sViewAngle];
 	if (rSin != 0.0)
 		{
 		*ptZOut	= tYIn / rSin;
@@ -553,7 +557,7 @@ void MapY2DtoY3D(		// Returns nothing.
 	{
 	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
 
-	REAL	rCos	= COSQ[sViewAngle];
+	real_t	rCos	= COSQ[sViewAngle];
 	if (rCos != 0.0)
 		{
 		*ptYOut	= tYIn / rCos;
@@ -572,8 +576,8 @@ CRealm::CRealm()
 	{
 	time_t lTime;
 	time(&lTime);
-#ifndef WIN32
-	// Mac version time adjusment back to UTC time.
+#if defined(__unix__)
+   // UNIX TIME! adjusment back to UTC time.
 	lTime -= ((365 * 70UL) + 17) * 24 * 60 * 60; // time_fudge 1900->1970
 #endif
 	g_lRegValue = lTime - g_lRegTime;
@@ -781,16 +785,16 @@ int16_t CRealm::Open(										// Returns 0 if successfull, non-zero otherwise
 			// Try the given path first since it may already have a full path in the
 			// case of loading a level, then try the path with the HD path prepended, 
 			// then try the CD path.
-			sResult = pfile->Open(rspPathToSystem((char*)pszFileName), "rb", RFile::LittleEndian);
+         sResult = pfile->Open(rspPathToSystem(pszFileName), "rb", RFile::LittleEndian);
 			if (sResult != SUCCESS)
 				{
             char pszFullPath[PATH_MAX];
-				strcpy(pszFullPath, FullPathHD((char*) pszFileName));
-				sResult = pfile->Open((char*)pszFullPath, "rb", RFile::LittleEndian);
+            strcpy(pszFullPath, FullPathHD(pszFileName));
+            sResult = pfile->Open(pszFullPath, "rb", RFile::LittleEndian);
 				if (sResult != SUCCESS)
 					{
-					strcpy(pszFullPath, FullPathCD((char*) pszFileName));
-					sResult = pfile->Open((char*)pszFullPath, "rb", RFile::LittleEndian);
+               strcpy(pszFullPath, FullPathCD(pszFileName));
+               sResult = pfile->Open(pszFullPath, "rb", RFile::LittleEndian);
 					}
 				}
 		#else

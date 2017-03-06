@@ -361,8 +361,8 @@
 
 #include <list>
 
-#if defined(WIN32)
-# include "log.h"
+#if defined(_WIN32)
+# include "Log.h"
 // For file timestamp.
 # include <windows.h>
 # include <time.h>
@@ -3831,10 +3831,10 @@ class CPlayRealm : public CPlay
 			if (!pinfo->m_bBadRealmMP)
 				{
 				// Check if specified file exists
-				if (prealm->DoesFileExist((char*)pinfo->RealmName()))
+            if (prealm->DoesFileExist(pinfo->RealmName()))
 					{
 					// Load realm (false indicates NOT edit mode)
-               if (prealm->Load((char*)pinfo->RealmName(), false) == SUCCESS)
+               if (prealm->Load(pinfo->RealmName(), false) == SUCCESS)
 						{
 						// Startup the realm
                   if (prealm->Startup() == SUCCESS)
@@ -3873,7 +3873,7 @@ class CPlayRealm : public CPlay
 				else
 					{
 					sResult = FAILURE;
-					TRACE("CPlayRealm::PrepareRealm(): File does not exist: %s\n", (char*)pinfo->RealmName());
+               TRACE("CPlayRealm::PrepareRealm(): File does not exist: %s\n", pinfo->RealmName());
 
 					// If we're in the specific realm mode, then display a message telling the user that
 					// this version only handles one specific realm.  Otherwise, this shouldn't happen
@@ -5060,7 +5060,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 
 
 					/*** 12/5/97 AJC ***/
-	#ifdef WIN32
+	#if defined(_WIN32)
 					if (info.IsMP())
 						OpenLogFile();
 	#endif
@@ -5407,7 +5407,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 						} while (!sResult && !info.IsGameOver() && !g_bLastLevelDemo);
 
 					/*** 12/5/97 AJC ***/
-	#ifdef WIN32
+	#if defined(_WIN32)
 					if (info.IsMP())
 						CloseLogFile();
 	#endif
@@ -5586,7 +5586,7 @@ extern int16_t Play_GetRealmInfo(						// Returns 0 if successfull, 1 if no such
 
 		// Get realm file name from prefs file
       char szText[PATH_MAX * 2];
-		prefsRealm.GetVal((char*)strSection, (char*)strEntry, "", szText);
+      prefsRealm.GetVal(strSection, strEntry, "", szText);
 		if (strlen(szText) == 0)
 			{
 			// Realm not found
@@ -5601,7 +5601,7 @@ extern int16_t Play_GetRealmInfo(						// Returns 0 if successfull, 1 if no such
 			if ((sMaxTitleLen > 0) && (pszTitle != nullptr))
 				{
 				// Get title from prefs file
-				prefsRealm.GetVal((char*)strSection, "Title", "Untitled", szText);
+            prefsRealm.GetVal(strSection, "Title", "Untitled", szText);
 
 				// Copy amount that will fit
 				strncpy(pszTitle, szText, sMaxTitleLen - 2);
@@ -5613,7 +5613,7 @@ extern int16_t Play_GetRealmInfo(						// Returns 0 if successfull, 1 if no such
 			// File name too long (and can't be truncated)
 			sResult = FAILURE;
 			TRACE("Play_GetRealmInfo(): Realm file name/path too long!\n");
-			rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "Realm", (char*)strSection);
+         rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK, g_pszCriticalErrorTitle, g_pszBadPath_s_s, "Realm", strSection);
 			}
 
 		prefsRealm.Close();
@@ -5764,7 +5764,7 @@ void Play_GetApplicationDescriptor(			// Returns nothing.
 	ASSERT(strlen(DEFAULT_APP_TIMESTAMP) < sMaxBytes);
 	strcpy(pszText, DEFAULT_APP_TIMESTAMP);
 
-	#if defined(WIN32)
+	#if defined(_WIN32)
       char	szModuleFileName[PATH_MAX];
 		if (GetModuleFileName(nullptr, szModuleFileName, sizeof(szModuleFileName)) > 0)
 			{

@@ -379,7 +379,7 @@
 #include "socket.h"
 #endif
 
-#ifdef WIN32
+#if defined(_WIN32)
 # include <direct.h>
 #else
 # include <sys/stat.h>
