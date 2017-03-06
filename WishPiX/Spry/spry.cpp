@@ -147,11 +147,11 @@ int16_t RSpry::Load(
 					{
 
 					// Read count of sprites
-					int16_t sCount;
+               uint16_t sCount;
 					pFile->Read(&sCount);
 
 					// Construct and load indicated number of RSprite's and add them to list
-					for (int16_t i = 0; (i < sCount) && !sResult; i++)
+               for (uint16_t i = 0; (i < sCount) && !sResult; i++)
 						{
 						RSprite* pSprite = new RSprite;
                   if (pSprite != nullptr)

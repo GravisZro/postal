@@ -329,7 +329,7 @@ extern void rspPresentFrame(void)
 
 extern void rspUpdateDisplay(void)
 {
-  ASSERT(pvr_txr_load_dma(display::framebuffer, display::texture, display::width * display::height, TRUE, nullptr, nullptr) == SUCCESS);
+  ASSERT(pvr_txr_load_dma(display::framebuffer, display::texture, display::width * display::height, TRUE, NULL, NULL) == SUCCESS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

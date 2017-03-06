@@ -2581,10 +2581,10 @@ static int16_t OpenSaks(void)
 
 	// Get the current audio mode, if any.
 	int16_t	sInSoundMode;
-	int32_t	lSamplesPerSec;
-	int32_t	lDevBitsPerSample;
-	int32_t	lSrcBitsPerSample;
-	int32_t	lMixBitsPerSample;
+   uint32_t	lSamplesPerSec;
+   uint32_t	lDevBitsPerSample;
+   uint32_t	lSrcBitsPerSample;
+   uint32_t	lMixBitsPerSample;
 	if (RMix::GetMode(				// Returns 0 on success;            
 											// nonzero if no mode.              
 			&lSamplesPerSec,			// Sample rate in samples per second

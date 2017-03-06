@@ -182,7 +182,7 @@ int16_t				RMix::ms_sSetMode	= FALSE;				// TRUE if we set Blue's
 
 RMix::State		RMix::ms_sState	= Idle;				// Current state for all
 																	// RMixes.
-int32_t				RMix::ms_lCurPos	= 0L;					// Current play position
+int32_t				RMix::ms_lCurPos	= SUCCESS;					// Current play position
 																	// based on absolute start.
 uint32_t				RMix::ms_ulBufSize	= 0xFFFFFFFF;	// The size to use when al-
 																	// locating RMixBufs.
@@ -246,23 +246,23 @@ RMix::~RMix(void)
 //////////////////////////////////////////////////////////////////////////////
 void RMix::Init(void)
 	{
-	m_lSampleRate		= 0L;
-	m_lBitsPerSample	= 0L;
-	m_lNumChannels		= 0L;
+   m_lSampleRate		= SUCCESS;
+   m_lBitsPerSample	= SUCCESS;
+   m_lNumChannels		= SUCCESS;
 
 	m_sOpen				= FALSE;
 	m_sActive			= FALSE;
 	m_sSuspending		= FALSE;
 
-	m_lLastDataPos		= 0L;
+   m_lLastDataPos		= SUCCESS;
 
    m_mcUser				= nullptr;
-	m_ulUser				= 0L;
+   m_ulUser				= SUCCESS;
    m_pucData			= nullptr;
-	m_ulAmount			= 0L;
+   m_ulAmount			= SUCCESS;
 
-	m_lStartTime		= -1L;
-	m_lStartPos			= -1L;
+   m_lStartTime		= FAILURE;
+   m_lStartPos			= FAILURE;
 
    m_psndfx				= nullptr;
 
@@ -292,7 +292,7 @@ int16_t RMix::BlueCall(	// Returns FALSE when done.
 	if (m_sSuspending == FALSE && m_sPauseLevel == 0)
 		{
 		// If first time for this RMix . . .
-		if (m_lStartTime == -1L)
+      if (m_lStartTime == FAILURE)
 			{
 			// Set start time and position.
 			m_lStartPos		= ms_lCurPos;
@@ -302,7 +302,7 @@ int16_t RMix::BlueCall(	// Returns FALSE when done.
 										) );
 			}
 		
-		uint32_t ulTotalMixedIn	= 0L;
+      uint32_t ulTotalMixedIn	= SUCCESS;
 		uint32_t	ulMixBufSize	= pmb->GetMixSize();
 		uint32_t	ulCurMix;
 
@@ -312,12 +312,12 @@ int16_t RMix::BlueCall(	// Returns FALSE when done.
 			// Release current user buffer.
 			// Setting this to zero will cause a callback whether we have more
 			// data or not.
-			m_ulAmount = 0L;
+         m_ulAmount = SUCCESS;
 			}
 
 		do
 			{
-			if (m_ulAmount == 0L)
+         if (m_ulAmount == SUCCESS)
 				{
 				// Call user callback to get more data and the current volume!.
 				m_pucData = (uint8_t*) (*m_mcUser)(Data, m_pucData, &m_ulAmount, 
@@ -514,7 +514,7 @@ int16_t RMix::SetMode(				// Returns 0 on success.
 		RMixBuf::ms_lDstBitsPerSample	= lDstBitsPerSample;
 
 		// Clear position.
-		ms_lCurPos	= 0L;
+      ms_lCurPos	= SUCCESS;
 
 		// Set the mode to this data type.
 		sResult	= rspSetSoundOutMode(
@@ -524,7 +524,7 @@ int16_t RMix::SetMode(				// Returns 0 on success.
 			lBufferTime, 
 			lMaxBufferTime, 
 			BlueCallStatic, 
-			0L);
+         SUCCESS);
 
 		if (sResult == SUCCESS)
 			{
@@ -807,11 +807,11 @@ int16_t RMix::Start(RMixCall mcUser, uintptr_t ulUser,
 		
 		// Init user data.
       m_pucData			= nullptr;
-		m_ulAmount			= 0L;
+      m_ulAmount			= SUCCESS;
 
 		// Flag start time/pos to be set later.
-		m_lStartTime		= -1L;
-		m_lStartPos			= -1L;
+      m_lStartTime		= FAILURE;
+      m_lStartPos			= FAILURE;
 
 		// Make sure we don't suspend right away.
 		m_sSuspending		= FALSE;
@@ -864,7 +864,7 @@ int16_t RMix::Suspend(void)
 		// Let callback know this channel is suspending.
 		m_sSuspending	= TRUE;
 		// Set point at which we will be done to very, very soon.
-		m_lLastDataPos	= 0L;
+      m_lLastDataPos	= SUCCESS;
 		// Finish now, now.
 		ChannelFinished();
 		}
@@ -1007,11 +1007,11 @@ int32_t RMix::GetTime(void)
 	{
 	int32_t lRes;
 
-	if (m_lStartTime >= 0L)
+   if (m_lStartTime >= 0)
 		{
 		lRes = rspGetSoundOutTime();
 
-		if (lRes != -1L)
+      if (lRes != FAILURE)
 			{
 			lRes -= m_lStartTime;
 			}
@@ -1022,7 +1022,7 @@ int32_t RMix::GetTime(void)
 		}
 	else
 		{
-		lRes = -1L;
+      lRes = FAILURE;
 		}
 
 	return lRes;
@@ -1037,11 +1037,11 @@ int32_t RMix::GetPos(void)
 	{
 	int32_t lRes;
 
-	if (m_lStartPos >= 0L)
+   if (m_lStartPos >= 0)
 		{
 		lRes	= rspGetSoundOutPos();
 
-		if (lRes != -1L)
+      if (lRes != FAILURE)
 			{
 			lRes -= m_lStartPos;
 			}
@@ -1052,7 +1052,7 @@ int32_t RMix::GetPos(void)
 		}
 	else
 		{
-		lRes = -1L;
+      lRes = FAILURE;
 		}
 
 	return lRes;
@@ -1066,27 +1066,27 @@ int32_t RMix::GetPos(void)
 //////////////////////////////////////////////////////////////////////////////
 int16_t RMix::GetMode(							// Returns 0 on success; 
 													// nonzero if no mode.
-	int32_t*		plSamplesPerSec,				// Sample rate in samples per second
+   uint32_t*		plSamplesPerSec,				// Sample rate in samples per second
                                        // returned here, if not nullptr.
-	int32_t*		plDevBitsPerSample,			// Bits per sample of device,
+   uint32_t*		plDevBitsPerSample,			// Bits per sample of device,
                                        // returned here, if not nullptr.
-	int32_t*		plNumChannels,					// Number of channels (1 == mono, 
+   uint32_t*		plNumChannels,					// Number of channels (1 == mono,
 													// 2 == stereo) returned here, 
                                        // if not nullptr.
-	int32_t*		plBufferTime,					// Amount of time in ms to lead the 
+   milliseconds_t*		plBufferTime,					// Amount of time in ms to lead the
 													// current play cursor returned here,
                                        // if not nullptr.  This could also be
 													// described as the maximum amount of
 													// time in ms that can occur between 
 													// calls to rspDoSound.
-	int32_t*		plMaxBufferTime,				// Maximum buffer time.  This is the amt
+   milliseconds_t*		plMaxBufferTime,				// Maximum buffer time.  This is the amt
 													// that *plBufferTime can be increased to.
 													// This is indicative of how much space
 													// was/will-be allocated for the sound
 													// output device on rspLockSoundOut.
-	int32_t*		plMixBitsPerSample,			// Bits per sample at which samples are
+   uint32_t*		plMixBitsPerSample,			// Bits per sample at which samples are
                                        // mixed, if not nullptr.
-	int32_t*		plSrcBitsPerSample)			// Bits per sample at which samples must
+   uint32_t*		plSrcBitsPerSample)			// Bits per sample at which samples must
 													// be to be mixed (0 if no requirement), 
                                        // if not nullptr.
 	{

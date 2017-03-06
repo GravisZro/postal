@@ -312,7 +312,7 @@ public:
 	}; 
 
 // for your convenience:
-void	rspSetBMPColors(RImage* pim,int16_t sStartIndex,int16_t sNum)
+void	rspSetBMPColors(RImage* pim, palindex_t sStartIndex, palindex_t sNum)
 	{
 #ifdef	_DEBUG
 

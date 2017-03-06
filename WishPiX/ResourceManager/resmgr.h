@@ -489,7 +489,7 @@ public:
     RFile* prf = nullptr;
     if (m_rfSakAlt.IsOpen())
     {
-      int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
+      int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName.operator std::string()];
       if (lResSeekPos > 0)
       {
         if (m_rfSakAlt.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
@@ -504,7 +504,7 @@ public:
         }
       }
     }
-    int32_t	lResSeekPos	= m_SakDirectory[strResourceName];
+    int32_t	lResSeekPos	= m_SakDirectory[strResourceName.operator std::string()];
     if (lResSeekPos > 0)
     {
       if (m_rfSak.Seek(lResSeekPos, SEEK_SET) == SUCCESS)

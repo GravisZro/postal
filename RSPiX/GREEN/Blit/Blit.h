@@ -143,7 +143,7 @@ extern	int16_t rspSetWindowColors(); // restore system colors
 extern void	rspWaitForClick(int16_t sButton = 3);
 
 // For your convenience...
-extern	void	rspSetBMPColors(RImage* pim,int16_t sStartIndex,int16_t sNum);
+extern	void	rspSetBMPColors(RImage* pim, palindex_t sStartIndex, palindex_t sNum);
 
 extern	int16_t	rspBlit(RImage* pimSrc,RImage* pimDst,int16_t sSrcX,int16_t sSrcY,int16_t sDstX,
            int16_t sDstY,int16_t sW,int16_t sH,const RRect* prDst=nullptr,const RRect* prSrc=nullptr);

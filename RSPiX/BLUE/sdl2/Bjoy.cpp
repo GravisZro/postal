@@ -202,11 +202,11 @@ extern void GetDudeVelocity(double* d_Velocity, double* d_Angle)
 	Sint16 axis_MoveUpDown = ms_ajsCurr[0].axis_MoveUpDown;
 	Sint16 axis_MoveLeftRight = ms_ajsCurr[0].axis_MoveLeftRight;
 
-	*d_Velocity = sqrt(pow(axis_MoveUpDown, 2) + pow(axis_MoveLeftRight, 2)) / 32768.f;
+   *d_Velocity = sqrt(pow(axis_MoveUpDown, 2) + pow(axis_MoveLeftRight, 2)) / 32768.0;
 	if (axis_MoveLeftRight != 0)
 		*d_Angle = GetStickAngle(axis_MoveLeftRight, axis_MoveUpDown);
 	else
-		*d_Angle = 0.f; //!! FIXME
+      *d_Angle = 0.0; //!! FIXME
 
 	//TRACE("DudeVel X%i Y%i Vel %f Angle %f\n", (int)axis_MoveLeftRight, (int)axis_MoveUpDown, *d_Velocity, *d_Angle);
 }
@@ -224,7 +224,7 @@ extern bool GetDudeFireAngle(double* d_Angle)
 	if (axis_FireLeftRight != 0)
 		*d_Angle = GetStickAngle(axis_FireLeftRight, axis_FireUpDown);
 	else if (axis_FireUpDown != 0)
-		*d_Angle = 0.f; //!! FIXME
+      *d_Angle = 0.0; //!! FIXME
 	else
 	{
 		//TRACE("DudeFire FALSE X%i Y%i", (int)axis_FireLeftRight, (int)axis_FireUpDown);

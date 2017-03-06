@@ -57,9 +57,9 @@ class RTexture
 	// Variables
 	//------------------------------------------------------------------------------
 	public:
-		int16_t m_sNum;												// Number of colors in array(s)
-		uint8_t* m_pIndices;										// Array of indices
-		RPixel32* m_pColors;										// Array of colors
+      palindex_t m_sNum;												// Number of colors in array(s)
+      uint8_t*   m_pIndices;										// Array of indices
+      RPixel32*  m_pColors;										// Array of colors
 
 	//------------------------------------------------------------------------------
 	// Functions
@@ -179,12 +179,12 @@ class RTexture
 		// index is written to the array of indices.  If the array of indices
 		// doesn't exist, it will be created.
 		void Remap(
-			int16_t sStartIndex,
-			int16_t sNumIndex,
+         palindex_t sStartIndex,
+         palindex_t sNumIndex,
          channel_t* pr,
          channel_t* pg,
          channel_t* pb,
-			int32_t linc);
+         uint32_t linc);
 
 		// Unmap colors from the specified palette and put them into the colors
 		// array.  If the array of colors doesn't exist, it will be created.
@@ -193,7 +193,7 @@ class RTexture
          channel_t* pr,
          channel_t* pg,
          channel_t* pb,
-			int32_t lInc)
+         uint32_t lInc)
 			;
 
 		// Muddy or brighten or darken.  Applies the specified brightness value
@@ -201,7 +201,7 @@ class RTexture
 		void
 		Adjust(
 			float fAdjustment,	// In:  Adjustment factor (1.0 == same, < 1 == dimmer, > 1 == brighter).
-			int32_t lInc)				// In:  Number of colors to skip.
+         uint32_t lInc)				// In:  Number of colors to skip.
 			;
 
 	private:
@@ -329,7 +329,7 @@ class RSop
 	// Variables
 	//------------------------------------------------------------------------------
 	public:
-      size_t m_lNum;												// Number of points in array (only 65536 currently accessible)
+      uint32_t m_lNum;												// Number of points in array (only 65536 currently accessible)
 		RP3d*	m_pArray;											// Array of points
 
 	//------------------------------------------------------------------------------

@@ -285,7 +285,7 @@ typedef uint64_t microseconds_t;
 
 typedef uint8_t volume_t;
 typedef uint8_t channel_t;
-typedef uint8_t palindex_t;
+typedef uint16_t palindex_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Palette/Pixel stuff

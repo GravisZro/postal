@@ -377,9 +377,10 @@ extern void rspGetJoyPrevState(
 									// An RSP_JOY_?_NEG bit set indicates the ? axis is negative.
 									// If neither is set for ? axis, that axis is 0.
 
-
-extern bool GetDudeFireAngle(double* d_Angle);
+#if defined(ALLOW_TWINSTICK)
 extern void GetDudeVelocity(double* d_Velocity, double* d_Angle);
+extern bool GetDudeFireAngle(double* d_Angle);
+#endif
 
 // Functions to convert bitfields to joybutton numbers and back again.
 extern int16_t JoyBitfieldToIndex(uint32_t bitfield);
@@ -491,51 +492,48 @@ extern void rspUpdateDisplay(
 	int16_t sHeight);							// In:  Height of area to update
 
 extern void rspSetPaletteEntry(
-   int16_t sEntry,								// In:  Palette entry (0x00 to 0xFF)
-   uint8_t ucRed,						// In:  Red value (0x00 to 0xFF)
-   uint8_t ucGreen,					// In:  Green value (0x00 to 0xFF)
-   uint8_t ucBlue);					// In:  Blue value (0x00 to 0xFF)
+   palindex_t sEntry,								// In:  Palette entry (0x00 to 0xFF)
+   channel_t ucRed,						// In:  Red value (0x00 to 0xFF)
+   channel_t ucGreen,					// In:  Green value (0x00 to 0xFF)
+   channel_t ucBlue);					// In:  Blue value (0x00 to 0xFF)
 
 extern void rspSetPaletteEntries(
-   int16_t sStartEntry,						// In:  Starting destination entry (0x00 to 0xFF)
-	int16_t sCount,								// In:  Number of entries to do (1 to 256)
-	uint8_t* pucRed,					// In:  Pointer to starting source red value
-	uint8_t* pucGreen,				// In:  Pointer to starting source green value
-	uint8_t* pucBlue,					// In:  Pointer to starting source blue value
-	int32_t lIncBytes);							// In:  What to add to pointers to move to next value
+   palindex_t sStartEntry,						// In:  Starting destination entry (0x00 to 0xFF)
+   palindex_t sCount,								// In:  Number of entries to do (1 to 256)
+   channel_t* pucRed,					// In:  Pointer to starting source red value
+   channel_t* pucGreen,				// In:  Pointer to starting source green value
+   channel_t* pucBlue,					// In:  Pointer to starting source blue value
+   uint32_t lIncBytes);							// In:  What to add to pointers to move to next value
 
 extern void rspGetPaletteEntries(
-   int16_t sStartEntry,						// In:  Starting source entry (0x00 to 0xFF)
-	int16_t sCount,								// In:  Number of entries to do (1 to 256)
-	uint8_t* pucRed,					// Out: Pointer to starting destination red value
-	uint8_t* pucGreen,				// Out: Pointer to starting destination green value
-	uint8_t* pucBlue,					// Out: Pointer to starting destination blue value
-	int32_t lIncBytes);							// In:  What to add to pointers to move to next value
+   palindex_t sStartEntry,						// In:  Starting source entry (0x00 to 0xFF)
+   palindex_t sCount,								// In:  Number of entries to do (1 to 256)
+   channel_t* pucRed,					// Out: Pointer to starting destination red value
+   channel_t* pucGreen,				// Out: Pointer to starting destination green value
+   channel_t* pucBlue,					// Out: Pointer to starting destination blue value
+   uint32_t lIncBytes);							// In:  What to add to pointers to move to next value
 
-inline void rspGetPaletteEntry(
-   int16_t sEntry,								// In:  Palette entry (0x00 to 0xFF)
-	uint8_t* pucRed,					// Out: Pointer to red value
-	uint8_t* pucGreen,				// Out: Pointer to green value
-	uint8_t* pucBlue)					// Out: Pointer to blue value
-	{
-	rspGetPaletteEntries(sEntry, 1, pucRed, pucGreen, pucBlue, 0);
-	}
+extern void rspGetPaletteEntry(
+   palindex_t sEntry,								// In:  Palette entry (0x00 to 0xFF)
+   channel_t* pucRed,					// Out: Pointer to red value
+   channel_t* pucGreen,				// Out: Pointer to green value
+   channel_t* pucBlue);					// Out: Pointer to blue value
 
 // Lock one or more palette entries.
 //
 // When an entry is locked, it prevents the entry from being changed by
 // rspSetPaletteEntry() and rspSetPaletteEntries().
 extern void rspLockPaletteEntries(
-   int16_t sStartEntry,						// In:  Starting entry (0x00 to 0xFF)
-	int16_t sCount);								// In:  Number of entries to do (1 to 256)
+   palindex_t sStartEntry,						// In:  Starting entry (0x00 to 0xFF)
+   palindex_t sCount);								// In:  Number of entries to do (1 to 256)
 
 // Unlock one or more palette entries.
 //
 // When an entry is unlocked, the entry can be changed by rspSetPaletteEntry()
 // and rspSetPaletteEntries().
 extern void rspUnlockPaletteEntries(
-   int16_t sStartEntry,						// In:  Starting entry (0x00 to 0xFF)
-	int16_t sCount);								// In:  Number of entries to do (1 to 256)
+   palindex_t sStartEntry,						// In:  Starting entry (0x00 to 0xFF)
+   palindex_t sCount);								// In:  Number of entries to do (1 to 256)
 
 // Set palette mapping tables.
 //
@@ -546,21 +544,21 @@ extern void rspUnlockPaletteEntries(
 // Note that this ONLY affects the hardware palette!  The colors that are set
 // via rspSetPaletteEntries() are returned "intact" by rspGetPaletteEntires()!
 extern void rspSetPaletteMaps(
-   int16_t sStartEntry,						// In:  Starting destination entry (0x00 to 0xFF)
-	int16_t sCount,								// In:  Number of entries to do (1 to 256)
-	uint8_t* pucRed,					// In:  Pointer to starting source red value
-	uint8_t* pucGreen,				// In:  Pointer to starting source green value
-	uint8_t* pucBlue,					// In:  Pointer to starting source blue value
-	int32_t lIncBytes);							// In:  What to add to pointers to move to next value
+   palindex_t sStartEntry,						// In:  Starting destination entry (0x00 to 0xFF)
+   palindex_t sCount,								// In:  Number of entries to do (1 to 256)
+   channel_t* pucRed,					// In:  Pointer to starting source red value
+   channel_t* pucGreen,				// In:  Pointer to starting source green value
+   channel_t* pucBlue,					// In:  Pointer to starting source blue value
+   uint32_t lIncBytes);							// In:  What to add to pointers to move to next value
 
 // Set palette mapping tables (see rspSetPaletteMaps() for details.)
 extern void rspGetPaletteMaps(
-   int16_t sStartEntry,						// In:  Starting source entry (0x00 to 0xFF)
-	int16_t sCount,								// In:  Number of entries to do (1 to 256)
-	uint8_t* pucRed,					// Out: Pointer to starting destination red value
-	uint8_t* pucGreen,				// Out: Pointer to starting destination green value
-	uint8_t* pucBlue,					// Out: Pointer to starting destination blue value
-	int32_t lIncBytes);							// In:  What to add to pointers to move to next value
+   palindex_t sStartEntry,						// In:  Starting source entry (0x00 to 0xFF)
+   palindex_t sCount,								// In:  Number of entries to do (1 to 256)
+   channel_t* pucRed,					// Out: Pointer to starting destination red value
+   channel_t* pucGreen,				// Out: Pointer to starting destination green value
+   channel_t* pucBlue,					// Out: Pointer to starting destination blue value
+   uint32_t lIncBytes);							// In:  What to add to pointers to move to next value
 	
 extern void rspUpdatePalette(void);
 
@@ -599,23 +597,23 @@ typedef short (*RSP_SND_CALLBACK)(uint8_t*	pucBuffer,	// Data buffer to be fille
 																		// changed as desired)
 
 extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero otherwise
-	int32_t lSampleRate,								// In:  Sample rate
-	int32_t lBitsPerSample,							// In:  Bits per sample
-	int32_t lChannels,								// In:  Channels (mono = 1, stereo = 2)
-	int32_t lCurBufferTime,							// In:  Current buffer time (in ms.)
-	int32_t lMaxBufferTime,							// In:  Maximum buffer time (in ms.)
+   uint32_t lSampleRate,								// In:  Sample rate
+   uint32_t lBitsPerSample,							// In:  Bits per sample
+   uint32_t lChannels,								// In:  Channels (mono = 1, stereo = 2)
+   milliseconds_t lCurBufferTime,							// In:  Current buffer time (in ms.)
+   milliseconds_t lMaxBufferTime,							// In:  Maximum buffer time (in ms.)
 	RSP_SND_CALLBACK callback,					// In:  Callback function
    uintptr_t ulUser);									// In:  User-defined value to pass to callback
 	
 extern int16_t rspGetSoundOutMode(				// Returns 0 if successfull, non-zero otherwise
-	int32_t* plSampleRate,							// Out: Sample rate or -1 (unless nullptr)
-	int32_t* plBitsPerSample = nullptr,				// Out: Bits per sample or -1 (unless nullptr)
-	int32_t* plChannels = nullptr,					// Out: Channels (mono=1, stereo=2) or -1 (unless nullptr)
-	int32_t* plCurBufferTime = nullptr,				// Out: Current buffer time or -1 (unless nullptr)
-	int32_t* plMaxBufferTime = nullptr);			// Out: Maximum buffer time or -1 (unless nullptr)
+   uint32_t* plSampleRate,							// Out: Sample rate or -1 (unless nullptr)
+   uint32_t* plBitsPerSample = nullptr,				// Out: Bits per sample or -1 (unless nullptr)
+   uint32_t* plChannels = nullptr,					// Out: Channels (mono=1, stereo=2) or -1 (unless nullptr)
+   milliseconds_t* plCurBufferTime = nullptr,				// Out: Current buffer time or -1 (unless nullptr)
+   milliseconds_t* plMaxBufferTime = nullptr);			// Out: Maximum buffer time or -1 (unless nullptr)
 
 extern void rspSetSoundOutBufferTime(
-	int32_t lCurBufferTime);						// In:  New buffer time
+   milliseconds_t lCurBufferTime);						// In:  New buffer time
 
 extern void rspKillSoundOutMode(void);		// Returns 0 if successfull, non-zero otherwise
 
@@ -629,7 +627,7 @@ extern int16_t rspIsSoundOutPaused(void);	// Returns TRUE if paused, FALSE other
 
 extern int32_t rspGetSoundOutPos(void);		// Returns sound output position in bytes
 
-extern int32_t rspGetSoundOutTime(void);		// Returns sound output position in time
+extern milliseconds_t rspGetSoundOutTime(void);		// Returns sound output position in time
 
 extern int32_t rspDoSound(void);
 
@@ -649,7 +647,7 @@ extern void rspSetApplicationName(
 // Background API (Really CYAN, but requires too much integration in BLUE)
 ////////////////////////////////////////////////////////////////////////////////
 
-extern int16_t rspIsBackground(void);			// Returns TRUE if in background, FALSE otherwise
+extern bool rspIsBackground(void);			// Returns TRUE if in background, FALSE otherwise
 
 extern void rspSetBackgroundCallback(
 	void (BackgroundCallback)(void));		// In:  Function to be called

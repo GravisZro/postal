@@ -184,7 +184,7 @@ int16_t ConvertToFSPR1(RImage* pImage)
 
 	//----------------------------------- Begin Compressing:
 	int16_t sBlankLineCount = 0;
-	int16_t sCount = 0;
+   uint16_t sCount = 0;
 
 	// The fastest way is still to create a buffer of fixed size, then to 
 	// shrink it.  This is risky, since there is no true max size for this
@@ -1068,7 +1068,7 @@ int16_t rspBlit(
 	// *****************  AT LAST!   CODE!  **********************
 	// ***********************************************************
 	// 
-   int16_t sCount; // to allow horizontal magnification > 0xFF...
+   uint16_t sCount; // to allow horizontal magnification > 0xFF...
 
 	// ***********************************************************
 	// *********  No clip case!
@@ -1547,7 +1547,7 @@ int16_t rspBlit(
 
 	// Add Italics ability:
 	int16_t* psOffX = psLineOffset;
-   int16_t sCount; // Allows magnified runs > 0xFF...
+   uint16_t sCount; // Allows magnified runs > 0xFF...
 
 	while (TRUE)
 		{

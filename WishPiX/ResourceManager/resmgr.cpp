@@ -543,7 +543,7 @@ void RResMgr::FreeAllResources(void)
   {
     if ((*i).second.m_sRefCount > 0)
       TRACE("RResMgr::FreeAllResources - %s ref count = %d - Releasing anyway\n",
-            (*i).second.m_strFilename, (*i).second.m_sRefCount);
+            (*i).second.m_strFilename.operator const char*(), (*i).second.m_sRefCount);
     (*i).second.FreeResource();
     (*i).second.m_sRefCount = 0;
   }
@@ -605,7 +605,7 @@ int16_t RResMgr::Statistics(RString strStatFile)
   else
   {
     TRACE("RResMgr::Statistics - Error - unable to open stat file %s\n",
-          strStatFile);
+          strStatFile.operator const char *());
     sReturn = FAILURE;
   }
   return sReturn;
@@ -742,7 +742,7 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
   else
   {
     TRACE("RResMgr::CreateSak - Error opening script file %s or sak file %s",
-          strScriptFile, strSakFile);
+          strScriptFile.operator const char *(), strSakFile.operator const char *());
     sReturn = FAILURE;
   }
   return sReturn;
@@ -855,7 +855,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
           strFilename = char_buffer;
           // Read the offset
           m_rfSak.Read(&lOffset);
-          //               TRACE("%s @ 0x%08x : %s\n", strSakFile.operator const char *(), lOffset, char_buffer);
+          //TRACE("%s @ 0x%08x : %s\n", strSakFile.operator const char * (), lOffset, char_buffer);
           m_SakDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
           m_SakDirOffset.insert(lOffset);
         }
@@ -880,7 +880,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
   }
   else
   {
-    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile);
+    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile.operator const char *());
     sReturn = FAILURE;
   }
 
@@ -1058,7 +1058,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
   }
   else
   {
-    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile);
+    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile.operator const char *());
     sReturn = FAILURE;
   }
 

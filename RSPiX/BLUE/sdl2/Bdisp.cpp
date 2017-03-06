@@ -860,12 +860,12 @@ extern int16_t rspAllowPageFlip(void)	// Returns 0 on success.
 //
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspSetPaletteEntries(
-	int16_t sStartIndex,			// Palette entry to start copying to (has no effect on source!)
-	int16_t sCount,					// Number of palette entries to do
+   palindex_t sStartIndex,			// Palette entry to start copying to (has no effect on source!)
+   palindex_t sCount,					// Number of palette entries to do
    channel_t* pucRed,		// Pointer to first red component to copy from
    channel_t* pucGreen,	// Pointer to first green component to copy from
    channel_t* pucBlue,		// Pointer to first blue component to copy from
-	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
+   uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up destination pointers.
    channel_t*	pucDstRed	= &(apeApp[sStartIndex].r);
@@ -903,10 +903,10 @@ extern void rspSetPaletteEntries(
 //
 ///////////////////////////////////////////////////////////////////////////////
 void rspSetPaletteEntry(
-   int16_t sEntry,				// Palette entry (0x00 to 0xFF)
-   uint8_t ucRed,				   // Red component (0x00 to 0xFF)
-   uint8_t ucGreen,				// Green component (0x00 to 0xFF)
-   uint8_t ucBlue)				// Blue component (0x00 to 0xFF)
+   palindex_t sEntry,				// Palette entry (0x00 to 0xFF)
+   channel_t ucRed,				   // Red component (0x00 to 0xFF)
+   channel_t ucGreen,				// Green component (0x00 to 0xFF)
+   channel_t ucBlue)				// Blue component (0x00 to 0xFF)
 	{
    ASSERT(sEntry >= 0 && sEntry < palette::size);
 
@@ -925,10 +925,10 @@ void rspSetPaletteEntry(
 //
 ///////////////////////////////////////////////////////////////////////////////
 void rspGetPaletteEntry(
-   int16_t sEntry,				// Palette entry (0x00 to 0xFF)
-   int16_t* psRed,				// Red component (0x00 to 0xFF) returned if not nullptr.
-   int16_t* psGreen,			// Green component (0x00 to 0xFF) returned if not nullptr.
-   int16_t* psBlue)				// Blue component (0x00 to 0xFF) returned if not nullptr.
+   palindex_t sEntry,				// Palette entry (0x00 to 0xFF)
+   channel_t* psRed,				// Red component (0x00 to 0xFF) returned if not nullptr.
+   channel_t* psGreen,			// Green component (0x00 to 0xFF) returned if not nullptr.
+   channel_t* psBlue)				// Blue component (0x00 to 0xFF) returned if not nullptr.
 	{
    ASSERT(sEntry >= 0 && sEntry < palette::size);
 
@@ -947,12 +947,12 @@ void rspGetPaletteEntry(
 //
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspGetPaletteEntries(
-	int16_t sStartIndex,			// Palette entry to start copying from
-	int16_t sCount,					// Number of palette entries to do
+   palindex_t sStartIndex,			// Palette entry to start copying from
+   palindex_t sCount,					// Number of palette entries to do
    channel_t* pucRed,		// Pointer to first red component to copy to
    channel_t* pucGreen,	// Pointer to first green component to copy to
    channel_t* pucBlue,		// Pointer to first blue component to copy to
-	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
+   uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up source pointers.
    channel_t*	pucSrcRed	= &(apeApp[sStartIndex].r);
@@ -997,12 +997,12 @@ extern void rspUpdatePalette(void)
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspSetPaletteMaps(
-	int16_t sStartIndex,			// Map entry to start copying to (has no effect on source!)
-	int16_t sCount,					// Number of map entries to do
+   palindex_t sStartIndex,			// Map entry to start copying to (has no effect on source!)
+   palindex_t sCount,					// Number of map entries to do
    channel_t* pucRed,		// Pointer to first red component to copy from
    channel_t* pucGreen,	// Pointer to first green component to copy from
    channel_t* pucBlue,		// Pointer to first blue component to copy from
-	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
+   uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up destination pointers.
    channel_t*	pucDstRed	= &(au8MapRed[sStartIndex]);
@@ -1032,12 +1032,12 @@ extern void rspSetPaletteMaps(
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspGetPaletteMaps(
-	int16_t sStartIndex,			// Map entry to start copying from (has no effect on dest!)
-	int16_t sCount,					// Number of map entries to do
+   palindex_t sStartIndex,			// Map entry to start copying from (has no effect on dest!)
+   palindex_t sCount,					// Number of map entries to do
    channel_t* pucRed,		// Pointer to first red component to copy to
    channel_t* pucGreen,	// Pointer to first green component to copy to
    channel_t* pucBlue,		// Pointer to first blue component to copy to
-	int32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
+   uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up source pointers.
    channel_t*	pucSrcRed	= &(au8MapRed[sStartIndex]);
@@ -1062,8 +1062,8 @@ extern void rspGetPaletteMaps(
 // with rspUnlockPaletteEntries() ).
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspLockPaletteEntries(
-	int16_t	sStartIndex,			// Palette entry at which to start locking.
-	int16_t	sCount)					// Number of palette entries to lock.
+   palindex_t sStartIndex,			// Palette entry at which to start locking.
+   palindex_t sCount)					// Number of palette entries to lock.
 	{
 	// Set up iterator pointer.
    int8_t* psLock = asPalEntryLocks + sStartIndex;
@@ -1129,10 +1129,10 @@ extern void rspSetForegroundCallback(	// Returns nothing.
         /* no-op. */
 	}
 
-extern int16_t rspIsBackground(void)			// Returns TRUE if in background, FALSE otherwise
+extern bool rspIsBackground(void)			// Returns TRUE if in background, FALSE otherwise
     {
         extern bool GSDLAppIsActive;
-        return (int16_t) (!GSDLAppIsActive);
+        return (!GSDLAppIsActive);
     }
 //////////////////////////////////////////////////////////////////////////////
 // EOF

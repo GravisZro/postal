@@ -262,27 +262,27 @@ class RMix
 		// Gets the current mode of the sound output device.
 		static int16_t GetMode(						// Returns 0 on success; 
 															// nonzero if no mode.
-			int32_t*		plSamplesPerSec,				// Sample rate in samples per second
+         uint32_t*		plSamplesPerSec,				// Sample rate in samples per second
                                              // returned here, if not nullptr.
-         int32_t*		plDevBitsPerSample = nullptr,	// Bits per sample of device,
+         uint32_t*		plDevBitsPerSample = nullptr,	// Bits per sample of device,
                                              // returned here, if not nullptr.
-         int32_t*		plNumChannels = nullptr,		// Number of channels (1 == mono,
+         uint32_t*		plNumChannels = nullptr,		// Number of channels (1 == mono,
 															// 2 == stereo) returned here, 
                                              // if not nullptr.
-         int32_t*		plBufferTime = nullptr,			// Amount of time in ms to lead the
+         milliseconds_t*		plBufferTime = nullptr,			// Amount of time in ms to lead the
 															// current play cursor returned here,
                                              // if not nullptr.  This could also be
 															// described as the maximum amount of
 															// time in ms that can occur between 
 															// calls to rspDoSound.
-         int32_t*		plMaxBufferTime	= nullptr,	// Maximum buffer time.  This is the amt
+         milliseconds_t*		plMaxBufferTime	= nullptr,	// Maximum buffer time.  This is the amt
 															// that *plBufferTime can be increased to.
 															// This is indicative of how much space
 															// was/will-be allocated for the sound
 															// output device on rspLockSoundOut.
-         int32_t*		plMixBitsPerSample = nullptr,	// Bits per sample at which samples are
+         uint32_t*		plMixBitsPerSample = nullptr,	// Bits per sample at which samples are
                                              // mixed, if not nullptr.
-         int32_t*		plSrcBitsPerSample = nullptr);// Bits per sample at which samples must
+         uint32_t*		plSrcBitsPerSample = nullptr);// Bits per sample at which samples must
 															// be to be mixed (0 if no requirement), 
                                              // if not nullptr.
 

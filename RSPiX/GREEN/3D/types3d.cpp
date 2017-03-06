@@ -166,12 +166,12 @@ int16_t RTexture::Save(RFile* fp)
 // index is written to the array of indices.  If the array of indices
 // doesn't exist, it will be created.
 void RTexture::Remap(
-	int16_t sStartIndex,
-	int16_t sNumIndex,
+   palindex_t sStartIndex,
+   palindex_t sNumIndex,
    channel_t* pr,
    channel_t* pg,
    channel_t* pb,
-	int32_t linc)
+   uint32_t linc)
 	{
 	ASSERT(m_pColors);
 		
@@ -199,7 +199,7 @@ RTexture::Unmap(
    channel_t* pr,
    channel_t* pg,
    channel_t* pb,
-	int32_t lInc)
+   uint32_t lInc)
 	{
   UNUSED(lInc);
 	ASSERT(m_pIndices);
@@ -228,7 +228,7 @@ RTexture::Unmap(
 void
 RTexture::Adjust(
 	float fAdjustment,	// In:  Adjustment factor (1.0 == same, < 1 == dimmer, > 1 == brighter).
-	int32_t lInc)				// In:  Number of colors to skip.
+   uint32_t lInc)				// In:  Number of colors to skip.
 	{
 	ASSERT(m_pColors);
 	ASSERT(fAdjustment >= 0.0f);
@@ -296,7 +296,7 @@ int16_t RMesh::Save(RFile* fp)
 	{
 	int16_t sResult = SUCCESS;
 	fp->Write(&m_sNum);
-	fp->Write(m_pArray, (int32_t)m_sNum * 3);
+   fp->Write(m_pArray, int32_t(m_sNum) * 3);
 	if (fp->Error())
 		{
 		sResult = FAILURE;

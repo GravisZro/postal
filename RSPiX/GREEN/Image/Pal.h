@@ -99,9 +99,9 @@ class RPal
 	public:	// Member vars.
 		Type		m_type;				// Palette type
 		uint32_t		m_ulSize;			// Size of data
-		int16_t		m_sStartIndex;		// Starting index
-		int16_t		m_sNumEntries;		// Number of entries
-		int16_t		m_sPalEntrySize;	// Number of bytes in each palette entry
+      palindex_t		m_sStartIndex;		// Starting index
+      palindex_t		m_sNumEntries;		// Number of entries
+      uint8_t		m_sPalEntrySize;	// Number of bytes in each palette entry
 		uint8_t*	m_pData;			   // Pointer to data
 
 		// This array of type names should correspond to the above list of
@@ -144,9 +144,9 @@ class RPal
 		int16_t CreateData(
 			uint32_t ulSize, 			// Size of data
 			Type	type, 		// Palette type
-			int16_t sPalEntrySize, // Size in bytes of each Pal entry
-			int16_t sStartIndex,	// Starting index of colors
-			int16_t sNumEntries);	// Number of significant palette entries
+         uint8_t sPalEntrySize, // Size in bytes of each Pal entry
+			palindex_t sStartIndex,	// Starting index of colors
+         palindex_t sNumEntries);	// Number of significant palette entries
 
 		// Destroy PAL's data
 		int16_t DestroyData();
@@ -241,20 +241,20 @@ class RPal
 
 		// Get RGB entries from palette
 		int16_t GetEntries(
-			int16_t sStart,								// In:  Starting palette entry
-			int16_t sCount,								// In:  Number of entries to do
+         palindex_t sStart,								// In:  Starting palette entry
+			palindex_t sCount,								// In:  Number of entries to do
          channel_t* pDstRed,					// Out: Starting destination red value
          channel_t* pDstGreen,				// Out: Starting destination green value
          channel_t* pDstBlue,				// Out: Starting destination blue value
-			int32_t lAddToPointers);					// In:  What to add to pointers to move to next value
+         uint32_t lAddToPointers);					// In:  What to add to pointers to move to next value
 
 		int16_t SetEntries(
-			int16_t sStart,								// In:  Starting palette entry
-			int16_t sCount,								// In:  Number of entries to do
+         palindex_t sStart,								// In:  Starting palette entry
+			palindex_t sCount,								// In:  Number of entries to do
          channel_t* pSrcRed,					// In:  Starting source red value
          channel_t* pSrcGreen,				// In:  Starting source green value
          channel_t* pSrcBlue,				// In:  Starting source blue value
-			int32_t lAddToPointers);					// In:  What to add to pointers to move to next value
+         uint32_t lAddToPointers);					// In:  What to add to pointers to move to next value
 
 		// Copy operator overload.
 		// Note that this function could fail.

@@ -59,11 +59,11 @@ static int32_t cur_buf_time = 0;
 static int32_t max_buf_time = 0;
 
 extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero otherwise
-	int32_t lSampleRate,								// In:  Sample rate
-	int32_t lBitsPerSample,							// In:  Bits per sample
-	int32_t lChannels,								// In:  Channels (mono = 1, stereo = 2)
-	int32_t lCurBufferTime,							// In:  Current buffer time (in ms.)
-	int32_t lMaxBufferTime,							// In:  Maximum buffer time (in ms.)
+   uint32_t lSampleRate,								// In:  Sample rate
+   uint32_t lBitsPerSample,							// In:  Bits per sample
+   uint32_t lChannels,								// In:  Channels (mono = 1, stereo = 2)
+   milliseconds_t lCurBufferTime,							// In:  Current buffer time (in ms.)
+   milliseconds_t lMaxBufferTime,							// In:  Maximum buffer time (in ms.)
 	RSP_SND_CALLBACK callback,					// In:  Callback function
    uintptr_t ulUser)									// In:  User-defined value to pass to callback
 {
@@ -135,11 +135,11 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
 }
 
 extern int16_t rspGetSoundOutMode(				// Returns 0 if successfull, non-zero otherwise
-   int32_t* plSampleRate,							// Out: Sample rate or -1 (unless nullptr)
-   int32_t* plBitsPerSample,				// Out: Bits per sample or -1 (unless nullptr)
-   int32_t* plChannels,					// Out: Channels (mono=1, stereo=2) or -1 (unless nullptr)
-   int32_t* plCurBufferTime,				// Out: Current buffer time or -1 (unless nullptr)
-   int32_t* plMaxBufferTime)			// Out: Maximum buffer time or -1 (unless nullptr)
+   uint32_t* plSampleRate,							// Out: Sample rate or -1 (unless nullptr)
+   uint32_t* plBitsPerSample,				// Out: Bits per sample or -1 (unless nullptr)
+   uint32_t* plChannels,					// Out: Channels (mono=1, stereo=2) or -1 (unless nullptr)
+   milliseconds_t* plCurBufferTime,				// Out: Current buffer time or -1 (unless nullptr)
+   milliseconds_t* plMaxBufferTime)			// Out: Maximum buffer time or -1 (unless nullptr)
 {
   UNUSED(plChannels);
     SET(plSampleRate, desired.freq);
@@ -151,7 +151,7 @@ extern int16_t rspGetSoundOutMode(				// Returns 0 if successfull, non-zero othe
 }
 
 extern void rspSetSoundOutBufferTime(
-	int32_t lCurBufferTime)						// In:  New buffer time
+   milliseconds_t lCurBufferTime)						// In:  New buffer time
 {
     cur_buf_time = lCurBufferTime;
 }
@@ -203,7 +203,7 @@ extern int32_t rspGetSoundOutPos(void)		// Returns sound output position in byte
     return SUCCESS;
 }
 
-extern int32_t rspGetSoundOutTime(void)		// Returns sound output position in time
+extern milliseconds_t rspGetSoundOutTime(void)		// Returns sound output position in time
 {
     return SUCCESS;
 }

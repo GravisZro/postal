@@ -30,6 +30,9 @@
 #include <cctype>
 #include <memory>
 
+// C /////////////////////////////////////////////////////////////////////////
+#include <unistd.h>
+
 
 
 // Only set value if not nullptr.

@@ -507,7 +507,7 @@ static bool ClientGameMenuChoice(	// Returns true to accept, false to deny choic
 	int16_t	sMenuItem);				// Item chosen.
 #endif
 
-#if !defined(EDITOR_REMOVED)
+#if !defined(EDITOR_REMOVED) && !defined(EDITOR_DISABLED)
 static bool EditorMenuChoice(	// Returns true to accept, false to deny choice.
 	Menu*	pmenuCurrent,			// Current menu.
 	int16_t	sMenuItem);				// Item chosen.
@@ -1183,11 +1183,11 @@ Menu	menuEditor =
 	// Menu callbacks.
 		{	// fnInit, fnChoice,
       nullptr,						// Called before menu is initialized.
-#if defined(EDITOR_REMOVED) && !defined(EDITOR_DISABLED)
+#if defined(EDITOR_REMOVED) || defined(EDITOR_DISABLED)
          nullptr,
-#else // defined(EDITOR_REMOVED) && !defined(EDITOR_DISABLED)
+#else
       EditorMenuChoice,		// Called when item is chosen.
-#endif // defined(EDITOR_REMOVED) && !defined(EDITOR_DISABLED)
+#endif
 		},
 
 	// Menu auto items.
@@ -4971,7 +4971,7 @@ static bool MultiOptionsChoice(	// Returns true to accept, false to deny choice.
 }
 #endif
 
-#if !defined(EDITOR_REMOVED) || defined(EDITOR_DISABLED)
+#if !defined(EDITOR_REMOVED) && !defined(EDITOR_DISABLED)
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Called when a choice is made or changed on the Editor menu.

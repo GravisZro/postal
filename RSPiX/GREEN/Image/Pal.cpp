@@ -305,9 +305,9 @@ int16_t	RPal::CreateData(size_t ulNewSize)
 
 int16_t RPal::CreateData(uint32_t ulNewSize, 
                        Type  typeNew,
-							  int16_t sSetPalEntrySize,
-							  int16_t sSetStartIndex,
-							  int16_t sSetNumEntries)
+                       uint8_t sSetPalEntrySize,
+                       palindex_t sSetStartIndex,
+                       palindex_t sSetNumEntries)
 {
    int16_t sResult = CreateData(ulNewSize);
 
@@ -537,6 +537,7 @@ int16_t RPal::Save(RFile* pcf)
 		pcf->Write(&m_sStartIndex);
 		pcf->Write(&m_sNumEntries);
 		pcf->Write(&m_sPalEntrySize);
+      pcf->Write(uint8_t(0));
 		if (m_pData)
 		{
 			uint16_t usFlag = 1;
@@ -675,12 +676,12 @@ int16_t RPal::Load(RFile* pcf)
 //
 ///////////////////////////////////////////////////////////////////////////////
 int16_t RPal::GetEntries(
-	int16_t sStart,								// In:  Starting palette entry
-	int16_t sCount,								// In:  Number of entries to do
+   palindex_t sStart,								// In:  Starting palette entry
+	palindex_t sCount,								// In:  Number of entries to do
    channel_t* pDstRed,					// Out: Starting destination red value
    channel_t* pDstGreen,				// Out: Starting destination green value
    channel_t* pDstBlue,				// Out: Starting destination blue value
-	int32_t lAddToPointers)						// In:  What to add to pointers to move to next value
+   uint32_t lAddToPointers)						// In:  What to add to pointers to move to next value
 	{
 	// Validate parameters
    ASSERT(pDstRed != nullptr);
@@ -830,12 +831,12 @@ int16_t RPal::GetEntries(
 //
 ///////////////////////////////////////////////////////////////////////////////
 int16_t RPal::SetEntries(
-	int16_t sStart,								// In:  Starting palette entry
-	int16_t sCount,								// In:  Number of entries to do
+   palindex_t sStart,								// In:  Starting palette entry
+	palindex_t sCount,								// In:  Number of entries to do
    channel_t* pSrcRed,					// In:  Starting source red value
    channel_t* pSrcGreen,				// In:  Starting source green value
    channel_t* pSrcBlue,				// In:  Starting source blue value
-	int32_t lAddToPointers)						// In:  What to add to pointers to move to next value
+   uint32_t lAddToPointers)						// In:  What to add to pointers to move to next value
 	{
 	// Validate parameters
    ASSERT(pSrcRed != nullptr);

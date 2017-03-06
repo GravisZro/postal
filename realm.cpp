@@ -951,7 +951,7 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 						{
 
 						// Read number of things that were written to file (could be 0!)
-						int16_t sCount;
+						palindex_t sCount;
 						if (pFile->Read(&sCount) == 1)
 							{
 
