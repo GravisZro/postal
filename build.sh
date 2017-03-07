@@ -183,10 +183,10 @@ detect_platform () {
 os_name=$(uname -s | sed -e "s/\(.\)/\l\1/")
 availible_platforms=""
 
-detect_platform "posix" "x86_64-${os_name}-\S\+-g++"
+detect_platform "posix" "x86_64-\S*${os_name}\S*-g++"
 if [ -z "${platform_posix}" ]
 then
-  detect_platform "posix" "i[0-9]86-${os_name}-\S\+-g++"
+  detect_platform "posix" "i[0-9]86-\S*${os_name}\S*-g++"
   if [ ! -z "${platform_posix}" ]
   then
     availible_platforms="$availible_platforms|POSIX"
