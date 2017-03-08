@@ -23,8 +23,8 @@
 #include <ORANGE/CDT/slist.h>
 
 // Platform //////////////////////////////////////////////////////////////////
-#include <dc/video.h>
-#include <dc/pvr.h>
+//#include <dc/video.h>
+//#include <dc/pvr.h>
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
@@ -52,26 +52,19 @@ namespace display
   const uint16_t width  = 640;
   const uint16_t height = 480;
   const uint16_t depth  = 8;
-
   namespace aligned_memory
   {
     static std::aligned_storage<sizeof(uint8_t), alignof(uint128_t)>::type framebuffer[width * height];
   }
   static void* framebuffer = reinterpret_cast<void*>(aligned_memory::framebuffer);
 
-  static pvr_ptr_t texture;
+//  static pvr_ptr_t texture;
 }
 
 
 
 extern void Disp_Init(void)    // Returns nothing.
 {
-  vid_init(DM_640x480, PM_RGB888);
-  vid_border_color(0xdd, 0, 0);
-
-  pvr_init_defaults();
-  pvr_set_pal_format(PVR_PAL_ARGB8888);
-  display::texture = pvr_mem_malloc(display::width * display::height);
 }
 
 extern void rspSetApplicationName(
@@ -268,7 +261,7 @@ extern void rspCacheDirtyRect(
 {
   UNUSED(sX,sY,sWidth,sHeight);
 }
-
+/*
 void draw_back(void) {
     pvr_poly_cxt_t cxt;
     pvr_poly_hdr_t hdr;
@@ -311,9 +304,10 @@ void draw_back(void) {
     vert.flags = PVR_CMD_VERTEX_EOL;
     pvr_prim(&vert, sizeof(vert));
 }
-
+*/
 extern void rspPresentFrame(void)
 {
+  /*
   pvr_wait_ready();
   pvr_scene_begin();
 
@@ -325,11 +319,12 @@ extern void rspPresentFrame(void)
 
   pvr_list_finish();
   pvr_scene_finish();
+  */
 }
 
 extern void rspUpdateDisplay(void)
 {
-  ASSERT(pvr_txr_load_dma(display::framebuffer, display::texture, display::width * display::height, TRUE, nullptr, nullptr) == SUCCESS);
+  //ASSERT(pvr_txr_load_dma(display::framebuffer, display::texture, display::width * display::height, TRUE, nullptr, nullptr) == SUCCESS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -409,6 +404,7 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
 {
   if(ppvBuffer != nullptr)
     *ppvBuffer = display::framebuffer;
+//    *ppvBuffer = reinterpret_cast<void*>(display::framebuffer);
   if(plPitch != nullptr)
     *plPitch = display::width;
 
@@ -557,9 +553,11 @@ extern void rspGetPaletteEntries(
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUpdatePalette(void)
 {
+  /*
   memcpy(reinterpret_cast<void*>(PVR_PALETTE_TABLE_BASE),
          reinterpret_cast<void*>(palette::buffer),
          sizeof(color32_t) * palette::size);
+         */
 }
 ///////////////////////////////////////////////////////////////////////////////
 //

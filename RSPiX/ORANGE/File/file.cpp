@@ -349,7 +349,8 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
         }
         else
         {
-#if defined(_WIN32)
+# if defined(__DOS__)
+# elif defined(_WIN32)
             /*
              * Vista and later has a new API for this, but SHGetFolderPath works there,
              *  and apparently just wraps the new API. This is the new way to do it:
@@ -378,7 +379,7 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
                 }
                 FreeLibrary(lib);
             }
-#elif defined(__APPLE__) && !defined(__arm__) // Mac OSX
+# elif defined(__APPLE__) && !defined(__arm__) // Mac OSX
             const char *homedir = getenv("HOME");
             if ( (!homedir) || ((strlen(homedir) + 32) >= sizeof (prefpath)) )
                 homedir = "./";  // oh well.
@@ -387,7 +388,7 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
             if (prefpath[strlen(prefpath)-1] != '/') strcat(prefpath, "/");
 
             strcat(prefpath, "Library/Application Support/Postal Plus/");
-#else
+# elif defined(__unix__)
             const char *homedir = getenv("HOME");
             const char *xdghomedir = getenv("XDG_DATA_HOME");
             const char *append = "";
@@ -422,13 +423,14 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
                 if (*i == '/')
                 {
                     *i = '\0';
-                    mkdir(prefpath, 0700);
+                    mkdir(prefpath, S_IRWXU);
                     *i = '/';
                 }
             }
-            mkdir(prefpath, 0700);
-            #endif
-
+            mkdir(prefpath, S_IRWXU);
+# else
+            NOTE("Proceeding with empty preference path.");
+# endif
             TRACE("prefpath is \"%s\"\n", prefpath);
         }
         initialized = true;
@@ -466,11 +468,7 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
                 if (access(finalname, F_OK) == -1)
                 {
                     TRACE("Making directory \"%s\"\n", finalname);
-#if defined(_WIN32)
-                    mkdir(finalname);
-#else
                     mkdir(finalname, S_IRWXU);
-#endif
                 }
                 *ptr = '/';
             }

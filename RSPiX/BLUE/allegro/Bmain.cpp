@@ -172,6 +172,7 @@ extern int rspCommandLine(const char *cmd)
 
 extern void rspPlatformInit(void)
 {
+  /*
   if(chdir("/cd") == SUCCESS)
   {
     TRACE("GDROM mounted and ready.");
@@ -180,6 +181,7 @@ extern void rspPlatformInit(void)
   {
     TRACE("GDROM not ready!");
   }
+  */
 }
 
 

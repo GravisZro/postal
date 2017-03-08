@@ -63,10 +63,10 @@ typedef struct
   uint32_t u32Buttons;
   uint32_t u32Axes;
 #if defined(ALLOW_TWINSTICK)
-  Sint16 axis_MoveUpDown;
-  Sint16 axis_MoveLeftRight;
-  Sint16 axis_FireUpDown;
-  Sint16 axis_FireLeftRight;
+  int16_t axis_MoveUpDown;
+  int16_t axis_MoveLeftRight;
+  int16_t axis_FireUpDown;
+  int16_t axis_FireLeftRight;
 #endif
 } JoyState;
 
@@ -113,8 +113,8 @@ extern void Joy_Init(void)
 #ifdef SDL2_JUNK
 static void calcAxis(SDL_GameController *controller, const SDL_GameControllerAxis axis, uint32_t *bits, const uint32_t posbit, const uint32_t negbit)
 {
-  const Sint16 deadzone = (Sint16) (32767.0f * (MID_THRESHOLD_PERCENT / 100.0f));
-  const Sint16 val = SDL_GameControllerGetAxis(controller, axis);
+  const int16_t deadzone = (int16_t) (32767.0f * (MID_THRESHOLD_PERCENT / 100.0f));
+  const int16_t val = SDL_GameControllerGetAxis(controller, axis);
   if ((val < 0) && ((-val) > deadzone))
     *bits |= negbit;
   else if ((val > 0) && (val > deadzone))
@@ -127,7 +127,7 @@ static inline void calcButton(SDL_GameController *controller, const SDL_GameCont
     *bits |= posbit;
 }
 
-static inline double GetStickAngle(Sint32 axis_X, Sint32 axis_Y)
+static inline double GetStickAngle(int32_t axis_X, int32_t axis_Y)
 {
   double d_Angle = 0.f;
 
@@ -155,8 +155,8 @@ extern void GetDudeVelocity(double* d_Velocity, double* d_Angle)
 {
   //    SDL_GameController* controller = ms_Controllers[0];
 
-  Sint16 axis_MoveUpDown = ms_ajsCurr[0].axis_MoveUpDown;
-  Sint16 axis_MoveLeftRight = ms_ajsCurr[0].axis_MoveLeftRight;
+  int16_t axis_MoveUpDown = ms_ajsCurr[0].axis_MoveUpDown;
+  int16_t axis_MoveLeftRight = ms_ajsCurr[0].axis_MoveLeftRight;
 
   *d_Velocity = sqrt(pow(axis_MoveUpDown, 2) + pow(axis_MoveLeftRight, 2)) / 32768.f;
   if (axis_MoveLeftRight != 0)
@@ -174,8 +174,8 @@ extern bool GetDudeFireAngle(double* d_Angle)
 {
   //    SDL_GameController* controller = ms_Controllers[0];
 
-  Sint16 axis_FireUpDown = ms_ajsCurr[0].axis_FireUpDown;
-  Sint16 axis_FireLeftRight = ms_ajsCurr[0].axis_FireLeftRight;
+  int16_t axis_FireUpDown = ms_ajsCurr[0].axis_FireUpDown;
+  int16_t axis_FireLeftRight = ms_ajsCurr[0].axis_FireLeftRight;
 
   if (axis_FireLeftRight != 0)
     *d_Angle = GetStickAngle(axis_FireLeftRight, axis_FireUpDown);
@@ -248,8 +248,8 @@ extern void rspUpdateJoy(int16_t sJoy)
   calcButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, &ms_ajsCurr[sJoy].u32Buttons, RSP_JOY_BUT_15);
 
   //!! HACK
-  Sint16 TriggerLeft = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-  Sint16 TriggerRight = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+  int16_t TriggerLeft = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+  int16_t TriggerRight = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
   if (TriggerLeft > 16384)
     ms_ajsCurr[sJoy].u32Buttons |= RSP_JOY_BUT_16;
   if (TriggerRight > 16384)

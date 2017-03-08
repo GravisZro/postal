@@ -171,6 +171,7 @@ typedef SSIZE_T ssize_t;
 #  if !defined(PATH_MAX)
 #   define PATH_MAX _MAX_PATH
 #  endif
+#  define mkdir(x, y) _mkdir(x)
 # endif
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp

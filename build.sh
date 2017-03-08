@@ -493,6 +493,7 @@ then
       then
         archflags="-m32"
       fi
+      build_name="${build_name}.$(to_lower $platform)${platform_bits}"
     ;;
 
     gnu) # GNU Hurd
@@ -514,7 +515,7 @@ then
           archflags="-m64"
         ;;
       esac
-      build_name="$build_name.exe"
+      build_name="${build_name}w${platform_bits}.exe"
       platform="Windows"
     ;;
 
@@ -523,10 +524,11 @@ then
       c_standard="-std=gnu11"
       cpp_compiler=$platform_dos
       force_32bit "MS-DOS"
-      build_name="$build_name.exe"
+      build_name="${build_name}.exe"
       platform="MS-DOS"
       backend="allegro"
-      ldflags="-L./sys/lib/dos -lallegro"
+      ldflags=""
+#      ldflags="-L./sys/lib/dos -lallegro"
     ;;
 
     dreamcast) # Sega Dreamcast
@@ -534,7 +536,7 @@ then
       c_standard="-std=gnu11"
       cpp_compiler=$platform_dreamcast
       force_32bit "Dreamcast"
-      build_name="$build_name.elf"
+      build_name="${build_name}SH4.elf"
       platform="Dreamcast"
       cflags="$cflags -ffunction-sections -fdata-sections"
       backend="dreamcast"
@@ -544,7 +546,7 @@ then
     saturn) # Sega Saturn
       cpp_compiler=$platform_saturn
       force_32bit "Saturn"
-      build_name="$build_name.elf"
+      build_name="${build_name}SH2.elf"
       platform="Saturn"
       backend="saturn"
       ldflags=""
