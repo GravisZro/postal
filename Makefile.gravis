@@ -65,11 +65,6 @@ ifndef BACKEND
   BACKEND:=sdl2
 endif
 
-CLEANUP := $(wildcard *.exe) $(wildcard *.obj) \
-           $(wildcard $(BUILD_PATH)/*.exe) $(wildcard $(BUILD_PATH)/*.obj) \
-           $(wildcard *~) $(wildcard *.err) \
-           $(wildcard .\#*) core
-
 SOURCES += \
 	AnimThing.cpp \
 	ball.cpp \
@@ -375,8 +370,6 @@ OUTPUT_DIR:
 	$(QUIET) mkdir -p $(BUILD_PATH)/libs
 	@echo " DONE."
 
-distclean: clean
-
 clean:
-	rm -f $(CLEANUP)
+	rm -f $(POSTAL_BINARY)
 	rm -rf $(BUILD_PATH)
