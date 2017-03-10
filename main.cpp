@@ -843,7 +843,7 @@ rspSetProfileOutput("profile.out");
 				if (sResult == SUCCESS)
 					{
 					// Set Win32 static colors and lock them.
-					rspSetWin32StaticColors(1);
+               //rspSetWin32StaticColors(1);
 					
 					//---------------------------------------------------------------
 					// Setup audio

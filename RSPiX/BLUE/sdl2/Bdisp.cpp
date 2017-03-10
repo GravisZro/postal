@@ -59,25 +59,18 @@ typedef struct		// Stores information on usable video modes.
 
 static RSList<video_mode_t, int16_t>	slvmModes;	// List of available video modes.
 
-static color32_t	apeApp[palette::size];				// App's palette.  The palette
-														// entries the App actually set.
 
-//static color32_t	apeMapped[palette::size];			// Tweaked palette.
-														// This is the palette updated to
-														// the hardware.  apeApp is trans-
-														// lated through au8MapRed, Green,
-														// and Blue and stored here for
-														// updating to the hardware on
-														// rspUpdatePalette().
-
-static channel_t au8MapRed  [palette::size] = { 0 }; // Map of red   intensities to hardware values.  Initially an identity mapping.
-static channel_t au8MapGreen[palette::size] = { 0 }; // Map of green intensities to hardware values.  Initially an identity mapping.
-static channel_t au8MapBlue [palette::size] = { 0 }; // Map of blue  intensities to hardware values.  Initially an identity mapping.
-
-static int8_t asPalEntryLocks[palette::size];	// TRUE, if an indexed entry is locked.
-														// FALSE, if not.  Implemented as 
-														// shorts in case we ever do levels of
-														// locking.
+namespace palette
+{
+  namespace aligned_memory
+  {
+    static std::aligned_storage<sizeof(color32_t), alignof(max_align_t)>::type buffer[size];
+    static std::aligned_storage<sizeof(color32_t), alignof(max_align_t)>::type map   [size];
+  }
+  static color32_t* buffer = reinterpret_cast<color32_t*>(aligned_memory::buffer);
+  static color32_t* map    = reinterpret_cast<color32_t*>(aligned_memory::map);
+  static int8_t locks[size];	// TRUE, if an indexed entry is locked. FALSE, if not.
+}
 
 extern bool mouse_grabbed;
 
@@ -118,14 +111,14 @@ extern void Disp_Init(void)	// Returns nothing.
 	// Initialize maps to indentities.
     for (uint8_t i = 1; i; ++i)
     {
-      au8MapRed  [i] = i;
-      au8MapGreen[i] = i;
-      au8MapBlue [i] = i;
+      palette::map[i].red   = i;
+      palette::map[i].green = i;
+      palette::map[i].blue  = i;
     }
 
 	// Never ever ever unlock these.
-   asPalEntryLocks[0x00] = TRUE;
-   asPalEntryLocks[0xFF] = TRUE;
+   palette::locks[0x00] = TRUE;
+   palette::locks[0xFF] = TRUE;
 
 	slvmModes.SetCompareFunc(CompareModes);
 }
@@ -133,9 +126,9 @@ extern void Disp_Init(void)	// Returns nothing.
 extern void rspSetApplicationName(
    const char* pszName)								// In: Application name
 {
-    sdlAppName = pszName;
-    if (sdlWindow)
-        SDL_SetWindowTitle(sdlWindow, sdlAppName);
+  sdlAppName = pszName;
+  if (sdlWindow)
+    SDL_SetWindowTitle(sdlWindow, sdlAppName);
 }
 
 
@@ -527,7 +520,7 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
         ASSERT(sHeight == 480);
 
         for (uint16_t i = 0; i < palette::size; i++)
-            apeApp[i].alpha= 0xFF;
+            palette::buffer[i].alpha= 0xFF;
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
@@ -691,13 +684,13 @@ extern void rspPresentFrame(void)
     if (!sdlWindow) return;
 
     // !!! FIXME: I imagine this is not fast. Maybe keep the dirty rect code at least?
-    ASSERT(sizeof (apeApp[0]) == sizeof (uint32_t));
+    static_assert(sizeof(color32_t) == sizeof (uint32_t), "broken compiler!");
     const uint8_t *src = PalettedTexturePointer;
     color32_t *dst = TexturePointer;
     for (int y = 0; y < FramebufferHeight; y++)
     {
         for (int x = 0; x < FramebufferWidth; x++, src++, dst++)
-            *dst = apeApp[*src];
+            *dst = palette::buffer[*src];
         }
 
     SDL_UpdateTexture(sdlTexture, nullptr, TexturePointer, FramebufferWidth * 4);
@@ -724,7 +717,7 @@ extern void rspPresentFrame(void)
     if ((now - ticks) > 5000)
     {
         if (ticks > 0)
-            printf("fps: %f\n", (((double) frames) / ((double) (now - ticks))) * 1000.0);
+            TRACE("fps: %f\n", (((double) frames) / ((double) (now - ticks))) * 1000.0);
         ticks = now;
         frames = 0;
     }
@@ -858,6 +851,7 @@ extern int16_t rspAllowPageFlip(void)	// Returns 0 on success.
 // Hardware palette is not updated until UpdatePalette() is called.
 //
 ///////////////////////////////////////////////////////////////////////////////
+/*
 extern void rspSetPaletteEntries(
    palindex_t sStartIndex,			// Palette entry to start copying to (has no effect on source!)
    palindex_t sCount,					// Number of palette entries to do
@@ -865,35 +859,67 @@ extern void rspSetPaletteEntries(
    channel_t* pucGreen,	// Pointer to first green component to copy from
    channel_t* pucBlue,		// Pointer to first blue component to copy from
    uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
-	{
-	// Set up destination pointers.
-   channel_t*	pucDstRed	= &(apeApp[sStartIndex].red);
-   channel_t*	pucDstGreen	= &(apeApp[sStartIndex].green);
-   channel_t*	pucDstBlue	= &(apeApp[sStartIndex].blue);
+{
+  static int i = 0;
+  TRACE("instance: %i\n", ++i);
+  // Set up destination pointers.
+  color32_t* pColor = palette::buffer + sStartIndex;
 
-	// Set up lock pointer.
-   int8_t* psLock = asPalEntryLocks + sStartIndex;
+  // Set up lock pointer.
+  int8_t* psLock = palette::locks + sStartIndex;
 
-	while (sCount-- > 0)
-		{
-		if (*psLock++ == 0)
-			{
-			*pucDstRed		= *pucRed;
-			*pucDstGreen	= *pucGreen;
-			*pucDstBlue		= *pucBlue;
-			}
+  while (sCount-- > 0)
+  {
+    if (*psLock++ == 0)
+    {
+      pColor->red		= *pucRed;
+      pColor->green	= *pucGreen;
+      pColor->blue	= *pucBlue;
+      TRACE("color #%i - %i: %02x %02x %02x\n", sStartIndex, sCount, pColor->red, pColor->green, pColor->blue);
+    }
 
-		// Increment source.
-      pucRed	+= lIncBytes;
-      pucGreen += lIncBytes;
-      pucBlue	+= lIncBytes;
+    // Increment source.
+    pucRed	+= lIncBytes;
+    pucGreen += lIncBytes;
+    pucBlue	+= lIncBytes;
 
-		// Increment destination.
-		pucDstRed		+= sizeof(apeApp[0]);
-		pucDstGreen		+= sizeof(apeApp[0]);
-		pucDstBlue		+= sizeof(apeApp[0]);
-		}
-	}
+    // Increment destination.
+    ++pColor;
+  }
+}
+*/
+extern void rspSetPaletteEntries(
+    palindex_t sStartIndex,               // In: Palette entry to start copying to (has no effect on source!)
+    palindex_t sCount,                    // In: Number of palette entries to do
+    channel_t* pucRed,                    // In: Pointer to first red   component to copy from
+    channel_t* pucGreen,                  // In: Pointer to first green component to copy from
+    channel_t* pucBlue,                   // In: Pointer to first blue  component to copy from
+    uint32_t lIncBytes)                   // In: Number of bytes by which to increment pointers after each copy
+{
+  static int i = 0;
+  TRACE("instance: %i\n", ++i);
+
+  int8_t* psLock;
+  color32_t* pColor;
+
+  for(psLock = palette::locks + sStartIndex, // Set up lock pointer
+      pColor = palette::buffer + sStartIndex; // Set up destination
+      sCount-- > 0; // loop condition
+      ++psLock, // Increment lock
+      ++pColor, // Increment destination
+      pucRed   += lIncBytes, // Increment sources
+      pucGreen += lIncBytes,
+      pucBlue  += lIncBytes)
+  {
+    if (*psLock == FALSE)
+    {
+      pColor->red   = *pucRed; // transfer data
+      pColor->green = *pucGreen;
+      pColor->blue  = *pucBlue;
+      TRACE("color #%i - %i: %02x %02x %02x\n", sStartIndex, sCount, pColor->red, pColor->green, pColor->blue);
+    }
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -906,16 +932,16 @@ void rspSetPaletteEntry(
    channel_t ucRed,				   // Red component (0x00 to 0xFF)
    channel_t ucGreen,				// Green component (0x00 to 0xFF)
    channel_t ucBlue)				// Blue component (0x00 to 0xFF)
-	{
-   ASSERT(sEntry >= 0 && sEntry < palette::size);
+{
+  ASSERT(sEntry >= 0 && sEntry < palette::size);
 
-	if (asPalEntryLocks[sEntry] == 0)
-		{
-      apeApp[sEntry].red   = ucRed;
-      apeApp[sEntry].green = ucGreen;
-      apeApp[sEntry].blue  = ucBlue;
-		}
-	}
+  if (palette::locks[sEntry] == FALSE)
+  {
+    palette::buffer[sEntry].red   = ucRed;
+    palette::buffer[sEntry].green = ucGreen;
+    palette::buffer[sEntry].blue  = ucBlue;
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -928,13 +954,13 @@ void rspGetPaletteEntry(
    channel_t* psRed,				// Red component (0x00 to 0xFF) returned if not nullptr.
    channel_t* psGreen,			// Green component (0x00 to 0xFF) returned if not nullptr.
    channel_t* psBlue)				// Blue component (0x00 to 0xFF) returned if not nullptr.
-	{
-   ASSERT(sEntry >= 0 && sEntry < palette::size);
+{
+  ASSERT(sEntry >= 0 && sEntry < palette::size);
 
-   SET(psRed,		apeApp[sEntry].red);
-   SET(psGreen,	apeApp[sEntry].green);
-   SET(psBlue,		apeApp[sEntry].blue);
-	}
+  SET(psRed,   palette::buffer[sEntry].red);
+  SET(psGreen, palette::buffer[sEntry].green);
+  SET(psBlue,  palette::buffer[sEntry].blue);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -952,28 +978,19 @@ extern void rspGetPaletteEntries(
    channel_t* pucGreen,	// Pointer to first green component to copy to
    channel_t* pucBlue,		// Pointer to first blue component to copy to
    uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
-	{
-	// Set up source pointers.
-   channel_t*	pucSrcRed	= &(apeApp[sStartIndex].red);
-   channel_t*	pucSrcGreen	= &(apeApp[sStartIndex].green);
-   channel_t*	pucSrcBlue	= &(apeApp[sStartIndex].blue);
-
-	while (sCount-- > 0)
-		{
-		*pucRed		= *pucSrcRed;
-		*pucGreen	= *pucSrcGreen;
-		*pucBlue		= *pucSrcBlue;
-		// Increment destination.
-		pucRed			+= lIncBytes;
-		pucGreen			+= lIncBytes;
-		pucBlue			+= lIncBytes;
-
-		// Increment source.
-		pucSrcRed		+= sizeof(apeApp[0]);
-		pucSrcGreen		+= sizeof(apeApp[0]);
-		pucSrcBlue		+= sizeof(apeApp[0]);
-		}
-	}
+{
+  for(color32_t* pColor = palette::buffer + sStartIndex;
+      sCount-- > 0;
+      pucRed    += lIncBytes,
+      pucGreen  += lIncBytes,
+      pucBlue   += lIncBytes,
+      ++pColor)
+  {
+    *pucRed   = pColor->red;
+    *pucGreen = pColor->green;
+    *pucBlue  = pColor->blue;
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -983,17 +1000,18 @@ extern void rspGetPaletteEntries(
 //
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUpdatePalette(void)
-	{
-    }
+{
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Set entries in the color map used to tweak values set via 
+// Set entries in the color map used to tweak values set via
 // rspSetPaletteEntries().  Those colors' values will be used as indices
 // into this map when rspUpdatePalette() is called.  The resulting values
 // will be updated to the hardware.
-// rspGetPaletteEntries/Entry() will still return the original values set 
+// rspGetPaletteEntries/Entry() will still return the original values set
 // (not mapped values).
-// 
+//
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspSetPaletteMaps(
    palindex_t sStartIndex,			// Map entry to start copying to (has no effect on source!)
@@ -1002,33 +1020,29 @@ extern void rspSetPaletteMaps(
    channel_t* pucGreen,	// Pointer to first green component to copy from
    channel_t* pucBlue,		// Pointer to first blue component to copy from
    uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
-	{
-	// Set up destination pointers.
-   channel_t*	pucDstRed	= &(au8MapRed[sStartIndex]);
-   channel_t*	pucDstGreen	= &(au8MapGreen[sStartIndex]);
-   channel_t*	pucDstBlue	= &(au8MapBlue[sStartIndex]);
-
-	while (sCount-- > 0)
-		{
-		*pucDstRed++		= *pucRed;
-		*pucDstGreen++		= *pucGreen;
-		*pucDstBlue++		= *pucBlue;
-		// Increment source.
-		pucRed				+= lIncBytes;
-		pucGreen				+= lIncBytes;
-		pucBlue				+= lIncBytes;
-		}
-	}
+{
+  for(color32_t* pColor = palette::map + sStartIndex; // Set up destination
+      sCount-- > 0; // loop condition
+      ++pColor, // Increment destination
+      pucRed   += lIncBytes, // Increment sources
+      pucGreen += lIncBytes,
+      pucBlue  += lIncBytes)
+  {
+    pColor->red   = *pucRed; // transfer data
+    pColor->green = *pucGreen;
+    pColor->blue  = *pucBlue;
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Get entries in the color map used to tweak values set via 
+// Get entries in the color map used to tweak values set via
 // rspSetPaletteEntries().  Those colors' values will be used as indices
 // into this map when rspUpdatePalette() is called.  The resulting values
 // will be updated to the hardware.
-// rspGetPaletteEntries/Entry() will still return the original values set 
+// rspGetPaletteEntries/Entry() will still return the original values set
 // (not mapped values).
-// 
+//
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspGetPaletteMaps(
    palindex_t sStartIndex,			// Map entry to start copying from (has no effect on dest!)
@@ -1037,23 +1051,19 @@ extern void rspGetPaletteMaps(
    channel_t* pucGreen,	// Pointer to first green component to copy to
    channel_t* pucBlue,		// Pointer to first blue component to copy to
    uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
-	{
-	// Set up source pointers.
-   channel_t*	pucSrcRed	= &(au8MapRed[sStartIndex]);
-   channel_t*	pucSrcGreen	= &(au8MapGreen[sStartIndex]);
-   channel_t*	pucSrcBlue	= &(au8MapBlue[sStartIndex]);
-
-	while (sCount-- > 0)
-		{
-		*pucRed		= *pucSrcRed++;
-		*pucGreen	= *pucSrcGreen++;
-		*pucBlue		= *pucSrcBlue++;
-		// Increment destination.
-		pucRed				+= lIncBytes;
-		pucGreen				+= lIncBytes;
-		pucBlue				+= lIncBytes;
-		}
-	}
+{
+  for(color32_t* pColor = palette::map + sStartIndex; // Set up source
+      sCount-- > 0; // loop condition
+      ++pColor, // Increment source
+      pucRed   += lIncBytes, // Increment destinations
+      pucGreen += lIncBytes,
+      pucBlue  += lIncBytes)
+  {
+    *pucRed   = pColor->red; // transfer data
+    *pucGreen = pColor->green;
+    *pucBlue  = pColor->blue;
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lock several palette entries.  Locking an entry keeps it from
@@ -1063,35 +1073,25 @@ extern void rspGetPaletteMaps(
 extern void rspLockPaletteEntries(
    palindex_t sStartIndex,			// Palette entry at which to start locking.
    palindex_t sCount)					// Number of palette entries to lock.
-	{
-	// Set up iterator pointer.
-   int8_t* psLock = asPalEntryLocks + sStartIndex;
-
-	while (sCount-- > 0)
-		{
-		*psLock	= TRUE;
-		}
-	}
+{
+  for(int8_t* psLock = palette::locks + sStartIndex; sCount-- > 0; ++psLock)
+    *psLock = TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unlock several palette entries previously locked by rspLockPaletteEntries().
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUnlockPaletteEntries(
-	int16_t	sStartIndex,			// Palette entry at which to start locking.
-	int16_t	sCount)					// Number of palette entries to lock.
-	{
-	// Set up iterator pointer.
-   int8_t* psLock	= asPalEntryLocks + sStartIndex;
+   int16_t	sStartIndex,			// Palette entry at which to start locking.
+   int16_t	sCount)					// Number of palette entries to lock.
+{
+  for(int8_t* psLock = palette::locks + sStartIndex; sCount-- > 0; ++psLock)
+    *psLock = FALSE;
 
-	while (sCount-- > 0)
-		{
-		*psLock	= FALSE;
-		}
-
-	// Never ever ever unlock these.
-	asPalEntryLocks[0]	= TRUE;
-   asPalEntryLocks[0xFF]	= TRUE;
-	}
+  // Never ever ever unlock these.
+  palette::locks[0x00] = TRUE;
+  palette::locks[0xFF] = TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Dyna schtuff.
@@ -1110,10 +1110,10 @@ extern void rspUnlockPaletteEntries(
 extern void rspSetBackgroundCallback(	// Returns nothing.
 	void (BackgroundCall)(void))			// Callback when app processing becomes
 													// background.  nullptr to clear.
-	{
+{
   UNUSED(BackgroundCall);
-        /* no-op. */
-	}
+  /* no-op. */
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -1123,16 +1123,16 @@ extern void rspSetBackgroundCallback(	// Returns nothing.
 extern void rspSetForegroundCallback(	// Returns nothing.
 	void (ForegroundCall)(void))			// Callback when app processing becomes
 													// foreground.  nullptr to clear.
-	{
+{
   UNUSED(ForegroundCall);
-        /* no-op. */
-	}
+  /* no-op. */
+}
 
 extern bool rspIsBackground(void)			// Returns TRUE if in background, FALSE otherwise
-    {
-        extern bool GSDLAppIsActive;
-        return (!GSDLAppIsActive);
-    }
+{
+  extern bool GSDLAppIsActive;
+  return (!GSDLAppIsActive);
+}
 //////////////////////////////////////////////////////////////////////////////
 // EOF
 //////////////////////////////////////////////////////////////////////////////

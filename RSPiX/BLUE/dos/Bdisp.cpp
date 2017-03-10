@@ -110,29 +110,51 @@ namespace palette
 
 namespace vesa
 {
-  enum registers : uint16_t
+  enum registers : uint16_t // write to AX
   {
-    color_number  = 0x03C8,
-    color_value   = 0x03C9,
-    get_card_info = 0x4F00,
-    get_mode_info = 0x4F01,
-    set_mode      = 0x4F02,
-    get_mode      = 0x4F03,
-    set_bank_num  = 0x4F05,
+    color_number    = 0x03C8,
+    color_value     = 0x03C9,
+    get_card_info   = 0x4F00,
+    get_mode_info   = 0x4F01,
+    set_mode        = 0x4F02,
+    get_mode        = 0x4F03,
+    window_control  = 0x4F05,
+  };
+
+  enum options : uint16_t // write to BX
+  {
+    set_bank = 0x0000,
+    get_bank = 0x0100,
+    windowA  = 0x0000,
+    windowB  = 0x0001,
+  };
+
+  enum addresses : uint32_t
+  {
+    framebuffer = 0x000A0000,
+  };
+}
+
+namespace dos
+{
+  enum interrupts : uint8_t
+  {
+    vesa      = 0x10, // Video display functions (including VESA/VBE)
+    keyboard  = 0x16, // keyboard functions
   };
 }
 
 namespace display
 {
-  uint16_t get_vesa_mode(void);
-  uint16_t set_vesa_mode(uint16_t mode);
-  uint16_t probe_vesa(void);
+  uint16_t get_mode(void);
+  uint16_t set_mode(uint16_t mode);
+  uint16_t probe(void);
 
   static vesa_info_t vesa_info;
   static std::map<uint16_t, mode_info_t> mode_info;
   static mode_info_t current_mode_info;
 
-  static uint16_t initial_mode = get_vesa_mode();
+  static uint16_t initial_mode = get_mode();
   static uint16_t current_mode = initial_mode;
 
   namespace aligned_memory
@@ -141,38 +163,49 @@ namespace display
   }
   static void* framebuffer = reinterpret_cast<void*>(aligned_memory::framebuffer);
 
-  uint16_t set_vesa_mode(uint16_t mode)
+  uint16_t set_mode(uint16_t mode)
   {
     current_mode_info = mode_info[mode];
     __dpmi_regs regs;
     regs.x.ax = vesa::set_mode;
     regs.x.bx = mode;
-    __dpmi_int(0x10, &regs);
+    __dpmi_int(dos::vesa, &regs);
     if (regs.h.ah)
       return FAILURE;
     return SUCCESS;
   }
 
-  uint16_t get_vesa_mode(void)
+  uint16_t get_mode(void)
   {
     __dpmi_regs regs;
     regs.x.ax = vesa::get_mode;
-    __dpmi_int(0x10, &regs);
+    __dpmi_int(dos::vesa, &regs);
     if (regs.h.ah)
       return FAILURE;
     return regs.x.bx;
   }
 
-  void set_vesa_bank(uint16_t bank_number)
+  void set_bank(uint16_t bank_number)
   {
      __dpmi_regs regs;
-     regs.x.ax = vesa::set_bank_num;
-     regs.x.bx = 0;
+     regs.x.ax = vesa::window_control;
+     regs.x.bx = vesa::set_bank | vesa::windowA;
      regs.x.dx = bank_number;
-     __dpmi_int(0x10, &regs);
+     __dpmi_int(dos::vesa, &regs);
   }
-
-  uint16_t probe_vesa(void)
+/*
+  uint16_t get_bank(void)
+  {
+    __dpmi_regs regs;
+    regs.x.ax = vesa::window_control;
+    regs.x.bx = vesa::set_bank | vesa::windowA;
+    __dpmi_int(dos::vesa, &regs);
+    if (regs.h.ah)
+      return FAILURE;
+    return regs.x.bx;
+  }
+*/
+  uint16_t probe(void)
   {
     __dpmi_regs regs;
     uintptr_t sys_ptr;
@@ -189,7 +222,7 @@ namespace display
     regs.x.ax = vesa::get_card_info;
     regs.x.di = sys_ptr & 0xF;
     regs.x.es = (sys_ptr >> 4) & 0x0000FFFF;
-    __dpmi_int(0x10, &regs);
+    __dpmi_int(dos::vesa, &regs);
 
     if (regs.h.ah) // abort upon error
       return FAILURE;
@@ -223,7 +256,7 @@ namespace display
       regs.x.di = sys_ptr & 0xF;
       regs.x.es = (sys_ptr >> 4) & 0xFFFF;
       regs.x.cx = m.first;
-      __dpmi_int(0x10, &regs);
+      __dpmi_int(dos::vesa, &regs);
 
       if (!regs.h.ah) // if no error occurred
         dosmemget(sys_ptr, sizeof(mode_info_t), &m.second); // copy the returned data
@@ -249,7 +282,7 @@ namespace display
     while (remaining > 0)
     {
       // select the appropriate bank
-      set_vesa_bank(bank_number);
+      set_bank(bank_number);
 
       // how much can we copy in one go?
       if (remaining > bank_size)
@@ -258,7 +291,7 @@ namespace display
         copy_size = remaining;
 
       // copy a bank of data to the screen
-      dosmemput(memory, copy_size, 0x000A0000);//current_mode_info.PhysBasePtr);
+      dosmemput(memory, copy_size, vesa::framebuffer);
 
       // move on to the next bank of data
       remaining -= copy_size;
@@ -269,9 +302,9 @@ namespace display
 
   void load_pallette(color32_t* base, uint16_t count)
   {
-    for(uint16_t i = 0; i < count; ++i)
+    color32_t* color = base;
+    for(uint16_t i = 0; i < count; ++i, ++color)
     {
-      color32_t* color = base + i;
       outportb(vesa::color_number, i);
       outportb(vesa::color_value, color->red  );
       outportb(vesa::color_value, color->green);
@@ -284,7 +317,19 @@ namespace display
 
 extern void Disp_Init(void)    // Returns nothing.
 {
-  TRACE("VESA probe: %s\n", (display::probe_vesa() == SUCCESS ? "succeeded" : "failed"));
+  TRACE("VESA probe: %s\n", (display::probe() == SUCCESS ? "succeeded" : "failed"));
+
+  // Initialize maps to indentities.
+  for (uint8_t i = 1; i; ++i)
+  {
+    palette::map[i].red   = i;
+    palette::map[i].green = i;
+    palette::map[i].blue  = i;
+  }
+
+  // Never ever ever unlock these.
+  palette::locks[0x00] = TRUE;
+  palette::locks[0xFF] = TRUE;
 }
 
 extern void rspSetApplicationName(
@@ -433,7 +478,7 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
        mode.second.YResolution == sHeight &&
        mode.second.NumberOfImagePages >= sPages)
     {
-      display::set_vesa_mode(mode.first);
+      display::set_mode(mode.first);
       return SUCCESS;
     }
   }
@@ -617,14 +662,16 @@ extern int16_t rspAllowPageFlip(void)   // Returns 0 on success.
 //
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspSetPaletteEntries(
-    palindex_t sStartIndex,                // In: Palette entry to start copying to (has no effect on source!)
-    palindex_t sCount,                     // In: Number of palette entries to do
-    channel_t* pucRed,                    // In: Pointer to first red component to copy from
+    palindex_t sStartIndex,               // In: Palette entry to start copying to (has no effect on source!)
+    palindex_t sCount,                    // In: Number of palette entries to do
+    channel_t* pucRed,                    // In: Pointer to first red   component to copy from
     channel_t* pucGreen,                  // In: Pointer to first green component to copy from
-    channel_t* pucBlue,                   // In: Pointer to first blue component to copy from
-    uint32_t lIncBytes)                  // In: Number of bytes by which to increment pointers after each copy
+    channel_t* pucBlue,                   // In: Pointer to first blue  component to copy from
+    uint32_t lIncBytes)                   // In: Number of bytes by which to increment pointers after each copy
 {
-  TRACE("rspSetPaletteEntries\n");
+  static int i = 0;
+  TRACE("instance: %i\n", ++i);
+
   int8_t* psLock;
   color32_t* pColor;
 
@@ -642,6 +689,7 @@ extern void rspSetPaletteEntries(
       pColor->red   = *pucRed; // transfer data
       pColor->green = *pucGreen;
       pColor->blue  = *pucBlue;
+      TRACE("color #%i - %i: %02x %02x %02x\n", sStartIndex, sCount, pColor->red, pColor->green, pColor->blue);
     }
   }
 }
@@ -653,10 +701,10 @@ extern void rspSetPaletteEntries(
 //
 ///////////////////////////////////////////////////////////////////////////////
 void rspSetPaletteEntry(
-    palindex_t sEntry,                     // Palette entry (0x00 to 0xFF)
-    channel_t ucRed,                      // Red component (0x00 to 0xFF)
+    palindex_t sEntry,                    // Palette entry (0x00 to 0xFF)
+    channel_t ucRed,                      // Red   component (0x00 to 0xFF)
     channel_t ucGreen,                    // Green component (0x00 to 0xFF)
-    channel_t ucBlue)                     // Blue component (0x00 to 0xFF)
+    channel_t ucBlue)                     // Blue  component (0x00 to 0xFF)
 {
   ASSERT(sEntry < palette::size);
 
@@ -675,10 +723,10 @@ void rspSetPaletteEntry(
 //
 ///////////////////////////////////////////////////////////////////////////////
 void rspGetPaletteEntry(
-    palindex_t sEntry,                       // Palette entry (0x00 to 0xFF)
-    channel_t* psRed,                       // Red component (0x00 to 0xFF) returned if not nullptr.
+    palindex_t sEntry,                      // Palette entry (0x00 to 0xFF)
+    channel_t* psRed,                       // Red   component (0x00 to 0xFF) returned if not nullptr.
     channel_t* psGreen,                     // Green component (0x00 to 0xFF) returned if not nullptr.
-    channel_t* psBlue)                      // Blue component (0x00 to 0xFF) returned if not nullptr.
+    channel_t* psBlue)                      // Blue  component (0x00 to 0xFF) returned if not nullptr.
 {
   ASSERT(sEntry < palette::size);
 
@@ -697,12 +745,12 @@ void rspGetPaletteEntry(
 //
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspGetPaletteEntries(
-    palindex_t sStartIndex,                  // Palette entry to start copying from
-    palindex_t sCount,                       // Number of palette entries to do
-    channel_t* pucRed,                      // Pointer to first red component to copy to
+    palindex_t sStartIndex,                 // Palette entry to start copying from
+    palindex_t sCount,                      // Number of palette entries to do
+    channel_t* pucRed,                      // Pointer to first red   component to copy to
     channel_t* pucGreen,                    // Pointer to first green component to copy to
-    channel_t* pucBlue,                     // Pointer to first blue component to copy to
-    uint32_t lIncBytes)                    // Number of bytes by which to increment pointers after each copy
+    channel_t* pucBlue,                     // Pointer to first blue  component to copy to
+    uint32_t lIncBytes)                     // Number of bytes by which to increment pointers after each copy
 {
   for(color32_t* pColor = palette::buffer + sStartIndex; // Set up source
       sCount-- > 0; // loop condition
@@ -729,6 +777,7 @@ extern void rspUpdatePalette(void)
   TRACE("rspUpdatePalette\n");
   display::load_pallette(palette::buffer, palette::size);
 }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Set entries in the color map used to tweak values set via 
@@ -740,12 +789,12 @@ extern void rspUpdatePalette(void)
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspSetPaletteMaps(
-    palindex_t sStartIndex,                  // Map entry to start copying to (has no effect on source!)
-    palindex_t sCount,                       // Number of map entries to do
-    channel_t* pucRed,                      // Pointer to first red component to copy from
+    palindex_t sStartIndex,                 // Map entry to start copying to (has no effect on source!)
+    palindex_t sCount,                      // Number of map entries to do
+    channel_t* pucRed,                      // Pointer to first red   component to copy from
     channel_t* pucGreen,                    // Pointer to first green component to copy from
-    channel_t* pucBlue,                     // Pointer to first blue component to copy from
-    uint32_t lIncBytes)                    // Number of bytes by which to increment pointers after each copy
+    channel_t* pucBlue,                     // Pointer to first blue  component to copy from
+    uint32_t lIncBytes)                     // Number of bytes by which to increment pointers after each copy
 {
   for(color32_t* pColor = palette::map + sStartIndex; // Set up destination
       sCount-- > 0; // loop condition
@@ -771,12 +820,12 @@ extern void rspSetPaletteMaps(
 // 
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspGetPaletteMaps(
-    palindex_t sStartIndex,                  // Map entry to start copying from (has no effect on dest!)
-    palindex_t sCount,                       // Number of map entries to do
-    channel_t* pucRed,                      // Pointer to first red component to copy to
+    palindex_t sStartIndex,                 // Map entry to start copying from (has no effect on dest!)
+    palindex_t sCount,                      // Number of map entries to do
+    channel_t* pucRed,                      // Pointer to first red   component to copy to
     channel_t* pucGreen,                    // Pointer to first green component to copy to
-    channel_t* pucBlue,                     // Pointer to first blue component to copy to
-    uint32_t lIncBytes)                    // Number of bytes by which to increment pointers after each copy
+    channel_t* pucBlue,                     // Pointer to first blue  component to copy to
+    uint32_t lIncBytes)                     // Number of bytes by which to increment pointers after each copy
 {
   for(color32_t* pColor = palette::map + sStartIndex; // Set up source
       sCount-- > 0; // loop condition

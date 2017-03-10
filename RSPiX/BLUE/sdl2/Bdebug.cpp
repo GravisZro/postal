@@ -130,7 +130,10 @@ void rspTrace(const char *frmt, ... )
 		va_end (varp);
 		LOGI("%s",errortext);
 #else
-		vfprintf(stderr, frmt, varp);
+      //vfprintf(stderr, frmt, varp);
+      FILE* f = fopen("output.log", "a+");
+      vfprintf(f, frmt, varp);
+      fclose(f);
 #endif
 
 #if defined(RSP_DEBUG_OUT_FILE)

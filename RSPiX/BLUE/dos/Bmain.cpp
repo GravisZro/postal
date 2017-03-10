@@ -53,6 +53,7 @@ int16_t rspInitBlue(void)
   Key_Init();
   Time_Init();
 
+  RspBlueReady = sResult == SUCCESS;
   return sResult;
 }
 

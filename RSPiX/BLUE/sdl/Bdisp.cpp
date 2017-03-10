@@ -764,7 +764,7 @@ extern void rspPresentFrame(void)
   if ((now - ticks) > 5000)
   {
     if (ticks > 0)
-      printf("fps: %f\n", (((double) frames) / ((double) (now - ticks))) * 1000.0);
+      TRACE("fps: %f\n", (((double) frames) / ((double) (now - ticks))) * 1000.0);
     ticks = now;
     frames = 0;
   }

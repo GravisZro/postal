@@ -154,7 +154,7 @@ struct c_string
 #if defined(_WIN32)
 # if defined(_MSC_VER)
 #  pragma message("I find your lack of POSIX disturbing. ;)")
-#  include <BaseTsd.h>
+#  include <BaseTsd.h> // for SSIZE_T
 # endif
 # if defined(_MSC_VER) && _MSC_VER < 1900
 typedef SSIZE_T ssize_t;
@@ -168,10 +168,12 @@ typedef SSIZE_T ssize_t;
 #  if !defined(PATH_MAX)
 #   define PATH_MAX _MAX_PATH
 #  endif
+#  include <direct.h> // for mkdir (MVCS)
+# else
+#  include <sys/stat.h> // for mkdir (MingW32)
 # endif
-# include <sys/stat.h>
-# define S_IRWXU 1
-inline int mkdir(const char* path, int) { return mkdir(path); }
+# define S_IRWXU  0  // dummy value
+inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x, y) cross-platform
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp
 # endif

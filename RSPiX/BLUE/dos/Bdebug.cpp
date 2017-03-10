@@ -149,7 +149,7 @@ void rspTrace(const char *frmt, ... )
     //vfprintf(stderr, frmt, varp);
     //vsprintf(output, frmt, varp);
 
-    FILE* f = fopen("output.log", "a+");
+    FILE* f = fopen("output.txt", "a+");
     vfprintf(f, frmt, varp);
     fclose(f);
 

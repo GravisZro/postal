@@ -99,6 +99,7 @@ int16_t rspInitBlue(void)
   Joy_Init();
 #endif // defined(ALLOW_JOYSTICK)
 
+  RspBlueReady = sResult == SUCCESS;
   return sResult;
 }
 
