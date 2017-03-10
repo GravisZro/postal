@@ -169,6 +169,7 @@ typedef SSIZE_T ssize_t;
 #   define PATH_MAX _MAX_PATH
 #  endif
 #  include <direct.h> // for mkdir (MVCS)
+#  pragma warning (disable: C4996) // disable warning about using mkdir
 # else
 #  include <sys/stat.h> // for mkdir (MingW32)
 # endif
