@@ -47,7 +47,7 @@ namespace palette
   }
   static color32_t* buffer = reinterpret_cast<color32_t*>(aligned_memory::buffer);
   static color32_t* map    = reinterpret_cast<color32_t*>(aligned_memory::map);
-  static uint8_t locks[size];	// TRUE, if an indexed entry is locked. FALSE, if not.
+  static int8_t locks[size];	// TRUE, if an indexed entry is locked. FALSE, if not.
 }
 
 namespace display

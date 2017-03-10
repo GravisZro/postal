@@ -46,7 +46,7 @@ static int RequestedWidth = 0;
 static int RequestedHeight = 0;
 static int FramebufferWidth = 0;
 static int FramebufferHeight = 0;
-static uint32_t *TexturePointer = nullptr;
+static color32_t *TexturePointer = nullptr;
 static uint8_t *PalettedTexturePointer = nullptr;
 
 typedef struct		// Stores information on usable video modes.
@@ -59,11 +59,10 @@ typedef struct		// Stores information on usable video modes.
 
 static RSList<video_mode_t, int16_t>	slvmModes;	// List of available video modes.
 
-typedef union { struct { uint8_t b; uint8_t g; uint8_t r; uint8_t a; }; uint32_t argb; } ArgbColor;
-static ArgbColor	apeApp[palette::size];				// App's palette.  The palette
+static color32_t	apeApp[palette::size];				// App's palette.  The palette
 														// entries the App actually set.
 
-//static ArgbColor	apeMapped[palette::size];			// Tweaked palette.
+//static color32_t	apeMapped[palette::size];			// Tweaked palette.
 														// This is the palette updated to
 														// the hardware.  apeApp is trans-
 														// lated through au8MapRed, Green,
@@ -528,7 +527,7 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
         ASSERT(sHeight == 480);
 
         for (uint16_t i = 0; i < palette::size; i++)
-            apeApp[i].a = 0xFF;
+            apeApp[i].alpha= 0xFF;
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
@@ -626,9 +625,9 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
             exit(1);
         }
 
-        TexturePointer = new uint32_t[FramebufferWidth * FramebufferHeight];
+        TexturePointer = new color32_t[FramebufferWidth * FramebufferHeight];
         PalettedTexturePointer = new uint8_t[FramebufferWidth * FramebufferHeight];
-        SDL_memset(TexturePointer, '\0', FramebufferWidth * FramebufferHeight * sizeof (uint32_t));
+        SDL_memset(TexturePointer, '\0', FramebufferWidth * FramebufferHeight * sizeof (color32_t));
         SDL_memset(PalettedTexturePointer, '\0', FramebufferWidth * FramebufferHeight * sizeof (uint8_t));
         SDL_UpdateTexture(sdlTexture, nullptr, TexturePointer, FramebufferWidth * 4);
 
@@ -694,11 +693,11 @@ extern void rspPresentFrame(void)
     // !!! FIXME: I imagine this is not fast. Maybe keep the dirty rect code at least?
     ASSERT(sizeof (apeApp[0]) == sizeof (uint32_t));
     const uint8_t *src = PalettedTexturePointer;
-    uint32_t *dst = TexturePointer;
+    color32_t *dst = TexturePointer;
     for (int y = 0; y < FramebufferHeight; y++)
     {
         for (int x = 0; x < FramebufferWidth; x++, src++, dst++)
-            *dst = apeApp[*src].argb;
+            *dst = apeApp[*src];
         }
 
     SDL_UpdateTexture(sdlTexture, nullptr, TexturePointer, FramebufferWidth * 4);
@@ -868,9 +867,9 @@ extern void rspSetPaletteEntries(
    uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up destination pointers.
-   channel_t*	pucDstRed	= &(apeApp[sStartIndex].r);
-   channel_t*	pucDstGreen	= &(apeApp[sStartIndex].g);
-   channel_t*	pucDstBlue	= &(apeApp[sStartIndex].b);
+   channel_t*	pucDstRed	= &(apeApp[sStartIndex].red);
+   channel_t*	pucDstGreen	= &(apeApp[sStartIndex].green);
+   channel_t*	pucDstBlue	= &(apeApp[sStartIndex].blue);
 
 	// Set up lock pointer.
    int8_t* psLock = asPalEntryLocks + sStartIndex;
@@ -885,9 +884,9 @@ extern void rspSetPaletteEntries(
 			}
 
 		// Increment source.
-		pucRed			+= lIncBytes;
-		pucGreen		+= lIncBytes;
-		pucBlue			+= lIncBytes;
+      pucRed	+= lIncBytes;
+      pucGreen += lIncBytes;
+      pucBlue	+= lIncBytes;
 
 		// Increment destination.
 		pucDstRed		+= sizeof(apeApp[0]);
@@ -912,9 +911,9 @@ void rspSetPaletteEntry(
 
 	if (asPalEntryLocks[sEntry] == 0)
 		{
-		apeApp[sEntry].r	= ucRed;
-		apeApp[sEntry].g	= ucGreen;
-		apeApp[sEntry].b	= ucBlue;
+      apeApp[sEntry].red   = ucRed;
+      apeApp[sEntry].green = ucGreen;
+      apeApp[sEntry].blue  = ucBlue;
 		}
 	}
 
@@ -932,9 +931,9 @@ void rspGetPaletteEntry(
 	{
    ASSERT(sEntry >= 0 && sEntry < palette::size);
 
-	SET(psRed,		apeApp[sEntry].r);
-	SET(psGreen,	apeApp[sEntry].g);
-	SET(psBlue,		apeApp[sEntry].b);
+   SET(psRed,		apeApp[sEntry].red);
+   SET(psGreen,	apeApp[sEntry].green);
+   SET(psBlue,		apeApp[sEntry].blue);
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -955,9 +954,9 @@ extern void rspGetPaletteEntries(
    uint32_t lIncBytes)				// Number of bytes by which to increment pointers after each copy
 	{
 	// Set up source pointers.
-   channel_t*	pucSrcRed	= &(apeApp[sStartIndex].r);
-   channel_t*	pucSrcGreen	= &(apeApp[sStartIndex].g);
-   channel_t*	pucSrcBlue	= &(apeApp[sStartIndex].b);
+   channel_t*	pucSrcRed	= &(apeApp[sStartIndex].red);
+   channel_t*	pucSrcGreen	= &(apeApp[sStartIndex].green);
+   channel_t*	pucSrcBlue	= &(apeApp[sStartIndex].blue);
 
 	while (sCount-- > 0)
 		{

@@ -60,14 +60,6 @@ static RSList<video_mode_t, int16_t> slvmModes; // List of available video modes
 
 static SDL_Color apeApp[palette::size];           // App's palette.  The palette entries the App actually set.
 
-//static ArgbColor    apeMapped[palette::size];            // Tweaked palette.
-                                        // This is the palette updated to
-                                        // the hardware.  apeApp is trans-
-                                        // lated through au8MapRed, Green,
-                                        // and Blue and stored here for
-                                        // updating to the hardware on
-                                        // rspUpdatePalette().
-
 static channel_t   au8MapRed[palette::size];        // Map of red   intensities to hardware values.  Initially an identity mapping.
 static channel_t   au8MapGreen[palette::size];      // Map of green intensities to hardware values.  Initially an identity mapping.
 static channel_t   au8MapBlue[palette::size];       // Map of blue  intensities to hardware values.  Initially an identity mapping.

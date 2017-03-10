@@ -346,6 +346,10 @@ struct RPixel32
   }
 };
 
+static_assert(sizeof(color24_t) == 3, "compiler fail!");
+static_assert(sizeof(color32_t) == 4, "compiler fail!");
+static_assert(sizeof(RPixel24) == 3, "compiler fail!");
+static_assert(sizeof(RPixel32) == 4, "compiler fail!");
 
 ////////////////////////////////////////////////////////////////////////////////
 // Usefull Templates
