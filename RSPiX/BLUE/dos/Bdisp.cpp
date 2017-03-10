@@ -112,8 +112,13 @@ namespace vesa
 {
   enum registers : uint16_t
   {
-    color_number = 0x3c8,
-    color_value  = 0x3c9,
+    color_number  = 0x03C8,
+    color_value   = 0x03C9,
+    get_card_info = 0x4F00,
+    get_mode_info = 0x4F01,
+    set_mode      = 0x4F02,
+    get_mode      = 0x4F03,
+    set_bank_num  = 0x4F05,
   };
 }
 
@@ -140,7 +145,7 @@ namespace display
   {
     current_mode_info = mode_info[mode];
     __dpmi_regs regs;
-    regs.x.ax = 0x4F02;
+    regs.x.ax = vesa::set_mode;
     regs.x.bx = mode;
     __dpmi_int(0x10, &regs);
     if (regs.h.ah)
@@ -151,7 +156,7 @@ namespace display
   uint16_t get_vesa_mode(void)
   {
     __dpmi_regs regs;
-    regs.x.ax = 0x4F03;
+    regs.x.ax = vesa::get_mode;
     __dpmi_int(0x10, &regs);
     if (regs.h.ah)
       return FAILURE;
@@ -161,7 +166,7 @@ namespace display
   void set_vesa_bank(uint16_t bank_number)
   {
      __dpmi_regs regs;
-     regs.x.ax = 0x4F05;
+     regs.x.ax = vesa::set_bank_num;
      regs.x.bx = 0;
      regs.x.dx = bank_number;
      __dpmi_int(0x10, &regs);
@@ -181,7 +186,7 @@ namespace display
     dosmemput("VBE2", 4, sys_ptr);
 
     // call the VESA function
-    regs.x.ax = 0x4F00;
+    regs.x.ax = vesa::get_card_info;
     regs.x.di = sys_ptr & 0xF;
     regs.x.es = (sys_ptr >> 4) & 0x0000FFFF;
     __dpmi_int(0x10, &regs);
@@ -214,7 +219,7 @@ namespace display
         _farpokeb(_dos_ds, sys_ptr + i, 0);
 
       // call the VESA function
-      regs.x.ax = 0x4F01;
+      regs.x.ax = vesa::get_mode_info;
       regs.x.di = sys_ptr & 0xF;
       regs.x.es = (sys_ptr >> 4) & 0xFFFF;
       regs.x.cx = m.first;
@@ -267,10 +272,10 @@ namespace display
     for(uint16_t i = 0; i < count; ++i)
     {
       color32_t* color = base + i;
-      outportb(0x03C8, i);
-      outportb(0x03C9, color->red  );
-      outportb(0x03C9, color->green);
-      outportb(0x03C9, color->blue );
+      outportb(vesa::color_number, i);
+      outportb(vesa::color_value, color->red  );
+      outportb(vesa::color_value, color->green);
+      outportb(vesa::color_value, color->blue );
     }
   }
 }
