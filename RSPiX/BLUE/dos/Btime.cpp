@@ -26,21 +26,60 @@
 
 // Platform //////////////////////////////////////////////////////////////////
 #include <time.h>
-
+#include <sys/time.h>
 
 static microseconds_t MicrosecondsBase = 0;
 
 //////////////////////////////////////////////////////////////////////////////
-// Functions.
+// The following is taken from SDL 1.2.15
 //////////////////////////////////////////////////////////////////////////////
+
+/* The first ticks value of the application */
+#ifdef HAVE_CLOCK_GETTIME
+static struct timespec start;
+#else
+static struct timeval start;
+#endif /* HAVE_CLOCK_GETTIME */
+
+
+void SDL_StartTicks(void)
+{
+   /* Set first ticks value */
+#if HAVE_CLOCK_GETTIME
+   clock_gettime(CLOCK_MONOTONIC,&start);
+#else
+   gettimeofday(&start, NULL);
+#endif
+}
+
+
+uint32_t SDL_GetTicks (void)
+{
+#if HAVE_CLOCK_GETTIME
+   uint32_t ticks;
+   struct timespec now;
+   clock_gettime(CLOCK_MONOTONIC,&now);
+   ticks=(now.tv_sec-start.tv_sec)*1000+(now.tv_nsec-start.tv_nsec)/1000000;
+   return(ticks);
+#else
+   uint32_t ticks;
+   struct timeval now;
+   gettimeofday(&now, NULL);
+   ticks=(now.tv_sec-start.tv_sec)*1000+(now.tv_usec-start.tv_usec)/1000;
+   return(ticks);
+#endif
+}
 
 //////////////////////////////////////////////////////////////////////////////
 //
 // Initializes the time module.
 //
 //////////////////////////////////////////////////////////////////////////////
+//static itimerval g_timer;
+
 extern void Time_Init(void)
 {
+  SDL_StartTicks();
   MicrosecondsBase = rspGetAppMicroseconds();
 }
 
@@ -53,7 +92,7 @@ extern void Time_Init(void)
 //////////////////////////////////////////////////////////////////////////////
 extern milliseconds_t rspGetMilliseconds(void)
 {
-  return clock() * 1000 / CLOCKS_PER_SEC;
+  return SDL_GetTicks();
 }
 
 //////////////////////////////////////////////////////////////////////////////

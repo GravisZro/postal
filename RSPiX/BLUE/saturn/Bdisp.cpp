@@ -459,7 +459,7 @@ extern void rspSetPaletteEntries(
     channel_t* pucBlue,                   // In: Pointer to first blue component to copy from
     uint32_t lIncBytes)                  // In: Number of bytes by which to increment pointers after each copy
 {
-  uint8_t* psLock;
+  int8_t* psLock;
   color32_t* pColor;
 
   for(psLock = palette::locks + sStartIndex, // Set up lock pointer
@@ -635,7 +635,7 @@ extern void rspLockPaletteEntries(
     palindex_t    sStartIndex,               // Palette entry at which to start locking.
     palindex_t    sCount)                    // Number of palette entries to lock.
 {
-  for(uint8_t* psLock = palette::locks + sStartIndex; sCount-- > 0; ++psLock)
+  for(int8_t* psLock = palette::locks + sStartIndex; sCount-- > 0; ++psLock)
     *psLock = TRUE;
 }
 
@@ -646,7 +646,7 @@ extern void rspUnlockPaletteEntries(
     palindex_t    sStartIndex,               // Palette entry at which to start locking.
     palindex_t    sCount)                    // Number of palette entries to lock.
 {
-  for(uint8_t* psLock = palette::locks + sStartIndex; sCount-- > 0; ++psLock)
+  for(int8_t* psLock = palette::locks + sStartIndex; sCount-- > 0; ++psLock)
     *psLock = FALSE;
 
   // Never ever ever unlock these.

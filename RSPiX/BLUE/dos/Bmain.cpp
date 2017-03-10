@@ -43,6 +43,7 @@ bool mouse_grabbed = false;
 
 extern void Disp_Init(void);
 extern void Key_Init(void);
+extern void Time_Init(void);
 
 int16_t rspInitBlue(void)
 {
@@ -50,6 +51,7 @@ int16_t rspInitBlue(void)
 
   Disp_Init();
   Key_Init();
+  Time_Init();
 
   return sResult;
 }
