@@ -41,7 +41,6 @@ static struct timespec start;
 static struct timeval start;
 #endif /* HAVE_CLOCK_GETTIME */
 
-
 void SDL_StartTicks(void)
 {
    /* Set first ticks value */
@@ -51,7 +50,6 @@ void SDL_StartTicks(void)
    gettimeofday(&start, NULL);
 #endif
 }
-
 
 uint32_t SDL_GetTicks (void)
 {
