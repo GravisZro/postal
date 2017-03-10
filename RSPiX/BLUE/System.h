@@ -165,14 +165,13 @@ typedef SSIZE_T ssize_t;
 #  if !defined(vsnprintf)
 #   define vsnprintf _vsnprintf
 #  endif
-#  if !defined(mkdir)
-#   define mkdir _mkdir
-#  endif
 #  if !defined(PATH_MAX)
 #   define PATH_MAX _MAX_PATH
 #  endif
-#  define mkdir(x, y) _mkdir(x)
 # endif
+# include <sys/stat.h>
+# define S_IRWXU 1
+inline int mkdir(const char* path, int) { return mkdir(path); }
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp
 # endif
