@@ -36,6 +36,7 @@
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
+#include <cstddef>
 
 
 extern SDL_Window *sdlWindow;
@@ -64,8 +65,8 @@ namespace palette
 {
   namespace aligned_memory
   {
-    static std::aligned_storage<sizeof(color32_t), alignof(max_align_t)>::type buffer[size];
-    static std::aligned_storage<sizeof(color32_t), alignof(max_align_t)>::type map   [size];
+    static std::aligned_storage<sizeof(color32_t), alignof(std::max_align_t)>::type buffer[size];
+    static std::aligned_storage<sizeof(color32_t), alignof(std::max_align_t)>::type map   [size];
   }
   static color32_t* buffer = reinterpret_cast<color32_t*>(aligned_memory::buffer);
   static color32_t* map    = reinterpret_cast<color32_t*>(aligned_memory::map);
