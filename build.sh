@@ -367,6 +367,16 @@ do
 
     --platform=*)
       platform=$(arg_value ${option})
+      case ${platform} in
+        *32)
+          platform_bits="32"
+          platform=$(echo $platform | sed -e "s/\(\S\+\)32/\1/")
+        ;;
+        *64)
+          platform_bits="64"
+          platform=$(echo $platform | sed -e "s/\(\S\+\)64/\1/")
+        ;;
+      esac
     ;;
 
     --platform-bits=*)
