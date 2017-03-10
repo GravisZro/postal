@@ -11,3 +11,10 @@ testing/*
 ipch/*
 Backup1/*
 *sdf
+postal.exe
+postal.posix*
+postal*.exe
+postal.pro.user
+*.ini
+CWSDPMI.SWP
+OUTPUT.LOG
