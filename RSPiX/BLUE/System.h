@@ -152,11 +152,27 @@ struct c_string
 #include <BLUE/portable_endian.h>
 
 #if defined(_WIN32)
-# if defined(_MSC_VER)
-#  pragma message("I find your lack of POSIX disturbing. ;)")
+# if defined(_MSC_VER) // for all versions
+#  pragma message("I find your lack of standards compliance disturbing. ;)")
+#  include <BLUE/stdint_msvc.h>
 #  include <BaseTsd.h> // for SSIZE_T
+#  include <direct.h> // for mkdir (MVCS)
+#  if !defined(NOTE)
+#   define NOTE(x) __pragma(message("NOTE: " x))
+#  endif
+#  if !defined(alignof)
+#   define alignof(x) __alignof(x) // C++11 patch for MSVC
+#  endif
+#  if !defined(mkdir)
+#   define mkdir(x) _mkdir(x)
+#  endif
+# else // for MingW32/64
+#  include <sys/stat.h> // for mkdir (MingW32)
+# define DO_PRAGMA(x) _Pragma (#x)
+# define NOTE(x) DO_PRAGMA(message("NOTE: " x))
 # endif
-# if defined(_MSC_VER) && _MSC_VER < 1900
+
+# if defined(_MSC_VER) && _MSC_VER < 1900 // for old versions
 typedef SSIZE_T ssize_t;
 #  define constexpr inline
 #  if !defined(snprintf)
@@ -168,24 +184,15 @@ typedef SSIZE_T ssize_t;
 #  if !defined(PATH_MAX)
 #   define PATH_MAX _MAX_PATH
 #  endif
-#  include <direct.h> // for mkdir (MVCS)
-#  pragma warning (disable: C4996) // disable warning about using mkdir
-# else
-#  include <sys/stat.h> // for mkdir (MingW32)
 # endif
-# define S_IRWXU  0  // dummy value
-inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x, y) cross-platform
+
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp
 # endif
-# if defined(_MSC_VER)
-#  define NOTE(x) __pragma(message("NOTE: " x))
-#  include <BLUE/stdint_msvc.h>
-# else
-# define DO_PRAGMA(x) _Pragma (#x)
-# define NOTE(x) DO_PRAGMA(message("NOTE: " x))
-# endif
+# define S_IRWXU  0  // dummy value
+inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x, y) cross-platform
 # define SYSTEM_PATH_SEPARATOR	'\\'
+
 #else
 # include <sys/types.h>
 # if defined __GNUC__ && defined __GNUC_MINOR__
