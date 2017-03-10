@@ -249,7 +249,7 @@ c_standard="-std=c11"
 platform=$(to_lower $(uname -s))
 arch=$(uname -m)
 verbose=false
-clean=false;
+clean=false
 makefile="Makefile.gravis"
 build_name="postal"
 backend="sdl2"
@@ -573,11 +573,11 @@ echo "Linker flags: $ldflags"
 echo "Options: $defines"
 echo "Executable: $build_name"
 
-if [ $clean ]
+if ${clean}
 then
-make_target="clean"
+  make_target="clean"
 else
-make_target="$build_name"
+  make_target=$build_name
 fi
 
 echo "executing: make -f $makefile $make_target -e VERBOSE=\"$verbose\" -e CC=\"$cpp_compiler\" FLAGS=\"$cflags\" LDFLAGS=\"$ldflags\" -e DEFINES=\"$defines\" -e POSTAL_ARCHFLAGS=\"$archflags\" -e POSTAL_BINARY=\"$build_name\" -e BACKEND=\"$backend\" -e CPP_STANDARD=\"$cpp_standard\" -e C_STANDARD=\"$c_standard\" -e BUILD_PATH=\"bin/$(to_lower $platform)${platform_bits}\""
@@ -623,9 +623,6 @@ fi
 #                                Build Process                                 #
 #                                                                              #
 ################################################################################
-
-
-bindir="./bin"
 
 
 #PANDORA
