@@ -234,24 +234,12 @@ HEADERS += \
     personatorium.h \
     play.h \
     PostalAttrib.h \
-    PostalPrefix.h \
-    PostalPrefixD.h \
-    PostalPrefixFrench.h \
-    PostalPrefixFrenchD.h \
-    PostalPrefixGerman.h \
-    PostalPrefixGermanD.h \
-    PostalPrefixUK.h \
-    PostalPrefixUKD.h \
-    PostalPrefixUS.h \
-    PostalPrefixUSD.h \
     PowerUp.h \
     ProtoBSDIP.h \
     pylon.h \
     reality.h \
     realm.h \
     rocket.h \
-    RSPiXPrefix.h \
-    RSPiXPrefixD.h \
     SampleMaster.h \
     scene.h \
     score.h \
