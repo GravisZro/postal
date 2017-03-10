@@ -237,11 +237,10 @@ CGameSettings::CGameSettings(void)
 	timeinfo = localtime (&lTime);
 	if (timeinfo->tm_mon == 3 && timeinfo->tm_mday == 1)
 	{
-		TRACE("It's April Fools my dude!\n");
+      TRACE("It's April Fools!\n");
 		m_sAprilFools = TRUE;
 		m_sKidMode = TRUE;
-	} else {
-		TRACE("It ain't April Fools my dude!\n");
+   } else {
 		m_sAprilFools = FALSE;
 		m_sKidMode = FALSE;
 	}
