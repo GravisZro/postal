@@ -522,7 +522,7 @@ int16_t RFile::Open(		// Returns 0 on success.
 	const char* pszFlags,		// fopen flags to use for opening.
 	Endian endian,			// { BigEndian | LittleEndian | NeutralEndian }.
 	Flags flags)			// See comments in Typedefs & Enums section in .h.
-	{
+   {
 	int16_t	sRes	= 0;	// Assume success.
 	// If not already open . . .
    if (m_fs == nullptr && m_pucFile == nullptr)

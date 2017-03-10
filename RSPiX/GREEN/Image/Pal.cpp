@@ -692,12 +692,7 @@ int16_t RPal::GetEntries(
 		TRACE("RPal::GetEntries(): Specified range (%d to %d) exceeds palette's range (%d to %d)!\n",
 			sStart, m_sStartIndex, m_sStartIndex + m_sNumEntries - 1);
 		return FAILURE;
-		}
-	if (sCount < 0)
-		{
-		TRACE("RPal::GetEntries(): The count cannot be negative!\n");
-		return FAILURE;
-		}
+      }
 		
 	int16_t sResult = SUCCESS;
 
@@ -847,12 +842,7 @@ int16_t RPal::SetEntries(
 		TRACE("RPal::PutEntries(): Specified range (%d to %d) exceeds palette's range (%d to %d)!\n",
 			sStart, m_sStartIndex, m_sStartIndex + m_sNumEntries - 1);
 		return FAILURE;
-		}
-	if (sCount < 0)
-		{
-		TRACE("RPal::PutEntries(): The count cannot be negative!\n");
-		return FAILURE;
-		}
+      }
 		
 	int16_t sResult = SUCCESS;
 

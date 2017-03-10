@@ -2580,11 +2580,11 @@ static int16_t OpenSaks(void)
 	////////////////////////////////////////////////////////////////////////////
 
 	// Get the current audio mode, if any.
-	int16_t	sInSoundMode;
-   uint32_t	lSamplesPerSec;
-   uint32_t	lDevBitsPerSample;
-   uint32_t	lSrcBitsPerSample;
-   uint32_t	lMixBitsPerSample;
+   int16_t	sInSoundMode = 0;
+   uint32_t	lSamplesPerSec = 0;
+   uint32_t	lDevBitsPerSample = 0;
+   uint32_t	lSrcBitsPerSample = 0;
+   uint32_t	lMixBitsPerSample = 0;
 	if (RMix::GetMode(				// Returns 0 on success;            
 											// nonzero if no mode.              
 			&lSamplesPerSec,			// Sample rate in samples per second
@@ -2610,7 +2610,7 @@ static int16_t OpenSaks(void)
 			&lSrcBitsPerSample)		// Bits per sample at which samples must
 											// be to be mixed (0 if no requirement), 
                                  // if not nullptr.
-		== 0)
+      == SUCCESS)
 		{
 		// Sample quality values set by rspGetSoundOutMode().
 
@@ -2647,7 +2647,7 @@ static int16_t OpenSaks(void)
 		lSamplesPerSec = 44100;
 	else
 		{
-      TRACE("OpenSaks(): Unsupported sample rate: %i!\n", (int32_t)lSamplesPerSec);
+      TRACE("OpenSaks(): Unsupported sample rate: %u!\n", lSamplesPerSec);
 		ASSERT(0);
 		}
 

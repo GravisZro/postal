@@ -21,7 +21,6 @@ DEFINES+="EDITOR_REMOVED"
 INCLUDEPATH += RSPiX
 INCLUDEPATH += WishPiX
 
-QMAKE_CXXFLAGS+= -std=c++11
 
 DISTFILES += \
     makeit.sh \
@@ -277,7 +276,7 @@ HEADERS += \
     weapon.h \
     yatime.h \
     RSPiX/BLUE/portable_endian.h \
-    RSPiX/BLUE/stdint_msvc.h \
+    RSPiX/BLUE/stdint_msvc.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
@@ -443,8 +442,10 @@ SOURCES += \
     weapon.cpp \
     yatime.cpp
 
+CONFIG += dos
 
-CONFIG += sdl2
+dos:QMAKE_CXXFLAGS+= -std=gnu++11
+else:QMAKE_CXXFLAGS+= -std=c++11
 
 
 new_config {
@@ -489,19 +490,19 @@ SOURCES += \
     RSPiX/BLUE/sdl2/Btime.cpp
 }
 
-allegro {
+dos {
 SOURCES += \
-    RSPiX/CYAN/allegro/uColors.cpp \
-    RSPiX/CYAN/allegro/uDialog.cpp \
-    RSPiX/CYAN/allegro/uPath.cpp \
-    RSPiX/BLUE/allegro/Bdebug.cpp \
-    RSPiX/BLUE/allegro/Bdisp.cpp \
-    RSPiX/BLUE/allegro/Bjoy.cpp \
-    RSPiX/BLUE/allegro/Bkey.cpp \
-    RSPiX/BLUE/allegro/Bmain.cpp \
-    RSPiX/BLUE/allegro/Bmouse.cpp \
-    RSPiX/BLUE/allegro/Bsound.cpp \
-    RSPiX/BLUE/allegro/Btime.cpp
+    RSPiX/CYAN/dos/uColors.cpp \
+    RSPiX/CYAN/dos/uDialog.cpp \
+    RSPiX/CYAN/dos/uPath.cpp \
+    RSPiX/BLUE/dos/Bdebug.cpp \
+    RSPiX/BLUE/dos/Bdisp.cpp \
+    RSPiX/BLUE/dos/Bjoy.cpp \
+    RSPiX/BLUE/dos/Bkey.cpp \
+    RSPiX/BLUE/dos/Bmain.cpp \
+    RSPiX/BLUE/dos/Bmouse.cpp \
+    RSPiX/BLUE/dos/Bsound.cpp \
+    RSPiX/BLUE/dos/Btime.cpp
 }
 
 dreamcast {

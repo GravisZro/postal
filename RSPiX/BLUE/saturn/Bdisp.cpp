@@ -171,7 +171,7 @@ extern int16_t rspQueryVideoMode(       // Returns 0 for each valid mode, then n
   SET(psHeight,     display::height);
   SET(psPages,      1);
 
-  return SUCCESS;
+  return FAILURE;
 }
 
 

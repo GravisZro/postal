@@ -113,72 +113,79 @@ const char* Debug_FileName(const char* pszPath)
 //
 ///////////////////////////////////////////////////////////////////////////////
 void rspTrace(const char *frmt, ... )
-	{
-	static int16_t	sSem	= 0;
+{
+  static int16_t	sSem	= 0;
+  char output[4096];
+  /*
+  char frmt[4096] = { 0 };
 
-	// If something called by TRACE calls TRACE, we'd be likely to continue
-	// forever until stack overflow occurred.  So don't allow re-entrance.
-	if (++sSem == 1)
-		{
-		va_list varp;
-		  
-		va_start(varp, frmt);    
-		  
-#ifdef __ANDROID__
-		char errortext[512];
-		vsnprintf (errortext, 512, frmt, varp);
-		va_end (varp);
-		LOGI("%s",errortext);
-#else
-		vfprintf(stderr, frmt, varp);
-#endif
+  size_t pos, pos64;
+  for(pos = 0, pos64=0; frmt64[pos64] && pos < 4096; ++pos, ++pos64)
+  {
+    frmt[pos] = frmt64[pos64];
+    if(frmt64[pos64] == '%')
+    {
+      ++pos, ++pos64;
+      switch(frmt64[pos64])
+      {
+        case 'i':
+        case 'x':
+        case 'u':
+          frmt[pos] = 'l';
+          ++pos;
+        default:
+          break;
+      }
+      frmt[pos] = frmt64[pos64];
+    }
+  }
+*/
+  // If something called by TRACE calls TRACE, we'd be likely to continue
+  // forever until stack overflow occurred.  So don't allow re-entrance.
+  if (++sSem == 1)
+  {
+    va_list varp;
+    va_start(varp, frmt);
+    //vfprintf(stderr, frmt, varp);
+    //vsprintf(output, frmt, varp);
+
+    FILE* f = fopen("output.log", "a+");
+    vfprintf(f, frmt, varp);
+    fclose(f);
 
 #if defined(RSP_DEBUG_OUT_FILE)
-		static FILE*	fs	= nullptr;	// NOTE that we never fclose this so we can get 
-											// EVERY LAST TRACE -- so this may show up as
-											// a leak.  The system will close it though.
-		// If not yet open . . . 
-		if (fs == nullptr)
-			{
-			// Attempt to open (Note that we never close this -- the system does).
-			// This will probably show up as a leak.
-			fs	= fopen(RSP_TRACE_LOG_NAME, "wt");
-			if (fs)
-			{
-				fprintf(fs, "======== Postal Plus build %s %s ========\n", __DATE__, __TIME__);
-				time_t sysTime = time(nullptr);
-				fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
-			}
-			}
+    static FILE*	fs	= nullptr;	// NOTE that we never fclose this so we can get
+    // EVERY LAST TRACE -- so this may show up as
+    // a leak.  The system will close it though.
+    // If not yet open . . .
+    if (fs == nullptr)
+    {
+      // Attempt to open (Note that we never close this -- the system does).
+      // This will probably show up as a leak.
+      fs	= fopen(RSP_TRACE_LOG_NAME, "wt");
+      if (fs)
+      {
+        fprintf(fs, "======== Postal Plus build %s %s ========\n", __DATE__, __TIME__);
+        time_t sysTime = time(nullptr);
+        fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
+      }
+    }
 
-		// If open . . .
-		if (fs)
-			{
-			char szOutput[512];
-			vsnprintf(szOutput, 512, frmt, varp);
-			fprintf(fs, szOutput);
-			}
+    // If open . . .
+    if (fs)
+    {
+      char szOutput[512];
+      vsnprintf(szOutput, 512, frmt, varp);
+      fprintf(fs, szOutput);
+    }
 #endif	// RSP_DEBUG_OUT_FILE
 
-		va_end(varp);
+    va_end(varp);
+  }
 
-#if defined(RSP_DEBUG_OUT_MESSAGEBOX)
-		if (rspMsgBox(
-			RSP_MB_ICN_INFO | RSP_MB_BUT_YESNO,
-			"rspTrace",
-			"\"%s\"\n"
-			"Continue?",
-			szOutput) == RSP_MB_RET_NO)
-			{
-			DebugBreak();
-			exit(EXIT_SUCCESS);
-			}
-#endif	// RSP_DEBUG_OUT_MESSAGEBOX
-		}
-
-	// Remember to reduce.
-	sSem--;
-	}
+  // Remember to reduce.
+  sSem--;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // EOF

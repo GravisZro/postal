@@ -519,16 +519,15 @@ then
       platform="Windows"
     ;;
 
-    *dos) # MS-DOS
+    *dos) # *DOS
       cpp_standard="-std=gnu++11"
       c_standard="-std=gnu11"
       cpp_compiler=$platform_dos
-      force_32bit "MS-DOS"
+      force_32bit "DOS"
       build_name="${build_name}.exe"
-      platform="MS-DOS"
-      backend="allegro"
+      platform="DOS"
+      backend="dos"
       ldflags=""
-#      ldflags="-L./sys/lib/dos -lallegro"
     ;;
 
     dreamcast) # Sega Dreamcast

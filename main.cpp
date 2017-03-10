@@ -178,8 +178,8 @@ static int16_t SetupVideo(					// Returns 0 on success.
 	int16_t	sUseCurrentDeviceDimensions,	// In:  1 to use current video area.
 	int16_t	sDeviceWidth,						// In:  Desired video hardware width.
 	int16_t	sDeviceHeight)						// In:  Desired video hardware height.
-	{
-	int16_t sResult = SUCCESS;
+   {
+   int16_t sResult = SUCCESS;
 
 #if defined(__ANDROID__)
 	wideScreenWidth = 850;
@@ -189,9 +189,9 @@ static int16_t SetupVideo(					// Returns 0 on success.
 	//wideScreenWidth = 640;
 
 	// Attempt to grab desired resolution from desktop
-	int16_t sDepth, sWidth, sHeight;
+   int16_t sDepth = 0, sWidth = 0, sHeight = 0;
 	rspQueryVideoModeReset();
-	while (!rspQueryVideoMode(&sDepth, &sWidth, &sHeight));
+   while (rspQueryVideoMode(&sDepth, &sWidth, &sHeight) == SUCCESS);
 	TRACE("rspQueryVideoMode result: %ix%ix%i\n", sWidth, sHeight, sDepth);
 	// Sanity-check result
 	if (sHeight > 480 && sWidth > 640)
@@ -862,7 +862,7 @@ rspSetProfileOutput("profile.out");
 					bool bRetry = true;
 
 					while (bRetry)
-						{
+                  {
 						// Keep trying until it works or time runs out, whichever comes first
                   milliseconds_t	lTime = rspGetMilliseconds();
 						bool	bDone	= false;
@@ -995,8 +995,7 @@ rspSetProfileOutput("profile.out");
 						}
 
 					if (sResult == SUCCESS)
-						{
-
+                  {
 						//------------------------------------------------------------
 						// Run the game
 						//------------------------------------------------------------

@@ -319,7 +319,7 @@ extern int16_t MouseBitfieldToIndex(uint32_t bitfield)
     result = 0;
 
   if (bitfield != 0 || result != 0)
-    TRACE("MouseBitfieldToIndex(%i) = %i", bitfield, result);
+    TRACE("MouseBitfieldToIndex(%i) = %i\n", bitfield, result);
 
   return result;
 }
@@ -367,7 +367,7 @@ extern int16_t JoyBitfieldToIndex(uint32_t bitfield)
     result = 0;
 
   if (bitfield != 0 || result != 0)
-    TRACE("JoyBitfieldToIndex(%i) = %i", bitfield, result);
+    TRACE("JoyBitfieldToIndex(%i) = %i\n", bitfield, result);
 
   return result;
 }
@@ -394,7 +394,7 @@ extern uint32_t MouseIndexToBitfield(int16_t index)
     result = 0;
 
   if (index != 0 || result != 0)
-    TRACE("MouseIndexToBitfield(%i) = %i", index, result);
+    TRACE("MouseIndexToBitfield(%i) = %i\n", index, result);
 
   return result;
 }
@@ -465,7 +465,7 @@ extern uint32_t JoyIndexToBitfield(int16_t index)
   }
 
   if (index != 0 || result != 0)
-    printf("JoyIndexToBitfield(%i) = %i\n", index, result);
+    TRACE("JoyIndexToBitfield(%i) = %i\n", index, result);
 
   return result;
 }

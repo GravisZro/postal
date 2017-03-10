@@ -40,8 +40,8 @@ static SDL_AudioSpec desired;
 */
 
 static bool audio_opened = false;
-static int32_t cur_buf_time = 0;
-static int32_t max_buf_time = 0;
+static milliseconds_t cur_buf_time = 0;
+static milliseconds_t max_buf_time = 0;
 
 
 extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero otherwise
@@ -135,7 +135,7 @@ extern int16_t rspGetSoundOutMode(				// Returns 0 if successfull, non-zero othe
 //    SET(plBitsPerSample, desired.channels);
     SET(plCurBufferTime, cur_buf_time);
     SET(plMaxBufferTime, max_buf_time);
-    return SUCCESS;
+    return FAILURE;
 }
 
 extern void rspSetSoundOutBufferTime(

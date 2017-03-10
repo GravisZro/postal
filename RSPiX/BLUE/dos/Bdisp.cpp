@@ -23,13 +23,74 @@
 #include <ORANGE/CDT/slist.h>
 
 // Platform //////////////////////////////////////////////////////////////////
-//#include <dc/video.h>
-//#include <dc/pvr.h>
+#include <pc.h>
+#include <dpmi.h>
+#include <go32.h>
+#include <sys/farptr.h>
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
 #include <memory>
+#include <cstddef>
 
+static_assert(sizeof(uintptr_t) == 4, "DOS is 32-bit!");
+
+struct vesa_info_t
+{
+  uint8_t VESASignature[4];
+  uint16_t VESAVersion;
+  uint32_t OEMStringPtr;
+  uint8_t Capabilities[4];
+  uint32_t VideoModePtr;
+  uint16_t TotalMemory;
+  uint16_t OemSoftwareRev;
+  uint32_t OemVendorNamePtr;
+  uint32_t OemProductNamePtr;
+  uint32_t OemProductRevPtr;
+  uint8_t Reserved[222];
+  uint8_t OemData[256];
+} __attribute__ ((packed));
+
+static_assert(sizeof(vesa_info_t) == 512, "packing failed?");
+
+struct mode_info_t
+{
+  uint16_t ModeAttributes;
+  uint8_t WinAAttributes;
+  uint8_t WinBAttributes;
+  uint16_t WinGranularity; // in kilobytes
+  uint16_t WinSize; // in kilobytes
+  uint16_t WinASegment;
+  uint16_t WinBSegment;
+  uint32_t WinFuncPtr;
+  uint16_t BytesPerScanLine;
+  uint16_t XResolution; // x pixel
+  uint16_t YResolution; // y pixels
+  uint8_t XCharSize;
+  uint8_t YCharSize;
+  uint8_t NumberOfPlanes;
+  uint8_t BitsPerPixel;
+  uint8_t NumberOfBanks;
+  uint8_t MemoryModel;
+  uint8_t BankSize;
+  uint8_t NumberOfImagePages;
+  uint8_t Reserved_page;
+  uint8_t RedMaskSize;
+  uint8_t RedMaskPos;
+  uint8_t GreenMaskSize;
+  uint8_t GreenMaskPos;
+  uint8_t BlueMaskSize;
+  uint8_t BlueMaskPos;
+  uint8_t ReservedMaskSize;
+  uint8_t ReservedMaskPos;
+  uint8_t DirectColorModeInfo;
+  uint32_t PhysBasePtr; // address
+  uint32_t OffScreenMemOffset;
+  uint16_t OffScreenMemSize;
+  uint8_t Reserved[206];
+} __attribute__ ((packed));
+
+static_assert(sizeof(mode_info_t) == 256, "packing failed?");
 
 
 // Only set value if not nullptr.
@@ -39,32 +100,186 @@ namespace palette
 {
   namespace aligned_memory
   {
-    static std::aligned_storage<sizeof(color32_t), alignof(uint128_t)>::type buffer[size];
-    static std::aligned_storage<sizeof(color32_t), alignof(uint128_t)>::type map   [size];
+    static std::aligned_storage<sizeof(color32_t), alignof(std::max_align_t)>::type buffer[size];
+    static std::aligned_storage<sizeof(color32_t), alignof(std::max_align_t)>::type map   [size];
   }
   static color32_t* buffer = reinterpret_cast<color32_t*>(aligned_memory::buffer);
   static color32_t* map    = reinterpret_cast<color32_t*>(aligned_memory::map);
   static uint8_t locks[size];	// TRUE, if an indexed entry is locked. FALSE, if not.
 }
 
+namespace vesa
+{
+  enum registers : uint16_t
+  {
+    color_number = 0x3c8,
+    color_value  = 0x3c9,
+  };
+}
+
 namespace display
 {
-  const uint16_t width  = 640;
-  const uint16_t height = 480;
-  const uint16_t depth  = 8;
+  uint16_t get_vesa_mode(void);
+  uint16_t set_vesa_mode(uint16_t mode);
+  uint16_t probe_vesa(void);
+
+  static vesa_info_t vesa_info;
+  static std::map<uint16_t, mode_info_t> mode_info;
+  static mode_info_t current_mode_info;
+
+  static uint16_t initial_mode = get_vesa_mode();
+  static uint16_t current_mode = initial_mode;
+
   namespace aligned_memory
   {
-    static std::aligned_storage<sizeof(uint8_t), alignof(uint128_t)>::type framebuffer[width * height];
+    static std::aligned_storage<sizeof(uint8_t), alignof(std::max_align_t)>::type framebuffer[640 * 480];
   }
   static void* framebuffer = reinterpret_cast<void*>(aligned_memory::framebuffer);
 
-//  static pvr_ptr_t texture;
+  uint16_t set_vesa_mode(uint16_t mode)
+  {
+    current_mode_info = mode_info[mode];
+    __dpmi_regs regs;
+    regs.x.ax = 0x4F02;
+    regs.x.bx = mode;
+    __dpmi_int(0x10, &regs);
+    if (regs.h.ah)
+      return FAILURE;
+    return SUCCESS;
+  }
+
+  uint16_t get_vesa_mode(void)
+  {
+    __dpmi_regs regs;
+    regs.x.ax = 0x4F03;
+    __dpmi_int(0x10, &regs);
+    if (regs.h.ah)
+      return FAILURE;
+    return regs.x.bx;
+  }
+
+  void set_vesa_bank(uint16_t bank_number)
+  {
+     __dpmi_regs regs;
+     regs.x.ax = 0x4F05;
+     regs.x.bx = 0;
+     regs.x.dx = bank_number;
+     __dpmi_int(0x10, &regs);
+  }
+
+  uint16_t probe_vesa(void)
+  {
+    __dpmi_regs regs;
+    uintptr_t sys_ptr;
+
+    sys_ptr = __tb & 0x000FFFFF; // use the transaction buffer
+
+    // zero out the transaction buffer
+    for (size_t i = 0; i < sizeof(vesa_info_t); ++i)
+      _farpokeb(_dos_ds, sys_ptr + i, 0);
+
+    dosmemput("VBE2", 4, sys_ptr);
+
+    // call the VESA function
+    regs.x.ax = 0x4F00;
+    regs.x.di = sys_ptr & 0xF;
+    regs.x.es = (sys_ptr >> 4) & 0x0000FFFF;
+    __dpmi_int(0x10, &regs);
+
+    if (regs.h.ah) // abort upon error
+      return FAILURE;
+
+    dosmemget(sys_ptr, sizeof(vesa_info_t), &vesa_info); // copy the returned data
+
+    if (std::memcmp(vesa_info.VESASignature, "VESA", 4) != 0) // test for the magic number VESA
+      return FAILURE;
+
+    // convert the mode list pointer from seg:offset to a linear address
+    sys_ptr = ((vesa_info.VideoModePtr & 0xFFFF0000) >> 12) +
+               (vesa_info.VideoModePtr & 0x0000FFFF);
+
+    // read the list of available modes
+    while (_farpeekw(_dos_ds, sys_ptr) != UINT16_MAX)
+    {
+      display::mode_info[_farpeekw(_dos_ds, sys_ptr)];
+      sys_ptr += sizeof(uint16_t);
+    }
+
+    sys_ptr = __tb & 0x000FFFFF; // return to the transaction buffer
+
+    for(std::map<uint16_t, mode_info_t>::value_type& m : mode_info) // probe each mode
+    {
+      // zero out the transaction buffer
+      for (size_t i=0; i < sizeof(mode_info_t); ++i)
+        _farpokeb(_dos_ds, sys_ptr + i, 0);
+
+      // call the VESA function
+      regs.x.ax = 0x4F01;
+      regs.x.di = sys_ptr & 0xF;
+      regs.x.es = (sys_ptr >> 4) & 0xFFFF;
+      regs.x.cx = m.first;
+      __dpmi_int(0x10, &regs);
+
+      if (!regs.h.ah) // if no error occurred
+        dosmemget(sys_ptr, sizeof(mode_info_t), &m.second); // copy the returned data
+    }
+
+    current_mode_info = mode_info[current_mode];
+    return SUCCESS;
+  }
+
+  void blit_to_screen(void* memory_buffer, uint32_t buffer_length)
+  {
+    uint8_t* memory = static_cast<uint8_t*>(memory_buffer);
+    uint32_t bank_size = current_mode_info.WinSize << 10;
+    uint32_t bank_granularity = current_mode_info.WinGranularity << 10;
+    uint32_t bank_number = 0;
+    uint32_t remaining = buffer_length;
+    uint32_t copy_size;
+
+    //TRACE("Vesa Address: %08x", current_mode_info.PhysBasePtr);
+    ASSERT(buffer_length);
+    ASSERT(bank_granularity);
+
+    while (remaining > 0)
+    {
+      // select the appropriate bank
+      set_vesa_bank(bank_number);
+
+      // how much can we copy in one go?
+      if (remaining > bank_size)
+        copy_size = bank_size;
+      else
+        copy_size = remaining;
+
+      // copy a bank of data to the screen
+      dosmemput(memory, copy_size, 0x000A0000);//current_mode_info.PhysBasePtr);
+
+      // move on to the next bank of data
+      remaining -= copy_size;
+      memory += copy_size;
+      bank_number += bank_size / bank_granularity;
+    }
+  }
+
+  void load_pallette(color32_t* base, uint16_t count)
+  {
+    for(uint16_t i = 0; i < count; ++i)
+    {
+      color32_t* color = base + i;
+      outportb(0x03C8, i);
+      outportb(0x03C9, color->red  );
+      outportb(0x03C9, color->green);
+      outportb(0x03C9, color->blue );
+    }
+  }
 }
 
-
+#include <iostream>
 
 extern void Disp_Init(void)    // Returns nothing.
 {
+  TRACE("VESA probe: %s\n", (display::probe_vesa() == SUCCESS ? "succeeded" : "failed"));
 }
 
 extern void rspSetApplicationName(
@@ -99,6 +314,7 @@ extern int16_t rspSuggestVideoMode(     // Returns 0 if successfull, non-zero ot
     int16_t* psDeviceHeight,            // Out: Suggested device height (unless nullptr)
     int16_t* psScaling)                 // Out: Suggested scaling (unless nullptr)
 {
+  TRACE("rspSuggestVideoMode\n");
   return SUCCESS;
 }
 
@@ -123,14 +339,15 @@ extern int16_t rspGetVideoMode(
 {
   // lie about everything.
   SET(psPixelScaling, 0);
-  SET(psDevicePages, 0);
-  SET(psPages, 1);
-  SET(psWidth,        display::width);
-  SET(psHeight,       display::height);
-  SET(psDeviceDepth,  display::depth);
-  SET(psDeviceHeight, display::width);
-  SET(psDeviceWidth,  display::height);
+  SET(psDevicePages,  display::current_mode_info.NumberOfImagePages);
+  SET(psPages,        display::current_mode_info.NumberOfImagePages);
+  SET(psWidth,        display::current_mode_info.XResolution);
+  SET(psHeight,       display::current_mode_info.YResolution);
+  SET(psDeviceDepth,  display::current_mode_info.BitsPerPixel);
+  SET(psDeviceWidth,  display::current_mode_info.XResolution);
+  SET(psDeviceHeight, display::current_mode_info.YResolution);
 
+  TRACE("rspGetVideoMode\n");
   return SUCCESS;
 }
 
@@ -156,12 +373,11 @@ extern int16_t rspQueryVideoMode(       // Returns 0 for each valid mode, then n
     int16_t* psHeight,                  // Out: Height returned here
     int16_t* psPages)                   // Out: Number of video pages possible.
 {
-  SET(psColorDepth, display::depth);
-  SET(psWidth,      display::width);
-  SET(psHeight,     display::height);
-  SET(psPages,      1);
-
-  return SUCCESS;
+  SET(psColorDepth, display::current_mode_info.BitsPerPixel);
+  SET(psWidth,      display::current_mode_info.XResolution);
+  SET(psHeight,     display::current_mode_info.YResolution);
+  SET(psPages,      display::current_mode_info.NumberOfImagePages);
+  return FAILURE;
 }
 
 
@@ -197,12 +413,7 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
                                         // system and blts.
                                         // FALSE indicates not to use this garbage.
 {
-  TRACE("rspSetVideoMode(%i, %i, %i, %i, %i, %i, %i)", sDeviceDepth, sDeviceWidth, sDeviceHeight, sWidth, sHeight, sPages, sPixelDoubling);
-  ASSERT(sDeviceDepth == display::depth);
-  //ASSERT(sDeviceWidth == 0);
-  //ASSERT(sDeviceHeight == 0);
-  ASSERT(sWidth == display::width);
-  ASSERT(sHeight == display::height);
+  TRACE("rspSetVideoMode(%i, %i, %i, %i, %i, %i, %i)\n", sDeviceDepth, sDeviceWidth, sDeviceHeight, sWidth, sHeight, sPages, sPixelDoubling);
 
   if (sPixelDoubling)
   {
@@ -210,7 +421,19 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
     return FAILURE;
   }
 
-  return SUCCESS;
+  for(std::map<uint16_t, mode_info_t>::value_type& mode : display::mode_info)
+  {
+    if(mode.second.BitsPerPixel == sDeviceDepth &&
+       mode.second.XResolution == sWidth &&
+       mode.second.YResolution == sHeight &&
+       mode.second.NumberOfImagePages >= sPages)
+    {
+      display::set_vesa_mode(mode.first);
+      return SUCCESS;
+    }
+  }
+
+  return FAILURE;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -261,70 +484,15 @@ extern void rspCacheDirtyRect(
 {
   UNUSED(sX,sY,sWidth,sHeight);
 }
-/*
-void draw_back(void) {
-    pvr_poly_cxt_t cxt;
-    pvr_poly_hdr_t hdr;
-    pvr_vertex_t vert;
 
-    pvr_poly_cxt_txr(&cxt, PVR_LIST_OP_POLY, PVR_TXRFMT_PAL8BPP, display::width, display::height, display::texture, PVR_FILTER_NONE);
-    pvr_poly_compile(&hdr, &cxt);
-    pvr_prim(&hdr, sizeof(hdr));
-
-    vert.argb = PVR_PACK_COLOR(1.0f, 1.0f, 1.0f, 1.0f);
-    vert.oargb = 0;
-    vert.flags = PVR_CMD_VERTEX;
-
-    vert.x = 1;
-    vert.y = 1;
-    vert.z = 1;
-    vert.u = 0.0;
-    vert.v = 0.0;
-    pvr_prim(&vert, sizeof(vert));
-
-    vert.x = display::width;
-    vert.y = 1;
-    vert.z = 1;
-    vert.u = 1.0;
-    vert.v = 0.0;
-    pvr_prim(&vert, sizeof(vert));
-
-    vert.x = 1;
-    vert.y = display::height;
-    vert.z = 1;
-    vert.u = 0.0;
-    vert.v = 1.0;
-    pvr_prim(&vert, sizeof(vert));
-
-    vert.x = display::width;
-    vert.y = display::height;
-    vert.z = 1;
-    vert.u = 1.0;
-    vert.v = 1.0;
-    vert.flags = PVR_CMD_VERTEX_EOL;
-    pvr_prim(&vert, sizeof(vert));
-}
-*/
 extern void rspPresentFrame(void)
 {
-  /*
-  pvr_wait_ready();
-  pvr_scene_begin();
-
-  pvr_list_begin(PVR_LIST_OP_POLY);
-  draw_back();
-  pvr_list_finish();
-
-  pvr_list_begin(PVR_LIST_TR_POLY);
-
-  pvr_list_finish();
-  pvr_scene_finish();
-  */
+  display::blit_to_screen(display::framebuffer, display::current_mode_info.XResolution * display::current_mode_info.YResolution);
 }
 
 extern void rspUpdateDisplay(void)
 {
-  //ASSERT(pvr_txr_load_dma(display::framebuffer, display::texture, display::width * display::height, TRUE, nullptr, nullptr) == SUCCESS);
+  //TRACE("rspUpdateDisplay\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -404,9 +572,8 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
 {
   if(ppvBuffer != nullptr)
     *ppvBuffer = display::framebuffer;
-//    *ppvBuffer = reinterpret_cast<void*>(display::framebuffer);
   if(plPitch != nullptr)
-    *plPitch = display::width;
+    *plPitch = display::current_mode_info.BytesPerScanLine;
 
   return SUCCESS;
 }
@@ -452,6 +619,7 @@ extern void rspSetPaletteEntries(
     channel_t* pucBlue,                   // In: Pointer to first blue component to copy from
     uint32_t lIncBytes)                  // In: Number of bytes by which to increment pointers after each copy
 {
+  TRACE("rspSetPaletteEntries\n");
   uint8_t* psLock;
   color32_t* pColor;
 
@@ -553,11 +721,8 @@ extern void rspGetPaletteEntries(
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUpdatePalette(void)
 {
-  /*
-  memcpy(reinterpret_cast<void*>(PVR_PALETTE_TABLE_BASE),
-         reinterpret_cast<void*>(palette::buffer),
-         sizeof(color32_t) * palette::size);
-         */
+  TRACE("rspUpdatePalette\n");
+  display::load_pallette(palette::buffer, palette::size);
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
