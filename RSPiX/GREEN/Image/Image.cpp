@@ -2169,7 +2169,7 @@ int16_t RImage::WritePixelData(RFile* pcf) const
 				break;
 
 			case 24:
-				if (pcf->Write((RPixel24*) m_pData, m_ulSize/3) != (int32_t) m_ulSize/3)
+            if (pcf->Write(reinterpret_cast<RPixel24*>(m_pData), m_ulSize/3) != (int32_t) m_ulSize/3)
 				{
 					TRACE("RImage::WritePixelData - Error writing 24-bit pixel data\n");
                sResult = FAILURE;
@@ -2177,7 +2177,7 @@ int16_t RImage::WritePixelData(RFile* pcf) const
 				break;
 
 			case 32:
-				if (pcf->Write((uint32_t*) m_pData, m_ulSize/4) != (int32_t) m_ulSize/4)
+            if (pcf->Write(reinterpret_cast<uint32_t*>(m_pData), m_ulSize/4) != (int32_t) m_ulSize/4)
 				{
 					TRACE("RImage::WritePixelData - Error writing 32-bit pixel data\n");
                sResult = FAILURE;
@@ -2187,10 +2187,10 @@ int16_t RImage::WritePixelData(RFile* pcf) const
 	}
 	else
 	{
-		int32_t	lYPos		= (int32_t)m_sWinY;
-		int32_t	lXPos		= (int32_t)m_sWinX;
-		int32_t	lHeight	= (int32_t)m_sWinHeight;
-		int32_t	lDepth	= (int32_t)m_sDepth;
+      int32_t	lYPos		= m_sWinY;
+      int32_t	lXPos		= m_sWinX;
+      int32_t	lHeight	= m_sWinHeight;
+      int32_t	lDepth	= m_sDepth;
 
 		int32_t l;
 		int32_t lBytesPerLine;
@@ -2383,7 +2383,7 @@ int16_t RImage::ReadPixelData(RFile* pcf)
 				break;
 
 			case 24:
-				if (pcf->Read((RPixel24*) m_pData, m_ulSize/3) != (int32_t) m_ulSize/3)
+            if (pcf->Read(reinterpret_cast<RPixel24*>(m_pData), m_ulSize/3) != (int32_t) m_ulSize/3)
 				{
 					TRACE("RImage::ReadPixelData - Error reading 24-bit pixel data\n");
                sResult = FAILURE;
@@ -2391,7 +2391,7 @@ int16_t RImage::ReadPixelData(RFile* pcf)
 				break;
 
 			case 32:
-				if (pcf->Read((uint32_t*) m_pData, m_ulSize/4) != (int32_t) m_ulSize/4)
+            if (pcf->Read(reinterpret_cast<uint32_t*>(m_pData), m_ulSize/4) != (int32_t) m_ulSize/4)
 				{
 					TRACE("RImage::ReadPixelData - Error reading 32-bit pixel data\n");
                sResult = FAILURE;

@@ -150,7 +150,7 @@ inline void Get(uint8_t* &pget, uint16_t* pval)
 //------------------------------------------------------------------------------
 inline void Get(uint8_t* &pget, int16_t* pval)
 	{
-	Get(pget, (uint16_t*)pval);
+   Get(pget, reinterpret_cast<uint16_t*>(pval));
 	}
 
 //------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ inline void Get(uint8_t* &pget, uint64_t* pval)
 //------------------------------------------------------------------------------
 inline void Get(uint8_t* &pget, int32_t* pval)
 	{
-	Get(pget, (uint32_t*)pval);
+   Get(pget, static_cast<uint32_t*>(pval));
 	}
 
 

@@ -100,7 +100,7 @@ void RZBuffer::Clear(int16_t sVal)
 
 	//2) Do the copy
 	int32_t lWordP = m_lP >> 2; // 4 * 16 = 64
-	uint64_t* pWord = (uint64_t*) m_pBuf;
+   uint64_t* pWord = reinterpret_cast<uint64_t*>(m_pBuf);
 
 	int32_t lWordLen = lWordP * m_sH;
 	for (int32_t i=0;i < lWordLen; i++) *pWord++ = BigWord.word;

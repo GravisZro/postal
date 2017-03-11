@@ -1160,7 +1160,7 @@ int16_t CPerson::EditModify(void)
 			// Set callback for logic browser button.
 			pbtnLogicUserBrowse->m_bcUser	= LogicUserBrowse;
 			// Set instance data to GUI to query/update.
-			pbtnLogicUserBrowse->m_ulUserInstance	= (uint64_t)peditLogicFile;
+         pbtnLogicUserBrowse->m_ulUserInstance	= reinterpret_cast<uintptr_t>(peditLogicFile);
 
 			SetGuiToNotify(pGui->GetItemFromId(ID_GUI_EDIT_TEXTURES) );
 

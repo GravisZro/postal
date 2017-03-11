@@ -4728,7 +4728,7 @@ int16_t SetUpRotationScrollBar(		// Returns 0 on success.
     }
 
     // Set the value to change.
-    psb->m_ulUserInstance	= (uint64_t)pvtRotationVal;
+    psb->m_ulUserInstance	= reinterpret_cast<uintptr_t>(pvtRotationVal);
 
 
     // Set the initial position.  psb will get set via callback.

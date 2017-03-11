@@ -307,7 +307,7 @@ class CBufQ
 			int16_t* ps16Buf,		// In:  Data to enqueue in buffer.
          size_t lNum = 1)		// In:  Number of S16s to put.
 			{
-			return Put((uint16_t*)ps16Buf, lNum);
+         return Put(reinterpret_cast<uint16_t*>(ps16Buf), lNum);
 			}
 
       size_t Put(				// Returns 1 if it fit, 0 if not enough room in queue
@@ -359,7 +359,7 @@ class CBufQ
 			int32_t* ps32Buf,		// In:  Data to enqueue in buffer.
          size_t lNum = 1)		// In:  Number of S32s to put.
 			{
-			return Put((uint32_t*)ps32Buf, lNum);
+         return Put(reinterpret_cast<uint32_t*>(ps32Buf), lNum);
 			}
 
       size_t Put(				// Returns 1 if it fit, 0 if not enough room in queue
@@ -450,7 +450,7 @@ class CBufQ
 			int16_t* ps16Buf,		// Out: Where to dequeue from buffer.
          size_t lNum = 1)		// In:  Number of S16s to get.
 			{
-			return Get((uint16_t*)ps16Buf, lNum);
+         return Get(reinterpret_cast<uint16_t*>(ps16Buf), lNum);
 			}
 
       size_t Get(				// Returns number of items dequeued.
@@ -490,7 +490,7 @@ class CBufQ
 			int32_t* ps32Buf,		// Out: Where to dequeue from buffer.
          size_t lNum = 1)		// In:  Number of S32s to get.
 			{
-			return Get((uint32_t*)ps32Buf, lNum);
+         return Get(reinterpret_cast<uint32_t*>(ps32Buf), lNum);
 			}
 
 		///////////////////////////////////////////////////////////////////////////////

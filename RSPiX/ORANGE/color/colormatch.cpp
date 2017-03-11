@@ -911,12 +911,12 @@ uint8_t*** RMultiAlpha::pppucCreateFastMultiAlpha(
 	// how you seek!
 
 	// I am adding on in BYTES, not words...
-	uint8_t*** pppucFastAligned = (uint8_t***) ((uint64_t(pppucFastMem)+4095) & (~4095) );
+   uint8_t*** pppucFastAligned = (uint8_t***) ((uintptr_t(pppucFastMem)+4095) & (~4095) );
 
 	if (!pppucFastMem) return nullptr;
 	uint8_t* pInfo = (uint8_t*)pppucFastAligned;
 	// For freeing:
-	int32_t lMemOffset = uint64_t(pppucFastAligned) - uint64_t(pppucFastMem);
+   int32_t lMemOffset = uintptr_t(pppucFastAligned) - uintptr_t(pppucFastMem);
 
 	// Remember offsets for each main memory structure:
 
@@ -1273,10 +1273,10 @@ int16_t RFastMultiAlphaWrapper::Load(RFile* pf)
 	// how you seek!
 
 	// I am adding on in BYTES, not words...
-	uint8_t*** pppucFastAligned = (uint8_t***) ((uint64_t(pppucFastMem)+4095) & (~4095) );
+   uint8_t*** pppucFastAligned = reinterpret_cast<uint8_t***>((reinterpret_cast<uintptr_t>(pppucFastMem)+4095) & (~4095));
 
 	// For freeing (in bytes):
-	int32_t lMemOffset = uint64_t(pppucFastAligned) - uint64_t(pppucFastMem);
+   int32_t lMemOffset = reinterpret_cast<uintptr_t>(pppucFastAligned) - reinterpret_cast<uintptr_t>(pppucFastMem);
 
 	//==============  Idenitfy the different data sections  ===============
 	// NOTE:  once debugged, remove ppucFirstSrcArray,pucData

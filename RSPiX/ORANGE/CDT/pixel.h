@@ -33,11 +33,11 @@ class CPixel
 		uint8_t GetU8Val(void)
 			{ return m_au8[0]; }
 		uint16_t GetU16Val(void)
-			{ return *((uint16_t*)m_au8); }
+         { return *reinterpret_cast<uint16_t*>(m_au8); }
 		uint32_t GetU24Val(void)
-			{ return *((uint32_t*)m_au8); }
+         { return *reinterpret_cast<uint32_t*>(m_au8); }
 		uint32_t GetU32Val(void)
-			{ return *((uint32_t*)m_au8); }
+         { return *reinterpret_cast<uint32_t*>(m_au8); }
 
 		void SetVal(uint8_t val)
 			{ memcpy(m_au8, &val, sizeof(val)); }

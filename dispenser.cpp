@@ -843,7 +843,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 
 				// Point instance data at the max dispensees edit so it can show and
 				// hide it.
-				pmbInfiniteDispensees->m_ulUserInstance	= (uint64_t)peditMaxDispensees;
+            pmbInfiniteDispensees->m_ulUserInstance	= reinterpret_cast<uintptr_t>(peditMaxDispensees);
 				pmbInfiniteDispensees->m_sState				= (m_sMaxDispensees < 0) ? 2 : 1;
 				pmbInfiniteDispensees->m_bcUser				= UpdateMaxDispensees;
 				pmbInfiniteDispensees->Compose();
@@ -863,7 +863,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 						// Set item number.
 						pguiItem->m_ulUserData		= i;
 						// Set listbox ptr.
-						pguiItem->m_ulUserInstance	= (uint64_t)plbLogics;
+                  pguiItem->m_ulUserInstance	= reinterpret_cast<uintptr_t>(plbLogics);
 						// Set callback.
 						pguiItem->m_bcUser			= LogicItemCall;
 						// If this item is the current logic type . . .

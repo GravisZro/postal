@@ -26,24 +26,26 @@
 // Insert this into your functions... It assumes pre-clipped, pre-sorted,
 // pre-validated rect copy: (Pitch will be sign based!)
 //
-template <class PIXSIZE>
-inline void _BLiTT(PIXSIZE ucTransparent,PIXSIZE* pSrc,PIXSIZE* pDst,int32_t lSrcPitch, int32_t lDstPitch,
+template <class pixel_size_t>
+inline void _BLiTT(pixel_size_t ucTransparent, uint8_t* pSrcU8, uint8_t* pDstU8, int32_t lSrcPitch, int32_t lDstPitch,
 						int16_t sHeight,int16_t	sPixWidth)
 	{
 	union	{
-		PIXSIZE *w;
+      pixel_size_t *w;
 		uint8_t	*b;
 		} pSrcLine,pDstLine;
 
 	int i;
 
-	pSrcLine.w = pSrc;
-	pDstLine.w = pDst;
+   pixel_size_t* pSrc = reinterpret_cast<pixel_size_t*>(pSrcU8);
+   pixel_size_t* pDst = reinterpret_cast<pixel_size_t*>(pDstU8);
+   pSrcLine.w = pSrc;
+   pDstLine.w = pDst;
 
 	while (sHeight--)
 		{
-		pSrc = pSrcLine.w;
-		pDst = pDstLine.w;
+      pSrc = pSrcLine.w;
+      pDst = pDstLine.w;
 
 		i = sPixWidth;
 		while (i--) 
@@ -297,13 +299,13 @@ int16_t	rspBlitT(uint32_t ucTransparent,RImage* pimSrc,RImage* pimDst,int16_t sS
 	switch (pimDst->m_sDepth)
 		{
 		case 8:
-			_BLiTT((uint8_t)ucTransparent,(uint8_t*)pSrc,(uint8_t*)pDst,pimSrc->m_lPitch,pimDst->m_lPitch,sH,sW); 
+         _BLiTT<uint8_t>(ucTransparent, pSrc, pDst, pimSrc->m_lPitch, pimDst->m_lPitch, sH, sW);
 		break;
 		case 16:
-         _BLiTT((uint16_t)ucTransparent,(uint16_t*)pSrc,(uint16_t*)pDst,(pimSrc->m_lPitch),(pimDst->m_lPitch),sH,sW>>1);
+         _BLiTT<uint16_t>(ucTransparent, pSrc, pDst, pimSrc->m_lPitch, pimDst->m_lPitch, sH, sW >> 1);
 		break;
 		case 32:
-         _BLiTT((uint32_t)ucTransparent,(uint32_t*)pSrc,(uint32_t*)pDst,(pimSrc->m_lPitch),(pimDst->m_lPitch),sH,sW>>2);
+         _BLiTT<uint32_t>(ucTransparent, pSrc, pDst, pimSrc->m_lPitch, pimDst->m_lPitch, sH, sW >> 2);
 		break;
 		default:
 			TRACE("rspBlitT: color depth not supported.\n");

@@ -493,7 +493,7 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	RSpecialFSPR1* pSpec = new RSpecialFSPR1;
 	pImage->m_pSpecialMem = pImage->m_pSpecial = (uint8_t*)pSpec;
 
-	pcf->Read((uint32_t*)(&pSpec->m_OldType));
+   pcf->Read(reinterpret_cast<uint32_t*>(&pSpec->m_OldType));
 	pcf->Read(&pSpec->m_lSize);
 	pcf->Read(&pSpec->m_u16ASCII);
 	pcf->Read(&pSpec->m_s16KernL); // True type compatibilit
@@ -546,7 +546,7 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// NOTE: Some font info is stored here:
-	pcf->Write((uint32_t*)(&(pSpec->m_OldType)));
+   pcf->Write(reinterpret_cast<uint32_t*>(&(pSpec->m_OldType)));
 	pcf->Write(&(pSpec->m_lSize));
 	pcf->Write(&(pSpec->m_u16ASCII));
 	pcf->Write(&(pSpec->m_s16KernL)); // True type compatibilit

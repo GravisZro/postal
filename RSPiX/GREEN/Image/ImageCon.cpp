@@ -280,8 +280,8 @@ int16_t	ConvertToBMP8(RImage* pImage)
 			pImage->m_pPalette->m_type = RPal::PDIB;
 			pImage->m_pPalette->m_sPalEntrySize = RPal::GetPalEntrySize(RPal::PDIB);
 
-			uint16_t* usp555 = (uint16_t*) p555Pal->m_pData;
-			uint32_t* ulpDib = (uint32_t*) pImage->m_pPalette->m_pData;
+         uint16_t* usp555 = reinterpret_cast<uint16_t*>(p555Pal->m_pData);
+         uint32_t* ulpDib = reinterpret_cast<uint32_t*>(pImage->m_pPalette->m_pData);
 
 			int16_t i;
 		
@@ -317,7 +317,7 @@ int16_t	ConvertToBMP8(RImage* pImage)
 			pImage->m_pPalette->m_sPalEntrySize = RPal::GetPalEntrySize(RPal::PDIB);
 
 			uint16_t* usp565 = (uint16_t*) p565Pal->m_pData;
-			uint32_t* ulpDib = (uint32_t*) pImage->m_pPalette->m_pData;
+         uint32_t* ulpDib = reinterpret_cast<uint32_t*>(pImage->m_pPalette->m_pData);
 
 			int16_t i;
 		
@@ -449,7 +449,7 @@ int16_t	ConvertToBMP24(RImage* pImage)
 			sPitch = pImage->m_lPitch;
 
 			// Set a pointer to the 32-bit buffer before detaching
-			uint32_t* ulp32 = (uint32_t*) pImage->m_pData;
+         uint32_t* ulp32 = reinterpret_cast<uint32_t*>(pImage->m_pData);
 
 			// Detach the 32-bit buffer from the Image
 			void* pDetachedMem = pImage->DetachData();
@@ -671,7 +671,7 @@ int16_t	ConvertToSCREEN8_555(RImage* pImage)
 			pImage->m_pPalette->m_type = RPal::P555;
 			pImage->m_pPalette->m_sPalEntrySize = RPal::GetPalEntrySize(RPal::P555);
 
-			uint32_t* ulpDib = (uint32_t*) pDibPal->m_pData;
+         uint32_t* ulpDib = reinterpret_cast<uint32_t*>(pDibPal->m_pData);
 			uint16_t* usp555 = (uint16_t*) pImage->m_pPalette->m_pData;
 
 			int16_t i;
@@ -751,7 +751,7 @@ int16_t ConvertToSCREEN8_565(RImage* pImage)
 			pImage->m_pPalette->m_type = RPal::P565;
 			pImage->m_pPalette->m_sPalEntrySize = RPal::GetPalEntrySize(RPal::P565);
 
-			uint32_t* ulpDib = (uint32_t*) pDibPal->m_pData;
+         uint32_t* ulpDib = reinterpret_cast<uint32_t*>(pDibPal->m_pData);
 			uint16_t* usp565 = (uint16_t*) pImage->m_pPalette->m_pData;
 
 			int16_t i;
@@ -917,7 +917,7 @@ int16_t ConvertToSCREEN16_555(RImage* pImage)
 
 			// Set up pointers to the 8-bit buffer before detaching
 			uint8_t* ucp8 = pImage->m_pData;
-			uint32_t* ulpPal = (uint32_t*) pImage->m_pPalette->m_pData;
+         uint32_t* ulpPal = reinterpret_cast<uint32_t*>(pImage->m_pPalette->m_pData);
 
 			// Detach the 8-bit buffer from the Image
 			void* pDetachedMemory = pImage->DetachData();
@@ -1058,7 +1058,7 @@ int16_t ConvertToSCREEN16_565(RImage* pImage)
 
 			// Set up a pointer to the old 8-bit buffer before detaching
 			uint8_t* ucp8 = pImage->m_pData;
-			uint32_t* ulpPal = (uint32_t*) pImage->m_pPalette->m_pData;
+         uint32_t* ulpPal = reinterpret_cast<uint32_t*>(pImage->m_pPalette->m_pData);
 
 			// Detach the 8-bit buffer from the Image
 			void* pDetachedMem = pImage->DetachData();
@@ -1200,7 +1200,7 @@ int16_t ConvertToSCREEN24_RGB(RImage* pImage)
 
 			// Set up a pointer to the 8-bit buffer before detaching
 			uint8_t* ucp8 = pImage->m_pData;
-			uint32_t* ulPal = (uint32_t*) pImage->m_pPalette->m_pData;
+         uint32_t* ulPal = reinterpret_cast<uint32_t*>(pImage->m_pPalette->m_pData);
 
 			// Detach the 8-bit buffer from the Image
 			void* pDetachedMem = pImage->DetachData();
@@ -1312,7 +1312,7 @@ int16_t ConvertToSCREEN32_ARGB(RImage* pImage)
 
 			// Set up a pointer to the 8-bit buffer before detaching
 			uint8_t* ucp8 = pImage->m_pData;
-			uint32_t* ulPal = (uint32_t*) pImage->m_pPalette->m_pData;
+         uint32_t* ulPal = reinterpret_cast<uint32_t*>(pImage->m_pPalette->m_pData);
 
 			// Detach the 8-bit buffer from the Image
 			void* pDetachedMem = pImage->DetachData();
@@ -1321,7 +1321,7 @@ int16_t ConvertToSCREEN32_ARGB(RImage* pImage)
 			pImage->m_sDepth = 32;
 			pImage->m_lPitch = RImage::GetPitch(pImage->m_sWidth, pImage->m_sDepth);
 			pImage->CreateData(pImage->m_lPitch * (int32_t)pImage->m_sHeight);
-			uint32_t* ulp32 = (uint32_t*) pImage->m_pData;
+         uint32_t* ulp32 = reinterpret_cast<uint32_t*>(pImage->m_pData);
 			int32_t dLongPitch = pImage->m_lPitch/4;
 
 			for (r = 0; r < height; r++)
@@ -1356,7 +1356,7 @@ int16_t ConvertToSCREEN32_ARGB(RImage* pImage)
 			pImage->m_sDepth = 32;
 			pImage->m_lPitch = RImage::GetPitch(pImage->m_sWidth, pImage->m_sDepth);
 			pImage->CreateData(pImage->m_lPitch * (int32_t)pImage->m_sHeight);
-			uint32_t* ulp32 = (uint32_t*) pImage->m_pData;
+         uint32_t* ulp32 = reinterpret_cast<uint32_t*>(pImage->m_pData);
 			int32_t dLongPitch = pImage->m_lPitch/4;
 
 			for (r = 0 ; r < height; r++)
