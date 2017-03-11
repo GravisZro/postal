@@ -485,11 +485,9 @@
 # endif
 #endif
 
-// Turn off multiplayer on MacOSX/Linux...not worth it.  --ryan.
 #if defined(_WIN32)
 # define MULTIPLAYER_REMOVED
 # define EDITOR_REMOVED
-# define ALLOW_TWINSTICK // enable extended joystick support
 #endif
 
 //#define RESMGR_VERBOSE
