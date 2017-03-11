@@ -476,7 +476,7 @@ int16_t	rspGeneralLock(RImage* pimDst)
 	// If it is a stub . . .
 	if (pimDst->m_type == RImage::IMAGE_STUB)
 		{
-      switch (((int16_t)(((intptr_t)pimDst->m_pSpecial)))) // 0 = normal image
+      switch (reinterpret_cast<uintptr_t>(pimDst->m_pSpecial)) // 0 = normal image
 			{
 			case 0:	// it's YOUR IMAGE!
 				return SUCCESS;
@@ -511,7 +511,7 @@ int16_t	rspGeneralUnlock(RImage* pimDst)
 	// If it is a stub . . .
 	if (pimDst->m_type == RImage::IMAGE_STUB)
 		{
-      switch (((int16_t)(((intptr_t)pimDst->m_pSpecial)))) // 0 = normal image
+      switch (reinterpret_cast<uintptr_t>(pimDst->m_pSpecial)) // 0 = normal image
 			{
 			case 0:	// it's YOUR IMAGE!
 				return SUCCESS;

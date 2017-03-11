@@ -728,8 +728,8 @@ int16_t rspBlit(RImage* pimSrc,
   // do OS based copying!
   //short sNeedToUnlock = 0; // will be the name of a buffer to unlock.
 
-  int16_t sBlitTypeSrc = 0;
-  int16_t sBlitTypeDst = 0;
+  uintptr_t sBlitTypeSrc = 0;
+  uintptr_t sBlitTypeDst = 0;
 
   //	if (gsScreenLocked || gsBufferLocked) goto BLIT_PRELOCKED;
 
@@ -737,7 +737,7 @@ int16_t rspBlit(RImage* pimSrc,
   // must record which UNLOCK (if any) needs to be done AFTER the BLiT
   // has completed. (Lord help me if a blit gets interrupted)
   if (pimSrc->m_type == RImage::IMAGE_STUB)
-    sBlitTypeSrc = reinterpret_cast<intptr_t>(pimSrc->m_pSpecial);
+    sBlitTypeSrc = reinterpret_cast<uintptr_t>(pimSrc->m_pSpecial);
   if (pimDst->m_type == RImage::IMAGE_STUB)
     sBlitTypeDst = reinterpret_cast<intptr_t>(pimDst->m_pSpecial);
 
@@ -1130,7 +1130,7 @@ int16_t rspRect(uint32_t color, RImage* pimDst, int16_t sX, int16_t sY, int16_t 
   // has completed. (Lord help me if a blit gets interrupted)
 
   if (pimDst->m_type == RImage::IMAGE_STUB)
-    sBlitTypeDst = reinterpret_cast<intptr_t>(pimDst->m_pSpecial);
+    sBlitTypeDst = int16_t(reinterpret_cast<intptr_t>(pimDst->m_pSpecial));
 
   switch (sBlitTypeDst) // 0 = normal image
   {
