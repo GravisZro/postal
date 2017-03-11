@@ -654,7 +654,7 @@ bool CCharacter::WhileHoldingWeapon(	// Returns true when weapon is released.
 	{
 	bool	bReleased	= false;	// Assume not released.
 
-	uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+	uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
 	// Check for show point in animation . . .
 	if (u8Event > 0)
 		{

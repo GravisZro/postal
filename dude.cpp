@@ -2069,7 +2069,7 @@ void CDude::Update(void)
 			case State_Throw:
 				{
 #if 1
-				uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+            uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
 				// Check for release point in animation . . .
 				if (u8Event > 0)
 					{
@@ -2278,7 +2278,7 @@ void CDude::Update(void)
 					}
 				else if (m_bGenericEvent1 == false)
 					{
-					uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+               uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
 
 					if (u8Event > 1)	// ***FUDGE***
 						{
@@ -2310,7 +2310,7 @@ void CDude::Update(void)
 			case State_Launch:
 #if 0
 				{
-				uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+            uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
 				// Check for launch point in animation . . .
 				if (u8Event > 0)
 					{
@@ -2454,7 +2454,7 @@ void CDude::Update(void)
 					}
 				else 
 					{
-					uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+               uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
 					// Check for show point in anim . . .
 					if (u8Event > 0)
 						{
@@ -5778,7 +5778,7 @@ void CDude::PlayStep(void)				// Returns nothing.
 	if (m_panimCur->m_pevent != nullptr)
 		{
 		// If the current event is different from the last . . .
-		uint8_t	u8Event	= *(static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime)) );
+      uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
 		if (u8Event > 0 && u8Event != m_u8LastEvent)
 			{
 			PlaySample(g_smidStep, SampleMaster::Unspecified);
