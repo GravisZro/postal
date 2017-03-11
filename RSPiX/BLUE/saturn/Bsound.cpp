@@ -83,7 +83,7 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
     else if (desired.freq <= 44100)
         desired.samples = 2048;
     else
-        desired.samples = 4096;  // (*shrug*)
+        desired.samples = 4096;
 
 #ifdef __ANDROID__
     desired.samples = 2048;

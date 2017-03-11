@@ -696,7 +696,7 @@ int16_t RProtocolBSDIP::Accept(						// Returns 0 on success, non-zero otherwise
 				// Upon return, the specified address is filled in, and the specified length
 				// is set to the actual length of the address (in bytes).
 				ms_funcnum = RSocket::AcceptFunc;
-				((RProtocolBSDIP*)pProtocolClient)->m_sock = accept(m_sock, (SOCKADDR*)&(addressClient.address), (int*)(&addressClient.lAddressLen));
+				((RProtocolBSDIP*)pProtocolClient)->m_sock = accept(m_sock, (SOCKADDR*)&(addressClient.address), static_cast<int*>(&addressClient.lAddressLen));
 				if (((RProtocolBSDIP*)pProtocolClient)->m_sock != INVALID_SOCKET)
 					{
 					
@@ -1099,7 +1099,7 @@ int16_t RProtocolBSDIP::ReceiveFrom(					// Returns 0 on success, non-zero other
 			
 			// Receive data
 			ms_funcnum = RSocket::OtherFunc;
-			*plActualBytes = recvfrom(m_sock, (char*)pBuf, lMaxBytes, 0, (SOCKADDR*)&(addr.address), (int*)(&addr.lAddressLen));
+			*plActualBytes = recvfrom(m_sock, (char*)pBuf, lMaxBytes, 0, (SOCKADDR*)&(addr.address), static_cast<int*>(&addr.lAddressLen));
 			if (*plActualBytes != SOCKET_ERROR)
 				{
 				// If caller requested source address, return it now

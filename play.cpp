@@ -3918,7 +3918,7 @@ class CPlayRealm : public CPlay
 
 				// Setup camera
 				pinfo->Camera()->SetScene(&(prealm->m_scene));
-				pinfo->Camera()->SetHood((CHood*)(prealm->m_aclassHeads[CThing::CHoodID].GetNext() ) );
+            pinfo->Camera()->SetHood(static_cast<CHood*>(prealm->m_aclassHeads[CThing::CHoodID].GetNext()) );
 				pinfo->Camera()->SetView(VIEW_X, VIEW_Y, VIEW_W, VIEW_H);
 
 				// Set grip to control camera.

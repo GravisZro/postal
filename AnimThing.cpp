@@ -238,7 +238,7 @@ void CAnimThing::Render(void)
 	m_lAnimTime			+= lCurTime - m_lAnimPrevTime;
 	m_lAnimPrevTime	= lCurTime;
 
-	CAlphaAnim* paa = (CAlphaAnim*)m_paachannel->GetAtTime(m_lAnimTime);
+   CAlphaAnim* paa = m_paachannel->GetAtTime(m_lAnimTime);
 	if (paa != nullptr)
 		{
 		// No special flags
@@ -369,14 +369,14 @@ int16_t CAnimThing::EditModify(void)
 	RGuiItem* pgui = RGuiItem::LoadInstantiate(FullPathVD(GUI_FILE_NAME));
 	if (pgui != nullptr)
 		{
-		RListBox* plb = (RListBox*)pgui->GetItemFromId(GUI_ID_OPTIONS);
+      RListBox* plb = static_cast<RListBox*>(pgui->GetItemFromId(GUI_ID_OPTIONS));
 		if (plb != nullptr)
 			{
 			ASSERT(plb->m_type == RGuiItem::ListBox);
 			// Select current setting.
 			plb->SetSel(pgui->GetItemFromId((m_sLoop == FALSE) ? GUI_ID_DONTLOOP : GUI_ID_DOLOOP) );
 
-			REdit* pedit = (REdit*)pgui->GetItemFromId(GUI_ID_RESOURCE);
+         REdit* pedit = static_cast<REdit*>(pgui->GetItemFromId(GUI_ID_RESOURCE));
 			if (pedit != nullptr)
 				{
 				ASSERT(pedit->m_type == RGuiItem::Edit);
@@ -480,7 +480,7 @@ void CAnimThing::EditRect(	// Returns nothiing.
 
 	if (m_paachannel != nullptr)
 		{
-		CAlphaAnim* paa = (CAlphaAnim*)m_paachannel->GetAtTime(m_lAnimTime);
+      CAlphaAnim* paa = m_paachannel->GetAtTime(m_lAnimTime);
 		if (paa != nullptr)
 			{
 			// Offset by hotspot.
@@ -507,7 +507,7 @@ void CAnimThing::EditHotSpot(	// Returns nothiing.
 
 	if (m_paachannel != nullptr)
 		{
-		CAlphaAnim*	paa	= (CAlphaAnim*)m_paachannel->GetAtTime(m_lAnimTime);
+      CAlphaAnim*	paa	= m_paachannel->GetAtTime(m_lAnimTime);
 		if (paa != nullptr)
 			{
 			*psX	= -paa->m_sX;

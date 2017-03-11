@@ -408,17 +408,17 @@ class RScrollBar : public RGuiItem
 			RHot*	phot,			// Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
-			{ ((RScrollBar*)(phot->m_ulUser))->UpHotCall(pie); }
+         { reinterpret_cast<RScrollBar*>(phot->m_ulUser)->UpHotCall(pie); }
 		static void DownHotCall(
 			RHot*	phot,			// Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
-			{ ((RScrollBar*)(phot->m_ulUser))->DownHotCall(pie); }
+         { reinterpret_cast<RScrollBar*>(phot->m_ulUser)->DownHotCall(pie); }
 		static void ThumbHotCall(
 			RHot*	phot,			// Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
-			{ ((RScrollBar*)(phot->m_ulUser))->ThumbHotCall(pie); }
+         { reinterpret_cast<RScrollBar*>(phot->m_ulUser)->ThumbHotCall(pie); }
 		static void DrawUpArrow(	// Returns nothing.
 			RGuiItem* pgui,			// The RGuiItem being composed (this).
 			RImage* pim,				// Image to draw into.  Try to stay within 
@@ -430,7 +430,7 @@ class RScrollBar : public RGuiItem
 			RImage* pim,				// Image to draw into.  Try to stay within 
 											// prc please.
 			RRect* prc)					// Where to in image.
-			{ ((RScrollBar*)pgui->m_ulUserInstance)->DrawDownArrow(pim, prc); }
+         { reinterpret_cast<RScrollBar*>(pgui->m_ulUserInstance)->DrawDownArrow(pim, prc); }
 
 		// Save item's children to the specified file.
 		virtual					// Overridden here.

@@ -264,14 +264,14 @@ class CBufQ
 			int8_t* ps8Buf,			// In:  Data to enqueue in buffer.
          size_t lNum = 1)		// In:  Number of bytes to put.
 			{
-			return Put((uint8_t*)ps8Buf, lNum);
+         return Put(reinterpret_cast<uint8_t*>(ps8Buf), lNum);
 			}
 
       size_t Put(				// Returns number of items that were put into queue
 			void* pvBuf,		// In:  Data to enqueue in buffer.
          size_t lNum)			// In:  Number of bytes to put.
 			{
-			return Put((uint8_t*)pvBuf, lNum);
+         return Put(reinterpret_cast<uint8_t*>(pvBuf), lNum);
 			}
 
       size_t Put(				// Returns number of items that were put into queue
@@ -279,7 +279,7 @@ class CBufQ
          size_t lNum = 1)		// In:  Number of U16s to put.
 			{
          size_t	lNumPut	= 0;
-			uint8_t*	pu8Buf	= (uint8_t*)pu16Buf;
+         uint8_t*	pu8Buf	= reinterpret_cast<uint8_t*>(pu16Buf);
 
 #if BYTE_ORDER == BIG_ENDIAN
          do
@@ -327,7 +327,7 @@ class CBufQ
          size_t lNum = 1)		// In:  Number of U32s to put.
 			{
          size_t	lNumPut	= 0;
-			uint8_t*	pu8Buf	= (uint8_t*)pu32Buf;
+         uint8_t*	pu8Buf	= reinterpret_cast<uint8_t*>(pu32Buf);
 
 #if BYTE_ORDER == BIG_ENDIAN
          do
@@ -407,14 +407,14 @@ class CBufQ
 			int8_t* ps8Buf,			// Out: Where to dequeue from buffer.
          size_t lNum = 1)		// In:  Number of bytes to get.
 			{
-			return Get((uint8_t*)ps8Buf, lNum);
+         return Get(reinterpret_cast<uint8_t*>(ps8Buf), lNum);
 			}
 
       size_t Get(				// Returns number of items dequeued
 			void* pvBuf,		// Out: Where to dequeue from buffer.
          size_t lNum)			// In:  Number of bytes to get.
 			{
-			return Get((uint8_t*)pvBuf, lNum);
+         return Get(reinterpret_cast<uint8_t*>(pvBuf), lNum);
 			}
 
       size_t Get(				// Returns number of items dequeued.
@@ -422,7 +422,7 @@ class CBufQ
          size_t lNum = 1)		// In:  Number of U16s to get.
 			{
          size_t	lNumGot	= 0;
-			uint8_t*	pu8Buf	= (uint8_t*)pu16Buf;
+         uint8_t*	pu8Buf	= reinterpret_cast<uint8_t*>(pu16Buf);
 
 #if BYTE_ORDER == BIG_ENDIAN
          do
@@ -458,7 +458,7 @@ class CBufQ
          size_t lNum = 1)		// In:  Number of U32s to get.
 			{
          size_t	lNumGot	= 0;
-			uint8_t*	pu8Buf	= (uint8_t*)pu32Buf;
+         uint8_t*	pu8Buf	= reinterpret_cast<uint8_t*>(pu32Buf);
 
 #if BYTE_ORDER == BIG_ENDIAN
          do

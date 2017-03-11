@@ -800,7 +800,7 @@ if (g_bSceneDontBlit == false)
 			{
 			// MUST BE 3D PARENT!
 			ASSERT(ps3Cur->m_psprParent->m_type == CSprite::Standard3d);
-			CSprite3*	ps3Parent	= (CSprite3*)(ps3Cur->m_psprParent);
+			CSprite3*	ps3Parent	= static_cast<CSprite3*>(ps3Cur->m_psprParent);
 
 			// Use the position the parent rendered at.
 			sDirectRenderX		= ps3Parent->m_sDirectRenderX;

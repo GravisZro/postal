@@ -1096,7 +1096,7 @@ void CDoofus::Render(void)
 	if (m_panimCur->m_pevent)
 	{	
 		// Get current event.
-		uint8_t	u8Event	= *( (uint8_t*)(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+		uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
 
 		// If gun not hidden by Randy . . .
 		if (u8Event < 10)
@@ -2714,7 +2714,7 @@ void CDoofus::Logic_Shoot(void)
 		case CSmallPistolID:
 		{
 			// Get event.
-			uint8_t	u8Event	= *( (uint8_t*)(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
+			uint8_t	u8Event	= *( static_cast<uint8_t*>(m_panimCur->m_pevent->GetAtTime(m_lAnimTime) ) );
 			// We don't care about show point for these non-object weapon types.
 			// If it's time to fire the weapon . . .
 			if (u8Event > 0 && lThisTime > m_lShootTimer)

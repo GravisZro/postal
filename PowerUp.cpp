@@ -713,8 +713,8 @@ void CPowerUp::OnExplosionMsg(			// Returns nothing.
 			{
 			if (bFirst == false)
 				{
-				CPowerUp*	ppowerup;
-				if (ConstructWithID(CPowerUpID, m_pRealm, (CThing**)&ppowerup) == SUCCESS)
+            CPowerUp* ppowerup;
+            if (ConstructWithID(CPowerUpID, m_pRealm, reinterpret_cast<CThing**>(&ppowerup)) == SUCCESS)
 					{
 					// Transfer item.
 					ppowerup->m_stockpile.GetItem(sTypeIndex)	= m_stockpile.GetItem(sTypeIndex);

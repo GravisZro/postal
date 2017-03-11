@@ -83,13 +83,13 @@ int16_t RPipeLine::Create(size_t lNum,int16_t sW)
 	
 	if ((ms_pPts != nullptr) && (lNum > ms_lNumPts))
 		{
-		free(ms_pPts);
+       delete ms_pPts;
 		ms_pPts = nullptr;
 		}
 
 	if (ms_pPts == nullptr)
 		{
-		ms_pPts = (RP3d*) malloc(sizeof(RP3d) * lNum);
+      ms_pPts = new RP3d[lNum];
 		}
 
 	return SUCCESS;

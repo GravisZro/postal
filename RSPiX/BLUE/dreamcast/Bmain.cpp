@@ -29,7 +29,7 @@
 #include <cstring>
 #include <ctime>
 
-
+bool RspBlueReady = false;
 bool mouse_grabbed = false;
 
 //////////////////////////////////////////////////////////////////////////////

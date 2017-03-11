@@ -605,7 +605,7 @@ void RMsgBox::ItemBtnUpCall(RGuiItem* pgui)
 	{
    ASSERT(pgui->m_ulUserInstance);
 
-	RMsgBox*	pmb	= (RMsgBox*)(pgui->m_ulUserInstance);
+   RMsgBox*	pmb	= reinterpret_cast<RMsgBox*>(pgui->m_ulUserInstance);
 
 	// Store item ID.
 	pmb->m_ulId	= pgui->m_ulUserData;

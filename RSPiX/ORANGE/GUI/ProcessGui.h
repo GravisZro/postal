@@ -209,7 +209,7 @@ class RProcessGui
 	public:
 
 		// ID of last item pressed.
-		static int32_t ms_lPressedId;
+      static uintptr_t ms_lPressedId;
 	};
 
 #endif	// PROCESSGUI_H

@@ -1209,7 +1209,7 @@ int16_t CPerson::EditModify(void)
 
 					// Copy logic file to use.
 					m_rstrLogicFile.Grow(256);
-               peditLogicFile->GetText(m_rstrLogicFile, 255);
+               peditLogicFile->GetText(m_rstrLogicFile.Data(), 255);
 					m_rstrLogicFile.Update();
 
 					// Get the bouy settings

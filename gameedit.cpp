@@ -1092,9 +1092,9 @@ typedef struct TAG_Line
 	#if __MWERKS >= 0x1100
 		ITERATOR_TRAITS(const LINKLINE);
 	#endif
-	typedef set <LINKLINE, less<LINKLINE>, allocator<LINKLINE> > lineset;
+   typedef std::set <LINKLINE, std::less<LINKLINE>, std::allocator<LINKLINE> > lineset;
 #else
-	typedef set <LINKLINE, less<LINKLINE> > lineset;
+   typedef std::set <LINKLINE, std::less<LINKLINE> > lineset;
 #endif
 
 // Container for a GUI and Camera pair.
@@ -4903,7 +4903,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 										}
 
 									
-									CDude*	pdude	= (CDude*)(*ppthing);
+									CDude*	pdude	= static_cast<CDude*>(*ppthing);
 									// If this is the local dude . . .
 									if (pdude->m_sDudeNum == 0)
 										{
@@ -6016,9 +6016,8 @@ static void RemoveView(		// Returns nothing.
 			}
 
 		if (pguiRemove != nullptr)
-			{
-        TRACE("SUSPICIOUS CODE!");
-			KillView((View*)(pguiRemove->m_lId));
+         {
+         KillView(reinterpret_cast<View*>(pguiRemove->m_lId));
 			plb->RemoveItem(pguiRemove);
 			plb->AdjustContents();
 			}
@@ -7251,7 +7250,7 @@ static void AttribMaskBtnPressed(	// Returns nothing.
 	RMultiBtn*	pmb	= (RMultiBtn*)pgui_pmb;
 
 	// Get mask to affect.
-	uint16_t*	pu16AttribMask	= (uint16_t*)(pmb->m_ulUserInstance);
+   uint16_t*	pu16AttribMask	= reinterpret_cast<uint16_t*>(pmb->m_ulUserInstance);
 
 	// Add or subtract mask dependent on state.
 	switch (pmb->m_sState)
@@ -7682,9 +7681,8 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 				// If there's a selection . . .
 				RGuiItem* pguiSel	= plb->GetSel();
 				if (pguiSel)
-					{
-              TRACE("SUSPICIOUS CODE!");
-					*ppthing	= (CThing*)(pguiSel->m_lId);
+               {
+               *ppthing	= reinterpret_cast<CThing*>(pguiSel->m_lId);
 					}
 				else
 					{

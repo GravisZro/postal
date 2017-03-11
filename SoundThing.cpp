@@ -578,7 +578,7 @@ static void BrowseCall(		// Returns nothing.
 
 		// Create full system path from existing RSPiX subpath.
 		char	szSystemPath[PATH_MAX];
-		char*	pszSakpath	= g_resmgrSamples.GetBasePath();
+      const char* pszSakpath = g_resmgrSamples.GetBasePath();
 		if (pguiName->m_szText[0] == '\0')
 			{
 			pguiName->SetText(".");
@@ -647,14 +647,14 @@ int16_t CSoundThing::EditModify(void)
 		pguiNameBrowse->m_ulUserInstance	= pResName->m_lId;
 
 		// Init "first time" edit
-		REdit* pFirstTime = (REdit*)pgui->GetItemFromId(100);
+      REdit* pFirstTime = static_cast<REdit*>(pgui->GetItemFromId(100));
 		ASSERT(pFirstTime != nullptr);
 		ASSERT(pFirstTime->m_type == RGuiItem::Edit);
 		pFirstTime->SetText("%i", m_lMinTime[0]);
 		pFirstTime->Compose();
 
 		// Init "first random time" edit
-		REdit* pFirstRndTime = (REdit*)pgui->GetItemFromId(101);
+      REdit* pFirstRndTime = static_cast<REdit*>(pgui->GetItemFromId(101));
 		ASSERT(pFirstRndTime != nullptr);
 		ASSERT(pFirstRndTime->m_type == RGuiItem::Edit);
 		pFirstRndTime->SetText("%i", m_lRndTime[0]);

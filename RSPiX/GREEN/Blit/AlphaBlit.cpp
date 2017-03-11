@@ -261,7 +261,7 @@ void rspFastMaskAlphaBlit(uint8_t*** pfaX,RImage* pimMask,
 	uint8_t* pMask,*pMaskLine = pimMask->m_pData + sSrcX + sSrcY * lSrcP;
 	uint8_t* pDst,*pDstLine = pimDst->m_pData + sDstX + lDstP * sDstY;
 
-	uint8_t ucTransparent = *( (uint8_t*)pfaX ); // secret code!
+   uint8_t ucTransparent = *reinterpret_cast<uint8_t*>(pfaX); // secret code!
 
 	for (j=0;j<sDstH;j++,pSrcLine += lSrcP,pDstLine += lDstP,pMaskLine += lMaskP)
 		{
@@ -317,7 +317,7 @@ void rspFastMaskAlphaBlitT(uint8_t*** pfaX,RImage* pimMask,
 	uint8_t* pMask,*pMaskLine = pimMask->m_pData + sSrcX + sSrcY * lSrcP;
 	uint8_t* pDst,*pDstLine = pimDst->m_pData + sDstX + lDstP * sDstY;
 
-	uint8_t ucTransparent = *( (uint8_t*)pfaX ); // secret code!
+   uint8_t ucTransparent = *reinterpret_cast<uint8_t*>(pfaX); // secret code!
 
 	for (j=0;j<sDstH;j++,pSrcLine += lSrcP,pDstLine += lDstP,pMaskLine += lMaskP)
 		{
@@ -483,7 +483,7 @@ void rspFastAlphaBlitT(uint8_t sAlphaLevel,uint8_t*** pMultiX,RImage* pimSrc,RIm
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pSrc,*pSrcLine = pimSrc->m_pData + sSrcX + sSrcY * lSrcP;
 	uint8_t* pDst,*pDstLine = pimDst->m_pData + sDstX + lDstP * sDstY;
-	uint8_t ucTransparent = *((uint8_t*)pMultiX); // Secret Code
+   uint8_t ucTransparent = *reinterpret_cast<uint8_t*>(pMultiX); // secret code!
 
 	// Test out trivial conditions:
    if (sAlphaLevel <= ucTransparent)

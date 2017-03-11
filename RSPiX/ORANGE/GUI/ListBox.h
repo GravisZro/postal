@@ -316,7 +316,7 @@ class RListBox : public RGuiItem
 			RGuiItem*	pgui)			// Gui item pressed.
 			{
 			// Call RListBox instantiated.
-			((RListBox*)(pgui->m_ulUserInstance))->SetSel(pgui);
+         reinterpret_cast<RListBox*>(pgui->m_ulUserInstance)->SetSel(pgui);
 			}
 
 		// Callback from scrollbar telling us to update list position.

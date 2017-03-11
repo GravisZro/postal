@@ -191,7 +191,7 @@ class CGrenade : public CWeapon
 			int16_t sResult	= Construct(pRealm, ppNew);
 			if (sResult == SUCCESS)
 				{
-				( (CGrenade*)(*ppNew) )->m_style	= Dynamite;
+				( static_cast<CGrenade*>(*ppNew) )->m_style	= Dynamite;
 				}
 
 			return sResult;

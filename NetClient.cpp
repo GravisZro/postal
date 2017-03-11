@@ -124,7 +124,7 @@ inline void Get(uint8_t* &pget, uint8_t* pval)
 //------------------------------------------------------------------------------
 inline void Get(uint8_t* &pget, int8_t* pval)
 	{
-	Get(pget, (uint8_t*)pval);
+   Get(pget, static_cast<uint8_t*>(pval));
 	}
 
 //------------------------------------------------------------------------------
@@ -133,11 +133,11 @@ inline void Get(uint8_t* &pget, int8_t* pval)
 inline void Get(uint8_t* &pget, uint16_t* pval)
 	{
 #if BYTE_ORDER == LITTLE_ENDIAN
-		uint8_t* ptmp = ((uint8_t*)(pval)) + 1;
+      uint8_t* ptmp = (static_cast<uint8_t*>(pval)) + 1;
 		*ptmp-- = *pget++;
 		*ptmp   = *pget++;
 #elif BYTE_ORDER == BIG_ENDIAN
-      uint8_t* ptmp = (uint8_t*)(pval);
+      uint8_t* ptmp = static_cast<uint8_t*>(pval);
 		*ptmp++ = *pget++;
 		*ptmp   = *pget++;
 #else
@@ -159,13 +159,13 @@ inline void Get(uint8_t* &pget, int16_t* pval)
 inline void Get(uint8_t* &pget, uint32_t* pval)
 	{
 #if BYTE_ORDER == LITTLE_ENDIAN
-		uint8_t* ptmp = ((uint8_t*)(pval)) + 3;
+      uint8_t* ptmp = (static_cast<uint8_t*>(pval)) + 3;
 		*ptmp-- = *pget++;
 		*ptmp-- = *pget++;
 		*ptmp-- = *pget++;
 		*ptmp   = *pget++;
 #elif BYTE_ORDER == BIG_ENDIAN
-      uint8_t* ptmp = (uint8_t*)(pval);
+      uint8_t* ptmp = static_cast<uint8_t*>(pval);
 		*ptmp++ = *pget++;
 		*ptmp++ = *pget++;
 		*ptmp++ = *pget++;
@@ -181,7 +181,7 @@ inline void Get(uint8_t* &pget, uint32_t* pval)
 inline void Get(uint8_t* &pget, uint64_t* pval)
 {
 #if BYTE_ORDER == LITTLE_ENDIAN
-   uint8_t* ptmp = ((uint8_t*)(pval)) + 3;
+   uint8_t* ptmp = (static_cast<uint8_t*>(pval)) + 3;
 	*ptmp-- = *pget++;
 	*ptmp-- = *pget++;
 	*ptmp-- = *pget++;
@@ -191,7 +191,7 @@ inline void Get(uint8_t* &pget, uint64_t* pval)
 	*ptmp-- = *pget++;
 	*ptmp = *pget++;
 #elif BYTE_ORDER == BIG_ENDIAN
-	uint8_t* ptmp = (uint8_t*)(pval);
+   uint8_t* ptmp = static_cast<uint8_t*>(pval);
 	*ptmp++ = *pget++;
 	*ptmp++ = *pget++;
 	*ptmp++ = *pget++;
@@ -241,11 +241,11 @@ inline void Put(uint8_t* &pput, int8_t val)
 inline void Put(uint8_t* &pput, uint16_t val)
 	{
 #if BYTE_ORDER == LITTLE_ENDIAN
-		uint8_t* ptmp = ((uint8_t*)(&val)) + 1;
+      uint8_t* ptmp = (static_cast<uint8_t*>(&val)) + 1;
 		*pput++ = *ptmp--;
 		*pput++ = *ptmp;
 #elif BYTE_ORDER == BIG_ENDIAN
-		uint8_t* ptmp = (uint8_t*)(&val);
+      uint8_t* ptmp = static_cast<uint8_t*>(&val);
 		*pput++ = *ptmp++;
 		*pput++ = *ptmp;
 #else
@@ -267,13 +267,13 @@ inline void Put(uint8_t* &pput, int16_t val)
 inline void Put(uint8_t* &pput, uint32_t val)
 	{
 #if BYTE_ORDER == LITTLE_ENDIAN
-		uint8_t*ptmp = ((uint8_t*)(&val)) + 3;
+      uint8_t*ptmp = (static_cast<uint8_t*>(&val)) + 3;
 		*pput++ = *ptmp--;
 		*pput++ = *ptmp--;
 		*pput++ = *ptmp--;
 		*pput++ = *ptmp;
 #elif BYTE_ORDER == BIG_ENDIAN
-		uint8_t*ptmp = (uint8_t*)(&val);
+      uint8_t*ptmp = static_cast<uint8_t*>(&val);
 		*pput++ = *ptmp++;
 		*pput++ = *ptmp++;
 		*pput++ = *ptmp++;
@@ -289,7 +289,7 @@ inline void Put(uint8_t* &pput, uint32_t val)
 inline void Put(uint8_t* &pput, uint64_t val)
 {
 #if BYTE_ORDER == LITTLE_ENDIAN
-	uint8_t*ptmp = ((uint8_t*)(&val)) + 3;
+   uint8_t*ptmp = (static_cast<uint8_t*>(&val)) + 3;
 	*pput++ = *ptmp--;
 	*pput++ = *ptmp--;
 	*pput++ = *ptmp--;
@@ -299,7 +299,7 @@ inline void Put(uint8_t* &pput, uint64_t val)
 	*pput++ = *ptmp--;
 	*pput++ = *ptmp;
 #elif BYTE_ORDER == BIG_ENDIAN
-	uint8_t*ptmp = (uint8_t*)(&val);
+   uint8_t*ptmp = static_cast<uint8_t*>(&val);
 	*pput++ = *ptmp++;
 	*pput++ = *ptmp++;
 	*pput++ = *ptmp++;
@@ -832,8 +832,8 @@ void CNetClient::GetMsg(
 					msg.msg.inputData.id			= id;
 					msg.msg.inputData.seqStart	= pmsg->msg.inputReq.seqStart;
 					msg.msg.inputData.sNum		= pmsg->msg.inputReq.sNum;
-					msg.msg.inputData.pInputs	= (UINPUT*)msg.AllocVar((int32_t)pmsg->msg.inputReq.sNum * sizeof(UINPUT));
-					msg.msg.inputData.pFrameTimes	= (uint8_t*)msg.AllocVar((int32_t)pmsg->msg.inputReq.sNum * sizeof(uint8_t));
+               msg.msg.inputData.pInputs	= reinterpret_cast<UINPUT*>(msg.AllocVar(size_t(pmsg->msg.inputReq.sNum) * sizeof(UINPUT)));
+               msg.msg.inputData.pFrameTimes	= msg.AllocVar(size_t(pmsg->msg.inputReq.sNum) * sizeof(uint8_t));
 					
 					// Copy the requested values into the allocated memory
 					Net::SEQ seq = msg.msg.inputData.seqStart;

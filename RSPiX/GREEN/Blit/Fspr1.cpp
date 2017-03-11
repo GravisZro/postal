@@ -515,7 +515,7 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 
 	// Now the actual data, which needs no alignment:
 	pSpec->m_pCode = (uint8_t*) malloc(pSpec->m_lSize);    //+ Not freed!
-	pcf->Read((uint8_t*)(pSpec->m_pCode),pSpec->m_lSize);
+   pcf->Read(static_cast<uint8_t*>(pSpec->m_pCode),pSpec->m_lSize);
 
 	return SUCCESS;
 	}
@@ -566,7 +566,7 @@ int16_t		SaveFSPR1(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// Now the actual data, which needs no alignment:
-	pcf->Write((uint8_t*)pSpec->m_pCode,pSpec->m_lSize);
+   pcf->Write(reinterpret_cast<uint8_t*>(pSpec->m_pCode), pSpec->m_lSize);
 
 	return SUCCESS;
 	}
@@ -619,7 +619,7 @@ int16_t rspBlit(
 #endif
 	
 	// transfer colors:
-	uint8_t	ucForeColor = (uint8_t) ulForeColor;
+   uint8_t	ucForeColor = ulForeColor;
 
 	// Clip!
 	int16_t sClipL=0,sClipR=0,sClipT=0,sClipB=0;
@@ -746,7 +746,7 @@ int16_t rspBlit(
 
 	uint8_t	*pDst,*pDstLine,*pCode,ucCount;
 	pDstLine = pimDst->m_pData + lDstP * sDstY + sDstX;
-	RSpecialFSPR1*	pHead = (RSpecialFSPR1*)(pimSrc->m_pSpecialMem);
+   RSpecialFSPR1*	pHead = reinterpret_cast<RSpecialFSPR1*>(pimSrc->m_pSpecialMem);
 	pCode = pHead->m_pCode;
    const uint8_t FF = (uint8_t)0xFF;
 
@@ -1044,9 +1044,9 @@ int16_t rspBlit(
 
 	uint8_t	*pDst,*pDstLine,*pCode,ucCount;
 	pDstLine = pimDst->m_pData + lDstP * sDstY + sDstX;
-	RSpecialFSPR1*	pHead = (RSpecialFSPR1*)(pimSrc->m_pSpecial);
+   RSpecialFSPR1*	pHead = reinterpret_cast<RSpecialFSPR1*>(pimSrc->m_pSpecial);
 	pCode = pHead->m_pCode;
-   const uint8_t FF = (uint8_t)0xFF;
+   const uint8_t FF = 0xFF;
 
 	// Let's scale it, baby! (pre-clipping)
 	int16_t sDenX = pimSrc->m_sWidth; 
@@ -1296,7 +1296,7 @@ int16_t rspBlit(
 
 	uint8_t	*pDst,*pDstLine,*pCode,ucCount;
 	pDstLine = pimDst->m_pData + lDstP * sDstY + sDstX;
-	RSpecialFSPR1*	pHead = (RSpecialFSPR1*)(pimSrc->m_pSpecialMem);
+   RSpecialFSPR1*	pHead = reinterpret_cast<RSpecialFSPR1*>(pimSrc->m_pSpecialMem);
 	pCode = pHead->m_pCode;
    const uint8_t FF = (uint8_t)0xFF;
 
@@ -1516,7 +1516,7 @@ int16_t rspBlit(
 
 	uint8_t	*pDst,*pDstLine,*pCode,ucCount;
 	pDstLine = pimDst->m_pData + lDstP * sDstY + sDstX;
-	RSpecialFSPR1*	pHead = (RSpecialFSPR1*)(pimSrc->m_pSpecial);
+   RSpecialFSPR1*	pHead = reinterpret_cast<RSpecialFSPR1*>(pimSrc->m_pSpecial);
 	pCode = pHead->m_pCode;
    const uint8_t FF = (uint8_t)0xFF;
 

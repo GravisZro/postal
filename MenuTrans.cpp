@@ -636,7 +636,7 @@ static void Remap(
   // does the lock even in DEBUG mode)
   // IF you comment this back in, remember to comment in the unlock as well!
 #if 0
-  if (rspLockVideoBuffer((void**)&pu8VideoBuf, &lPitch) ) == SUCCESS)
+  if (rspLockVideoBuffer(reinterpret_cast<void**>(&pu8VideoBuf), &lPitch) ) == SUCCESS)
   {
 #else
   if (rspLockBuffer() == SUCCESS)

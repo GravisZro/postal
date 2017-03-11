@@ -96,7 +96,7 @@ int16_t		SaveFSPR8(RImage* pImage, RFile* pcf)
 	//------------------
 
 	// NOTE: Some font info is stored here:
-	pcf->Write((uint16_t*)(&(pSpec->m_usSourceType)));
+   pcf->Write(static_cast<uint16_t*>(&(pSpec->m_usSourceType)));
 	pcf->Write(&(pSpec->m_lBufSize));
 	pcf->Write(&(pSpec->m_lCodeSize));
 
@@ -167,7 +167,7 @@ int16_t		LoadFSPR8(RImage* pImage, RFile* pcf)
 	RSpecialFSPR8* pSpec = new RSpecialFSPR8;
 	pImage->m_pSpecialMem = pImage->m_pSpecial = (uint8_t*)pSpec;
 
-	pcf->Read((uint16_t*)(&pSpec->m_usSourceType));
+   pcf->Read(static_cast<uint16_t*>(&pSpec->m_usSourceType));
 	pcf->Read(&pSpec->m_lBufSize);
 	pcf->Read(&pSpec->m_lCodeSize);
 
@@ -357,10 +357,10 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	pHeader->m_pBufArry = (uint8_t**)calloc(pImage->m_sHeight+1,sizeof(uint8_t*));
 
 	// ************** For now, set these to an optimisitically large size: 1:1 compression (could be 2:1 worst case)
-	int32_t	lSizeEstimate = ((int32_t)(pImage->m_sHeight+1))*(pImage->m_sWidth*2+1) + 15;
-	pHeader->m_pCompMem = (uint8_t*)malloc((size_t)pImage->m_sHeight*(size_t)pImage->m_sWidth+15);
+   int32_t	lSizeEstimate = int32_t(pImage->m_sHeight + 1) * (pImage->m_sWidth * 2 + 1) + 15;
+   pHeader->m_pCompMem = (uint8_t*)malloc(size_t(pImage->m_sHeight) * size_t(pImage->m_sWidth + 15));
 
-   pHeader->m_pCompBuf = (uint8_t*)(( (intptr_t)(pHeader->m_pCompMem) + 15) & ~ 15); // align it 128!
+   pHeader->m_pCompBuf = reinterpret_cast<uint8_t*>((intptr_t(pHeader->m_pCompMem) + 15) & ~ 15); // align it 128!
 	pHeader->m_pCodeBuf = (uint8_t*)malloc((size_t)lSizeEstimate);
 
 	// ******** For convenience, generate the Compressed Buffer immediately:
@@ -373,8 +373,8 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	// WARNING:  THIS IS HARD CODED 8-bit PIXEL SIZE STUFF!
 	for (y=0;y<sH;y++)
 	{
-	pHeader->m_pBufArry[y] = (uint8_t*)(pucCPos - pHeader->m_pCompBuf); // set line pointer
-	for (x=0,pucBPos = pImage->m_pData + (int32_t)sP * (int32_t)y; x<sW; x++)
+   pHeader->m_pBufArry[y] = reinterpret_cast<uint8_t*>(pucCPos - pHeader->m_pCompBuf); // set line pointer
+   for (x=0,pucBPos = pImage->m_pData + int32_t(sP) * int32_t(y); x < sW; x++)
 		{
 		if (*pucBPos != 0) *(pucCPos++) = *pucBPos;
 		pucBPos++;
@@ -405,9 +405,9 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	// NOTE: pucCPos is an open stack!
 	pHeader->m_pCompMem = (uint8_t*)calloc(1,(size_t)(pucCPos - pHeader->m_pCompBuf + 15));
 	// And align it:
-   pHeader->m_pCompBuf = (uint8_t*)(( (intptr_t)(pHeader->m_pCompMem) +15)&~15);
+   pHeader->m_pCompBuf = reinterpret_cast<uint8_t*>((reinterpret_cast<intptr_t>(pHeader->m_pCompMem) + 15) & ~15);
 	// Store the size of the Compressed Buffer:
-	pHeader->m_pBufArry[sH] = (uint8_t*)(size_t)(pucCPos - pHeader->m_pCompBuf);
+   pHeader->m_pBufArry[sH] = reinterpret_cast<uint8_t*>(pucCPos - pHeader->m_pCompBuf);
 
 
 	// Now copy the old into the new aligned and free it:
@@ -421,11 +421,11 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	pucBPos = pImage->m_pData;
 	uint8_t*	pucConBlk = pHeader->m_pCodeBuf;
 
-	for (y=0;y<sH;y++)
+   for (y = 0; y < sH; ++y)
 		{
-		pHeader->m_pCodeArry[y] = (uint8_t*)(pucConBlk - pHeader->m_pCodeBuf); // set Block pointer
-		pucBPos = pImage->m_pData + (int32_t)sP * (int32_t)y;
-		x=0;
+      pHeader->m_pCodeArry[y] = reinterpret_cast<uint8_t*>(pucConBlk - pHeader->m_pCodeBuf); // set Block pointer
+      pucBPos = pImage->m_pData + int32_t(sP) * int32_t(y);
+      x = 0;
 
 		NextRun:
 		// A> The CLEAR RUN
@@ -477,7 +477,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 		}
 
 	// Store the size of the Control Block Buffer:
-	pHeader->m_pCodeArry[sH] = (uint8_t*)(size_t)(pucConBlk - pHeader->m_pCodeBuf);
+   pHeader->m_pCodeArry[sH] = reinterpret_cast<uint8_t*>(pucConBlk - pHeader->m_pCodeBuf);
 	// NOTE THE SIZE:
 	pHeader->m_lCodeSize = uint32_t(pucConBlk - pHeader->m_pCodeBuf);
 
@@ -486,7 +486,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 										(size_t)(pucConBlk - pHeader->m_pCodeBuf));	
 
 	// Move the indexes in (m_pCodeArry)
-   for (y=0;y<sH;y++) pHeader->m_pCodeArry[y] += (intptr_t)(pHeader->m_pCodeBuf);
+   for (y=0;y<sH;y++) pHeader->m_pCodeArry[y] += reinterpret_cast<intptr_t>(pHeader->m_pCodeBuf);
 
 	// ******************************************************************
 

@@ -463,7 +463,7 @@ int16_t suxRect(			// Returns 0 on success, 1 if clipped out entirely.
 	if (sW > 0 && sH > 0)
 		{
 		int32_t		lPitch	= pimDst->m_lPitch;
-		COLOR*	pclrRow	= (COLOR*)(pimDst->m_pData + sY * lPitch) + sX;
+      COLOR*	pclrRow	= reinterpret_cast<COLOR*>(pimDst->m_pData + int32_t(sY) * lPitch) + sX;
 		COLOR*	pclrBlt;
 		int16_t		sWidth;
 
@@ -477,7 +477,7 @@ int16_t suxRect(			// Returns 0 on success, 1 if clipped out entirely.
 				*pclrBlt++	= clr;
 				}
 
-			pclrRow	=	(COLOR*)((uint8_t*)pclrRow + lPitch);
+         pclrRow	=	reinterpret_cast<COLOR*>(reinterpret_cast<uint8_t*>(pclrRow) + lPitch);
 			}
 		}
 	else
@@ -517,7 +517,7 @@ int16_t EvalPixel(						// Returns TRUE if pixel is not clrDisjoin.
 			{
 			// Note that sY * lPitch is added in uint8_t sized elements and
 			// sX is added in COLOR sized elements.
-			if (*((COLOR*)((uint8_t*)pclrData + (int32_t)sY * lPitch) + sX) != clrDisjoin)
+         if (*(reinterpret_cast<COLOR*>(reinterpret_cast<uint8_t*>(pclrData) + int32_t(sY) * lPitch) + sX) != clrDisjoin)
 				{
 				sNonDisjoin	= TRUE;
 				}
@@ -701,7 +701,7 @@ int16_t rspLassoNext(	// Returns 0 if a polygon found,
 			COLOR*	pclrRowStart	= (COLOR*)pimSrc->m_pData + sSrcX;
 			// Note that the height offset is computed at uint8_t* and THEN it
 			// is casted to a COLOR*.
-			pclrRowStart				= (COLOR*)((uint8_t*)pclrRowStart + (int32_t)sSrcY * lPitch);
+         pclrRowStart				= reinterpret_cast<COLOR*>(reinterpret_cast<uint8_t*>(pclrRowStart) + int32_t(sSrcY) * lPitch);
 			// Our scanner.
 			COLOR*	pclrSrc			= pclrRowStart;
 
@@ -724,7 +724,7 @@ int16_t rspLassoNext(	// Returns 0 if a polygon found,
 					{
 					if (sX < sSrcW)
 						{
-						if (EvalPixel((COLOR*)pimSrc->m_pData, sX, sY, lPitch, sSrcX, sSrcY, sSrcX2, sSrcY2, clrDisjoin, fnEval) == FALSE)
+                  if (EvalPixel(reinterpret_cast<COLOR*>(pimSrc->m_pData), sX, sY, lPitch, sSrcX, sSrcY, sSrcX2, sSrcY2, clrDisjoin, fnEval) == FALSE)
 							{
 							pclrSrc++;
 							sX++;
@@ -750,7 +750,7 @@ int16_t rspLassoNext(	// Returns 0 if a polygon found,
 
 				// Get next row.  Add pitch at byte depth since it is a count
 				// of bytes.
-				pclrRowStart	= (COLOR*)((uint8_t*)pclrRowStart + lPitch);
+            pclrRowStart	= reinterpret_cast<COLOR*>(reinterpret_cast<uint8_t*>(pclrRowStart) + lPitch);
 				}
 
 			// Either we've exhausted the image or we've found a shape.

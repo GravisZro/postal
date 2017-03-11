@@ -673,7 +673,7 @@ void UploadLinkInteger(			// Returns nothing.
 		{
 		case RGuiItem::MultiBtn:
 			{
-			RMultiBtn*	pmb	= (RMultiBtn*)pgui;
+         RMultiBtn*	pmb	= static_cast<RMultiBtn*>(pgui);
 			if (i)
 				{
 				pmb->m_sState	= 1;
@@ -686,7 +686,7 @@ void UploadLinkInteger(			// Returns nothing.
 			}
 		case RGuiItem::PushBtn:
 			{
-			RPushBtn*	ppushbtn	= (RPushBtn*)pgui;
+         RPushBtn*	ppushbtn	= static_cast<RPushBtn*>(pgui);
 			if (i)
 				{
 				ppushbtn->m_state	= RPushBtn::On;
@@ -714,7 +714,7 @@ void UploadLinkInteger(			// Returns nothing.
 			// Hardwire to signed b/c bool was displaying a warning regarding the
 			// above comparison to determine the [un]signed nature of the templated
 			// type.
-         pgui->SetText("%i", (int32_t)i);
+         pgui->SetText("%i", i);
 #endif
 			break;
 		}
@@ -736,13 +736,13 @@ void DownloadLinkInteger(		// Returns nothing.
 		{
 		case RGuiItem::MultiBtn:
 			{
-			RMultiBtn*	pmb	= (RMultiBtn*)pgui;
+         RMultiBtn*	pmb	= static_cast<RMultiBtn*>(pgui);
 			*pi = (pmb->m_sState == 1) ? 1 : 0;
 			break;
 			}
 		case RGuiItem::PushBtn:
 			{
-			RPushBtn*	ppushbtn	= (RPushBtn*)pgui;
+         RPushBtn*	ppushbtn	= static_cast<RPushBtn*>(pgui);
 			*pi = (ppushbtn->m_state == RPushBtn::On) ? 1 : 0;
 			break;
 			}
@@ -1181,7 +1181,7 @@ static int16_t SetupDlg(		// Returns 0 on success.
 						// Must be edit.
 						ASSERT(ms_pguiChatText->m_type == RGuiItem::Edit);
 						// Limit text.
-						( (REdit*)ms_pguiChatText)->m_sMaxText	= Net::MaxChatSize - 1;
+                  static_cast<REdit*>(ms_pguiChatText)->m_sMaxText = Net::MaxChatSize - 1;
 						}
 
 					// Make the options GUI more readable.
@@ -1225,7 +1225,7 @@ static int16_t SetupDlg(		// Returns 0 on success.
 						// Must be edit.
 						ASSERT(ms_pguiChatText->m_type == RGuiItem::Edit);
 						// Limit text.
-						( (REdit*)ms_pguiChatText)->m_sMaxText	= Net::MaxChatSize - 1;
+                  static_cast<REdit*>(ms_pguiChatText)->m_sMaxText = Net::MaxChatSize - 1;
 						}
 
 					// If exists . . .
@@ -3070,7 +3070,7 @@ static int16_t BrowseForHost(
 						if (pguiSel)
 							{
 							// Get corresponding host.
-							CNetBrowse::CHost* phost = (CNetBrowse::CHost*)(pguiSel->m_ulUserData);
+							CNetBrowse::CHost* phost = static_cast<CNetBrowse::CHost*>(pguiSel->m_ulUserData);
 							ASSERT(phost);
 							// Get host address.
 							*paddress = phost->m_address;

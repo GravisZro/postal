@@ -409,7 +409,7 @@ inline
 void SetText(					// Returns nothing.
 	RGuiItem*	pguiRoot,	// In:  Root GUI.
 	int32_t			lId,			// In:  ID of GUI to set text.
-	char*			str)			// In:  Value to set text to.
+   const char*			str)			// In:  Value to set text to.
 	{
 	RGuiItem*	pgui	= pguiRoot->GetItemFromId(lId);
 	if (pgui != nullptr)
@@ -428,21 +428,21 @@ int16_t CNavigationNet::EditModify(void)
    int16_t sResult = SUCCESS;
 	RGuiItem* pGui = RGuiItem::LoadInstantiate(FullPathVD("res/editor/network.gui"));
 	if (pGui)
-	{
-      SetText(pGui, 3, m_rstrNetName);
+   {
+      SetText(pGui, 3, m_rstrNetName.operator const char *());
 
 		sResult = DoGui(pGui);
 		if (sResult == 1)
 		{
 			SetAsDefault();
 			m_rstrNetName.Grow(256);
-         pGui->GetText(3, m_rstrNetName, 255);
+         pGui->GetText(3, m_rstrNetName.Data(), 255);
 			m_rstrNetName.Update();
 
 			CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
 			CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 			RListBox* plb = peditor->m_plbNavNetList;			
-         SetText(plb, GetInstanceID(), m_rstrNetName);
+         SetText(plb, GetInstanceID(), m_rstrNetName.operator const char *());
 			plb->SetSel(plb->GetItemFromId(GetInstanceID()));
 //			RGuiItem* pguiRemove = plb->GetItemFromId(GetInstanceID());
 //			SetText(pguiRemove, 
@@ -466,7 +466,7 @@ int16_t CNavigationNet::EditModify(void)
 
 		if (pguiRemove != nullptr)
 			{
-			KillView((View*)(pguiRemove->m_lId));
+			KillView(static_cast<View*>(pguiRemove->m_lId));
 			plb->RemoveItem(pguiRemove);
 			plb->AdjustContents();
 */

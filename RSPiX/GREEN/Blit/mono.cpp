@@ -53,7 +53,7 @@ int16_t rspBlitToMono(
 
 #endif
 
-	if ( (sDstW < 1) || (sDstH < 1))
+   if ( sDstW < 1 || sDstH < 1)
 		{
 		TRACE("BLiT: Zero or negative area passed.\n");
       return FAILURE;
@@ -61,9 +61,10 @@ int16_t rspBlitToMono(
 
 	int32_t	lDstP = pimDst->m_lPitch;
 
-	if ( (sDstX < 0) || (sDstY < 0) ||
-		( (sDstX + sDstW) > pimDst->m_sWidth) ||
-		( (sDstY + sDstH) > pimDst->m_sHeight) )
+   if ( sDstX < 0 ||
+        sDstY < 0 ||
+        sDstX + sDstW > pimDst->m_sWidth ||
+        sDstY + sDstH > pimDst->m_sHeight )
 		{
 		TRACE("BLiT: This BLiT does not yet clip!\n");
       return FAILURE;
@@ -72,7 +73,7 @@ int16_t rspBlitToMono(
 
 	uint8_t	*pDst,*pDstLine,*pCode,ucCount;
 	pDstLine = pimDst->m_pData + lDstP * sDstY + (sDstX>>3);
-	RSpecialFSPR1*	pHead = (RSpecialFSPR1*)(pimSrc->m_pSpecial);
+   RSpecialFSPR1*	pHead = reinterpret_cast<RSpecialFSPR1*>(pimSrc->m_pSpecial);
 	pCode = pHead->m_pCode;
    const uint8_t FF = 0xFF;
 

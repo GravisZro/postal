@@ -704,7 +704,7 @@ class RGuiItem : public RProps <uint32_t, uint32_t>
 		// its children.
 		RGuiItem* GetItemFromId(	// Returns pointer to RGuiItem, if found;
 											// otherwise, returns nullptr.
-         int32_t lId)					// ID of RGuiItem to find.
+         uintptr_t lId)					// ID of RGuiItem to find.
 			{
 			RGuiItem*	pguiRes	= nullptr;	// Assume not found.
 
@@ -833,7 +833,7 @@ class RGuiItem : public RProps <uint32_t, uint32_t>
 			RHot*	phot,			// In:  Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
-			{ ((RGuiItem*)(phot->m_ulUser))->HotCall(pie); }
+         { reinterpret_cast<RGuiItem*>(phot->m_ulUser)->HotCall(pie); }
 
 		// Read header for this GUI item.
 		static int16_t ReadHeader(	// Returns 0 on success.
@@ -936,7 +936,7 @@ class RGuiItem : public RProps <uint32_t, uint32_t>
 																// when using transparent blit
 																// call.
 
-		int32_t					m_lId;				// ID.  Used to identify this RGuiItem
+      uintptr_t					m_lId;				// ID.  Used to identify this RGuiItem
 														// from others.  See GetItemFromId().
 
 		Target				m_targetFocus;		// Target when focus received.

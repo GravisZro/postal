@@ -527,7 +527,7 @@ static void BrowseBtnUp(	// Returns nothing.  Called on button released in
 									// m_hot when active.
 	RGuiItem* pgui)			// this.
 	{
-	RGuiItem*	pguiBaseName	= (RGuiItem*)(pgui->m_ulUserInstance);
+   RGuiItem*	pguiBaseName	= reinterpret_cast<RGuiItem*>(pgui->m_ulUserInstance);
 	if (pguiBaseName)
 		{
 		// Create full system path from existing RSPiX subpath.

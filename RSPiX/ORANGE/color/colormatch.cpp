@@ -922,13 +922,13 @@ uint8_t*** RMultiAlpha::pppucCreateFastMultiAlpha(
 
 	// Jump over the array of pointers to alpha levels
 	// I AM COUNTING ON 4 byte array increments! (+ 1024 bytes)
-	uint8_t** ppucFirstSrcArray = (uint8_t**)(pppucFastAligned + 256);
+   uint8_t** ppucFirstSrcArray = reinterpret_cast<uint8_t**>(pppucFastAligned + 256);
 	uint8_t** ppucCurSrc = ppucFirstSrcArray;
 	// Jump over the source arrays of pointers destination lists:
 
 	// I AM COUNTING ON 4 byte array increments!
 	// ( + 4LS bytes)
-	uint8_t* pucData = (uint8_t*) (ppucFirstSrcArray + int32_t(m_sNumLevels) * sNumSrc);
+   uint8_t* pucData = reinterpret_cast<uint8_t*>(ppucFirstSrcArray + int32_t(m_sNumLevels) * sNumSrc);
 	uint8_t* pData = pucData;
 
 	//------------------------------------------------------------------------
@@ -1281,11 +1281,11 @@ int16_t RFastMultiAlphaWrapper::Load(RFile* pf)
 	//==============  Idenitfy the different data sections  ===============
 	// NOTE:  once debugged, remove ppucFirstSrcArray,pucData
 	
-	uint8_t** ppucFirstSrcArray = (uint8_t**)(pppucFastAligned + 256); // in 4 byte units!
+   uint8_t** ppucFirstSrcArray = reinterpret_cast<uint8_t**>(pppucFastAligned + 256); // in 4 byte units!
 	uint8_t** ppucCurSrc = ppucFirstSrcArray;
 
 	// ( + 4LS bytes)
-	uint8_t* pucData = (uint8_t*) (ppucFirstSrcArray + int32_t(m_sNumLayers) * m_sNumSrc);
+   uint8_t* pucData = reinterpret_cast<uint8_t*>(ppucFirstSrcArray + int32_t(m_sNumLayers) * m_sNumSrc);
 	uint8_t* pData = pucData;
 
 	//=============  Insert the actual data  ==================

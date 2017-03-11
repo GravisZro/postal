@@ -904,11 +904,11 @@ int16_t RMixBuf::Mix(	uint32_t		ulStartPos,
 					case 8:
 						#if defined(FORCE_GENERIC_CODE) || !defined(SYS_BIN_X86)
 
-							::Mix( (uint8_t*)pu8Data, (uint8_t*)(m_pu8Mix + ulStartPos), ulNum);
+							::Mix( (uint8_t*)pu8Data, static_cast<uint8_t*>(m_pu8Mix + ulStartPos), ulNum);
 
 						#else
 
-							MixX86( (uint8_t*)pu8Data, (uint8_t*)(m_pu8Mix + ulStartPos), ulNum);
+							MixX86( (uint8_t*)pu8Data, static_cast<uint8_t*>(m_pu8Mix + ulStartPos), ulNum);
 
 						#endif
 
@@ -917,11 +917,11 @@ int16_t RMixBuf::Mix(	uint32_t		ulStartPos,
 					case 16:
 						#if defined(FORCE_GENERIC_CODE) || !defined(SYS_BIN_X86)
 
-							::Mix( (int16_t*)pu8Data, (int16_t*)(m_pu8Mix + ulStartPos), ulNum / 2);
+                     ::Mix( (int16_t*)pu8Data, reinterpret_cast<int16_t*>(m_pu8Mix + ulStartPos), ulNum / 2);
 
 						#else
 
-							MixX86( (int16_t*)pu8Data, (int16_t*)(m_pu8Mix + ulStartPos), ulNum / 2);
+                     MixX86( (int16_t*)pu8Data, reinterpret_cast<int16_t*>(m_pu8Mix + ulStartPos), ulNum / 2);
 
 						#endif
 
@@ -954,11 +954,11 @@ int16_t RMixBuf::Mix(	uint32_t		ulStartPos,
 					case 8:
 						#if defined(FORCE_GENERIC_CODE) || !defined(SYS_BIN_X86)
 							
-							::Mix( (uint8_t*)pu8Data, (uint8_t*)(m_pu8Mix + ulStartPos), ulNum, psLowTable);
+							::Mix( (uint8_t*)pu8Data, static_cast<uint8_t*>(m_pu8Mix + ulStartPos), ulNum, psLowTable);
 
 						#else
 
-							MixX86( (uint8_t*)pu8Data, (uint8_t*)(m_pu8Mix + ulStartPos), ulNum, psLowTable);
+							MixX86( (uint8_t*)pu8Data, static_cast<uint8_t*>(m_pu8Mix + ulStartPos), ulNum, psLowTable);
 
 						#endif
 
@@ -967,11 +967,11 @@ int16_t RMixBuf::Mix(	uint32_t		ulStartPos,
 					case 16:
 						#if defined(FORCE_GENERIC_CODE) || !defined(SYS_BIN_X86)
 
-							::Mix( (int16_t*)pu8Data, (int16_t*)(m_pu8Mix + ulStartPos), ulNum / 2, psLowTable, psHighTable);
+                     ::Mix( (int16_t*)pu8Data, reinterpret_cast<int16_t*>(m_pu8Mix + ulStartPos), ulNum / 2, psLowTable, psHighTable);
 
 						#else
 
-							MixX86( (int16_t*)pu8Data, (int16_t*)(m_pu8Mix + ulStartPos), ulNum / 2, psASMHighTable);
+                     MixX86( (int16_t*)pu8Data, reinterpret_cast<int16_t*>(m_pu8Mix + ulStartPos), ulNum / 2, psASMHighTable);
 
 						#endif
 

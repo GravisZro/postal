@@ -654,7 +654,7 @@ void* RSnd::PlayCall(RMix::Msg	msg,
 					}
 
 				// Move to next buffer.
-				pData = (uint8_t*)(m_psample->m_pData) + (m_ulSampleSize - m_ulRemaining);
+				pData = static_cast<uint8_t*>(m_psample->m_pData) + (m_ulSampleSize - m_ulRemaining);
 
 				// Get next buffer size.
 				(*pulBufSize) = MIN((uint32_t)m_lBufSize, m_ulRemaining);

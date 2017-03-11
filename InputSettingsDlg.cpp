@@ -249,7 +249,7 @@ extern int16_t InputSettingsDlg_InitMenu(	// Returns 0 on success.
 		// Load GUI for input method description.
 
 		RGuiItem*	pgui;
-      if (rspGetResourceInstance(&g_resmgrShell, INPUT_ITEM_GUI, (RTxt**)(&pgui)) == SUCCESS)
+      if (rspGetResourceInstance(&g_resmgrShell, INPUT_ITEM_GUI, reinterpret_cast<RTxt**>(&pgui)) == SUCCESS)
 			{
 			// Let the menu know about the GUI.
 			pmenu->ami[sInputIndex].pgui	= pgui;

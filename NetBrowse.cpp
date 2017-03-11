@@ -198,7 +198,7 @@ void CNetBrowse::Update(
             (((int32_t)buf[7] << 24) & 0xFF000000);
 
 			// Copy the name
-			strncpy(host.m_acName, (char*)&buf[8], sizeof(host.m_acName));
+         strncpy(host.m_acName, &buf[8], sizeof(host.m_acName));
 			host.m_acName[sizeof(host.m_acName)-1] = 0;
 
 			// Init time we last heard from this host to "now"

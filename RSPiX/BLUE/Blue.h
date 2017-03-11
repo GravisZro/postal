@@ -70,7 +70,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 extern int16_t rspInitBlue(void);
-static bool    RspBlueReady = false;
+extern bool    RspBlueReady;
 
 extern void rspKillBlue(void);
 

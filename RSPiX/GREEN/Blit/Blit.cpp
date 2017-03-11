@@ -102,7 +102,7 @@ void	rspClipPlot(PIXSIZE color,
 
     case BUF_VRAM2: // draw a rectangle to the hidden VRAM plane
       // need to lock / unlock this one:
-      if (rspLockVideoFlipPage((void**)&(pimDst->m_pData), &(pimDst->m_lPitch)) != SUCCESS)
+      if (rspLockVideoFlipPage(reinterpret_cast<void**>(&(pimDst->m_pData)), &(pimDst->m_lPitch)) != SUCCESS)
       {
         TRACE("rspPlot: Unable to lock the OffScreen buffer, failed!\n");
       }
@@ -1167,7 +1167,7 @@ int16_t rspRect(uint32_t color, RImage* pimDst, int16_t sX, int16_t sY, int16_t 
 
     case BUF_VRAM2: // draw a rectangle to the hidden VRAM plane
       // need to lock / unlock this one:
-      if (rspLockVideoFlipPage((void**)&(pimDst->m_pData), &(pimDst->m_lPitch)) != SUCCESS)
+      if (rspLockVideoFlipPage(reinterpret_cast<void**>(&(pimDst->m_pData)), &(pimDst->m_lPitch)) != SUCCESS)
       {
         TRACE("rspDrawRect: Unable to lock the OffScreen buffer, failed!\n");
         return FAILURE;
@@ -1404,9 +1404,9 @@ int16_t rspCrop(RImage* pimSrc,
 
   // tricky part: Swap buffers...
   uint8_t *pSrcMem,*pSrcBuf;
-  pimSrc->DetachData((void**)&pSrcMem, (void**)&pSrcBuf);
+  pimSrc->DetachData(reinterpret_cast<void**>(&pSrcMem), reinterpret_cast<void**>(&pSrcBuf));
   // Move the new buffer back to the original
-  imDst.DetachData((void**)&(pimSrc->m_pMem), (void**)&(pimSrc->m_pData));
+  imDst.DetachData(reinterpret_cast<void**>(&(pimSrc->m_pMem)), reinterpret_cast<void**>(&(pimSrc->m_pData)));
 
   // *******  IMPORTANT! COPY ALL NEW INFO OVER!
   pimSrc->m_ulSize = imDst.m_ulSize;
@@ -1417,7 +1417,7 @@ int16_t rspCrop(RImage* pimSrc,
   pimSrc->m_lPitch = imDst.m_lPitch;
 
   // 4) Destroy the old...
-  RImage::DestroyDetachedData((void**)&pSrcMem);
+  RImage::DestroyDetachedData(reinterpret_cast<void**>(&pSrcMem));
   // On exit, imDst will auto destruct....
 
   return SUCCESS;
@@ -1514,9 +1514,9 @@ int16_t rspPad(RImage* pimSrc,
 
   // tricky part: Swap buffers...
   uint8_t *pSrcMem, *pSrcBuf;
-  pimSrc->DetachData((void**)&pSrcMem,(void**)&pSrcBuf);
+  pimSrc->DetachData(reinterpret_cast<void**>(&pSrcMem), reinterpret_cast<void**>(&pSrcBuf));
   // Move the new buffer back to the original
-  imDst.DetachData((void**)&(pimSrc->m_pMem),(void**)&(pimSrc->m_pData));
+  imDst.DetachData(reinterpret_cast<void**>(&(pimSrc->m_pMem)), reinterpret_cast<void**>(&(pimSrc->m_pData)));
 
   // *******  IMPORTANT! COPY ALL NEW INFO OVER!
   pimSrc->m_ulSize = imDst.m_ulSize;
@@ -1527,7 +1527,7 @@ int16_t rspPad(RImage* pimSrc,
   pimSrc->m_sWinY = sY;
 
   // 4) Destroy the old...
-  RImage::DestroyDetachedData((void**)&pSrcMem);
+  RImage::DestroyDetachedData(reinterpret_cast<void**>(&pSrcMem));
   // On exit, imDst will auto destruct....
 
   return SUCCESS;

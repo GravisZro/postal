@@ -216,11 +216,11 @@ void CNetServer::Update(void)
 				buf2[1] = Net::BroadcastMagic1;
 				buf2[2] = Net::BroadcastMagic2;
 				buf2[3] = Net::BroadcastMagic3;
-            buf2[4] = (uint8_t)(m_lHostMagic & 0xFF);
-            buf2[5] = (uint8_t)((m_lHostMagic >>  8) & 0xFF);
-            buf2[6] = (uint8_t)((m_lHostMagic >> 16) & 0xFF);
-            buf2[7] = (uint8_t)((m_lHostMagic >> 24) & 0xFF);
-				strncpy((char*)&buf2[8], m_acHostName, sizeof(m_acHostName));
+            buf2[4] = uint8_t(m_lHostMagic & 0xFF);
+            buf2[5] = uint8_t((m_lHostMagic >>  8) & 0xFF);
+            buf2[6] = uint8_t((m_lHostMagic >> 16) & 0xFF);
+            buf2[7] = uint8_t((m_lHostMagic >> 24) & 0xFF);
+            strncpy(&buf2[8], m_acHostName, sizeof(m_acHostName));
 
 				// Send the message directly to the sender of the previous message
             size_t lBytesSent;
