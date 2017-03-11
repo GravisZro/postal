@@ -159,44 +159,39 @@ struct c_string
 # pragma message("I find your lack of standards compliance disturbing. ;)")
 # include <BLUE/stdint_msvc.h>
 # include <BaseTsd.h> // for SSIZE_T
-# include <direct.h> // for mkdir (MVCS)
-# if !defined(NOTE)
-#  define NOTE(x) __pragma(message("NOTE: " x))
-# endif
-# if !defined(alignof)
-#  define alignof(x) __alignof(x) // C++11 patch for MSVC
-# endif
-# if !defined(mkdir)
-#  define mkdir(x) _mkdir(x)
-# endif
-# if _MSC_VER < 1900 // for old versions
+# include <direct.h> // for mkdir
+inline int _mkdir(const char *path, int) { return _mkdir(path); }
+# define mkdir        _mkdir
+# define strcasecmp   _stricmp
+# define NOTE(x)      __pragma(message("NOTE: " x))
+# define alignof(x)   __alignof(x) // C++11 patch
+# if _MSC_VER < 1900
+#  define constexpr   inline
+#  define snprintf    _snprintf
+#  define vsnprintf   _vsnprintf
+#  define PATH_MAX    _MAX_PATH
 typedef SSIZE_T ssize_t;
-#  define constexpr inline
-#  if !defined(snprintf)
-#   define snprintf _snprintf
-#  endif
-#  if !defined(vsnprintf)
-#   define vsnprintf _vsnprintf
-#  endif
-#  if !defined(PATH_MAX)
-#   define PATH_MAX _MAX_PATH
-#  endif
 # endif
+#elif defined(_WIN32) // everything for Windows that isn't MSVC
+# include <sys/stat.h>
+inline int mkdir(const char *path, int) { return mkdir(path); }
+# define DO_PRAGMA(x) _Pragma (#x)
+# define NOTE(x) DO_PRAGMA(message("NOTE: " x))
 #endif
 
-#if defined(__MINGW32__)
-# include <sys/stat.h> // for mkdir (MingW32)
-#define DO_PRAGMA(x) _Pragma (#x)
-#define NOTE(x) DO_PRAGMA(message("NOTE: " x))
+#if defined(__DJGPP__)
+# if defined(__STRICT_ANSI__)
+#  error You need to disable C++ standards complaince for DJGPP
+# endif
+# include <limits.h> // somehow not referenced by climits?
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+// platform specific fixes
+////////////////////////////////////////////////////////////////////////////////
 
 #if defined(_WIN32) // any windows targetable compiler
-# if !defined(strcasecmp)
-#  define strcasecmp _stricmp
-# endif
 # define S_IRWXU  0  // dummy value
-inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x, y) cross-platform
 #else // non-Windows compiler
 # include <sys/types.h>
 # if defined(__GNUC__) && defined(__GNUC_MINOR__) // GCC based compiler
@@ -212,24 +207,10 @@ inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x,
 # endif
 #endif
 
-#if defined(__DOS__) // any DOS targetable compiler
-# if defined(__STRICT_ANSI__) && defined(__DJGPP__)
-#  error You need to disable C++ standards complaince for DJGPP
-# endif
-# include <limits.h> // somehow not referenced by climits?
-# if !defined(SYSTEM_PATH_SEPARATOR)
-#  define SYSTEM_PATH_SEPARATOR	'\\'
-# endif
-#endif
+////////////////////////////////////////////////////////////////////////////////
+// non-standard definitions
+////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__DOS__) || defined(_WIN32)// any DOS or Windows targeting compiler
-# define SYSTEM_PATH_SEPARATOR	'\\'
-#else
-# define SYSTEM_PATH_SEPARATOR	'/'
-#endif
-
-
-// non standard defines
 #if !defined(F_OK)
 # define F_OK 00
 #endif
@@ -245,7 +226,7 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 #endif
 
 /* Minimum of unsigned integral types.  */
-# define UINT8_MIN 0
+# define UINT8_MIN  0
 # define UINT16_MIN 0
 # define UINT32_MIN 0
 # define UINT64_MIN 0

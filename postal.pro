@@ -480,6 +480,7 @@ SOURCES += \
 }
 
 dos {
+DEFINES += __DJGPP__
 SOURCES += \
     RSPiX/CYAN/dos/uColors.cpp \
     RSPiX/CYAN/dos/uDialog.cpp \

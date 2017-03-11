@@ -161,6 +161,10 @@
 typedef HRESULT (WINAPI *fnSHGetFolderPathW)(HWND hwnd, int nFolder, HANDLE hToken, DWORD dwFlags, LPWSTR pszPath);
 #endif
 
+#if defined(__DJGPP__)
+# include <sys/stat.h> // for mkdir
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // Module specific macros.
 //////////////////////////////////////////////////////////////////////////////
@@ -181,7 +185,7 @@ typedef HRESULT (WINAPI *fnSHGetFolderPathW)(HWND hwnd, int nFolder, HANDLE hTok
 //////////////////////////////////////////////////////////////////////////////
 // Module specific pragmas.
 //////////////////////////////////////////////////////////////////////////////
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 	#pragma warning (disable: 4127) // conditional expression is constant.
 #endif
 

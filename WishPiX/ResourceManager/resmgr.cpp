@@ -917,8 +917,8 @@ void RResMgr::SetBasePath(RString strBasepath)
     sLast--;
 
   // If base path doesn't end with a slash, add one
-  if (strBasepath[(int32_t) sLast] != SYSTEM_PATH_SEPARATOR)
-    strBasepath += SYSTEM_PATH_SEPARATOR;
+  if (strBasepath[(int32_t) sLast] != '/')
+    strBasepath += '/';
   // Make sure it is short enough to work with rspix functions
   ASSERT(strBasepath.GetLen() < PATH_MAX);
   m_strBasepath = strBasepath;

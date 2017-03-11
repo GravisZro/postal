@@ -2374,11 +2374,11 @@ extern int16_t SubPathOpenBox(		// Returns 0 on success, negative on error, 1 if
 
 #if defined(_WIN32)
     // If base path doesn't end with a slash, add one
-    if (szBasePath[sLastIndex] != SYSTEM_PATH_SEPARATOR)
+    if (szBasePath[sLastIndex] != '/')
     {
       if ((sLastIndex + 2) < PATH_MAX)
       {
-        szBasePath[sLastIndex+1] = SYSTEM_PATH_SEPARATOR;
+        szBasePath[sLastIndex+1] = '/';
         szBasePath[sLastIndex+2] = 0;
       }
       else
@@ -2389,7 +2389,7 @@ extern int16_t SubPathOpenBox(		// Returns 0 on success, negative on error, 1 if
     }
 #else
     // If base path ends with a colon, get rid of it
-    if (szBasePath[sLastIndex] == SYSTEM_PATH_SEPARATOR)
+    if (szBasePath[sLastIndex] == '/')
       szBasePath[sLastIndex] = 0;
 #endif
 
@@ -3641,7 +3641,7 @@ static const char* GetFileNameFromPath(	// Returns file name.
 	// Scan back for the separator or the beginning.
    const char*	pszIndex	= pszFullPath + (strlen(pszFullPath) - 1);
 
-   while (pszIndex >= pszFullPath && *pszIndex != SYSTEM_PATH_SEPARATOR)
+   while (pszIndex >= pszFullPath && *pszIndex != '/')
 		{
 		pszIndex--;
 		}
@@ -4779,12 +4779,12 @@ int16_t CorrectifyBasePath(								// Returns 0 if successfull, non-zero otherwi
 
 #if 1 //def _WIN32
         // If base path doesn't end with a slash, add one
-        if (pszBasePath[sLastIndex] != SYSTEM_PATH_SEPARATOR)
+        if (pszBasePath[sLastIndex] != '/')
         {
           if ((sLastIndex + 2) < PATH_MAX)
           {
-            pszBasePath[sLastIndex+1] = SYSTEM_PATH_SEPARATOR;
-            pszBasePath[sLastIndex+2] = 0;
+            pszBasePath[sLastIndex+1] = '/';
+            pszBasePath[sLastIndex+2] = '\0';
           }
           else
           {
@@ -4794,7 +4794,7 @@ int16_t CorrectifyBasePath(								// Returns 0 if successfull, non-zero otherwi
         }
 #else
         // If base path ends with a colon, get rid of it
-        if (pszBasePath[sLastIndex] == SYSTEM_PATH_SEPARATOR)
+        if (pszBasePath[sLastIndex] == '/')
           pszBasePath[sLastIndex] = 0;
 #endif
       }

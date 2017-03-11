@@ -69,26 +69,7 @@ namespace keyboard
 
   // Queue of keyboard events.
   static RQueue<RSP_SK_EVENT, MAX_EVENTS>	ms_qkeEvents;
-
-
-  enum commands : int
-  {
-    readkey   = 0x10,
-    havekey   = 0x11,
-    modifiers = 0x12
-  };
-
-
-/*
-  inline bool     haveKey     (void) { return bioskey(havekey  ); }
-  inline uint16_t readKey     (void) { return bioskey(readkey  ); }
-  inline uint16_t getModifiers(void) { return bioskey(modifiers); }
-
-  inline keycode  getKey(void) { return (getModifiers() << 16) | readKey(); }
-*/
-
 }
-
 #if 0
 static int leds_ok = TRUE;
 
@@ -98,9 +79,7 @@ static int extended_key = FALSE;
 
 
 
-/* kb_wait_for_write_ready:
- *  Wait for the keyboard controller to set the ready-for-write bit.
- */
+// Wait for the keyboard controller to set the ready-for-write bit.
 static inline int kb_wait_for_write_ready(void)
 {
    int timeout = 4096;
@@ -113,9 +92,7 @@ static inline int kb_wait_for_write_ready(void)
 
 
 
-/* kb_wait_for_read_ready:
- *  Wait for the keyboard controller to set the ready-for-read bit.
- */
+// Wait for the keyboard controller to set the ready-for-read bit.
 static inline int kb_wait_for_read_ready(void)
 {
    int timeout = 16384;
@@ -128,9 +105,7 @@ static inline int kb_wait_for_read_ready(void)
 
 
 
-/* kb_send_data:
- *  Sends a byte to the keyboard controller. Returns 1 if all OK.
- */
+// Sends a byte to the keyboard controller. Returns 1 if all OK.
 static inline int kb_send_data(unsigned char data)
 {
    int resends = 4;
@@ -162,9 +137,7 @@ static inline int kb_send_data(unsigned char data)
 
 
 
-/* pcdos_set_leds:
- *  Updates the LED state.
- */
+// Updates the LED state.
 static void pcdos_set_leds(int leds)
 {
    if (!leds_ok)
@@ -188,9 +161,7 @@ static void pcdos_set_leds(int leds)
 
 
 
-/* pcdos_set_rate:
- *  Sets the key repeat rate.
- */
+// Sets the key repeat rate.
 static void pcdos_set_rate(int delay, int rate)
 {
    if (!leds_ok)
@@ -217,9 +188,7 @@ static void pcdos_set_rate(int delay, int rate)
 
 
 
-/* keyint:
- *  Hardware level keyboard interrupt (int 9) handler.
- */
+//  Hardware level keyboard interrupt (int 9) handler.
 static int keyint(void)
 {
    int code = readHW8(0x60);
@@ -230,7 +199,7 @@ static int keyint(void)
 
    in_a_terrupt = FALSE;
 
-#if defined(DJGPP)
+#if defined(__DJGPP__)
       /* three-finger salute for killing the program */
       if (three_finger_flag) {
          if (((code == 0x4F) || (code == 0x53)) &&
@@ -252,8 +221,8 @@ static int keyint(void)
             );
          }
       }
-#elif defined(_MSC_VER)
-
+#else
+NOTE("No interrupt key sequence defined!")
 #endif
 
    extended_key = (code == 0xE0);
@@ -347,7 +316,6 @@ static void pcdos_key_exit(void)
    _farnspokeb(0x496, s3);
 }
 #endif
-
 //////////////////////////////////////////////////////////////////////////////
 // Extern functions.
 //////////////////////////////////////////////////////////////////////////////

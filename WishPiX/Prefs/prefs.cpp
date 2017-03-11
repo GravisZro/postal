@@ -373,7 +373,7 @@ int16_t RPrefs::Write()
 					bool bGotTmp = false;
 					char acTmpFileName[PATH_MAX + 20];
 					strcpy(acTmpFileName, m_pszFileName);
-					char* pTmp = strrchr(acTmpFileName, SYSTEM_PATH_SEPARATOR);
+               char* pTmp = strrchr(acTmpFileName, '/');
 					pTmp = (pTmp != nullptr) ? pTmp + 1 : acTmpFileName;
 					for (int32_t lCount = 0; !bGotTmp && (lCount < 9999999L); lCount++)
 						{
