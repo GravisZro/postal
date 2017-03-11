@@ -653,7 +653,7 @@ int16_t CWarp::WarpInAnywhere(	// Returns 0 on success.
 			ASSERT(pln->m_powner != nullptr);
 
 			// Do it.
-			sResult	= (static_cast<CWarp*>(pln->m_powner) )->WarpIn(ppdude, sOptions);
+         sResult	= static_cast<CWarp*>(pln->m_powner)->WarpIn(ppdude, sOptions);
 			}
 		else
 			{

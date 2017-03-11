@@ -189,10 +189,8 @@ class CGrenade : public CWeapon
 			CThing** ppNew)										// Out: Pointer to new object
 			{
 			int16_t sResult	= Construct(pRealm, ppNew);
-			if (sResult == SUCCESS)
-				{
-				( static_cast<CGrenade*>(*ppNew) )->m_style	= Dynamite;
-				}
+         if (sResult == SUCCESS)
+            static_cast<CGrenade*>(*ppNew)->m_style = Dynamite;
 
 			return sResult;
 			}

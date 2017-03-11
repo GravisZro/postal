@@ -4449,10 +4449,10 @@ static bool VolumesChoice(		// Returns true to accept, false to deny choice.
         if (pmenuCurrent->ami[i].pgui)
         {
           int32_t	lMin, lMax, lRange;
-          ( static_cast<RScrollBar*>(pmenuCurrent->ami[i].pgui) )->GetRange(&lMin, &lMax);
+          static_cast<RScrollBar*>(pmenuCurrent->ami[i].pgui)->GetRange(&lMin, &lMax);
           lRange	= lMax - lMin;
 
-          (static_cast<RScrollBar*>(pmenuCurrent->ami[i].pgui) )->SetPos(SampleMaster::UserDefaultVolume * lRange / SampleMaster::UserMaxVolume);
+          static_cast<RScrollBar*>(pmenuCurrent->ami[i].pgui)->SetPos(SampleMaster::UserDefaultVolume * lRange / SampleMaster::UserMaxVolume);
 
           // This'll keep the next sample from aborting the current so we can let the user
           // hear all the sounds when 'defaults' is chosen.
@@ -4801,11 +4801,11 @@ static bool RotationChoice(	// Returns true to accept, false to deny choice.
 		case 5:
 			g_InputSettings.DefaultRotations();
 			// Update sliders.
-         ( static_cast<RScrollBar*>(pmenuCurrent->ami[0].pgui) )->SetPos(g_InputSettings.m_dMovingSlowDegreesPerSec);
-         ( static_cast<RScrollBar*>(pmenuCurrent->ami[1].pgui) )->SetPos(g_InputSettings.m_dMovingFastDegreesPerSec);
-         ( static_cast<RScrollBar*>(pmenuCurrent->ami[2].pgui) )->SetPos(g_InputSettings.m_dStillSlowDegreesPerSec);
-         ( static_cast<RScrollBar*>(pmenuCurrent->ami[3].pgui) )->SetPos(g_InputSettings.m_dStillFastDegreesPerSec);
-         ( static_cast<RScrollBar*>(pmenuCurrent->ami[4].pgui) )->SetPos(g_InputSettings.m_sTapRotationDegrees);
+         static_cast<RScrollBar*>(pmenuCurrent->ami[0].pgui)->SetPos(g_InputSettings.m_dMovingSlowDegreesPerSec);
+         static_cast<RScrollBar*>(pmenuCurrent->ami[1].pgui)->SetPos(g_InputSettings.m_dMovingFastDegreesPerSec);
+         static_cast<RScrollBar*>(pmenuCurrent->ami[2].pgui)->SetPos(g_InputSettings.m_dStillSlowDegreesPerSec);
+         static_cast<RScrollBar*>(pmenuCurrent->ami[3].pgui)->SetPos(g_InputSettings.m_dStillFastDegreesPerSec);
+         static_cast<RScrollBar*>(pmenuCurrent->ami[4].pgui)->SetPos(g_InputSettings.m_sTapRotationDegrees);
 			break;
 		}
 
