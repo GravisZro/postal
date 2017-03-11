@@ -360,7 +360,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
    int32_t	lSizeEstimate = int32_t(pImage->m_sHeight + 1) * (pImage->m_sWidth * 2 + 1) + 15;
    pHeader->m_pCompMem = (uint8_t*)malloc(size_t(pImage->m_sHeight) * size_t(pImage->m_sWidth + 15));
 
-   pHeader->m_pCompBuf = reinterpret_cast<uint8_t*>((intptr_t(pHeader->m_pCompMem) + 15) & ~ 15); // align it 128!
+   pHeader->m_pCompBuf = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(pHeader->m_pCompMem) + 15) & ~15);
 	pHeader->m_pCodeBuf = (uint8_t*)malloc((size_t)lSizeEstimate);
 
 	// ******** For convenience, generate the Compressed Buffer immediately:
@@ -405,7 +405,7 @@ int16_t   ConvertToFSPR8(RImage*  pImage)
 	// NOTE: pucCPos is an open stack!
 	pHeader->m_pCompMem = (uint8_t*)calloc(1,(size_t)(pucCPos - pHeader->m_pCompBuf + 15));
 	// And align it:
-   pHeader->m_pCompBuf = reinterpret_cast<uint8_t*>((reinterpret_cast<intptr_t>(pHeader->m_pCompMem) + 15) & ~15);
+   pHeader->m_pCompBuf = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(pHeader->m_pCompMem) + 15) & ~15);
 	// Store the size of the Compressed Buffer:
    pHeader->m_pBufArry[sH] = reinterpret_cast<uint8_t*>(pucCPos - pHeader->m_pCompBuf);
 
