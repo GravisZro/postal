@@ -165,8 +165,8 @@ int16_t	rspBlitT(uint32_t ucTransparent,RImage* pimSrc,RImage* pimDst,int16_t sS
 	// do OS based copying!
 	int16_t sNeedToUnlock = 0; // will be the name of a buffer to unlock.
 
-	int16_t sBlitTypeSrc = 0;
-	int16_t sBlitTypeDst = 0;
+   uintptr_t sBlitTypeSrc = 0;
+   uintptr_t sBlitTypeDst = 0;
 
 	// IN RELEASE MODE, GIVE THE USER A CHANCE:
 #ifndef _DEBUG
@@ -178,8 +178,10 @@ int16_t	rspBlitT(uint32_t ucTransparent,RImage* pimSrc,RImage* pimDst,int16_t sS
 	// IN THIS IMPLEMENTATION, we must do LOCK, BLiT, UNLOCK, so I
 	// must record which UNLOCK (if any) needs to be done AFTER the BLiT
 	// has completed. (Lord help me if a blit gets interrupted)
-   if (pimSrc->m_type == RImage::IMAGE_STUB) sBlitTypeSrc = (int16_t)((intptr_t)pimSrc->m_pSpecial);
-   if (pimDst->m_type == RImage::IMAGE_STUB) sBlitTypeDst = (int16_t)((intptr_t)pimDst->m_pSpecial);
+   if (pimSrc->m_type == RImage::IMAGE_STUB)
+     sBlitTypeSrc = reinterpret_cast<uintptr_t>(pimSrc->m_pSpecial);
+   if (pimDst->m_type == RImage::IMAGE_STUB)
+     sBlitTypeDst = reinterpret_cast<uintptr_t>(pimDst->m_pSpecial);
 
 	switch ( (sBlitTypeSrc<<3) + sBlitTypeDst) // 0 = normal image
 		{
