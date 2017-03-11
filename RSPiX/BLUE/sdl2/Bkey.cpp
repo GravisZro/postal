@@ -46,7 +46,6 @@
 #define INC_N_WRAP(i, max)	(i = (i + 1) % max)
 
 extern SDL_Window *sdlWindow;
-extern SDL_Surface *sdlShadowSurface;
 
 static bool sdlKeyRepeat = false;
 
@@ -55,11 +54,11 @@ static std::map<SDL_Keycode,uint16_t> sdl_to_rws_gkeymap;
 static uint8_t keystates[128];
 static uint8_t ms_au8KeyStatus[128];
 
-typedef struct
-	{
-	int32_t	lKey;
-	int32_t	lTime;
-	} RSP_SK_EVENT, *PRSP_SK_EVENT;
+struct RSP_SK_EVENT
+{
+  uint32_t lKey;
+  milliseconds_t lTime;
+};
 
 // Non-dynamic memory for RSP_SK_EVENTs in queue.
 static RSP_SK_EVENT	ms_akeEvents[MAX_EVENTS];
@@ -121,7 +120,7 @@ extern void Key_Event(SDL_Event *event)
 	    {
         	// Create event.
             static int16_t sEventIndex = 0;
-	        PRSP_SK_EVENT	pkeEvent	= ms_akeEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
+           RSP_SK_EVENT* pkeEvent = ms_akeEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
     	    // Fill event.
     	    pkeEvent->lTime	= SDL_GetTicks();
         	pkeEvent->lKey = ((gkey) ? gkey : key);
@@ -200,7 +199,7 @@ extern int16_t rspGetKey(			// Returns TRUE if a key was available; FALSE if not
 	{
    int16_t sReturn = FALSE;	// Assume no key.
 
-	PRSP_SK_EVENT	pkeEvent	= ms_qkeEvents.DeQ();
+   RSP_SK_EVENT* pkeEvent = ms_qkeEvents.DeQ();
 	if (pkeEvent != nullptr)
 		{
 		SET(plKey,	pkeEvent->lKey);

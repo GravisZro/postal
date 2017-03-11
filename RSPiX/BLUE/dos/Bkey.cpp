@@ -26,7 +26,7 @@
 #include <ORANGE/CDT/Queue.h>
 
 // Platform //////////////////////////////////////////////////////////////////
-//#include <SDL/SDL.h>
+#include "platform.h"
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <map>
@@ -36,53 +36,344 @@
 // Only set value if not nullptr.
 #define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 #define INC_N_WRAP(i, max)    (i = (i + 1) % max)
-/*
-namespace SDL
-{
-  extern SDL_Surface* framebuffer;
 
-  static bool sdlKeyRepeat = false;
-
-  static std::map<SDLKey,uint8_t> sdl_to_rws_keymap;
-  static std::map<SDLKey,uint16_t> sdl_to_rws_gkeymap;
-  static uint8_t keystates[128];
-  static uint8_t ms_au8KeyStatus[128];
-}
-*/
 struct RSP_SK_EVENT
 {
-  int32_t lKey;
-  int32_t lTime;
+  uint32_t lKey;
+  milliseconds_t lTime;
 };
 
-// Non-dynamic memory for RSP_SK_EVENTs in queue.
-static RSP_SK_EVENT    ms_akeEvents[MAX_EVENTS];
+namespace keyboard
+{
+  union keycode
+  {
+    struct
+    {
+      uint16_t key;
+      uint16_t modifiers;
+    };
+    uint32_t data;
 
-// Queue of keyboard events.
-static RQueue<RSP_SK_EVENT, MAX_EVENTS>    ms_qkeEvents;
+    keycode(uint32_t d) : data(d) { }
+  };
 
-extern bool mouse_grabbed;
+  static bool keyRepeat = false;
+
+  static std::map<keycode, uint8_t> bios_to_rws_keymap;
+  static std::map<keycode, uint16_t> bios_to_rws_gkeymap;
+  static uint8_t keystates[128];
+  static uint8_t ms_au8KeyStatus[128];
+
+  // Non-dynamic memory for RSP_SK_EVENTs in queue.
+  static RSP_SK_EVENT	ms_akeEvents[MAX_EVENTS];
+
+  // Queue of keyboard events.
+  static RQueue<RSP_SK_EVENT, MAX_EVENTS>	ms_qkeEvents;
+
+
+  enum commands : int
+  {
+    readkey   = 0x10,
+    havekey   = 0x11,
+    modifiers = 0x12
+  };
+
+
+/*
+  inline bool     haveKey     (void) { return bioskey(havekey  ); }
+  inline uint16_t readKey     (void) { return bioskey(readkey  ); }
+  inline uint16_t getModifiers(void) { return bioskey(modifiers); }
+
+  inline keycode  getKey(void) { return (getModifiers() << 16) | readKey(); }
+*/
+
+}
+
+#if 0
+static int leds_ok = TRUE;
+
+static int in_a_terrupt = FALSE;
+
+static int extended_key = FALSE;
+
+
+
+/* kb_wait_for_write_ready:
+ *  Wait for the keyboard controller to set the ready-for-write bit.
+ */
+static inline int kb_wait_for_write_ready(void)
+{
+   int timeout = 4096;
+
+   while ((timeout > 0) && (readHW8(0x64) & 2))
+      timeout--;
+
+   return (timeout > 0);
+}
+
+
+
+/* kb_wait_for_read_ready:
+ *  Wait for the keyboard controller to set the ready-for-read bit.
+ */
+static inline int kb_wait_for_read_ready(void)
+{
+   int timeout = 16384;
+
+   while ((timeout > 0) && (!(readHW8(0x64) & 1)))
+      timeout--;
+
+   return (timeout > 0);
+}
+
+
+
+/* kb_send_data:
+ *  Sends a byte to the keyboard controller. Returns 1 if all OK.
+ */
+static inline int kb_send_data(unsigned char data)
+{
+   int resends = 4;
+   int timeout, temp;
+
+   do {
+      if (!kb_wait_for_write_ready())
+         return 0;
+
+      writeHW8(0x60, data);
+      timeout = 4096;
+
+      while (--timeout > 0) {
+         if (!kb_wait_for_read_ready())
+            return 0;
+
+         temp = readHW8(0x60);
+
+         if (temp == 0xFA)
+            return 1;
+
+         if (temp == 0xFE)
+            break;
+      }
+   } while ((resends-- > 0) && (timeout > 0));
+
+   return 0;
+}
+
+
+
+/* pcdos_set_leds:
+ *  Updates the LED state.
+ */
+static void pcdos_set_leds(int leds)
+{
+   if (!leds_ok)
+      return;
+
+   if (!in_a_terrupt)
+      DISABLE();
+
+   if (!kb_send_data(0xED)) {
+      kb_send_data(0xF4);
+      leds_ok = FALSE;
+   }
+   else if (!kb_send_data((leds>>8) & 7)) {
+      kb_send_data(0xF4);
+      leds_ok = FALSE;
+   }
+
+   if (!in_a_terrupt)
+      ENABLE();
+}
+
+
+
+/* pcdos_set_rate:
+ *  Sets the key repeat rate.
+ */
+static void pcdos_set_rate(int delay, int rate)
+{
+   if (!leds_ok)
+      return;
+
+   if (delay < 375)
+      delay = 0;
+   else if (delay < 625)
+      delay = 1;
+   else if (delay < 875)
+      delay = 2;
+   else
+      delay = 3;
+
+   rate = MID(0, (rate-33) * 31 / (500-33), 31);
+
+   DISABLE();
+
+   if ((!kb_send_data(0xF3)) || (!kb_send_data((delay << 5) | rate)))
+      kb_send_data(0xF4);
+
+   ENABLE();
+}
+
+
+
+/* keyint:
+ *  Hardware level keyboard interrupt (int 9) handler.
+ */
+static int keyint(void)
+{
+   int code = readHW8(0x60);
+
+   in_a_terrupt = TRUE;
+
+   _handle_pckey(code);
+
+   in_a_terrupt = FALSE;
+
+#if defined(DJGPP)
+      /* three-finger salute for killing the program */
+      if (three_finger_flag) {
+         if (((code == 0x4F) || (code == 0x53)) &&
+             (_key_shifts & KB_CTRL_FLAG) && (_key_shifts & KB_ALT_FLAG)) {
+            asm (
+               "  movb $0x79, %%al ; "
+               "  call ___djgpp_hw_exception "
+            : : : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory"
+            );
+         }
+
+         /* also handle ctrl+break, like the standard djgpp libc */
+         if ((code == 0x46) && (extended_key) &&
+             (_key_shifts & KB_CTRL_FLAG)) {
+            asm (
+               "  movb $0x1B, %%al ; "
+               "  call ___djgpp_hw_exception "
+            : : : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory"
+            );
+         }
+      }
+#elif defined(_MSC_VER)
+
+#endif
+
+   extended_key = (code == 0xE0);
+
+   writeHW8(0x20, 0x20);
+   return 0;
+}
+
+
+
+/* pcdos_key_init:
+ *  Installs the keyboard handler.
+ */
+static int pcdos_key_init(void)
+{
+   int s1, s2, s3;
+
+   _pckeys_init();
+
+   LOCK_VARIABLE(leds_ok);
+   LOCK_VARIABLE(in_a_terrupt);
+   LOCK_VARIABLE(extended_key);
+   LOCK_FUNCTION(pcdos_set_leds);
+   LOCK_FUNCTION(keyint);
+
+   /* read the current BIOS keyboard state */
+   while (kbhit())
+      simulate_keypress(getch());
+
+   _farsetsel(_dos_ds);
+
+   s1 = farRead8(0x417);
+   s2 = farRead8(0x418);
+   s3 = farRead8(0x496);
+
+   _key_shifts = 0;
+
+   if (s1 & 1) { _key_shifts |= KB_SHIFT_FLAG; key[KEY_RSHIFT]   = TRUE; }
+   if (s1 & 2) { _key_shifts |= KB_SHIFT_FLAG; key[KEY_LSHIFT]   = TRUE; }
+   if (s2 & 1) { _key_shifts |= KB_CTRL_FLAG;  key[KEY_LCONTROL] = TRUE; }
+   if (s2 & 2) { _key_shifts |= KB_ALT_FLAG;   key[KEY_ALT]      = TRUE; }
+   if (s3 & 4) { _key_shifts |= KB_CTRL_FLAG;  key[KEY_RCONTROL] = TRUE; }
+   if (s3 & 8) { _key_shifts |= KB_ALT_FLAG;   key[KEY_ALTGR]    = TRUE; }
+
+   if (s1 & 16) _key_shifts |= KB_SCROLOCK_FLAG;
+   if (s1 & 32) _key_shifts |= KB_NUMLOCK_FLAG;
+   if (s1 & 64) _key_shifts |= KB_CAPSLOCK_FLAG;
+
+   key_shifts = _key_shifts;
+
+   _install_irq(keyboard_interrupt, keyint);
+
+   pcdos_set_leds(_key_shifts);
+
+   return 0;
+}
+
+
+
+/* pcdos_key_exit:
+ *  Removes the keyboard handler.
+ */
+static void pcdos_key_exit(void)
+{
+   int s1, s2, s3;
+
+   _remove_irq(keyboard_interrupt);
+
+   /* transfer state info back to the BIOS */
+   _farsetsel(_dos_ds);
+
+   s1 = farRead8(0x417) & 0x80;
+   s2 = farRead8(0x418) & 0xFC;
+   s3 = farRead8(0x496) & 0xF3;
+
+   if (key[KEY_RSHIFT])   { s1 |= 1; }
+   if (key[KEY_LSHIFT])   { s1 |= 2; }
+   if (key[KEY_LCONTROL]) { s2 |= 1; s1 |= 4; }
+   if (key[KEY_ALT])      { s1 |= 8; s2 |= 2; }
+   if (key[KEY_RCONTROL]) { s1 |= 4; s3 |= 4; }
+   if (key[KEY_ALTGR])    { s1 |= 8; s3 |= 8; }
+
+   if (_key_shifts & KB_SCROLOCK_FLAG) s1 |= 16;
+   if (_key_shifts & KB_NUMLOCK_FLAG)  s1 |= 32;
+   if (_key_shifts & KB_CAPSLOCK_FLAG) s1 |= 64;
+
+   _farsetsel(_dos_ds);
+
+   _farnspokeb(0x417, s1);
+   _farnspokeb(0x418, s2);
+   _farnspokeb(0x496, s3);
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // Extern functions.
 //////////////////////////////////////////////////////////////////////////////
 
 extern void rspSetQuitStatus(int16_t sQuitStatus);
-/*
-extern void Key_Event(SDL_Event *event)
+
+
+extern void pollKeyboard(void)
 {
+#if 0
+  if(keyboard::haveKey())
+  {
+
+  }
   ASSERT((event->type == SDL_KEYUP) || (event->type == SDL_KEYDOWN));
   //ASSERT(event->key.keysym.sym < SDLK_LAST);
 
   const uint8_t pushed = (event->type == SDL_KEYDOWN);
 #ifdef SDL2_JUNK
-  if ((pushed) && (event->key.repeat) && (!SDL::sdlKeyRepeat))
+  if ((pushed) && (event->key.repeat) && (!keyboard::keyRepeat))
     return;  // drop it.
 #endif
 
-  uint8_t key = SDL::sdl_to_rws_keymap[event->key.keysym.sym];
-  uint16_t gkey = SDL::sdl_to_rws_gkeymap[event->key.keysym.sym];
-  uint8_t* pu8KeyStatus = (&SDL::ms_au8KeyStatus[key]);
+  uint8_t key = keyboard::sdl_to_rws_keymap[event->key.keysym.sym];
+  uint16_t gkey = keyboard::sdl_to_rws_gkeymap[event->key.keysym.sym];
+  uint8_t* pu8KeyStatus = (&keyboard::ms_au8KeyStatus[key]);
 
   if (key == 0)
     return;
@@ -131,7 +422,7 @@ extern void Key_Event(SDL_Event *event)
       }
     }
 
-    if (key < sizeof(SDL::ms_au8KeyStatus))
+    if (key < sizeof(keyboard::ms_au8KeyStatus))
     {
       if(*pu8KeyStatus & 1) // If key is even . . .
         *pu8KeyStatus += 2; // Go to next odd state.
@@ -139,18 +430,18 @@ extern void Key_Event(SDL_Event *event)
         ++(*pu8KeyStatus); // Go to next odd state.
     }
   }
-  else if(key < sizeof(SDL::ms_au8KeyStatus) && *pu8KeyStatus & 1) // If key is odd . . .
+  else if(key < sizeof(keyboard::ms_au8KeyStatus) && *pu8KeyStatus & 1) // If key is odd . . .
     ++(*pu8KeyStatus);
 
-  if (key < sizeof(SDL::keystates))
-    SDL::keystates[key] = pushed;
+  if (key < sizeof(keyboard::keystates))
+    keyboard::keystates[key] = pushed;
+#endif
 }
-*/
+
 extern void rspClearKeyEvents(void)
 {
-  // Dequeue all events in the queue
-//  while (!ms_qkeEvents.IsEmpty())
-//    ms_qkeEvents.DeQ();
+//  while(keyboard::haveKey())
+//    keyboard::readKey();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -162,7 +453,8 @@ extern void rspClearKeyEvents(void)
 extern void rspScanKeys(
     uint8_t* pucKeys)    // Array of 128 unsigned chars is returned here.
 {
-//  memcpy(pucKeys, SDL::keystates, sizeof (SDL::keystates));
+
+  std::memcpy(pucKeys, keyboard::keystates, sizeof(keyboard::keystates));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -174,23 +466,17 @@ extern int16_t rspGetKey(             // Returns TRUE if a key was available; FA
     int32_t* plKey,                   // Out: Key info returned here (or 0 if no key available)
     int32_t* plTime)                  // Out: Key's timestamp (unless nullptr)
 {
-  int16_t sReturn = FALSE;    // Assume no key.
-/*
-  RSP_SK_EVENT* pkeEvent = ms_qkeEvents.DeQ();
-  if (pkeEvent != nullptr)
+  /*
+  int16_t sReturn = keyboard::haveKey() ? TRUE : FALSE;    // Assume no key.
+
+  if(sReturn == TRUE)
   {
-    SET(plKey,    pkeEvent->lKey);
-    SET(plTime,    pkeEvent->lTime);
-    // Indicate a key was available.
-    sReturn = TRUE;
+    SET(plKey, keyboard::getKey().data);
+    SET(plTime, rspGetMilliseconds());
   }
-  else
-  {
-    SET(plKey, 0);
-    SET(plTime, 0L);
-  }
-*/
   return sReturn;
+  */
+  return FALSE;
 }
 
 #ifdef UNUSED_FUNCTIONS
@@ -213,18 +499,18 @@ extern int16_t rspIsKey(void)        // Returns TRUE if a key is available; FALS
 // Returns nothing.
 //
 //////////////////////////////////////////////////////////////////////////////
-#define SET_sdl_to_rws_keymap2(x,y) SDL::sdl_to_rws_keymap[SDLK_##x] = RSP_SK_##y
+#define SET_sdl_to_rws_keymap2(x,y) keyboard::sdl_to_rws_keymap[SDLK_##x] = RSP_SK_##y
 #define SET_sdl_to_rws_keymap(x) SET_sdl_to_rws_keymap2(x, x)
-#define SET_sdl_to_rws_gkeymap2(x,y) SDL::sdl_to_rws_gkeymap[SDLK_##x] = RSP_GK_##y
+#define SET_sdl_to_rws_gkeymap2(x,y) keyboard::sdl_to_rws_gkeymap[SDLK_##x] = RSP_GK_##y
 #define SET_sdl_to_rws_gkeymap(x) SET_sdl_to_rws_gkeymap2(x, x)
 extern void Key_Init(void)
 {
+  memset(keyboard::ms_au8KeyStatus, '\0', sizeof (keyboard::ms_au8KeyStatus));
+
+  while(!keyboard::ms_qkeEvents.IsEmpty())  // just in case.
+    keyboard::ms_qkeEvents.DeQ();
+
   /*
-  memset(SDL::ms_au8KeyStatus, '\0', sizeof (SDL::ms_au8KeyStatus));
-
-  while(!ms_qkeEvents.IsEmpty())  // just in case.
-    ms_qkeEvents.DeQ();
-
   SET_sdl_to_rws_keymap(END);
   SET_sdl_to_rws_keymap(HOME);
   SET_sdl_to_rws_keymap(LEFT);
@@ -420,8 +706,7 @@ extern void Key_Init(void)
 //////////////////////////////////////////////////////////////////////////////
 uint8_t* rspGetKeyStatusArray(void)    // Returns a ptr to the key status array.
 {
-  //return SDL::ms_au8KeyStatus;
-  return nullptr;
+  return keyboard::ms_au8KeyStatus;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -431,7 +716,7 @@ extern void rspSetQuitStatusFlags(    // Returns nothing.
     int32_t lKeyFlags)                // In:  New keyflags (RSP_GKF_*).  0 to clear.
 {
   UNUSED(lKeyFlags);
-  //fprintf(stderr, "STUBBED: %s:%d\n", __FILE__, __LINE__);
+  fprintf(stderr, "STUBBED: %s:%d\n", __FILE__, __LINE__);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -462,7 +747,7 @@ extern int32_t rspGetToggleKeyStates(void)    // Returns toggle key state flags.
 
 extern void rspKeyRepeat(bool bEnable)
 {
-  //SDL::sdlKeyRepeat = bEnable;
+  keyboard::keyRepeat = bEnable;
 }
 
 

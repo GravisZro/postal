@@ -58,8 +58,8 @@ namespace SDL
 
 struct RSP_SK_EVENT
 {
-  int32_t lKey;
-  int32_t lTime;
+  uint32_t lKey;
+  milliseconds_t lTime;
 };
 
 // Non-dynamic memory for RSP_SK_EVENTs in queue.

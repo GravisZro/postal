@@ -79,9 +79,13 @@ void rspKillBlue(void)
 
 extern void rspSetQuitStatus(int16_t sQuitStatus);
 
+extern void pollKeyboard(void);
+
 extern void rspDoSystem(void)           // Returns nothing.
 {
   rspPresentFrame();
+
+  pollKeyboard();
 /*
   SDL_Event event;
   while (SDL_PollEvent(&event))

@@ -934,7 +934,7 @@ void rspSetPaletteEntry(
    channel_t ucGreen,				// Green component (0x00 to 0xFF)
    channel_t ucBlue)				// Blue component (0x00 to 0xFF)
 {
-  ASSERT(sEntry >= 0 && sEntry < palette::size);
+  ASSERT(sEntry < palette::size);
 
   if (palette::locks[sEntry] == FALSE)
   {
@@ -956,7 +956,7 @@ void rspGetPaletteEntry(
    channel_t* psGreen,			// Green component (0x00 to 0xFF) returned if not nullptr.
    channel_t* psBlue)				// Blue component (0x00 to 0xFF) returned if not nullptr.
 {
-  ASSERT(sEntry >= 0 && sEntry < palette::size);
+  ASSERT(sEntry < palette::size);
 
   SET(psRed,   palette::buffer[sEntry].red);
   SET(psGreen, palette::buffer[sEntry].green);

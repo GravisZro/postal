@@ -23,72 +23,13 @@
 #include <ORANGE/CDT/slist.h>
 
 // Platform //////////////////////////////////////////////////////////////////
-#include <pc.h>
-#include <dpmi.h>
-#include <go32.h>
-#include <sys/farptr.h>
+#include "platform.h"
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
 #include <memory>
 #include <cstddef>
 
-static_assert(sizeof(uintptr_t) == 4, "DOS is 32-bit!");
-
-struct vesa_info_t
-{
-  uint8_t VESASignature[4];
-  uint16_t VESAVersion;
-  uint32_t OEMStringPtr;
-  uint8_t Capabilities[4];
-  uint32_t VideoModePtr;
-  uint16_t TotalMemory;
-  uint16_t OemSoftwareRev;
-  uint32_t OemVendorNamePtr;
-  uint32_t OemProductNamePtr;
-  uint32_t OemProductRevPtr;
-  uint8_t Reserved[222];
-  uint8_t OemData[256];
-} __attribute__ ((packed));
-
-static_assert(sizeof(vesa_info_t) == 512, "packing failed?");
-
-struct mode_info_t
-{
-  uint16_t ModeAttributes;
-  uint8_t WinAAttributes;
-  uint8_t WinBAttributes;
-  uint16_t WinGranularity; // in kilobytes
-  uint16_t WinSize; // in kilobytes
-  uint16_t WinASegment;
-  uint16_t WinBSegment;
-  uint32_t WinFuncPtr;
-  uint16_t BytesPerScanLine;
-  uint16_t XResolution; // x pixel
-  uint16_t YResolution; // y pixels
-  uint8_t XCharSize;
-  uint8_t YCharSize;
-  uint8_t NumberOfPlanes;
-  uint8_t BitsPerPixel;
-  uint8_t NumberOfBanks;
-  uint8_t MemoryModel;
-  uint8_t BankSize;
-  uint8_t NumberOfImagePages;
-  uint8_t Reserved_page;
-  uint8_t RedMaskSize;
-  uint8_t RedMaskPos;
-  uint8_t GreenMaskSize;
-  uint8_t GreenMaskPos;
-  uint8_t BlueMaskSize;
-  uint8_t BlueMaskPos;
-  uint8_t ReservedMaskSize;
-  uint8_t ReservedMaskPos;
-  uint8_t DirectColorModeInfo;
-  uint32_t PhysBasePtr; // address
-  uint32_t OffScreenMemOffset;
-  uint16_t OffScreenMemSize;
-  uint8_t Reserved[206];
-} __attribute__ ((packed));
 
 static_assert(sizeof(mode_info_t) == 256, "packing failed?");
 
@@ -106,42 +47,6 @@ namespace palette
   static color32_t* buffer = reinterpret_cast<color32_t*>(aligned_memory::buffer);
   static color32_t* map    = reinterpret_cast<color32_t*>(aligned_memory::map);
   static int8_t locks[size];	// TRUE, if an indexed entry is locked. FALSE, if not.
-}
-
-namespace vesa
-{
-  enum registers : uint16_t // write to AX
-  {
-    color_number    = 0x03C8,
-    color_value     = 0x03C9,
-    get_card_info   = 0x4F00,
-    get_mode_info   = 0x4F01,
-    set_mode        = 0x4F02,
-    get_mode        = 0x4F03,
-    window_control  = 0x4F05,
-  };
-
-  enum options : uint16_t // write to BX
-  {
-    set_bank = 0x0000,
-    get_bank = 0x0100,
-    windowA  = 0x0000,
-    windowB  = 0x0001,
-  };
-
-  enum addresses : uint32_t
-  {
-    framebuffer = 0x000A0000,
-  };
-}
-
-namespace dos
-{
-  enum interrupts : uint8_t
-  {
-    vesa      = 0x10, // Video display functions (including VESA/VBE)
-    keyboard  = 0x16, // keyboard functions
-  };
 }
 
 namespace display
@@ -166,65 +71,60 @@ namespace display
   uint16_t set_mode(uint16_t mode)
   {
     current_mode_info = mode_info[mode];
-    __dpmi_regs regs;
-    regs.x.ax = vesa::set_mode;
-    regs.x.bx = mode;
-    __dpmi_int(dos::vesa, &regs);
-    if (regs.h.ah)
+    load_AX(vesa::set_mode);
+    load_BX(mode);
+    interrupt(interrupts::video);
+    if (bios_error_code)
       return FAILURE;
     return SUCCESS;
   }
 
   uint16_t get_mode(void)
   {
-    __dpmi_regs regs;
-    regs.x.ax = vesa::get_mode;
-    __dpmi_int(dos::vesa, &regs);
-    if (regs.h.ah)
+    load_AX(vesa::get_mode);
+    interrupt(interrupts::video);
+    if (bios_error_code)
       return FAILURE;
-    return regs.x.bx;
+    return biod_return_value;
   }
 
   void set_bank(uint16_t bank_number)
   {
-     __dpmi_regs regs;
-     regs.x.ax = vesa::window_control;
-     regs.x.bx = vesa::set_bank | vesa::windowA;
-     regs.x.dx = bank_number;
-     __dpmi_int(dos::vesa, &regs);
+     load_AX(vesa::window_control);
+     load_BX(vesa::set_bank | vesa::windowA);
+     load_DX(bank_number);
+     interrupt(interrupts::video);
   }
 /*
   uint16_t get_bank(void)
   {
-    __dpmi_regs regs;
-    regs.x.ax = vesa::window_control;
-    regs.x.bx = vesa::set_bank | vesa::windowA;
-    __dpmi_int(dos::vesa, &regs);
-    if (regs.h.ah)
+     load_AX(vesa::window_control);
+     load_BX(vesa::set_bank | vesa::windowA);
+     interrupt(interrupts::video);
+    if (bios_error_code)
       return FAILURE;
-    return regs.x.bx;
+    return bios_return_code;
   }
 */
   uint16_t probe(void)
   {
-    __dpmi_regs regs;
     uintptr_t sys_ptr;
 
-    sys_ptr = __tb & 0x000FFFFF; // use the transaction buffer
+    sys_ptr = transaction_buffer & 0x000FFFFF; // use the transaction buffer
 
     // zero out the transaction buffer
     for (size_t i = 0; i < sizeof(vesa_info_t); ++i)
-      _farpokeb(_dos_ds, sys_ptr + i, 0);
+      farWrite8(sys_ptr + i, 0);
 
     dosmemput("VBE2", 4, sys_ptr);
 
     // call the VESA function
-    regs.x.ax = vesa::get_card_info;
-    regs.x.di = sys_ptr & 0xF;
-    regs.x.es = (sys_ptr >> 4) & 0x0000FFFF;
-    __dpmi_int(dos::vesa, &regs);
+    load_AX(vesa::get_card_info);
+    load_DI(sys_ptr & 0xF);
+    load_ES((sys_ptr >> 4) & 0x0000FFFF);
+    interrupt(interrupts::video);
 
-    if (regs.h.ah) // abort upon error
+    if (bios_error_code) // abort upon error
       return FAILURE;
 
     dosmemget(sys_ptr, sizeof(vesa_info_t), &vesa_info); // copy the returned data
@@ -237,28 +137,28 @@ namespace display
                (vesa_info.VideoModePtr & 0x0000FFFF);
 
     // read the list of available modes
-    while (_farpeekw(_dos_ds, sys_ptr) != UINT16_MAX)
+    while (farRead16(sys_ptr) != UINT16_MAX)
     {
-      display::mode_info[_farpeekw(_dos_ds, sys_ptr)];
+      display::mode_info[farRead16(sys_ptr)];
       sys_ptr += sizeof(uint16_t);
     }
 
-    sys_ptr = __tb & 0x000FFFFF; // return to the transaction buffer
+    sys_ptr = transaction_buffer & 0x000FFFFF; // return to the transaction buffer
 
     for(std::map<uint16_t, mode_info_t>::value_type& m : mode_info) // probe each mode
     {
       // zero out the transaction buffer
       for (size_t i=0; i < sizeof(mode_info_t); ++i)
-        _farpokeb(_dos_ds, sys_ptr + i, 0);
+        farWrite8(sys_ptr + i, 0);
 
       // call the VESA function
-      regs.x.ax = vesa::get_mode_info;
-      regs.x.di = sys_ptr & 0xF;
-      regs.x.es = (sys_ptr >> 4) & 0xFFFF;
-      regs.x.cx = m.first;
-      __dpmi_int(dos::vesa, &regs);
+      load_AX(vesa::get_mode_info);
+      load_DI(sys_ptr & 0xF);
+      load_ES((sys_ptr >> 4) & 0xFFFF);
+      load_CX(m.first);
+      interrupt(interrupts::video);
 
-      if (!regs.h.ah) // if no error occurred
+      if (!bios_error_code) // if no error occurred
         dosmemget(sys_ptr, sizeof(mode_info_t), &m.second); // copy the returned data
     }
 
@@ -305,10 +205,10 @@ namespace display
     color32_t* color = base;
     for(uint16_t i = 0; i < count; ++i, ++color)
     {
-      outportb(vesa::color_number, i);
-      outportb(vesa::color_value, color->red  );
-      outportb(vesa::color_value, color->green);
-      outportb(vesa::color_value, color->blue );
+      writeHW8(vesa::color_number, i);
+      writeHW8(vesa::color_value, color->red  );
+      writeHW8(vesa::color_value, color->green);
+      writeHW8(vesa::color_value, color->blue );
     }
   }
 }

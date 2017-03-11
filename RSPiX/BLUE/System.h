@@ -151,28 +151,25 @@ struct c_string
 
 #include <BLUE/portable_endian.h>
 
-#if defined(_WIN32)
-# if defined(_MSC_VER) // for all versions
-#  pragma message("I find your lack of standards compliance disturbing. ;)")
-#  include <BLUE/stdint_msvc.h>
-#  include <BaseTsd.h> // for SSIZE_T
-#  include <direct.h> // for mkdir (MVCS)
-#  if !defined(NOTE)
-#   define NOTE(x) __pragma(message("NOTE: " x))
-#  endif
-#  if !defined(alignof)
-#   define alignof(x) __alignof(x) // C++11 patch for MSVC
-#  endif
-#  if !defined(mkdir)
-#   define mkdir(x) _mkdir(x)
-#  endif
-# else // for MingW32/64
-#  include <sys/stat.h> // for mkdir (MingW32)
-# define DO_PRAGMA(x) _Pragma (#x)
-# define NOTE(x) DO_PRAGMA(message("NOTE: " x))
-# endif
+////////////////////////////////////////////////////////////////////////////////
+// compiler specific fixes
+////////////////////////////////////////////////////////////////////////////////
 
-# if defined(_MSC_VER) && _MSC_VER < 1900 // for old versions
+#if defined(_MSC_VER) // for all versions
+# pragma message("I find your lack of standards compliance disturbing. ;)")
+# include <BLUE/stdint_msvc.h>
+# include <BaseTsd.h> // for SSIZE_T
+# include <direct.h> // for mkdir (MVCS)
+# if !defined(NOTE)
+#  define NOTE(x) __pragma(message("NOTE: " x))
+# endif
+# if !defined(alignof)
+#  define alignof(x) __alignof(x) // C++11 patch for MSVC
+# endif
+# if !defined(mkdir)
+#  define mkdir(x) _mkdir(x)
+# endif
+# if _MSC_VER < 1900 // for old versions
 typedef SSIZE_T ssize_t;
 #  define constexpr inline
 #  if !defined(snprintf)
@@ -185,19 +182,26 @@ typedef SSIZE_T ssize_t;
 #   define PATH_MAX _MAX_PATH
 #  endif
 # endif
+#endif
 
+#if defined(__MINGW32__)
+# include <sys/stat.h> // for mkdir (MingW32)
+#define DO_PRAGMA(x) _Pragma (#x)
+#define NOTE(x) DO_PRAGMA(message("NOTE: " x))
+#endif
+
+
+#if defined(_WIN32) // any windows targetable compiler
 # if !defined(strcasecmp)
 #  define strcasecmp _stricmp
 # endif
 # define S_IRWXU  0  // dummy value
 inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x, y) cross-platform
-# define SYSTEM_PATH_SEPARATOR	'\\'
-
-#else
+#else // non-Windows compiler
 # include <sys/types.h>
-# if defined __GNUC__ && defined __GNUC_MINOR__
+# if defined(__GNUC__) && defined(__GNUC_MINOR__) // GCC based compiler
 #  define __GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-# else
+# else // non-GCC based compiler
 #  define __GNUC_PREREQ(maj, min) 0
 # endif
 # define DO_PRAGMA(x) _Pragma (#x)
@@ -206,16 +210,24 @@ inline int mkdir(const char* path, int) { return mkdir(path); } // make mkdir(x,
 # else
 #  define NOTE(x) DO_PRAGMA(warning("NOTE: " x)
 # endif
-# if defined(__DOS__)
-#  if defined(__STRICT_ANSI__) && defined(__DJGPP__)
-#   error You need to disable C++ standards complaince for DJGPP
-#  endif
-#  include <limits.h> // somehow not referenced by climits
+#endif
+
+#if defined(__DOS__) // any DOS targetable compiler
+# if defined(__STRICT_ANSI__) && defined(__DJGPP__)
+#  error You need to disable C++ standards complaince for DJGPP
+# endif
+# include <limits.h> // somehow not referenced by climits?
+# if !defined(SYSTEM_PATH_SEPARATOR)
 #  define SYSTEM_PATH_SEPARATOR	'\\'
-# else
-#  define SYSTEM_PATH_SEPARATOR	'/'
 # endif
 #endif
+
+#if defined(__DOS__) || defined(_WIN32)// any DOS or Windows targeting compiler
+# define SYSTEM_PATH_SEPARATOR	'\\'
+#else
+# define SYSTEM_PATH_SEPARATOR	'/'
+#endif
+
 
 // non standard defines
 #if !defined(F_OK)

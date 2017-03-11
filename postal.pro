@@ -264,7 +264,8 @@ HEADERS += \
     weapon.h \
     yatime.h \
     RSPiX/BLUE/portable_endian.h \
-    RSPiX/BLUE/stdint_msvc.h
+    RSPiX/BLUE/stdint_msvc.h \
+    RSPiX/BLUE/dos/platform.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
