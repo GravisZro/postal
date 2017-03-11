@@ -141,4 +141,6 @@ struct mode_info_t
   uint8_t Reserved[206];
 } __attribute__ ((packed));
 
+static_assert(sizeof(mode_info_t) == 256, "packing failed?");
+
 #endif // PLATFORM_H

@@ -31,9 +31,6 @@
 #include <cstddef>
 
 
-static_assert(sizeof(mode_info_t) == 256, "packing failed?");
-
-
 // Only set value if not nullptr.
 #define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 
