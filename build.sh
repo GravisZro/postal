@@ -254,7 +254,17 @@ makefile="Makefile.gravis"
 build_name="postal"
 backend="sdl2"
 ldflags="-lSDL2"
-
+backend_sources="BLUE/Bdebug.cpp \
+                 BLUE/Bjoy.cpp \
+                 BLUE/Bkey.cpp \
+                 BLUE/Bmain.cpp \
+                 BLUE/Bmouse.cpp \
+                 BLUE/Btime.cpp \
+                 BLUE/Bdisp.cpp \
+                 BLUE/Bsound.cpp \
+                 CYAN/uDialog.cpp \
+                 CYAN/uColors.cpp \
+                 CYAN/uPath.cpp"
 case $arch in
   x86_64)
   platform_bits=64
@@ -539,6 +549,7 @@ then
       platform="DOS"
       backend="dos"
       ldflags=""
+      backend_sources="${backend_sources} BLUE/platform.cpp"
     ;;
 
     dreamcast) # Sega Dreamcast
@@ -575,6 +586,9 @@ then
   ldflags="$ldflags $steamlib"
 fi
 
+
+backend_sources=$(echo $backend_sources | sed -e "s/\s\+/ /g")
+
 echo "Platform: $platform"
 echo "Bits: $platform_bits"
 echo "Compiler: $cpp_compiler"
@@ -590,10 +604,9 @@ else
   make_target=$build_name
 fi
 
-echo "executing: make -f $makefile $make_target -e VERBOSE=\"$verbose\" -e CC=\"$cpp_compiler\" FLAGS=\"$cflags\" LDFLAGS=\"$ldflags\" -e DEFINES=\"$defines\" -e POSTAL_ARCHFLAGS=\"$archflags\" -e POSTAL_BINARY=\"$build_name\" -e BACKEND=\"$backend\" -e CPP_STANDARD=\"$cpp_standard\" -e C_STANDARD=\"$c_standard\" -e BUILD_PATH=\"bin/$(to_lower $platform)${platform_bits}\""
+echo "executing: make -f $makefile $make_target -e VERBOSE=\"$verbose\" -e CC=\"$cpp_compiler\" FLAGS=\"$cflags\" LDFLAGS=\"$ldflags\" -e DEFINES=\"$defines\" -e POSTAL_ARCHFLAGS=\"$archflags\" -e POSTAL_BINARY=\"$build_name\" -e BACKEND=\"$backend\" -e CPP_STANDARD=\"$cpp_standard\" -e C_STANDARD=\"$c_standard\" -e BUILD_PATH=\"bin/$(to_lower $platform)${platform_bits}\" -e BACKEND_SOURCES=\"$backend_sources\""
 
-
-make -j$makejobs -f $makefile $make_target -e VERBOSE="$verbose" -e CC="$cpp_compiler" FLAGS="$cflags" LDFLAGS="$ldflags" -e DEFINES="$defines" -e POSTAL_ARCHFLAGS="$archflags" -e POSTAL_BINARY="$build_name" -e BACKEND="$backend" -e CPP_STANDARD="$cpp_standard" -e C_STANDARD="$c_standard" -e BUILD_PATH="bin/$(to_lower $platform)${platform_bits}"
+make -j$makejobs -f $makefile $make_target -e VERBOSE="$verbose" -e CC="$cpp_compiler" FLAGS="$cflags" LDFLAGS="$ldflags" -e DEFINES="$defines" -e POSTAL_ARCHFLAGS="$archflags" -e POSTAL_BINARY="$build_name" -e BACKEND="$backend" -e CPP_STANDARD="$cpp_standard" -e C_STANDARD="$c_standard" -e BUILD_PATH="bin/$(to_lower $platform)${platform_bits}" -e BACKEND_SOURCES="$backend_sources"
 
 exit 0
 

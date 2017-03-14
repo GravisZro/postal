@@ -27,6 +27,21 @@ else # else use default options
 endif
 
 # set default values if missing
+ifndef BACKEND_SOURCES
+  BACKEND_SOURCES = \
+	BLUE/Bdebug.cpp \
+	BLUE/Bjoy.cpp \
+	BLUE/Bkey.cpp \
+	BLUE/Bmain.cpp \
+	BLUE/Bmouse.cpp \
+	BLUE/Btime.cpp \
+	BLUE/Bdisp.cpp \
+	BLUE/Bsound.cpp \
+	CYAN/uDialog.cpp \
+	CYAN/uColors.cpp \
+	CYAN/uPath.cpp
+endif
+
 ifeq (,$(findstring -DLOCALE=,$(CFLAGS)))
   CFLAGS += -DLOCALE=US
 endif
@@ -65,7 +80,7 @@ ifndef BACKEND
   BACKEND:=sdl2
 endif
 
-SOURCES += \
+SOURCES = \
 	AnimThing.cpp \
 	ball.cpp \
 	barrel.cpp \
@@ -155,17 +170,6 @@ SOURCES += \
 	play.cpp \
 	SampleMaster.cpp \
 	title.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bdebug.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bjoy.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bkey.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bmain.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bmouse.cpp \
-	RSPiX/BLUE/$(BACKEND)/Btime.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bdisp.cpp \
-	RSPiX/BLUE/$(BACKEND)/Bsound.cpp \
-	RSPiX/CYAN/$(BACKEND)/uDialog.cpp \
-	RSPiX/CYAN/$(BACKEND)/uColors.cpp \
-	RSPiX/CYAN/$(BACKEND)/uPath.cpp \
 	RSPiX/GREEN/Hot/hot.cpp \
 	RSPiX/GREEN/Image/Image.cpp \
 	RSPiX/GREEN/Image/ImageCon.cpp \
@@ -232,7 +236,8 @@ SOURCES += \
 	WishPiX/Prefs/prefline.cpp \
 	WishPiX/Prefs/prefs.cpp \
 	WishPiX/ResourceManager/resmgr.cpp \
-	WishPiX/Spry/spry.cpp
+	WishPiX/Spry/spry.cpp \
+	$(shell echo $(BACKEND_SOURCES) | sed -e "s/\([A-Z]\+\)\/\(\S\+\)/RSPiX\/\1\/$(BACKEND)\/\2/g")
 
 OBJS0 := $(SOURCES:.s=.o)
 OBJS1 := $(OBJS0:.c=.o)
@@ -268,6 +273,10 @@ debugon:
 debugoff:
 	$(eval OPTFLAG := -O3)
 	$(eval CFLAGS += -DNDEBUG -D_NDEBUG -O2)
+
+$(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.c
+	@echo [Compiling]: $<
+	$(QUIET) $(CC) -c -o $@ $< $(C_STANDARD) $(CFLAGS)
 
 $(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.s
 	@echo [Assembling]: $<
