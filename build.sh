@@ -483,7 +483,7 @@ done
 force_32bit() {
   if [ "$platform_bits" = "64" ]
   then
-    echo "$1 is a 32-bit target platform.  Ignoring 64-bit flag."
+    echo "Forcing 32-bit mode for target: $1"
   fi
   platform_bits=32
 }
@@ -586,7 +586,7 @@ then
   ldflags="$ldflags $steamlib"
 fi
 
-
+# remove excess whitespace
 backend_sources=$(echo $backend_sources | sed -e "s/\s\+/ /g")
 
 echo "Platform: $platform"
