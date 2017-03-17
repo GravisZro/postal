@@ -24,6 +24,7 @@
 
 // Platform //////////////////////////////////////////////////////////////////
 #include "platform.h"
+#include "vesa.h"
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
@@ -32,7 +33,12 @@
 
 
 // Only set value if not nullptr.
-#define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
+#define SET(ptr, val)         if((ptr) != nullptr) { *(ptr) = (val); }
+
+#define OPERATION_SUPPORTED   0x4F
+
+inline uint16_t return_value(void) { return regs16.bx; }
+inline bool has_error(void) { return regs8.al != OPERATION_SUPPORTED || regs8.ah != SUCCESS; }
 
 namespace palette
 {
@@ -52,9 +58,9 @@ namespace display
   uint16_t set_mode(uint16_t mode);
   uint16_t probe(void);
 
-  static vesa_info_t vesa_info;
-  static std::map<uint16_t, mode_info_t> mode_info;
-  static mode_info_t current_mode_info;
+  static dos::mem<vesa_info_t> vesa_info;
+  static std::map<uint16_t, dos::mem<mode_info_t>> mode_info;
+  static mode_info_t* current_mode_info = nullptr;
 
   static uint16_t initial_mode = get_mode();
   static uint16_t current_mode = initial_mode;
@@ -68,97 +74,88 @@ namespace display
   uint16_t set_mode(uint16_t mode)
   {
     current_mode_info = mode_info[mode];
-    load_AX(vesa::set_mode);
-    load_BX(mode);
-    interrupt(interrupts::video);
-    if (bios_error_code)
+    regs16.ax = video::set_graphics_mode;
+    regs16.bx = mode;
+    dos::int86(video::interrupt);
+    if (has_error())
       return FAILURE;
     return SUCCESS;
   }
 
   uint16_t get_mode(void)
   {
-    load_AX(vesa::get_mode);
-    interrupt(interrupts::video);
-    if (bios_error_code)
+    regs16.ax = video::get_graphics_mode;
+    dos::int86(video::interrupt);
+    if (has_error())
       return FAILURE;
-    return biod_return_value;
+    return return_value();
   }
 
   void set_bank(uint16_t bank_number)
   {
-     load_AX(vesa::window_control);
-     load_BX(vesa::set_bank | vesa::windowA);
-     load_DX(bank_number);
-     interrupt(interrupts::video);
+     regs16.ax = video::window_control;
+     regs16.bx = video::set_bank | video::windowA;
+     regs16.dx = bank_number;
+     dos::int86(video::interrupt);
   }
 /*
   uint16_t get_bank(void)
   {
-     load_AX(vesa::window_control);
-     load_BX(vesa::set_bank | vesa::windowA);
-     interrupt(interrupts::video);
-    if (bios_error_code)
+     regs16.ax = vesa::window_control;
+     regs16.bx = vesa::set_bank | vesa::windowA;
+     dos::int86(vesa::interrupt);
+    if (has_error())
       return FAILURE;
     return bios_return_code;
   }
 */
   uint16_t probe(void)
   {
-    uintptr_t sys_ptr;
-
-    sys_ptr = transaction_buffer & 0x000FFFFF; // use the transaction buffer
-
-    // zero out the transaction buffer
-    for (size_t i = 0; i < sizeof(vesa_info_t); ++i)
-      farWrite8(sys_ptr + i, 0);
-
-    dosmemput("VBE2", 4, sys_ptr);
+    dos::farpointer_t addr; // DOS address
+    std::memcpy(vesa_info->VESASignature, "VBE2", 4);
 
     // call the VESA function
-    load_AX(vesa::get_card_info);
-    load_DI(sys_ptr & 0xF);
-    load_ES((sys_ptr >> 4) & 0x0000FFFF);
-    interrupt(interrupts::video);
+    addr = vesa_info;
+    regs16.ax = video::graphics_card_info;
+    regs16.es = addr.es;
+    regs16.di = addr.di;
+    dos::int86(video::interrupt);
 
-    if (bios_error_code) // abort upon error
+    if (has_error()) // abort upon error
       return FAILURE;
 
-    dosmemget(sys_ptr, sizeof(vesa_info_t), &vesa_info); // copy the returned data
-
-    if (std::memcmp(vesa_info.VESASignature, "VESA", 4) != 0) // test for the magic number VESA
+    if (std::memcmp(vesa_info->VESASignature, "VESA", 4) != 0) // test for the magic number VESA
       return FAILURE;
 
-    // convert the mode list pointer from seg:offset to a linear address
-    sys_ptr = ((vesa_info.VideoModePtr & 0xFFFF0000) >> 12) +
-               (vesa_info.VideoModePtr & 0x0000FFFF);
-
-    // read the list of available modes
-    while (farRead16(sys_ptr) != UINT16_MAX)
+/*
+    TRACE("8 bit colors...\n");
+    regs16.ax = video::palette_control;
+    regs8.bl  = video::get;
+    regs8.bh  = 0;//current_mode_info->BitsPerPixel;
+    dos::int86(video::interrupt);
+    TRACE("retrieval result:\nAH: %02x\nAL: %02x\nBH: %02x\n", regs8.ah, regs8.al, regs8.bh);
+    if (!has_error())
     {
-      display::mode_info[farRead16(sys_ptr)];
-      sys_ptr += sizeof(uint16_t);
+      TRACE("Palette DAC depth: %i\n", regs8.bh);
     }
+    else
+      return FAILURE;
+*/
 
-    sys_ptr = transaction_buffer & 0x000FFFFF; // return to the transaction buffer
-
-    for(std::map<uint16_t, mode_info_t>::value_type& m : mode_info) // probe each mode
+    for(uint16_t* pos = vesa_info->VideoModePtr; *pos != UINT16_MAX; ++pos)
     {
-      // zero out the transaction buffer
-      for (size_t i=0; i < sizeof(mode_info_t); ++i)
-        farWrite8(sys_ptr + i, 0);
-
       // call the VESA function
-      load_AX(vesa::get_mode_info);
-      load_DI(sys_ptr & 0xF);
-      load_ES((sys_ptr >> 4) & 0xFFFF);
-      load_CX(m.first);
-      interrupt(interrupts::video);
-
-      if (!bios_error_code) // if no error occurred
-        dosmemget(sys_ptr, sizeof(mode_info_t), &m.second); // copy the returned data
+      addr = current_mode_info = mode_info[*pos];
+      regs16.ax = video::graphics_mode_info;
+      regs16.es = addr.es;
+      regs16.di = addr.di;
+      regs16.cx = *pos;
+      dos::int86(video::interrupt);
+      TRACE("mode: %04x :: %ix%i @ %ibpp\n", *pos,
+          current_mode_info->XResolution,
+          current_mode_info->YResolution,
+          current_mode_info->BitsPerPixel);
     }
-
     current_mode_info = mode_info[current_mode];
     return SUCCESS;
   }
@@ -166,13 +163,15 @@ namespace display
   void blit_to_screen(void* memory_buffer, uint32_t buffer_length)
   {
     uint8_t* memory = static_cast<uint8_t*>(memory_buffer);
-    uint32_t bank_size = current_mode_info.WinSize << 10;
-    uint32_t bank_granularity = current_mode_info.WinGranularity << 10;
+    uint32_t bank_size = current_mode_info->WinSize << 10;
+    uint32_t bank_granularity = current_mode_info->WinGranularity << 10;
     uint32_t bank_number = 0;
     uint32_t remaining = buffer_length;
     uint32_t copy_size;
 
-    //TRACE("Vesa Address: %08x", current_mode_info.PhysBasePtr);
+    //TRACE("Vesa DOS Address: %08x\n", current_mode_info->PhysBasePtr);
+    //TRACE("Vesa ptr Address: %p\n", current_mode_info->PhysBasePtr.operator void *());
+    //TRACE("Vesa fixed Address: %08x\n", video::framebuffer);
     ASSERT(buffer_length);
     ASSERT(bank_granularity);
 
@@ -188,7 +187,7 @@ namespace display
         copy_size = remaining;
 
       // copy a bank of data to the screen
-      dosmemput(memory, copy_size, vesa::framebuffer);
+      dosmemput(memory, copy_size, video::framebuffer);
 
       // move on to the next bank of data
       remaining -= copy_size;
@@ -200,12 +199,19 @@ namespace display
   void load_pallette(color32_t* base, uint16_t count)
   {
     color32_t* color = base;
-    for(uint16_t i = 0; i < count; ++i, ++color)
+    if(vesa_info->Capabilities.adjustible_palette)
     {
-      writeHW8(vesa::color_number, i);
-      writeHW8(vesa::color_value, color->red  );
-      writeHW8(vesa::color_value, color->green);
-      writeHW8(vesa::color_value, color->blue );
+
+    }
+    else // 6-bits per channel palette
+    {
+      for(uint16_t i = 0; i < count; ++i, ++color)
+      {
+        dos::outportb(video::palette_index, i);
+        dos::outportb(video::palette_data, color->red   >> 2);
+        dos::outportb(video::palette_data, color->green >> 2);
+        dos::outportb(video::palette_data, color->blue  >> 2);
+      }
     }
   }
 }
@@ -286,15 +292,13 @@ extern int16_t rspGetVideoMode(
 {
   // lie about everything.
   SET(psPixelScaling, 0);
-  SET(psDevicePages,  display::current_mode_info.NumberOfImagePages);
-  SET(psPages,        display::current_mode_info.NumberOfImagePages);
-  SET(psWidth,        display::current_mode_info.XResolution);
-  SET(psHeight,       display::current_mode_info.YResolution);
-  SET(psDeviceDepth,  display::current_mode_info.BitsPerPixel);
-  SET(psDeviceWidth,  display::current_mode_info.XResolution);
-  SET(psDeviceHeight, display::current_mode_info.YResolution);
-
-  TRACE("rspGetVideoMode\n");
+  SET(psDevicePages,  display::current_mode_info->NumberOfImagePages);
+  SET(psPages,        display::current_mode_info->NumberOfImagePages);
+  SET(psWidth,        display::current_mode_info->XResolution);
+  SET(psHeight,       display::current_mode_info->YResolution);
+  SET(psDeviceDepth,  display::current_mode_info->BitsPerPixel);
+  SET(psDeviceWidth,  display::current_mode_info->XResolution);
+  SET(psDeviceHeight, display::current_mode_info->YResolution);
   return SUCCESS;
 }
 
@@ -320,10 +324,10 @@ extern int16_t rspQueryVideoMode(       // Returns 0 for each valid mode, then n
     int16_t* psHeight,                  // Out: Height returned here
     int16_t* psPages)                   // Out: Number of video pages possible.
 {
-  SET(psColorDepth, display::current_mode_info.BitsPerPixel);
-  SET(psWidth,      display::current_mode_info.XResolution);
-  SET(psHeight,     display::current_mode_info.YResolution);
-  SET(psPages,      display::current_mode_info.NumberOfImagePages);
+  SET(psColorDepth, display::current_mode_info->BitsPerPixel);
+  SET(psWidth,      display::current_mode_info->XResolution);
+  SET(psHeight,     display::current_mode_info->YResolution);
+  SET(psPages,      display::current_mode_info->NumberOfImagePages);
   return FAILURE;
 }
 
@@ -368,12 +372,12 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
     return FAILURE;
   }
 
-  for(std::map<uint16_t, mode_info_t>::value_type& mode : display::mode_info)
+  for(auto& mode : display::mode_info)
   {
-    if(mode.second.BitsPerPixel == sDeviceDepth &&
-       mode.second.XResolution == sWidth &&
-       mode.second.YResolution == sHeight &&
-       mode.second.NumberOfImagePages >= sPages)
+    if(mode.second->BitsPerPixel == sDeviceDepth &&
+       mode.second->XResolution == sWidth &&
+       mode.second->YResolution == sHeight &&
+       mode.second->NumberOfImagePages >= sPages)
     {
       display::set_mode(mode.first);
       return SUCCESS;
@@ -434,7 +438,7 @@ extern void rspCacheDirtyRect(
 
 extern void rspPresentFrame(void)
 {
-  display::blit_to_screen(display::framebuffer, display::current_mode_info.XResolution * display::current_mode_info.YResolution);
+  display::blit_to_screen(display::framebuffer, display::current_mode_info->XResolution * display::current_mode_info->YResolution);
 }
 
 extern void rspUpdateDisplay(void)
@@ -520,7 +524,7 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
   if(ppvBuffer != nullptr)
     *ppvBuffer = display::framebuffer;
   if(plPitch != nullptr)
-    *plPitch = display::current_mode_info.BytesPerScanLine;
+    *plPitch = display::current_mode_info->BytesPerScanLine;
 
   return SUCCESS;
 }
@@ -566,9 +570,6 @@ extern void rspSetPaletteEntries(
     channel_t* pucBlue,                   // In: Pointer to first blue  component to copy from
     uint32_t lIncBytes)                   // In: Number of bytes by which to increment pointers after each copy
 {
-  static int i = 0;
-  TRACE("instance: %i\n", ++i);
-
   int8_t* psLock;
   color32_t* pColor;
 
@@ -586,7 +587,6 @@ extern void rspSetPaletteEntries(
       pColor->red   = *pucRed; // transfer data
       pColor->green = *pucGreen;
       pColor->blue  = *pucBlue;
-      TRACE("color #%i - %i: %02x %02x %02x\n", sStartIndex, sCount, pColor->red, pColor->green, pColor->blue);
     }
   }
 }
@@ -671,7 +671,6 @@ extern void rspGetPaletteEntries(
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUpdatePalette(void)
 {
-  TRACE("rspUpdatePalette\n");
   display::load_pallette(palette::buffer, palette::size);
 }
 

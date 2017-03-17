@@ -1,146 +1,212 @@
-#ifndef PLATFORM_H
-#define PLATFORM_H
+/*
+Copyright (C) 1996-1997 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+
+//
+// platform.h: I'd call it dos.h, but the name's taken
+//
+
+#ifndef _PLATFORM_H_
+#define _PLATFORM_H_
 
 #include <BLUE/System.h>
+#include <new>
+#include <limits>
 
-static_assert(sizeof(uintptr_t) == 4, "DOS is 32-bit!");
+static_assert(sizeof(int        ) == 4, "architecture mismatch");
+static_assert(sizeof(long       ) == 4, "architecture mismatch");
+static_assert(sizeof(uintptr_t  ) == 4, "architecture mismatch");
+static_assert(sizeof(std::size_t) == 4, "architecture mismatch");
 
-#if defined(__DJGPP__)
+#define regs32 dos::regs.r32
+#define regs16 dos::regs.r16
+#define regs8  dos::regs.r8
 
-# include <pc.h>
-# include <dpmi.h>
-# include <go32.h>
-# include <sys/farptr.h>
+namespace dos
+{
+  void* malloc(std::size_t size) noexcept;
+  void free(void* ptr) noexcept;
 
-static __dpmi_regs regs; // optimized out?
+  template<typename T>
+  class mem
+  {
+  public:
+    mem(void) noexcept { m_data = reinterpret_cast<T*>(dos::malloc(sizeof(T))); }
+   ~mem(void) noexcept { dos::free(m_data); m_data = nullptr; }
+    T* operator ->(void) noexcept { return m_data; }
+    operator T*(void) noexcept { return m_data; }
 
-# define load_AX(val)           regs.x.ax = val
-# define load_BX(val)           regs.x.bx = val
-# define load_CX(val)           regs.x.cx = val
-# define load_DX(val)           regs.x.dx = val
-# define load_DI(val)           regs.x.di = val
-# define load_ES(val)           regs.x.es = val
+  private:
+    T* m_data;
+  };
 
-# define get_AH                 regs.h.ah
-# define get_BX                 regs.x.bx
+  struct farpointer_t
+  {
+    // convience shortcut functions
+    template<typename T> farpointer_t& operator = (T* in) noexcept { return operator =(reinterpret_cast<void*>(in)); }
+    template<typename T> operator T*(void) noexcept { return reinterpret_cast<T*>(operator void*()); }
 
-# define interrupt(x)           __dpmi_int(int(x), &regs)
+    // actual functions
+    farpointer_t& operator = (uintptr_t in) noexcept { real = in; return *this; }
+    farpointer_t& operator = (void* in) noexcept;
+    operator uintptr_t(void) const noexcept { return real; } // far pointer
+    operator void*(void) const noexcept; // normal pointer
 
-# define farRead16(addr)        _farpeekw(_dos_ds, addr)
-# define farRead8(addr)         _farpeekb(_dos_ds, addr)
+    union
+    {
+      struct
+      {
+        uintptr_t es : 28; // segment / upper 28 bits
+        uintptr_t di :  4; // offset  / lower 4 bits
+      };
+      struct
+      {
+        uintptr_t low  : 16; // lower 16 bits
+        uintptr_t high : 16; // upper 16 bits
+      };
+      uintptr_t real;
+      void*     pointer;
+    };
+  };
 
-# define farWrite16(addr, val)  _farpokew(_dos_ds, addr, val)
-# define farWrite8(addr, val)   _farpokeb(_dos_ds, addr, val)
+  static_assert(sizeof(farpointer_t) == 4, "your compiler is broken");
 
 
-# define transaction_buffer     __tb
+  uint16_t lockmem  (void* addr, std::size_t size) noexcept;
+  uint16_t unlockmem(void* addr, std::size_t size) noexcept;
 
-# define readHW8(x)             inportb(x)
-# define readHW16(x)            inportw(x)
+  struct regs_t
+  {
+    union
+    {
+      struct {
+        uint32_t edi;
+        uint32_t esi;
+        uint32_t ebp;
+        uint32_t res;
+        uint32_t ebx;
+        uint32_t edx;
+        uint32_t ecx;
+        uint32_t eax;
+      } r32;
+      struct {
+        uint16_t di, di_hi;
+        uint16_t si, si_hi;
+        uint16_t bp, bp_hi;
+        uint16_t res, res_hi;
+        uint16_t bx, bx_hi;
+        uint16_t dx, dx_hi;
+        uint16_t cx, cx_hi;
+        uint16_t ax, ax_hi;
+        uint16_t flags;
+        uint16_t es;
+        uint16_t ds;
+        uint16_t fs;
+        uint16_t gs;
+        uint16_t ip;
+        uint16_t cs;
+        uint16_t sp;
+        uint16_t ss;
+      } r16;
+      struct {
+        uint8_t edi[4];
+        uint8_t esi[4];
+        uint8_t ebp[4];
+        uint8_t res[4];
+        uint8_t bl, bh, ebx_b2, ebx_b3;
+        uint8_t dl, dh, edx_b2, edx_b3;
+        uint8_t cl, ch, ecx_b2, ecx_b3;
+        uint8_t al, ah, eax_b2, eax_b3;
+      } r8;
+    };
+  };
 
-# define writeHW8(x, val)       outportb(x, val)
-# define writeHW16(x, val)      outportw(x, val)
+  static_assert(sizeof(regs_t::r32) == 32, "bad size!");
+  static_assert(sizeof(regs_t::r16) == 50, "bad size!");
+  static_assert(sizeof(regs_t::r8 ) == 32, "bad size!");
+  static_assert(sizeof(regs_t) == 52, "Do not pack the registers!");
 
-#elif defined(_MSC_VER)
+  extern regs_t regs;
 
-# error You need to implement a bunch of x86/DOS support in platform.h!
+  int inportb(int port) noexcept;
+  int inportw(int port) noexcept;
+  void outportb(int port, uint32_t val) noexcept;
+  void outportw(int port, uint32_t val) noexcept;
 
+  void irqenable(void) noexcept;
+  void irqdisable(void) noexcept;
+  void registerintr(uint8_t intr, void (*handler)(void)) noexcept;
+  void restoreintr(uint8_t intr) noexcept;
+
+  int int86(int vec) noexcept; // Returns 0 on success
+  int int386(int vec, regs_t* inregs, regs_t* outregs) noexcept;
+
+  void usleep(milliseconds_t usecs) noexcept;
+
+  int getheapsize(void) noexcept;
+
+#if 0
+  template<typename T>
+  class allocator {
+  public:
+    //    typedefs
+    typedef T value_type;
+    typedef value_type* pointer;
+    typedef const value_type* const_pointer;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+
+  public:
+    //    convert an allocator<T> to allocator<U>
+    template<typename U>
+    struct rebind
+      { typedef allocator<U> other; };
+
+  public:
+    allocator(void) { }
+    allocator(const allocator& other) { }
+   ~allocator(void) { }
+
+    //    address
+    pointer address(reference x) const { return &x; }
+    const_pointer address(const_reference x) const { return &x; }
+
+    //    memory allocation
+    pointer allocate(size_type n, std::allocator<void>::const_pointer hint = 0 )
+      { UNUSED(hint); return reinterpret_cast<pointer>(dos::malloc(n * sizeof (T))); }
+
+    void deallocate(pointer p, size_type)
+    {
+      dos::free(p);
+      p = nullptr;
+    }
+
+    //    size
+    size_type max_size(void) const
+      { return std::numeric_limits<size_type>::max() / sizeof(T); }
+
+    bool operator==(allocator const&) { return true; }
+    bool operator!=(allocator const&) { return false; }
+  };    //    end of class allocator
 #endif
-
-
-#define bios_error_code       get_AH
-#define biod_return_value     get_BX
-
-enum class interrupts : int
-{
-  keyboard = 0x09,
-  video    = 0x10,
-};
-
-
-namespace vesa
-{
-  enum registers : uint16_t // write to AX
-  {
-    color_number    = 0x03C8,
-    color_value     = 0x03C9,
-    get_card_info   = 0x4F00,
-    get_mode_info   = 0x4F01,
-    set_mode        = 0x4F02,
-    get_mode        = 0x4F03,
-    window_control  = 0x4F05,
-  };
-
-  enum options : uint16_t // write to BX
-  {
-    set_bank = 0x0000,
-    get_bank = 0x0100,
-    windowA  = 0x0000,
-    windowB  = 0x0001,
-  };
-
-  enum addresses : uint32_t
-  {
-    framebuffer = 0x000A0000,
-  };
 }
 
-
-struct vesa_info_t
-{
-  uint8_t VESASignature[4];
-  uint16_t VESAVersion;
-  uint32_t OEMStringPtr;
-  uint8_t Capabilities[4];
-  uint32_t VideoModePtr;
-  uint16_t TotalMemory;
-  uint16_t OemSoftwareRev;
-  uint32_t OemVendorNamePtr;
-  uint32_t OemProductNamePtr;
-  uint32_t OemProductRevPtr;
-  uint8_t Reserved[222];
-  uint8_t OemData[256];
-} __attribute__ ((packed));
-
-static_assert(sizeof(vesa_info_t) == 512, "packing failed?");
-
-struct mode_info_t
-{
-  uint16_t ModeAttributes;
-  uint8_t WinAAttributes;
-  uint8_t WinBAttributes;
-  uint16_t WinGranularity; // in kilobytes
-  uint16_t WinSize; // in kilobytes
-  uint16_t WinASegment;
-  uint16_t WinBSegment;
-  uint32_t WinFuncPtr;
-  uint16_t BytesPerScanLine;
-  uint16_t XResolution; // x pixel
-  uint16_t YResolution; // y pixels
-  uint8_t XCharSize;
-  uint8_t YCharSize;
-  uint8_t NumberOfPlanes;
-  uint8_t BitsPerPixel;
-  uint8_t NumberOfBanks;
-  uint8_t MemoryModel;
-  uint8_t BankSize;
-  uint8_t NumberOfImagePages;
-  uint8_t Reserved_page;
-  uint8_t RedMaskSize;
-  uint8_t RedMaskPos;
-  uint8_t GreenMaskSize;
-  uint8_t GreenMaskPos;
-  uint8_t BlueMaskSize;
-  uint8_t BlueMaskPos;
-  uint8_t ReservedMaskSize;
-  uint8_t ReservedMaskPos;
-  uint8_t DirectColorModeInfo;
-  uint32_t PhysBasePtr; // address
-  uint32_t OffScreenMemOffset;
-  uint16_t OffScreenMemSize;
-  uint8_t Reserved[206];
-} __attribute__ ((packed));
-
-static_assert(sizeof(mode_info_t) == 256, "packing failed?");
-
-#endif // PLATFORM_H
+#endif	// _PLATFORM_H_

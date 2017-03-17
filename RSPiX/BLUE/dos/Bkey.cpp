@@ -70,39 +70,31 @@ namespace keyboard
   // Queue of keyboard events.
   static RQueue<RSP_SK_EVENT, MAX_EVENTS>	ms_qkeEvents;
 }
+
+
+
+
 #if 0
-static int leds_ok = TRUE;
-
-static int in_a_terrupt = FALSE;
-
-static int extended_key = FALSE;
-
+static uint8_t extended_key = FALSE;
 
 
 // Wait for the keyboard controller to set the ready-for-write bit.
 static inline int kb_wait_for_write_ready(void)
 {
-   int timeout = 4096;
-
-   while ((timeout > 0) && (readHW8(0x64) & 2))
+   int timeout = 0x1000;
+   while ((timeout > 0) && (dos::inportb(0x64) & 2))
       timeout--;
-
    return (timeout > 0);
 }
-
-
 
 // Wait for the keyboard controller to set the ready-for-read bit.
 static inline int kb_wait_for_read_ready(void)
 {
-   int timeout = 16384;
-
-   while ((timeout > 0) && (!(readHW8(0x64) & 1)))
+   int timeout = 0x4000;
+   while ((timeout > 0) && (!(dos::inportb(0x64) & 1)))
       timeout--;
-
    return (timeout > 0);
 }
-
 
 
 // Sends a byte to the keyboard controller. Returns 1 if all OK.
@@ -115,14 +107,14 @@ static inline int kb_send_data(unsigned char data)
       if (!kb_wait_for_write_ready())
          return 0;
 
-      writeHW8(0x60, data);
+      dos::outportb(0x60, data);
       timeout = 4096;
 
       while (--timeout > 0) {
          if (!kb_wait_for_read_ready())
             return 0;
 
-         temp = readHW8(0x60);
+         temp = dos::inportb(0x60);
 
          if (temp == 0xFA)
             return 1;
@@ -136,37 +128,9 @@ static inline int kb_send_data(unsigned char data)
 }
 
 
-
-// Updates the LED state.
-static void pcdos_set_leds(int leds)
-{
-   if (!leds_ok)
-      return;
-
-   if (!in_a_terrupt)
-      DISABLE();
-
-   if (!kb_send_data(0xED)) {
-      kb_send_data(0xF4);
-      leds_ok = FALSE;
-   }
-   else if (!kb_send_data((leds>>8) & 7)) {
-      kb_send_data(0xF4);
-      leds_ok = FALSE;
-   }
-
-   if (!in_a_terrupt)
-      ENABLE();
-}
-
-
-
 // Sets the key repeat rate.
 static void pcdos_set_rate(int delay, int rate)
 {
-   if (!leds_ok)
-      return;
-
    if (delay < 375)
       delay = 0;
    else if (delay < 625)
@@ -189,63 +153,33 @@ static void pcdos_set_rate(int delay, int rate)
 
 
 //  Hardware level keyboard interrupt (int 9) handler.
-static int keyint(void)
+static void keyint(void)
 {
-   int code = readHW8(0x60);
-
-   in_a_terrupt = TRUE;
-
-   _handle_pckey(code);
-
-   in_a_terrupt = FALSE;
+  static uint8_t extended_key = 0x00;
+  uint8_t code = dos::inportb(0x60); // read next key
+  code |= extended_key;
 
 #if defined(__DJGPP__)
-      /* three-finger salute for killing the program */
-      if (three_finger_flag) {
-         if (((code == 0x4F) || (code == 0x53)) &&
-             (_key_shifts & KB_CTRL_FLAG) && (_key_shifts & KB_ALT_FLAG)) {
-            asm (
-               "  movb $0x79, %%al ; "
-               "  call ___djgpp_hw_exception "
-            : : : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory"
-            );
-         }
-
-         /* also handle ctrl+break, like the standard djgpp libc */
-         if ((code == 0x46) && (extended_key) &&
-             (_key_shifts & KB_CTRL_FLAG)) {
-            asm (
-               "  movb $0x1B, %%al ; "
-               "  call ___djgpp_hw_exception "
-            : : : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory"
-            );
-         }
-      }
+   if (code == 0x2E && !extended_key && _key_shifts & KB_CTRL_FLAG) // handle Ctrl+C
+     { asm ("  movb $0x1B, %%al ; call ___djgpp_hw_exception " : : : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory"); }
 #else
 NOTE("No interrupt key sequence defined!")
 #endif
+   extended_key = code == 0xE0 ? 0x80 : 0x00;
 
-   extended_key = (code == 0xE0);
-
-   writeHW8(0x20, 0x20);
-   return 0;
+   dos::outportb(0x20, 0x20); // remove from keyboard buffer
 }
 
 
 
-/* pcdos_key_init:
- *  Installs the keyboard handler.
- */
+//  Installs the keyboard handler.
 static int pcdos_key_init(void)
 {
    int s1, s2, s3;
 
    _pckeys_init();
 
-   LOCK_VARIABLE(leds_ok);
-   LOCK_VARIABLE(in_a_terrupt);
    LOCK_VARIABLE(extended_key);
-   LOCK_FUNCTION(pcdos_set_leds);
    LOCK_FUNCTION(keyint);
 
    /* read the current BIOS keyboard state */
@@ -273,48 +207,11 @@ static int pcdos_key_init(void)
 
    key_shifts = _key_shifts;
 
-   _install_irq(keyboard_interrupt, keyint);
-
-   pcdos_set_leds(_key_shifts);
+   install_irq_callback(interrupts::keyboard, keyint);
 
    return 0;
 }
 
-
-
-/* pcdos_key_exit:
- *  Removes the keyboard handler.
- */
-static void pcdos_key_exit(void)
-{
-   int s1, s2, s3;
-
-   _remove_irq(keyboard_interrupt);
-
-   /* transfer state info back to the BIOS */
-   _farsetsel(_dos_ds);
-
-   s1 = farRead8(0x417) & 0x80;
-   s2 = farRead8(0x418) & 0xFC;
-   s3 = farRead8(0x496) & 0xF3;
-
-   if (key[KEY_RSHIFT])   { s1 |= 1; }
-   if (key[KEY_LSHIFT])   { s1 |= 2; }
-   if (key[KEY_LCONTROL]) { s2 |= 1; s1 |= 4; }
-   if (key[KEY_ALT])      { s1 |= 8; s2 |= 2; }
-   if (key[KEY_RCONTROL]) { s1 |= 4; s3 |= 4; }
-   if (key[KEY_ALTGR])    { s1 |= 8; s3 |= 8; }
-
-   if (_key_shifts & KB_SCROLOCK_FLAG) s1 |= 16;
-   if (_key_shifts & KB_NUMLOCK_FLAG)  s1 |= 32;
-   if (_key_shifts & KB_CAPSLOCK_FLAG) s1 |= 64;
-
-   _farsetsel(_dos_ds);
-
-   _farnspokeb(0x417, s1);
-   _farnspokeb(0x418, s2);
-   _farnspokeb(0x496, s3);
-}
 #endif
 //////////////////////////////////////////////////////////////////////////////
 // Extern functions.
