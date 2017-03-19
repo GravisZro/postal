@@ -41,7 +41,7 @@ namespace keyboard
 {
   namespace scancodes
   {
-    static const uint8_t set2[0x80] =
+    static const uint8_t set1[0x80] =
     {
       0,
 
@@ -144,7 +144,11 @@ namespace keyboard
 
       0,0,0,0
     };
+
+    static const uint8_t* current = set1;
   }
+
+
 
   enum keystate : uint8_t
   {
@@ -173,20 +177,22 @@ namespace keyboard
     static uint16_t data;
     data |= dos::inportb(port); // read next key
 
-    if(data == 0x00E0)
+    if(data == 0x00E1) // pause/break
+      exit(0); // exit unconditionally
+    else if(data == 0x00E0)
       data = 0x0100;
     else
     {
       if(data < 0x0080)
       {
-        if(keystates[scancodes::set2[data]] != pressed)
+        if(keystates[scancodes::current[data]] != pressed)
         {
-          keystates[scancodes::set2[data]] = pressed;
-          keyEvents.emplace(rspGetMilliseconds(), scancodes::set2[data]);
+          keystates[scancodes::current[data]] = pressed;
+          keyEvents.emplace(rspGetMilliseconds(), scancodes::current[data]);
         }
       }
       else if(data < 0x0100)
-        keystates[scancodes::set2[data & 0x007F]] = released;
+        keystates[scancodes::current[data & 0x007F]] = released;
       else
       {
         switch(data & 0x00FF)
@@ -219,93 +225,10 @@ namespace keyboard
 
 extern void rspSetQuitStatus(int16_t sQuitStatus);
 
-extern void pollKeyboard(void)
-{
-#if 0
-  if(keyboard::haveKey())
-  {
-
-  }
-  ASSERT((event->type == SDL_KEYUP) || (event->type == SDL_KEYDOWN));
-  //ASSERT(event->key.keysym.sym < SDLK_LAST);
-
-  const uint8_t pushed = (event->type == SDL_KEYDOWN);
-#ifdef SDL2_JUNK
-  if ((pushed) && (event->key.repeat) && (!keyboard::keyRepeat))
-    return;  // drop it.
-#endif
-
-  uint8_t key = keyboard::sdl_to_rws_keymap[event->key.keysym.sym];
-  uint16_t gkey = keyboard::sdl_to_rws_gkeymap[event->key.keysym.sym];
-  uint8_t* pu8KeyStatus = (&keyboard::ms_au8KeyStatus[key]);
-
-  if (key == 0)
-    return;
-
-  if (pushed)
-  {
-    if (event->key.keysym.sym == SDLK_g && event->key.keysym.mod & KMOD_CTRL) // ctrl-g
-    {
-#ifdef SDL2_JUNK
-      const SDL_bool mode = SDL_GetWindowGrab(sdlWindow) ? SDL_FALSE : SDL_TRUE;
-      //SDL_SetRelativeMouseMode(mode);
-      SDL_SetWindowGrab(sdlWindow, mode);
-      mouse_grabbed = (mode == SDL_TRUE);
-#endif
-      return;  // don't pass this key event on to the game.
-    }
-
-    if (event->key.keysym.sym == SDLK_RETURN && event->key.keysym.mod & KMOD_ALT) // alt-enter
-    {
-#ifdef SDL2_JUNK
-      if (SDL_GetWindowFlags(sdlWindow) & SDL_WINDOW_FULLSCREEN)
-        SDL_SetWindowFullscreen(sdlWindow, 0);
-      else
-        SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN);
-#endif
-      return;  // don't pass this key event on to the game.
-    }
-
-    if (keyEvents.IsFull() == FALSE)
-    {
-      // Create event.
-      static int16_t sEventIndex = 0;
-      RSP_SK_EVENT* pkeEvent = ms_akeEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
-      // Fill event.
-      pkeEvent->lTime    = SDL_GetTicks();
-      pkeEvent->lKey = ((gkey) ? gkey : key);
-
-      // Enqueue event . . .
-      if (keyEvents.EnQ(pkeEvent) == 0)
-      {
-        // Success.
-      }
-      else
-      {
-        TRACE("Key_Message(): Unable to enqueue key event.");
-      }
-    }
-
-    if (key < sizeof(keyboard::ms_au8KeyStatus))
-    {
-      if(*pu8KeyStatus & 1) // If key is even . . .
-        *pu8KeyStatus += 2; // Go to next odd state.
-      else
-        ++(*pu8KeyStatus); // Go to next odd state.
-    }
-  }
-  else if(key < sizeof(keyboard::ms_au8KeyStatus) && *pu8KeyStatus & 1) // If key is odd . . .
-    ++(*pu8KeyStatus);
-
-  if (key < sizeof(keyboard::keystates))
-    keyboard::keystates[key] = pushed;
-#endif
-}
-
 extern void rspClearKeyEvents(void)
 {
-//  while(keyboard::haveKey())
-//    keyboard::readKey();
+  while(!keyboard::keyEvents.empty())
+    keyboard::keyEvents.pop();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -363,7 +286,7 @@ extern int16_t rspIsKey(void)        // Returns TRUE if a key is available; FALS
 extern void Key_Init(void)
 {
   std::memset(keyboard::keystates, keyboard::released, sizeof(keyboard::keystates));
-  keyboard::write(keyboard::scancodeset, keyboard::set2);
+  keyboard::write(keyboard::scancodeset, keyboard::set1);
   dos::registerintr(keyboard::interrupt, keyboard::interruptCallback);
   rspClearKeyEvents();
 }

@@ -424,7 +424,7 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
 //////////////////////////////////////////////////////////////////////////////
 extern void rspKillVideoMode(void)
 {
-  // no-op
+  display::set_mode(display::initial_mode); // restore initial text mode
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -470,7 +470,6 @@ extern void rspPresentFrame(void)
 
 extern void rspUpdateDisplay(void)
 {
-  //TRACE("rspUpdateDisplay\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

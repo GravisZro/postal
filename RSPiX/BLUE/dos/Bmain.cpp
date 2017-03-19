@@ -31,6 +31,7 @@
 
 bool RspBlueReady = false;
 bool mouse_grabbed = false;
+static int16_t quit_status = FALSE;
 
 //////////////////////////////////////////////////////////////////////////////
 // 
@@ -76,52 +77,9 @@ void rspKillBlue(void)
 // Returns nothing.
 // 
 //////////////////////////////////////////////////////////////////////////////
-
-extern void rspSetQuitStatus(int16_t sQuitStatus);
-
-extern void pollKeyboard(void);
-
 extern void rspDoSystem(void)           // Returns nothing.
 {
   rspPresentFrame();
-
-  pollKeyboard();
-/*
-  SDL_Event event;
-  while (SDL_PollEvent(&event))
-  {
-    switch (event.type)
-    {
-#if 0
-      //defined(ALLOW_JOYSTICK)
-      case SDL_JOYAXISMOTION:   // Joystick axis motion
-      case SDL_JOYHATMOTION:    // Joystick hat position change
-      case SDL_JOYBUTTONDOWN:   // Joystick button pressed
-      case SDL_JOYBUTTONUP:     // Joystick button released
-        Joy_Event(&event);
-        break;
-#endif
-
-//    case SDL_MOUSEMOTION:
-//    case SDL_JOYBALLMOTION:
-      case SDL_MOUSEBUTTONDOWN:
-      case SDL_MOUSEBUTTONUP:
-        Mouse_Event(&event);
-        break;
-
-      case SDL_KEYDOWN:
-      case SDL_KEYUP:
-        Key_Event(&event);
-        break;
-
-//    case SDL_ACTIVEEVENT:
-//      if (event.active.state & SDL_APPINPUTFOCUS)
-//        GSDLAppIsActive = (event.active.gain != 0);
-//      break;
-
-    }
-  }
-*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -143,7 +101,7 @@ extern void rspSetDoSystemMode(         // Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 extern int16_t rspGetQuitStatus(void)   // Returns TRUE if quit detected, FALSE otherwise
 {
-  return 0;
+  return quit_status;
 }
 
 
@@ -158,6 +116,7 @@ extern int16_t rspGetQuitStatus(void)   // Returns TRUE if quit detected, FALSE 
 extern void rspSetQuitStatus(
     int16_t sStatus)                    // In:  New status
 {
+  quit_status = sStatus;
 }
 
 extern int _argc;
@@ -179,7 +138,7 @@ extern int rspCommandLine(const char *cmd)
 
 extern void rspPlatformInit(void)
 {
-  TRACE("rspPlatformInit\n");
+  TRACE("== Postal for DOS ==\n");
 }
 
 
