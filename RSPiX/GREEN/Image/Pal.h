@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	PAL.H
-//   
-// 
+//
+//
 // 10/30/96	JMI	Broke CPal and some of its associates out of image.h and
 //						imagetyp.h.
 //
@@ -72,193 +72,193 @@ class RFile;
 //////////////////////////////////////////////////////////////////////
 class RPal
 {
-	public:	// Typedefs and Enums.
-		// These palette types are set to correspond to the appropriate image type
-		// in CImage::ImageType.  For example, PDIB is the same number as BMP8 
-		// which is the image that uses PDIB.  If you are adding your own palette 
-		// type, put it at the end of the list.  If you are creating a new image 
-		// type to go with the new palette type, insert it in the appropriate 
-		// place in the eImageTypes list in CImage::ImageType (Image.h).
-		// Also remember to add the name of your type to the ms_astrTypeNames
-		// array in pal.cpp and the size of palette entries of your type to the
-		// aPalEntrySizes array in pal.cpp.
-		typedef enum ePaletteTypes
-		{
-			NO_PALETTE,
-			PDIB,					// BMP8			DIB format(RGBQUAD = BGR 888 + Reserved)
-			PSYS,					// SYSTEM8		System Palette - platform dependant
-			P555,					// SCREEE8_555	RGB 555 palette format
-			P565,					// SCREEN8_565	RGB 565 palette format
-			P888,					// SCREEN8_888 BGR 888 palette format - MJR 10/15/96 - "BGR" is correct order!
-			PFLX,					// FLX8_888 RGB (in that order) 888 palette 
-									// format.  03/06/96	JMI
-			END_REG_PAL			// End of registered palette types
-		} Type;
+   public:	// Typedefs and Enums.
+      // These palette types are set to correspond to the appropriate image type
+      // in CImage::ImageType.  For example, PDIB is the same number as BMP8
+      // which is the image that uses PDIB.  If you are adding your own palette
+      // type, put it at the end of the list.  If you are creating a new image
+      // type to go with the new palette type, insert it in the appropriate
+      // place in the eImageTypes list in CImage::ImageType (Image.h).
+      // Also remember to add the name of your type to the ms_astrTypeNames
+      // array in pal.cpp and the size of palette entries of your type to the
+      // aPalEntrySizes array in pal.cpp.
+      typedef enum ePaletteTypes
+      {
+         NO_PALETTE,
+         PDIB,					// BMP8			DIB format(RGBQUAD = BGR 888 + Reserved)
+         PSYS,					// SYSTEM8		System Palette - platform dependant
+         P555,					// SCREEE8_555	RGB 555 palette format
+         P565,					// SCREEN8_565	RGB 565 palette format
+         P888,					// SCREEN8_888 BGR 888 palette format - MJR 10/15/96 - "BGR" is correct order!
+         PFLX,					// FLX8_888 RGB (in that order) 888 palette
+                           // format.  03/06/96	JMI
+         END_REG_PAL			// End of registered palette types
+      } Type;
 
 
-	public:	// Member vars.
-		Type		m_type;				// Palette type
-		uint32_t		m_ulSize;			// Size of data
-      palindex_t		m_sStartIndex;		// Starting index
-      palindex_t		m_sNumEntries;		// Number of entries
-      uint8_t		m_sPalEntrySize;	// Number of bytes in each palette entry
-		uint8_t*	m_pData;			   // Pointer to data
+   public:	// Member vars.
+      Type		m_type;				// Palette type
+      uint32_t		m_ulSize;			// Size of data
+      uint16_t		m_sStartIndex;		// Starting index
+      uint16_t		m_sNumEntries;		// Number of entries
+      uint16_t		m_sPalEntrySize;	// Number of bytes in each palette entry
+      uint8_t*	m_pData;			   // Pointer to data
 
-		// This array of type names should correspond to the above list of
-		// enumerated types.  Whenever you add an image type and an enum, 
-		// you need to also insert that name into the corresponding place
-		//	in this array in pal.cpp.  
-		// Note that this uses END_REG_PAL enum item to size the array.
+      // This array of type names should correspond to the above list of
+      // enumerated types.  Whenever you add an image type and an enum,
+      // you need to also insert that name into the corresponding place
+      //	in this array in pal.cpp.
+      // Note that this uses END_REG_PAL enum item to size the array.
       static const char* ms_astrTypeNames[END_REG_PAL];
 
-		// This array gives the size in bytes of each palette entry
-		// based on the palette type.  This is used by RPal::GetPalEntrySize
-		// to return the size of any registered palette type.
-		// Note that this uses END_REG_PAL enum item to size the array.
-		static int16_t ms_asPalEntrySizes[END_REG_PAL];
+      // This array gives the size in bytes of each palette entry
+      // based on the palette type.  This is used by RPal::GetPalEntrySize
+      // to return the size of any registered palette type.
+      // Note that this uses END_REG_PAL enum item to size the array.
+      static uint16_t ms_asPalEntrySizes[END_REG_PAL];
 
-	private:
-		int16_t	m_sCanDestroyData;// Flags whether DestroyData can destroy
-										// the data.
+   private:
+      int16_t	m_sCanDestroyData;// Flags whether DestroyData can destroy
+                              // the data.
 
-	public:
-		RPal();
-		~RPal();
+   public:
+      RPal();
+      ~RPal();
 
-		// Create default palette of the specified type.
-		int16_t CreatePalette(
-			Type ulNewType);
+      // Create default palette of the specified type.
+      int16_t CreatePalette(
+         Type ulNewType);
 
-		// Static member function that will tell you the number of 
-		// bytes per palette entry for any registered palette type
-		static int16_t GetPalEntrySize(Type type);
+      // Static member function that will tell you the number of
+      // bytes per palette entry for any registered palette type
+      static uint16_t GetPalEntrySize(Type type);
 
-		// Will tell you the number of bytes per palette entry for the
-		// this instance of the palette
-      int16_t GetPalEntrySize()	{return m_sPalEntrySize;}
+      // Will tell you the number of bytes per palette entry for the
+      // this instance of the palette
+      uint16_t GetPalEntrySize()	{return m_sPalEntrySize;}
 
-		// Create PAL's data using the specified values.
-		int16_t CreateData(	// Returns 0 if successful
+      // Create PAL's data using the specified values.
+      int16_t CreateData(	// Returns 0 if successful
          size_t	ulSize);	// Size of data
 
-		int16_t CreateData(
-			uint32_t ulSize, 			// Size of data
-			Type	type, 		// Palette type
-         uint8_t sPalEntrySize, // Size in bytes of each Pal entry
-			palindex_t sStartIndex,	// Starting index of colors
+      int16_t CreateData(
+         uint32_t ulSize, 			// Size of data
+         Type	type, 		// Palette type
+         uint16_t sPalEntrySize, // Size in bytes of each Pal entry
+         palindex_t sStartIndex,	// Starting index of colors
          palindex_t sNumEntries);	// Number of significant palette entries
 
-		// Destroy PAL's data
-		int16_t DestroyData();
+      // Destroy PAL's data
+      int16_t DestroyData();
 
-		// Allow the user to set the data pointer.
-		int16_t SetData(void* pData);
+      // Allow the user to set the data pointer.
+      int16_t SetData(void* pData);
 
-		// Save the palette to the given file
-		int16_t Save(char* pszFilename);
+      // Save the palette to the given file
+      int16_t Save(char* pszFilename);
 
-		// Save the palette to the open RFile
-		int16_t Save(RFile* pcf);
+      // Save the palette to the open RFile
+      int16_t Save(RFile* pcf);
 
-		// Load palette data from the given file
-		int16_t Load(char* pszFilename);
+      // Load palette data from the given file
+      int16_t Load(char* pszFilename);
 
-		// Load palette data from the open RFile
-		int16_t Load(RFile* pcf);
+      // Load palette data from the open RFile
+      int16_t Load(RFile* pcf);
 
-		// Convert the palette to the new palette type
-		Type Convert(Type typeNew);
+      // Convert the palette to the new palette type
+      Type Convert(Type typeNew);
 
-		// Detach the data from the Palette.  This function returns a pointer
-		// to the memory buffer which can and should be freed by whoever
-		// detached it.  This function is usefull when doing conversions between
-		// palette types.  You can detach the buffer from the palette, have the
-		// palette create a new buffer (for the converted data) and then free
-		// the detached buffer when you're done with the conversion.
-		uint8_t* DetachData();
+      // Detach the data from the Palette.  This function returns a pointer
+      // to the memory buffer which can and should be freed by whoever
+      // detached it.  This function is usefull when doing conversions between
+      // palette types.  You can detach the buffer from the palette, have the
+      // palette create a new buffer (for the converted data) and then free
+      // the detached buffer when you're done with the conversion.
+      uint8_t* DetachData();
 
-		// Gets a pointer to the red, green or blue component of the specified
-		// palette entry.  This presents a method of accessing this data in a
-		// generic manner, without needing to know the palette type.  That said,
-		// it's unfortunate that this only works with palettes that are based
-		// around the concept of one byte per component.  In an attempt to make
-		// these functions more usable, no result code is returned.  Instead,
-		// the returned pointers will be 0 if the current palette type is not
-		// supported, and a TRACE message will be generated.  It's far from
-		// perfect, but it's better than having everyone implimenting some
-		// version of these functions when they need to access the palette, in
-		// which case they are already making assumptions about its format.
-		uint8_t* Red(
-			int16_t sStart = 0)							// In:  Starting palette entry
-			{
-			// Calculate pointer to specified entry
-			uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
+      // Gets a pointer to the red, green or blue component of the specified
+      // palette entry.  This presents a method of accessing this data in a
+      // generic manner, without needing to know the palette type.  That said,
+      // it's unfortunate that this only works with palettes that are based
+      // around the concept of one byte per component.  In an attempt to make
+      // these functions more usable, no result code is returned.  Instead,
+      // the returned pointers will be 0 if the current palette type is not
+      // supported, and a TRACE message will be generated.  It's far from
+      // perfect, but it's better than having everyone implimenting some
+      // version of these functions when they need to access the palette, in
+      // which case they are already making assumptions about its format.
+      uint8_t* Red(
+         palindex_t sStart = 0)							// In:  Starting palette entry
+         {
+         // Calculate pointer to specified entry
+         uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
          // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
-			if (m_type == PDIB)	// BGR888+reserved
-				return pucDst+2;
-			else if (m_type == P888) // BGR888
-				return pucDst+2;
-			else if (m_type == PFLX) // RGB888
-				return pucDst+0;
-			TRACE("RPal::Red(): Unsupported palette format - returning nullptr!\n");
+         if (m_type == PDIB)	// BGR888+reserved
+            return pucDst+2;
+         else if (m_type == P888) // BGR888
+            return pucDst+2;
+         else if (m_type == PFLX) // RGB888
+            return pucDst+0;
+         TRACE("RPal::Red(): Unsupported palette format - returning nullptr!\n");
          return nullptr;
-			}
+         }
 
       channel_t* Green(
-			int16_t sStart = 0)							// In:  Starting palette entry
-			{
-			// Calculate pointer to specified entry
+         palindex_t sStart = 0)							// In:  Starting palette entry
+         {
+         // Calculate pointer to specified entry
          channel_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
          // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
-			if (m_type == PDIB)	// BGR888+reserved
-				return pucDst+1;
-			else if (m_type == P888) // BGR888
-				return pucDst+1;
-			else if (m_type == PFLX) // RGB888
-				return pucDst+1;
-			TRACE("RPal::Green(): Unsupported palette format - returning nullptr!\n");
+         if (m_type == PDIB)	// BGR888+reserved
+            return pucDst+1;
+         else if (m_type == P888) // BGR888
+            return pucDst+1;
+         else if (m_type == PFLX) // RGB888
+            return pucDst+1;
+         TRACE("RPal::Green(): Unsupported palette format - returning nullptr!\n");
          return nullptr;
-			}
+         }
 
       channel_t* Blue(
-			int16_t sStart = 0)							// In:  Starting palette entry
-			{
-			// Calculate pointer to specified entry
+         palindex_t sStart = 0)							// In:  Starting palette entry
+         {
+         // Calculate pointer to specified entry
          channel_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
          // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
-			if (m_type == PDIB)	// BGR888+reserved
-				return pucDst+0;
-			else if (m_type == P888) // BGR888
-				return pucDst+0;
-			else if (m_type == PFLX) // RGB888
-				return pucDst+2;
-			TRACE("RPal::Blue(): Unsupported palette format - returning nullptr!\n");
+         if (m_type == PDIB)	// BGR888+reserved
+            return pucDst+0;
+         else if (m_type == P888) // BGR888
+            return pucDst+0;
+         else if (m_type == PFLX) // RGB888
+            return pucDst+2;
+         TRACE("RPal::Blue(): Unsupported palette format - returning nullptr!\n");
          return nullptr;
-			}
+         }
 
-		// Get RGB entries from palette
-		int16_t GetEntries(
+      // Get RGB entries from palette
+      int16_t GetEntries(
          palindex_t sStart,								// In:  Starting palette entry
-			palindex_t sCount,								// In:  Number of entries to do
+         palindex_t sCount,								// In:  Number of entries to do
          channel_t* pDstRed,					// Out: Starting destination red value
          channel_t* pDstGreen,				// Out: Starting destination green value
          channel_t* pDstBlue,				// Out: Starting destination blue value
-         uint32_t lAddToPointers);					// In:  What to add to pointers to move to next value
+         uint16_t lAddToPointers);					// In:  What to add to pointers to move to next value
 
-		int16_t SetEntries(
+      int16_t SetEntries(
          palindex_t sStart,								// In:  Starting palette entry
-			palindex_t sCount,								// In:  Number of entries to do
+         palindex_t sCount,								// In:  Number of entries to do
          channel_t* pSrcRed,					// In:  Starting source red value
          channel_t* pSrcGreen,				// In:  Starting source green value
          channel_t* pSrcBlue,				// In:  Starting source blue value
-         uint32_t lAddToPointers);					// In:  What to add to pointers to move to next value
+         uint16_t lAddToPointers);					// In:  What to add to pointers to move to next value
 
-		// Copy operator overload.
-		// Note that this function could fail.
-		RPal& operator=(RPal &palSrc);
+      // Copy operator overload.
+      // Note that this function could fail.
+      RPal& operator=(RPal &palSrc);
 
 };
 
