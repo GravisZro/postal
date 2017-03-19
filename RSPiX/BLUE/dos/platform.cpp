@@ -111,28 +111,28 @@ namespace dos
   regs_t regs;
   void (*error_func)(const char* msg, ...);
 
-  int inportb(int port) noexcept { return ::inportb(port); }
-  int inportw(int port) noexcept { return ::inportw(port); }
-  void outportb(int port, uint32_t val) noexcept { ::outportb(port, val); }
-  void outportw(int port, uint32_t val) noexcept { ::outportw(port, val); }
+  uint8_t  inportb(uint16_t port) noexcept { return ::inportb(port); }
+  uint16_t inportw(uint16_t port) noexcept { return ::inportw(port); }
+  void outportb(uint16_t port, uint8_t  val) noexcept { ::outportb(port, val); }
+  void outportw(uint16_t port, uint16_t val) noexcept { ::outportw(port, val); }
   void irqenable (void) noexcept { ::enable (); }
   void irqdisable(void) noexcept { ::disable(); }
 
-  int int86(int vec) noexcept
+  bool int86(uint8_t vec) noexcept
   {
-    int rc;
+    uint32_t rc;
     regs.r16.ss = regs.r16.sp = 0;
     rc = _go32_dpmi_simulate_int(vec, (_go32_dpmi_registers *) &regs);
-    return rc || (regs.r16.flags & 0x0001);
+    return !rc && !(regs.r16.flags & 0x0001);
   }
 
-  int int386(int vec, regs_t* inregs, regs_t* outregs) noexcept
+  bool int386(uint8_t vec, regs_t* inregs, regs_t* outregs) noexcept
   {
-    int rc;
+    uint32_t rc;
     std::memcpy(outregs, inregs, sizeof(regs_t));
     outregs->r16.ss = outregs->r16.sp = 0;
     rc = _go32_dpmi_simulate_int(vec, reinterpret_cast<_go32_dpmi_registers*>(outregs));
-    return rc || (outregs->r16.flags & 0x0001);
+    return !rc && !(outregs->r16.flags & 0x0001);
   }
 
   static struct handlerhistory_s
@@ -181,7 +181,7 @@ namespace dos
 
   void usleep(milliseconds_t usecs) noexcept { ::usleep(usecs); }
 
-  int getheapsize(void) noexcept { return _go32_dpmi_remaining_physical_memory(); }
+  std::size_t getheapsize(void) noexcept { return _go32_dpmi_remaining_physical_memory(); }
 
   uint16_t lockmem(void* addr, std::size_t size) noexcept
   {

@@ -24,6 +24,8 @@ INCLUDEPATH += WishPiX
 
 DISTFILES += \
     makeit.sh \
+    build.sh \
+    Makefile.gravis \
     postal1.sh \
     BLiT.vcproj \
     BLiT3D.vcproj \
@@ -69,6 +71,8 @@ HEADERS += \
     RSPiX/BLUE/Blue.h \
     RSPiX/BLUE/BlueKeys.h \
     RSPiX/BLUE/System.h \
+    RSPiX/BLUE/portable_endian.h \
+    RSPiX/BLUE/stdint_msvc.h \
     RSPiX/CYAN/Cyan.h \
     RSPiX/GREEN/3D/pipeline.h \
     RSPiX/GREEN/3D/render.h \
@@ -263,9 +267,9 @@ HEADERS += \
     warp.h \
     weapon.h \
     yatime.h \
-    RSPiX/BLUE/portable_endian.h \
-    RSPiX/BLUE/stdint_msvc.h \
-    RSPiX/BLUE/dos/platform.h
+    RSPiX/BLUE/dos/ps2.h \
+    RSPiX/BLUE/dos/keyboard.h \
+    RSPiX/BLUE/dos/mouse.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
@@ -430,6 +434,12 @@ SOURCES += \
     warp.cpp \
     weapon.cpp \
     yatime.cpp
+# \
+#    RSPiX/BLUE/dos/video/vid_dos.c \
+#    RSPiX/BLUE/dos/video/vid_ext.c \
+#    RSPiX/BLUE/dos/video/vregset.c \
+#    RSPiX/BLUE/dos/video/vid_vga.c \
+#    RSPiX/BLUE/dos/system/sys_dos.c
 
 CONFIG += dos
 
@@ -480,7 +490,19 @@ SOURCES += \
 }
 
 dos {
+
 DEFINES += __DJGPP__
+
+HEADERS += \
+    RSPiX/BLUE/dos/platform.h \
+    RSPiX/BLUE/dos/video.h \
+    RSPiX/BLUE/dos/video/vgamodes.h \
+    RSPiX/BLUE/dos/video/vid_dos.h \
+    RSPiX/BLUE/dos/video/vregset.h \
+    RSPiX/BLUE/dos/video/vid.h \
+    RSPiX/BLUE/dos/system/sys.h \
+    RSPiX/BLUE/dos/system/sys_dosa.s \
+    RSPiX/BLUE/dos/system/dosasm.s
 SOURCES += \
     RSPiX/CYAN/dos/uColors.cpp \
     RSPiX/CYAN/dos/uDialog.cpp \
@@ -492,7 +514,8 @@ SOURCES += \
     RSPiX/BLUE/dos/Bmain.cpp \
     RSPiX/BLUE/dos/Bmouse.cpp \
     RSPiX/BLUE/dos/Bsound.cpp \
-    RSPiX/BLUE/dos/Btime.cpp
+    RSPiX/BLUE/dos/Btime.cpp \
+    RSPiX/BLUE/dos/platform.cpp
 }
 
 dreamcast {

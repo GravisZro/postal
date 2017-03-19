@@ -24,7 +24,7 @@
 
 // Platform //////////////////////////////////////////////////////////////////
 #include "platform.h"
-#include "vesa.h"
+#include "video.h"
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
@@ -73,18 +73,21 @@ namespace display
 
   uint16_t set_mode(uint16_t mode)
   {
-    current_mode_info = mode_info[mode];
-    regs16.ax = video::set_graphics_mode;
+    regs8.ah  = video::vesa_function;
+    regs8.al  = video::set_graphics_mode;
     regs16.bx = mode;
     dos::int86(video::interrupt);
     if (has_error())
       return FAILURE;
+
+    current_mode_info = mode_info[mode];
     return SUCCESS;
   }
 
   uint16_t get_mode(void)
   {
-    regs16.ax = video::get_graphics_mode;
+    regs8.ah  = video::vesa_function;
+    regs8.al  = video::get_graphics_mode;
     dos::int86(video::interrupt);
     if (has_error())
       return FAILURE;
@@ -93,10 +96,11 @@ namespace display
 
   void set_bank(uint16_t bank_number)
   {
-     regs16.ax = video::window_control;
-     regs16.bx = video::set_bank | video::windowA;
-     regs16.dx = bank_number;
-     dos::int86(video::interrupt);
+    regs8.ah  = video::vesa_function;
+    regs8.al  = video::window_control;
+    regs16.bx = video::set_bank | video::windowA;
+    regs16.dx = bank_number;
+    dos::int86(video::interrupt);
   }
 /*
   uint16_t get_bank(void)
@@ -112,11 +116,11 @@ namespace display
   uint16_t probe(void)
   {
     dos::farpointer_t addr; // DOS address
-    std::memcpy(vesa_info->VESASignature, "VBE2", 4);
 
     // call the VESA function
     addr = vesa_info;
-    regs16.ax = video::graphics_card_info;
+    regs8.ah  = video::vesa_function;
+    regs8.al  = video::graphics_card_info;
     regs16.es = addr.es;
     regs16.di = addr.di;
     dos::int86(video::interrupt);
@@ -127,26 +131,43 @@ namespace display
     if (std::memcmp(vesa_info->VESASignature, "VESA", 4) != 0) // test for the magic number VESA
       return FAILURE;
 
-/*
-    TRACE("8 bit colors...\n");
-    regs16.ax = video::palette_control;
-    regs8.bl  = video::get;
-    regs8.bh  = 0;//current_mode_info->BitsPerPixel;
-    dos::int86(video::interrupt);
-    TRACE("retrieval result:\nAH: %02x\nAL: %02x\nBH: %02x\n", regs8.ah, regs8.al, regs8.bh);
-    if (!has_error())
+    TRACE("VESA version: %04x\n", vesa_info->VESAVersion);
+
+    if(vesa_info->VESAVersion >= 0x0200) // if VBE 2.0 or higher
     {
-      TRACE("Palette DAC depth: %i\n", regs8.bh);
+      vesa_info->initV2();
+
+      // call the VESA function
+      regs8.ah  = video::vesa_function;
+      regs8.al  = video::graphics_card_info;
+      regs16.es = addr.es;
+      regs16.di = addr.di;
+      dos::int86(video::interrupt);
+
+      if (has_error()) // abort upon error
+        return FAILURE;
+
+      if (std::memcmp(vesa_info->VESASignature, "VESA", 4) != 0) // test for the magic number VESA
+        return FAILURE;
     }
-    else
-      return FAILURE;
-*/
+
+    if(vesa_info->Capabilities.adjustible_palette) // adjust to 8-bit if possible!
+    {
+      regs8.ah  = video::vesa_function;
+      regs8.al  = video::palette_control;
+      regs8.bl  = video::set;
+      regs8.bh  = 8;
+      dos::int86(video::interrupt);
+      if (has_error())
+        return FAILURE; // this is a worst case senario
+    }
 
     for(uint16_t* pos = vesa_info->VideoModePtr; *pos != UINT16_MAX; ++pos)
     {
       // call the VESA function
       addr = current_mode_info = mode_info[*pos];
-      regs16.ax = video::graphics_mode_info;
+      regs8.ah  = video::vesa_function;
+      regs8.al  = video::graphics_mode_info;
       regs16.es = addr.es;
       regs16.di = addr.di;
       regs16.cx = *pos;
@@ -199,11 +220,17 @@ namespace display
   void load_pallette(color32_t* base, uint16_t count)
   {
     color32_t* color = base;
-    if(vesa_info->Capabilities.adjustible_palette)
+    if(vesa_info->Capabilities.adjustible_palette) // if possible, it will be 8-bit
     {
-
+      for(uint16_t i = 0; i < count; ++i, ++color)
+      {
+        dos::outportb(video::palette_index, i);
+        dos::outportb(video::palette_data, color->red  );
+        dos::outportb(video::palette_data, color->green);
+        dos::outportb(video::palette_data, color->blue );
+      }
     }
-    else // 6-bits per channel palette
+    else // 6-bits per channel palette (reduce colors to fit)
     {
       for(uint16_t i = 0; i < count; ++i, ++color)
       {

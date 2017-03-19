@@ -144,22 +144,22 @@ namespace dos
 
   extern regs_t regs;
 
-  int inportb(int port) noexcept;
-  int inportw(int port) noexcept;
-  void outportb(int port, uint32_t val) noexcept;
-  void outportw(int port, uint32_t val) noexcept;
+  uint8_t  inportb(uint16_t port) noexcept;
+  uint16_t inportw(uint16_t port) noexcept;
+  void outportb(uint16_t port, uint8_t  val) noexcept;
+  void outportw(uint16_t port, uint16_t val) noexcept;
 
   void irqenable(void) noexcept;
   void irqdisable(void) noexcept;
   void registerintr(uint8_t intr, void (*handler)(void)) noexcept;
   void restoreintr(uint8_t intr) noexcept;
 
-  int int86(int vec) noexcept; // Returns 0 on success
-  int int386(int vec, regs_t* inregs, regs_t* outregs) noexcept;
+  bool int86(uint8_t vec) noexcept; // Returns true on success
+  bool int386(uint8_t vec, regs_t* inregs, regs_t* outregs) noexcept;
 
   void usleep(milliseconds_t usecs) noexcept;
 
-  int getheapsize(void) noexcept;
+  std::size_t getheapsize(void) noexcept;
 
 #if 0
   template<typename T>

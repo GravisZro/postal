@@ -23,202 +23,201 @@
 
 // RSPix /////////////////////////////////////////////////////////////////////
 #include <BLUE/Blue.h>
-#include <ORANGE/CDT/Queue.h>
+#include <BLUE/BlueKeys.h>
 
 // Platform //////////////////////////////////////////////////////////////////
 #include "platform.h"
+#include "keyboard.h"
 
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <map>
+#include <queue>
 
-
-#define MAX_EVENTS    256
 // Only set value if not nullptr.
 #define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 #define INC_N_WRAP(i, max)    (i = (i + 1) % max)
 
-struct RSP_SK_EVENT
-{
-  uint32_t lKey;
-  milliseconds_t lTime;
-};
-
 namespace keyboard
 {
-  union keycode
+  namespace scancodes
   {
-    struct
+    static const uint8_t set2[0x80] =
     {
-      uint16_t key;
-      uint16_t modifiers;
-    };
-    uint32_t data;
+      0,
 
-    keycode(uint32_t d) : data(d) { }
+      RSP_SK_ESCAPE,
+      RSP_SK_1,
+      RSP_SK_2,
+      RSP_SK_3,
+      RSP_SK_4,
+      RSP_SK_5,
+      RSP_SK_6,
+      RSP_SK_7,
+      RSP_SK_8,
+      RSP_SK_9,
+      RSP_SK_0,
+      RSP_SK_MINUS,
+      RSP_SK_EQUALS,
+      RSP_SK_BACKSPACE,
+
+      RSP_SK_TAB,
+      RSP_SK_Q,
+      RSP_SK_W,
+      RSP_SK_E,
+      RSP_SK_R,
+      RSP_SK_T,
+      RSP_SK_Y,
+      RSP_SK_U,
+      RSP_SK_I,
+      RSP_SK_O,
+      RSP_SK_P,
+      RSP_SK_LBRACKET,
+      RSP_SK_RBRACKET,
+      RSP_SK_ENTER,
+
+      RSP_SK_LCONTROL,
+      RSP_SK_A,
+      RSP_SK_S,
+      RSP_SK_D,
+      RSP_SK_F,
+      RSP_SK_G,
+      RSP_SK_H,
+      RSP_SK_J,
+      RSP_SK_K,
+      RSP_SK_L,
+      RSP_SK_SEMICOLON,
+      RSP_SK_RQUOTE,
+      RSP_SK_LQUOTE,
+
+      RSP_SK_LSHIFT,
+      RSP_SK_Z,
+      RSP_SK_X,
+      RSP_SK_C,
+      RSP_SK_V,
+      RSP_SK_B,
+      RSP_SK_N,
+      RSP_SK_M,
+      RSP_SK_CONTROL,
+      RSP_SK_PERIOD,
+      RSP_SK_SLASH,
+      RSP_SK_RSHIFT,
+
+      RSP_SK_NUMPAD_ASTERISK,
+
+      RSP_SK_LALT,
+      RSP_SK_SPACE,
+      RSP_SK_CAPSLOCK,
+      RSP_SK_F1,
+      RSP_SK_F2,
+      RSP_SK_F3,
+      RSP_SK_F4,
+      RSP_SK_F5,
+      RSP_SK_F6,
+      RSP_SK_F7,
+      RSP_SK_F8,
+      RSP_SK_F9,
+      RSP_SK_F10,
+
+      RSP_SK_NUMLOCK,
+      RSP_SK_SCROLL,
+
+      RSP_SK_NUMPAD_7,
+      RSP_SK_NUMPAD_8,
+      RSP_SK_NUMPAD_9,
+      RSP_SK_NUMPAD_MINUS,
+
+      RSP_SK_NUMPAD_4,
+      RSP_SK_NUMPAD_5,
+      RSP_SK_NUMPAD_6,
+      RSP_SK_NUMPAD_PLUS,
+
+      RSP_SK_NUMPAD_1,
+      RSP_SK_NUMPAD_2,
+      RSP_SK_NUMPAD_3,
+      RSP_SK_NUMPAD_0,
+      RSP_SK_NUMPAD_DECIMAL,
+
+      0,0,0,
+
+      RSP_SK_F11,
+      RSP_SK_F12,
+
+      0,0,0,0
+    };
+  }
+
+  enum keystate : uint8_t
+  {
+    released = 0,
+    pressed  = 1,
   };
 
-  static bool keyRepeat = false;
+  static keystate keystates[256];
 
-  static std::map<keycode, uint8_t> bios_to_rws_keymap;
-  static std::map<keycode, uint16_t> bios_to_rws_gkeymap;
-  static uint8_t keystates[128];
-  static uint8_t ms_au8KeyStatus[128];
-
-  // Non-dynamic memory for RSP_SK_EVENTs in queue.
-  static RSP_SK_EVENT	ms_akeEvents[MAX_EVENTS];
+  struct key_event_t
+  {
+    milliseconds_t lTime;
+    uint32_t lKey;
+    key_event_t(void) : lTime(0), lKey(0) { }
+    key_event_t(milliseconds_t t, uint32_t k)
+      : lTime(t), lKey(k) { }
+  };
 
   // Queue of keyboard events.
-  static RQueue<RSP_SK_EVENT, MAX_EVENTS>	ms_qkeEvents;
-}
+  static std::queue<key_event_t> keyEvents;
 
 
+  //  Hardware level keyboard interrupt (int 9) handler.
+  static void interruptCallback(void)
+  {
+    static uint16_t data;
+    data |= dos::inportb(port); // read next key
 
-
-#if 0
-static uint8_t extended_key = FALSE;
-
-
-// Wait for the keyboard controller to set the ready-for-write bit.
-static inline int kb_wait_for_write_ready(void)
-{
-   int timeout = 0x1000;
-   while ((timeout > 0) && (dos::inportb(0x64) & 2))
-      timeout--;
-   return (timeout > 0);
-}
-
-// Wait for the keyboard controller to set the ready-for-read bit.
-static inline int kb_wait_for_read_ready(void)
-{
-   int timeout = 0x4000;
-   while ((timeout > 0) && (!(dos::inportb(0x64) & 1)))
-      timeout--;
-   return (timeout > 0);
-}
-
-
-// Sends a byte to the keyboard controller. Returns 1 if all OK.
-static inline int kb_send_data(unsigned char data)
-{
-   int resends = 4;
-   int timeout, temp;
-
-   do {
-      if (!kb_wait_for_write_ready())
-         return 0;
-
-      dos::outportb(0x60, data);
-      timeout = 4096;
-
-      while (--timeout > 0) {
-         if (!kb_wait_for_read_ready())
-            return 0;
-
-         temp = dos::inportb(0x60);
-
-         if (temp == 0xFA)
-            return 1;
-
-         if (temp == 0xFE)
-            break;
+    if(data == 0x00E0)
+      data = 0x0100;
+    else
+    {
+      if(data < 0x0080)
+      {
+        if(keystates[scancodes::set2[data]] != pressed)
+        {
+          keystates[scancodes::set2[data]] = pressed;
+          keyEvents.emplace(rspGetMilliseconds(), scancodes::set2[data]);
+        }
       }
-   } while ((resends-- > 0) && (timeout > 0));
+      else if(data < 0x0100)
+        keystates[scancodes::set2[data & 0x007F]] = released;
+      else
+      {
+        switch(data & 0x00FF)
+        {
+          case 0x1C: keyEvents.emplace(rspGetMilliseconds(), RSP_SK_NUMPAD_ENTER); break;
+          case 0x47: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_HOME); break;
+          case 0x48: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_UP); break;
+          case 0x49: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_PAGEUP); break;
+          case 0x4B: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_LEFT); break;
+          case 0x4D: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_RIGHT); break;
+          case 0x4F: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_END); break;
+          case 0x50: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_DOWN); break;
+          case 0x51: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_PAGEDOWN); break;
+          case 0x52: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_INSERT); break;
+          case 0x53: keyEvents.emplace(rspGetMilliseconds(), RSP_GK_DELETE); break;
 
-   return 0;
+        }
+      }
+      data = 0;
+    }
+
+    dos::outportb(pic::master, pic::end_of_interrupt); // clear interrupt
+  }
 }
 
 
-// Sets the key repeat rate.
-static void pcdos_set_rate(int delay, int rate)
-{
-   if (delay < 375)
-      delay = 0;
-   else if (delay < 625)
-      delay = 1;
-   else if (delay < 875)
-      delay = 2;
-   else
-      delay = 3;
-
-   rate = MID(0, (rate-33) * 31 / (500-33), 31);
-
-   DISABLE();
-
-   if ((!kb_send_data(0xF3)) || (!kb_send_data((delay << 5) | rate)))
-      kb_send_data(0xF4);
-
-   ENABLE();
-}
-
-
-
-//  Hardware level keyboard interrupt (int 9) handler.
-static void keyint(void)
-{
-  static uint8_t extended_key = 0x00;
-  uint8_t code = dos::inportb(0x60); // read next key
-  code |= extended_key;
-
-#if defined(__DJGPP__)
-   if (code == 0x2E && !extended_key && _key_shifts & KB_CTRL_FLAG) // handle Ctrl+C
-     { asm ("  movb $0x1B, %%al ; call ___djgpp_hw_exception " : : : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory"); }
-#else
-NOTE("No interrupt key sequence defined!")
-#endif
-   extended_key = code == 0xE0 ? 0x80 : 0x00;
-
-   dos::outportb(0x20, 0x20); // remove from keyboard buffer
-}
-
-
-
-//  Installs the keyboard handler.
-static int pcdos_key_init(void)
-{
-   int s1, s2, s3;
-
-   _pckeys_init();
-
-   LOCK_VARIABLE(extended_key);
-   LOCK_FUNCTION(keyint);
-
-   /* read the current BIOS keyboard state */
-   while (kbhit())
-      simulate_keypress(getch());
-
-   _farsetsel(_dos_ds);
-
-   s1 = farRead8(0x417);
-   s2 = farRead8(0x418);
-   s3 = farRead8(0x496);
-
-   _key_shifts = 0;
-
-   if (s1 & 1) { _key_shifts |= KB_SHIFT_FLAG; key[KEY_RSHIFT]   = TRUE; }
-   if (s1 & 2) { _key_shifts |= KB_SHIFT_FLAG; key[KEY_LSHIFT]   = TRUE; }
-   if (s2 & 1) { _key_shifts |= KB_CTRL_FLAG;  key[KEY_LCONTROL] = TRUE; }
-   if (s2 & 2) { _key_shifts |= KB_ALT_FLAG;   key[KEY_ALT]      = TRUE; }
-   if (s3 & 4) { _key_shifts |= KB_CTRL_FLAG;  key[KEY_RCONTROL] = TRUE; }
-   if (s3 & 8) { _key_shifts |= KB_ALT_FLAG;   key[KEY_ALTGR]    = TRUE; }
-
-   if (s1 & 16) _key_shifts |= KB_SCROLOCK_FLAG;
-   if (s1 & 32) _key_shifts |= KB_NUMLOCK_FLAG;
-   if (s1 & 64) _key_shifts |= KB_CAPSLOCK_FLAG;
-
-   key_shifts = _key_shifts;
-
-   install_irq_callback(interrupts::keyboard, keyint);
-
-   return 0;
-}
-
-#endif
 //////////////////////////////////////////////////////////////////////////////
 // Extern functions.
 //////////////////////////////////////////////////////////////////////////////
 
 extern void rspSetQuitStatus(int16_t sQuitStatus);
-
 
 extern void pollKeyboard(void)
 {
@@ -267,7 +266,7 @@ extern void pollKeyboard(void)
       return;  // don't pass this key event on to the game.
     }
 
-    if (ms_qkeEvents.IsFull() == FALSE)
+    if (keyEvents.IsFull() == FALSE)
     {
       // Create event.
       static int16_t sEventIndex = 0;
@@ -277,7 +276,7 @@ extern void pollKeyboard(void)
       pkeEvent->lKey = ((gkey) ? gkey : key);
 
       // Enqueue event . . .
-      if (ms_qkeEvents.EnQ(pkeEvent) == 0)
+      if (keyEvents.EnQ(pkeEvent) == 0)
       {
         // Success.
       }
@@ -318,7 +317,6 @@ extern void rspClearKeyEvents(void)
 extern void rspScanKeys(
     uint8_t* pucKeys)    // Array of 128 unsigned chars is returned here.
 {
-
   std::memcpy(pucKeys, keyboard::keystates, sizeof(keyboard::keystates));
 }
 
@@ -331,17 +329,15 @@ extern int16_t rspGetKey(             // Returns TRUE if a key was available; FA
     int32_t* plKey,                   // Out: Key info returned here (or 0 if no key available)
     int32_t* plTime)                  // Out: Key's timestamp (unless nullptr)
 {
-  /*
-  int16_t sReturn = keyboard::haveKey() ? TRUE : FALSE;    // Assume no key.
+  int16_t sReturn = keyboard::keyEvents.empty() ? FALSE : TRUE;    // Assume no key.
 
   if(sReturn == TRUE)
   {
-    SET(plKey, keyboard::getKey().data);
-    SET(plTime, rspGetMilliseconds());
+    SET(plKey,  keyboard::keyEvents.front().lKey );
+    SET(plTime, keyboard::keyEvents.front().lTime);
+    keyboard::keyEvents.pop();
   }
   return sReturn;
-  */
-  return FALSE;
 }
 
 #ifdef UNUSED_FUNCTIONS
@@ -352,7 +348,7 @@ extern int16_t rspGetKey(             // Returns TRUE if a key was available; FA
 //////////////////////////////////////////////////////////////////////////////
 extern int16_t rspIsKey(void)        // Returns TRUE if a key is available; FALSE if not.
 {
-  return (ms_qkeEvents.IsEmpty() == FALSE) ? TRUE : FALSE;
+  return (keyEvents.IsEmpty() == FALSE) ? TRUE : FALSE;
 }
 #endif
 
@@ -364,193 +360,11 @@ extern int16_t rspIsKey(void)        // Returns TRUE if a key is available; FALS
 // Returns nothing.
 //
 //////////////////////////////////////////////////////////////////////////////
-#define SET_sdl_to_rws_keymap2(x,y) keyboard::sdl_to_rws_keymap[SDLK_##x] = RSP_SK_##y
-#define SET_sdl_to_rws_keymap(x) SET_sdl_to_rws_keymap2(x, x)
-#define SET_sdl_to_rws_gkeymap2(x,y) keyboard::sdl_to_rws_gkeymap[SDLK_##x] = RSP_GK_##y
-#define SET_sdl_to_rws_gkeymap(x) SET_sdl_to_rws_gkeymap2(x, x)
 extern void Key_Init(void)
 {
-  memset(keyboard::ms_au8KeyStatus, '\0', sizeof (keyboard::ms_au8KeyStatus));
-
-  while(!keyboard::ms_qkeEvents.IsEmpty())  // just in case.
-    keyboard::ms_qkeEvents.DeQ();
-
-  /*
-  SET_sdl_to_rws_keymap(END);
-  SET_sdl_to_rws_keymap(HOME);
-  SET_sdl_to_rws_keymap(LEFT);
-  SET_sdl_to_rws_keymap(UP);
-  SET_sdl_to_rws_keymap(DOWN);
-  SET_sdl_to_rws_keymap(RIGHT);
-  SET_sdl_to_rws_keymap(BACKSPACE);
-  SET_sdl_to_rws_keymap(TAB);
-  SET_sdl_to_rws_keymap(INSERT);
-  SET_sdl_to_rws_keymap(DELETE);
-  SET_sdl_to_rws_keymap2(RETURN, ENTER);
-  SET_sdl_to_rws_keymap2(LSHIFT, SHIFT);
-  SET_sdl_to_rws_keymap2(RSHIFT, SHIFT);
-  SET_sdl_to_rws_keymap2(LCTRL, CONTROL);
-  SET_sdl_to_rws_keymap2(RCTRL, CONTROL);
-  SET_sdl_to_rws_keymap2(LALT, ALT);
-  SET_sdl_to_rws_keymap2(RALT, ALT);
-  SET_sdl_to_rws_keymap(PAGEUP);
-  SET_sdl_to_rws_keymap(PAGEDOWN);
-  SET_sdl_to_rws_keymap(ESCAPE);
-  SET_sdl_to_rws_keymap(PAUSE);
-  SET_sdl_to_rws_keymap(SPACE);
-#ifdef SDL2_JUNK
-  SET_sdl_to_rws_keymap(PRINTSCREEN);
-#endif
-  SET_sdl_to_rws_keymap2(QUOTE, RQUOTE);
-  SET_sdl_to_rws_keymap(COMMA);
-  SET_sdl_to_rws_keymap(MINUS);
-  SET_sdl_to_rws_keymap(PERIOD);
-  SET_sdl_to_rws_keymap(SLASH);
-  SET_sdl_to_rws_keymap(0);
-  SET_sdl_to_rws_keymap(1);
-  SET_sdl_to_rws_keymap(2);
-  SET_sdl_to_rws_keymap(3);
-  SET_sdl_to_rws_keymap(4);
-  SET_sdl_to_rws_keymap(5);
-  SET_sdl_to_rws_keymap(6);
-  SET_sdl_to_rws_keymap(7);
-  SET_sdl_to_rws_keymap(8);
-  SET_sdl_to_rws_keymap(9);
-  SET_sdl_to_rws_keymap(SEMICOLON);
-  SET_sdl_to_rws_keymap(EQUALS);
-  SET_sdl_to_rws_keymap2(a, A);
-  SET_sdl_to_rws_keymap2(b, B);
-  SET_sdl_to_rws_keymap2(c, C);
-  SET_sdl_to_rws_keymap2(d, D);
-  SET_sdl_to_rws_keymap2(e, E);
-  SET_sdl_to_rws_keymap2(f, F);
-  SET_sdl_to_rws_keymap2(g, G);
-  SET_sdl_to_rws_keymap2(h, H);
-  SET_sdl_to_rws_keymap2(i, I);
-  SET_sdl_to_rws_keymap2(j, J);
-  SET_sdl_to_rws_keymap2(k, K);
-  SET_sdl_to_rws_keymap2(l, L);
-  SET_sdl_to_rws_keymap2(m, M);
-  SET_sdl_to_rws_keymap2(n, N);
-  SET_sdl_to_rws_keymap2(o, O);
-  SET_sdl_to_rws_keymap2(p, P);
-  SET_sdl_to_rws_keymap2(q, Q);
-  SET_sdl_to_rws_keymap2(r, R);
-  SET_sdl_to_rws_keymap2(s, S);
-  SET_sdl_to_rws_keymap2(t, T);
-  SET_sdl_to_rws_keymap2(u, U);
-  SET_sdl_to_rws_keymap2(v, V);
-  SET_sdl_to_rws_keymap2(w, W);
-  SET_sdl_to_rws_keymap2(x, X);
-  SET_sdl_to_rws_keymap2(y, Y);
-  SET_sdl_to_rws_keymap2(z, Z);
-  SET_sdl_to_rws_keymap2(LEFTBRACKET, LBRACKET);
-  SET_sdl_to_rws_keymap(BACKSLASH);
-  SET_sdl_to_rws_keymap2(RIGHTBRACKET, RBRACKET);
-  SET_sdl_to_rws_keymap2(KP_EQUALS, NUMPAD_EQUAL);
-  SET_sdl_to_rws_keymap2(BACKQUOTE, LQUOTE);
-#ifdef SDL2_JUNK
-  SET_sdl_to_rws_keymap2(KP_0, NUMPAD_0);
-  SET_sdl_to_rws_keymap2(KP_1, NUMPAD_1);
-  SET_sdl_to_rws_keymap2(KP_2, NUMPAD_2);
-  SET_sdl_to_rws_keymap2(KP_3, NUMPAD_3);
-  SET_sdl_to_rws_keymap2(KP_4, NUMPAD_4);
-  SET_sdl_to_rws_keymap2(KP_5, NUMPAD_5);
-  SET_sdl_to_rws_keymap2(KP_6, NUMPAD_6);
-  SET_sdl_to_rws_keymap2(KP_7, NUMPAD_7);
-  SET_sdl_to_rws_keymap2(KP_8, NUMPAD_8);
-  SET_sdl_to_rws_keymap2(KP_9, NUMPAD_9);
-#endif
-  SET_sdl_to_rws_keymap2(KP_MULTIPLY, NUMPAD_ASTERISK);
-  SET_sdl_to_rws_keymap2(KP_PLUS, NUMPAD_PLUS);
-  SET_sdl_to_rws_keymap2(KP_MINUS, NUMPAD_MINUS);
-  SET_sdl_to_rws_keymap2(KP_PERIOD, NUMPAD_DECIMAL);
-  SET_sdl_to_rws_keymap2(KP_DIVIDE, NUMPAD_DIVIDE);
-
-  // Map the keypad enter to regular enter key; this lets us
-  //  use it in menus, and it can't be assigned to game usage anyhow.
-  //SET_sdl_to_rws_keymap2(KP_ENTER, NUMPAD_ENTER);
-  SET_sdl_to_rws_keymap2(KP_ENTER, ENTER);
-
-  SET_sdl_to_rws_keymap(F1);
-  SET_sdl_to_rws_keymap(F2);
-  SET_sdl_to_rws_keymap(F3);
-  SET_sdl_to_rws_keymap(F4);
-  SET_sdl_to_rws_keymap(F5);
-  SET_sdl_to_rws_keymap(F6);
-  SET_sdl_to_rws_keymap(F7);
-  SET_sdl_to_rws_keymap(F8);
-  SET_sdl_to_rws_keymap(F9);
-  SET_sdl_to_rws_keymap(F10);
-  SET_sdl_to_rws_keymap(F11);
-  SET_sdl_to_rws_keymap(F12);
-#ifdef SDL2_JUNK
-  SET_sdl_to_rws_keymap2(LGUI, SYSTEM);
-  SET_sdl_to_rws_keymap2(RGUI, SYSTEM);
-#endif
-
-  // These "stick" until you hit them again, so we should probably
-  //  just not pass them on to the app.  --ryan.
-  //SET_sdl_to_rws_keymap(CAPSLOCK);
-  //SET_sdl_to_rws_keymap(NUMLOCKCLEAR);
-  //SET_sdl_to_rws_keymap(SCROLL);
-
-  SET_sdl_to_rws_gkeymap(END);
-  SET_sdl_to_rws_gkeymap(HOME);
-  SET_sdl_to_rws_gkeymap(LEFT);
-  SET_sdl_to_rws_gkeymap(UP);
-  SET_sdl_to_rws_gkeymap(RIGHT);
-  SET_sdl_to_rws_gkeymap(DOWN);
-  SET_sdl_to_rws_gkeymap(INSERT);
-  SET_sdl_to_rws_gkeymap(DELETE);
-  SET_sdl_to_rws_gkeymap2(LSHIFT, SHIFT);
-  SET_sdl_to_rws_gkeymap2(RSHIFT, SHIFT);
-  SET_sdl_to_rws_gkeymap2(LCTRL, CONTROL);
-  SET_sdl_to_rws_gkeymap2(RCTRL, CONTROL);
-  SET_sdl_to_rws_gkeymap2(LALT, ALT);
-  SET_sdl_to_rws_gkeymap2(RALT, ALT);
-  SET_sdl_to_rws_gkeymap(PAGEUP);
-  SET_sdl_to_rws_gkeymap(PAGEDOWN);
-  SET_sdl_to_rws_gkeymap(PAUSE);
-#ifdef SDL2_JUNK
-  SET_sdl_to_rws_gkeymap(PRINTSCREEN);
-  SET_sdl_to_rws_gkeymap2(KP_0, NUMPAD_0);
-  SET_sdl_to_rws_gkeymap2(KP_1, NUMPAD_1);
-  SET_sdl_to_rws_gkeymap2(KP_2, NUMPAD_2);
-  SET_sdl_to_rws_gkeymap2(KP_3, NUMPAD_3);
-  SET_sdl_to_rws_gkeymap2(KP_4, NUMPAD_4);
-  SET_sdl_to_rws_gkeymap2(KP_5, NUMPAD_5);
-  SET_sdl_to_rws_gkeymap2(KP_6, NUMPAD_6);
-  SET_sdl_to_rws_gkeymap2(KP_7, NUMPAD_7);
-  SET_sdl_to_rws_gkeymap2(KP_8, NUMPAD_8);
-  SET_sdl_to_rws_gkeymap2(KP_9, NUMPAD_9);
-#endif
-  SET_sdl_to_rws_gkeymap2(KP_MULTIPLY, NUMPAD_ASTERISK);
-  SET_sdl_to_rws_gkeymap2(KP_PLUS, NUMPAD_PLUS);
-  SET_sdl_to_rws_gkeymap2(KP_MINUS, NUMPAD_MINUS);
-  SET_sdl_to_rws_gkeymap2(KP_PERIOD, NUMPAD_DECIMAL);
-  SET_sdl_to_rws_gkeymap2(KP_DIVIDE, NUMPAD_DIVIDE);
-  SET_sdl_to_rws_gkeymap(F1);
-  SET_sdl_to_rws_gkeymap(F2);
-  SET_sdl_to_rws_gkeymap(F3);
-  SET_sdl_to_rws_gkeymap(F4);
-  SET_sdl_to_rws_gkeymap(F5);
-  SET_sdl_to_rws_gkeymap(F6);
-  SET_sdl_to_rws_gkeymap(F7);
-  SET_sdl_to_rws_gkeymap(F8);
-  SET_sdl_to_rws_gkeymap(F9);
-  SET_sdl_to_rws_gkeymap(F10);
-  SET_sdl_to_rws_gkeymap(F11);
-  SET_sdl_to_rws_gkeymap(F12);
-#ifdef SDL2_JUNK
-  SET_sdl_to_rws_gkeymap2(LGUI, SYSTEM);
-  SET_sdl_to_rws_gkeymap2(RGUI, SYSTEM);
-#endif
-
-  //SET_sdl_to_rws_gkeymap(CAPSLOCK);
-  //SET_sdl_to_rws_gkeymap(NUMLOCKCLEAR);
-  //SET_sdl_to_rws_gkeymap(SCROLL);
-*/
+  std::memset(keyboard::keystates, keyboard::released, sizeof(keyboard::keystates));
+  keyboard::write(keyboard::scancodeset, keyboard::set2);
+  dos::registerintr(keyboard::interrupt, keyboard::interruptCallback);
   rspClearKeyEvents();
 }
 
@@ -571,7 +385,7 @@ extern void Key_Init(void)
 //////////////////////////////////////////////////////////////////////////////
 uint8_t* rspGetKeyStatusArray(void)    // Returns a ptr to the key status array.
 {
-  return keyboard::ms_au8KeyStatus;
+  return reinterpret_cast<uint8_t*>(keyboard::keystates);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -612,7 +426,10 @@ extern int32_t rspGetToggleKeyStates(void)    // Returns toggle key state flags.
 
 extern void rspKeyRepeat(bool bEnable)
 {
-  keyboard::keyRepeat = bEnable;
+  if(bEnable)
+    keyboard::write(keyboard::load_defaults);
+  else if(keyboard::write(keyboard::set_rate_and_delay, 0x7F)) // switch to a 1000ms delay with 2Hz repeat rate
+    keyboard::write(keyboard::enable_scanning);
 }
 
 
