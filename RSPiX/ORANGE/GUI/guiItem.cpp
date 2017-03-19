@@ -2210,7 +2210,10 @@ int16_t RGuiItem::ReadMembers(	// Returns 0 on success.
 			pfile->Read(&m_sInvertedBorder);
 			pfile->Read(&m_sTransparent);
 			pfile->Read(&m_u32TransparentColor);
-			pfile->Read(&m_lId);
+
+         uint32_t id;
+         pfile->Read(&id);
+         m_lId = id;
 			
 			// Used to load m_sCanBeFocused (TRUE, FALSE); now load
 			// m_targetFocus.
@@ -2383,12 +2386,12 @@ int16_t RGuiItem::WriteMembers(	// Returns 0 on success.
 	pfile->Write(m_u32TextColor);
 	pfile->Write(m_u32BackColor);
 	pfile->Write(m_sBorderThickness);
-	pfile->Write((uint32_t)m_justification);
+   pfile->Write(uint32_t(m_justification));
 	pfile->Write(m_sInvertedBorder);
 	pfile->Write(m_sTransparent);
 	pfile->Write(m_u32TransparentColor);
-	pfile->Write(m_lId);
-	pfile->Write((int16_t)m_targetFocus);
+   pfile->Write(uint32_t(m_lId));
+   pfile->Write(uint16_t(m_targetFocus));
 	pfile->Write(m_sShowFocus);
 	pfile->Write(m_u32FocusColor);
 	pfile->Write(m_sVisible);
