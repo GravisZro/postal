@@ -250,6 +250,8 @@ platform=$(to_lower $(uname -s))
 arch=$(uname -m)
 verbose=false
 clean=false
+noeditor=true
+nomultiplayer=true
 makefile="Makefile.gravis"
 build_name="postal"
 backend="sdl2"
@@ -294,14 +296,13 @@ done
 usage=$(concat \
       "\nUsage: ${0} [--target=1997|Plus|Super|2015]" \
       "$nextline [--locale=US|UK|Germany|France|Japan]" \
-      "$nextline [--cpp-compiler=<compiler name>]" \
       "$nextline [--platform=$availible_platforms]" \
       "$nextline [--platform-bits=32|64]" \
-      "$nextline [--enable-demo-client | --enable-multiplayer-client]" \
-      "$nextline [--enable-steam]" \
-      "$nextline [--enable-joystick | --enable-twinstick]" \
-      "$nextline [--disable-multiplayer | --remove-multiplayer]" \
-      "$nextline [--disable-editor | --remove-editor]" \
+      "$nextline [--demo-client | --multiplayer-client]" \
+      "$nextline [--with-steam]" \
+      "$nextline [--with-joystick | --with-twinstick]" \
+      "$nextline [--disable-multiplayer | --with-multiplayer | --without-multiplayer]" \
+      "$nextline [--disable-editor | --with-editor | --without-editor]" \
       "$nextline [--install]" \
       "$nextline [--uninstall]" \
       "$nextline [--builddir=<dir>]" \
@@ -399,24 +400,24 @@ do
       fi
     ;;
 
-    --enable-demo-client)
+    --demo-client)
       defines="$defines DEMO"
     ;;
 
-    --enable-multiplayer-client)
+    --multiplayer-client)
       defines="$defines SPAWN"
     ;;
 
-    --enable-steam)
+    --with-steam)
       defines="$defines STEAM_CONNECTED"
       cflags="$cflags -Isteamworks/sdk/public"
     ;;
 
-    --enable-joystick)
+    --with-joystick)
       defines="$defines ALLOW_JOYSTICK"
     ;;
 
-    --enable-twinstick)
+    --with-twinstick)
       defines="$defines ALLOW_TWINSTICK"
     ;;
 
@@ -424,16 +425,24 @@ do
       defines="$defines MULTIPLAYER_DISABLED"
     ;;
 
-    --remove-multiplayer)
-      defines="$defines MULTIPLAYER_REMOVED"
+    --with-multiplayer)
+      nomultiplayer=false;
+    ;;
+
+    --wihout-multiplayer)
+      nomultiplayer=true;
     ;;
 
     --disable-editor)
       defines="$defines EDITOR_DISABLED"
     ;;
 
-    --remove-editor)
-      defines="$defines EDITOR_REMOVED"
+    --with-editor)
+      noeditor=false;
+    ;;
+
+    --without-editor)
+      noeditor=true;
     ;;
 
     --install)
@@ -479,6 +488,17 @@ do
   esac
   shift
 done
+
+if ${nomultiplayer}
+then
+  defines="$defines MULTIPLAYER_REMOVED"
+fi
+
+if ${noeditor}
+then
+  defines="$defines EDITOR_REMOVED"
+fi
+
 
 force_32bit() {
   if [ "$platform_bits" = "64" ]
