@@ -583,7 +583,7 @@ then
       backend_sources="${backend_sources} BLUE/platform.cpp"
       if ${debug_build}
       then
-        defines="$defines RSP_TRACE_LOG_NAME"
+        defines="$defines RSP_DEBUG_OUT_FILE"
       fi
     ;;
 
