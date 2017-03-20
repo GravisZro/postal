@@ -90,6 +90,7 @@ namespace dos
 
   uint16_t lockmem  (void* addr, std::size_t size) noexcept;
   uint16_t unlockmem(void* addr, std::size_t size) noexcept;
+  void memcpy(uintptr_t dest, void* src, std::size_t length);
 
   struct regs_t
   {

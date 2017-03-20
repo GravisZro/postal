@@ -68,9 +68,9 @@ namespace video
     read_data_line,
   };
 
-  enum addresses : uint32_t
+  enum addresses : uintptr_t
   {
-    framebuffer = 0x000A0000,
+    buffer_address = 0x000A0000,
   };
 }
 

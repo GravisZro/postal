@@ -101,6 +101,30 @@ namespace dos
     { return reinterpret_cast<void*>(__djgpp_conventional_base + (high << 4) + low); }
 
 
+  uint16_t lockmem(void* addr, std::size_t size) noexcept
+  {
+    __dpmi_meminfo info;
+    info.address = reinterpret_cast<uintptr_t>(addr) + __djgpp_base_address;
+    info.size = size;
+    if (__dpmi_lock_linear_region(&info))
+      return __dpmi_error;
+    return 0;
+  }
+
+  uint16_t unlockmem(void* addr, std::size_t size) noexcept
+  {
+    __dpmi_meminfo info;
+    info.address = reinterpret_cast<uintptr_t>(addr) + __djgpp_base_address;
+    info.size = size;
+    if (__dpmi_unlock_linear_region(&info))
+      return __dpmi_error;
+    return 0;
+  }
+
+  void memcpy(uintptr_t dest, void* src, std::size_t length)
+  {
+    dosmemput(src, length, dest);
+  }
 
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +146,7 @@ namespace dos
   {
     uint32_t rc;
     regs.r16.ss = regs.r16.sp = 0;
-    rc = _go32_dpmi_simulate_int(vec, (_go32_dpmi_registers *) &regs);
+    rc = _go32_dpmi_simulate_int(vec, reinterpret_cast<_go32_dpmi_registers*>(&regs));
     return !rc && !(regs.r16.flags & 0x0001);
   }
 
@@ -182,26 +206,6 @@ namespace dos
   void usleep(milliseconds_t usecs) noexcept { ::usleep(usecs); }
 
   std::size_t getheapsize(void) noexcept { return _go32_dpmi_remaining_physical_memory(); }
-
-  uint16_t lockmem(void* addr, std::size_t size) noexcept
-  {
-    __dpmi_meminfo info;
-    info.address = reinterpret_cast<uintptr_t>(addr) + __djgpp_base_address;
-    info.size = size;
-    if (__dpmi_lock_linear_region(&info))
-      return __dpmi_error;
-    return 0;
-  }
-
-  uint16_t unlockmem(void* addr, std::size_t size) noexcept
-  {
-    __dpmi_meminfo info;
-    info.address = reinterpret_cast<uintptr_t>(addr) + __djgpp_base_address;
-    info.size = size;
-    if (__dpmi_unlock_linear_region(&info))
-      return __dpmi_error;
-    return 0;
-  }
 }
 
 #else

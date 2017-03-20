@@ -208,7 +208,7 @@ namespace display
         copy_size = remaining;
 
       // copy a bank of data to the screen
-      dosmemput(memory, copy_size, video::framebuffer);
+      dos::memcpy(video::buffer_address, memory, copy_size);
 
       // move on to the next bank of data
       remaining -= copy_size;
@@ -317,7 +317,6 @@ extern int16_t rspGetVideoMode(
     int16_t* psPages,                   // Out: Number of pages (1 to n). More than 1 indicates a page flipping scenario.
     int16_t* psPixelScaling)            // Out: Pixel scaling in effect (1) or not (0)
 {
-  // lie about everything.
   SET(psPixelScaling, 0);
   SET(psDevicePages,  display::current_mode_info->NumberOfImagePages);
   SET(psPages,        display::current_mode_info->NumberOfImagePages);
