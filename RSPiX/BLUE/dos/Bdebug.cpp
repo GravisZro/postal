@@ -111,33 +111,32 @@ void rspTrace(const char *frmt, ... )
 {
   static int16_t sSem = 0;
 #if defined(RSP_DEBUG_OUT_FILE)
-  static bool first = true;
+  static FILE* fs = nullptr;
+  if(fs == nullptr)
+  {
+    fs = fopen(RSP_TRACE_LOG_NAME, "wt");
+    ASSERT(fs);
+    fprintf(fs, "======== Postal build %s %s ========\n", __DATE__, __TIME__);
+    time_t sysTime = time(nullptr);
+    fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
+    fclose(fs);
+  }
 #endif // RSP_DEBUG_OUT_FILE
-  FILE* fs = nullptr;
 
   // If something called by TRACE calls TRACE, we'd be likely to continue
   // forever until stack overflow occurred.  So don't allow re-entrance.
   if (++sSem == 1)
   {
-#if defined(RSP_DEBUG_OUT_FILE)
-    if(first)
-    {
-      first = false;
-      fs	= fopen(RSP_TRACE_LOG_NAME, "wt");
-      ASSERT(fs);
-      fprintf(fs, "======== Postal build %s %s ========\n", __DATE__, __TIME__);
-      time_t sysTime = time(nullptr);
-      fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
-      fclose(fs);
-    }
-#endif // RSP_DEBUG_OUT_FILE
-
     va_list varp;
     va_start(varp, frmt);
+#if defined(RSP_DEBUG_OUT_FILE)
     fs = fopen(RSP_TRACE_LOG_NAME, "a+");
     ASSERT(fs);
     vfprintf(fs, frmt, varp);
     fclose(fs);
+#else
+    vfprintf(stderr, frmt, varp);
+#endif
     va_end(varp);
   }
 
