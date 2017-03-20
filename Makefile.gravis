@@ -248,7 +248,7 @@ OBJS := $(foreach f,$(OBJS4),$(BUILD_PATH)/$(f))
 SOURCES := $(foreach f,$(SOURCES),$(SOURCE_PATH)/$(f))
 
 # !!! FIXME: Get -Wall in here, some day.
-CFLAGS += -w -g -fno-builtin -fno-strict-aliasing -fno-operator-names -fno-rtti 
+CFLAGS += -w -fno-builtin -fno-strict-aliasing -fno-operator-names -fno-rtti -ffreestanding
 
 # includes ...
 CFLAGS += -I$(SOURCE_PATH)/sys/include
@@ -258,12 +258,7 @@ CFLAGS += -I$(SOURCE_PATH)/WishPiX
 
 .PHONY: all OUTPUT_DIR
 
-nope:
-	@echo $(CFLAGS)
-	@echo $(SOURCES)
-
 all: debugoff $(POSTAL_BINARY)
-
 
 debug: debugon $(POSTAL_BINARY)
 
