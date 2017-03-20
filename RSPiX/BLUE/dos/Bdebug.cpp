@@ -79,11 +79,9 @@
 #define MAX_TRACE_STR	1024
 #define MAX_ASSERT_STR	1024
 
-#if defined(RSP_DEBUG_OUT_FILE)
-	#if !defined(RSP_TRACE_LOG_NAME)
-		#define RSP_TRACE_LOG_NAME	"TRACE.txt"
-	#endif	// RSP_TRACE_LOG_NAME
-#endif	// RSP_DEBUG_OUT_FILE
+#if defined(RSP_DEBUG_OUT_FILE) && !defined(RSP_TRACE_LOG_NAME)
+#define RSP_TRACE_LOG_NAME	"trace.txt"
+#endif	// RSP_DEBUG_OUT_FILE / RSP_TRACE_LOG_NAME
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -91,22 +89,19 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 const char* Debug_FileName(const char* pszPath)
-	{
-	// Start at end of string and work toward beginning or '\\'.
-   const char *p = pszPath + strlen(pszPath) - 1;
-   while(p > pszPath && *p != '\\')
-     p--;
+{
+  // Start at end of string and work toward beginning or '\\'.
+  const char *p = pszPath + strlen(pszPath) - 1;
+  while(p > pszPath && *p != '\\')
+    p--;
 
-	if (*p == '\\')
-		p++;
+  if (*p == '\\')
+    p++;
 
-	return p;
-	}
+  return p;
+}
 
-#ifdef __ANDROID__
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO,"DUKE", __VA_ARGS__))
-#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Output a formatted debug string to the debug terminal/window.
@@ -114,72 +109,35 @@ const char* Debug_FileName(const char* pszPath)
 ///////////////////////////////////////////////////////////////////////////////
 void rspTrace(const char *frmt, ... )
 {
-  static int16_t	sSem	= 0;
-  char output[4096];
-  /*
-  char frmt[4096] = { 0 };
+  static int16_t sSem = 0;
+#if defined(RSP_DEBUG_OUT_FILE)
+  static bool first = true;
+#endif // RSP_DEBUG_OUT_FILE
+  FILE* fs = nullptr;
 
-  size_t pos, pos64;
-  for(pos = 0, pos64=0; frmt64[pos64] && pos < 4096; ++pos, ++pos64)
-  {
-    frmt[pos] = frmt64[pos64];
-    if(frmt64[pos64] == '%')
-    {
-      ++pos, ++pos64;
-      switch(frmt64[pos64])
-      {
-        case 'i':
-        case 'x':
-        case 'u':
-          frmt[pos] = 'l';
-          ++pos;
-        default:
-          break;
-      }
-      frmt[pos] = frmt64[pos64];
-    }
-  }
-*/
   // If something called by TRACE calls TRACE, we'd be likely to continue
   // forever until stack overflow occurred.  So don't allow re-entrance.
   if (++sSem == 1)
   {
+#if defined(RSP_DEBUG_OUT_FILE)
+    if(first)
+    {
+      first = false;
+      fs	= fopen(RSP_TRACE_LOG_NAME, "wt");
+      ASSERT(fs);
+      fprintf(fs, "======== Postal build %s %s ========\n", __DATE__, __TIME__);
+      time_t sysTime = time(nullptr);
+      fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
+      fclose(fs);
+    }
+#endif // RSP_DEBUG_OUT_FILE
+
     va_list varp;
     va_start(varp, frmt);
-    //vfprintf(stderr, frmt, varp);
-    //vsprintf(output, frmt, varp);
-
-    FILE* f = fopen("output.txt", "a+");
-    vfprintf(f, frmt, varp);
-    fclose(f);
-
-#if defined(RSP_DEBUG_OUT_FILE)
-    static FILE*	fs	= nullptr;	// NOTE that we never fclose this so we can get
-    // EVERY LAST TRACE -- so this may show up as
-    // a leak.  The system will close it though.
-    // If not yet open . . .
-    if (fs == nullptr)
-    {
-      // Attempt to open (Note that we never close this -- the system does).
-      // This will probably show up as a leak.
-      fs	= fopen(RSP_TRACE_LOG_NAME, "wt");
-      if (fs)
-      {
-        fprintf(fs, "======== Postal Plus build %s %s ========\n", __DATE__, __TIME__);
-        time_t sysTime = time(nullptr);
-        fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
-      }
-    }
-
-    // If open . . .
-    if (fs)
-    {
-      char szOutput[512];
-      vsnprintf(szOutput, 512, frmt, varp);
-      fprintf(fs, szOutput);
-    }
-#endif	// RSP_DEBUG_OUT_FILE
-
+    fs = fopen(RSP_TRACE_LOG_NAME, "a+");
+    ASSERT(fs);
+    vfprintf(fs, frmt, varp);
+    fclose(fs);
     va_end(varp);
   }
 
