@@ -64,12 +64,15 @@ namespace display
 
   static uint16_t initial_mode = get_mode();
   static uint16_t current_mode = initial_mode;
-
+#if !defined(DOS_MEM)
   namespace aligned_memory
   {
     static std::aligned_storage<sizeof(uint8_t), alignof(std::max_align_t)>::type framebuffer[640 * 480];
   }
   static void* framebuffer = reinterpret_cast<void*>(aligned_memory::framebuffer);
+#else
+  static dos::mem<uint8_t, std::max_align_t> framebuffer(640 * 480);
+#endif
 
   uint16_t set_mode(uint16_t mode)
   {
@@ -102,17 +105,7 @@ namespace display
     regs16.dx = bank_number;
     dos::int86(video::interrupt);
   }
-/*
-  uint16_t get_bank(void)
-  {
-     regs16.ax = vesa::window_control;
-     regs16.bx = vesa::set_bank | vesa::windowA;
-     dos::int86(vesa::interrupt);
-    if (has_error())
-      return FAILURE;
-    return bios_return_code;
-  }
-*/
+
   uint16_t probe(void)
   {
     dos::farpointer_t addr; // DOS address
@@ -462,9 +455,12 @@ extern void rspCacheDirtyRect(
   UNUSED(sX,sY,sWidth,sHeight);
 }
 
+bool record_blit = false;
 extern void rspPresentFrame(void)
 {
+  if(record_blit) { TRACE("Blitting... \n"); }
   display::blit_to_screen(display::framebuffer, display::current_mode_info->XResolution * display::current_mode_info->YResolution);
+  if(record_blit) { TRACE("DONE. \n"); }
 }
 
 extern void rspUpdateDisplay(void)
@@ -551,6 +547,7 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
   if(plPitch != nullptr)
     *plPitch = display::current_mode_info->BytesPerScanLine;
 
+  //ASSERT(display::framebuffer.lock());
   return SUCCESS;
 }
 
@@ -562,6 +559,7 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUnlockVideoBuffer(void)  // Returns nothing.
 {
+  //ASSERT(display::framebuffer.unlock());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

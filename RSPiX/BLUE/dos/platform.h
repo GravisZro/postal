@@ -43,17 +43,30 @@ namespace dos
   void* malloc(std::size_t size) noexcept;
   void free(void* ptr) noexcept;
 
-  template<typename T>
+  uint16_t lockmem  (void* addr, std::size_t size) noexcept;
+  uint16_t unlockmem(void* addr, std::size_t size) noexcept;
+  void memcpy(uintptr_t dest, void* src, std::size_t length);
+
+  template<typename T, typename AlignTo = T>
   class mem
   {
   public:
-    mem(void) noexcept { m_data = reinterpret_cast<T*>(dos::malloc(sizeof(T))); }
-   ~mem(void) noexcept { dos::free(m_data); m_data = nullptr; }
-    T* operator ->(void) noexcept { return m_data; }
-    operator T*(void) noexcept { return m_data; }
+    mem(uint32_t count = 1) noexcept
+      : m_size((sizeof(T) * count) + sizeof(AlignTo) - 1)
+    {
+      m_data = reinterpret_cast<T*>(dos::malloc(m_size));
+      m_aligneddata = reinterpret_cast<T*>((uintptr_t(m_data) + sizeof(AlignTo) - 1) & ~uintptr_t(sizeof(AlignTo) - 1));
+    }
+   ~mem(void) noexcept { dos::free(m_data); m_aligneddata = m_data = nullptr; }
+    T* operator ->(void) noexcept { return m_aligneddata; }
+    operator T*(void) noexcept { return m_aligneddata; }
 
+    bool lock  (void) { return lockmem(m_data, m_size) == SUCCESS; }
+    bool unlock(void) { return unlockmem(m_data, m_size) == SUCCESS; }
   private:
+    T* m_aligneddata;
     T* m_data;
+    std::size_t m_size;
   };
 
   struct farpointer_t
@@ -86,11 +99,6 @@ namespace dos
   };
 
   static_assert(sizeof(farpointer_t) == 4, "your compiler is broken");
-
-
-  uint16_t lockmem  (void* addr, std::size_t size) noexcept;
-  uint16_t unlockmem(void* addr, std::size_t size) noexcept;
-  void memcpy(uintptr_t dest, void* src, std::size_t length);
 
   struct regs_t
   {
