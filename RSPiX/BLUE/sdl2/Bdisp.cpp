@@ -897,9 +897,6 @@ extern void rspSetPaletteEntries(
     channel_t* pucBlue,                   // In: Pointer to first blue  component to copy from
     uint32_t lIncBytes)                   // In: Number of bytes by which to increment pointers after each copy
 {
-  static int i = 0;
-  TRACE("instance: %i\n", ++i);
-
   int8_t* psLock;
   color32_t* pColor;
 
@@ -917,7 +914,6 @@ extern void rspSetPaletteEntries(
       pColor->red   = *pucRed; // transfer data
       pColor->green = *pucGreen;
       pColor->blue  = *pucBlue;
-      TRACE("color #%i - %i: %02x %02x %02x\n", sStartIndex, sCount, pColor->red, pColor->green, pColor->blue);
     }
   }
 }
