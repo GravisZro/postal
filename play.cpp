@@ -2625,10 +2625,10 @@ class CPlayStatus : public CPlay
 							// Just update whenever the realm is updating so we can cash in on their
 							// update display all.
 							// If were not in MP then calculate the FPS. If we are in MP, FPS is calculated elsewhere *SPA
-							if (!pinfo->IsMP())
+                     if (m_lSumFrameTimes && !pinfo->IsMP())
 								m_lFramePerSecond = (1000 * m_lNumFrames) / m_lSumFrameTimes;
 
-							if (m_bUpdateRealm)
+                     if (m_lSumFrameTimes && m_bUpdateRealm)
 								{
 								m_print.print(
 									m_rectInfo.sX, m_rectInfo.sY,
