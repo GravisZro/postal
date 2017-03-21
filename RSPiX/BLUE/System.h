@@ -424,7 +424,13 @@ extern void rspTrace(const char* szFrmt, ...);
 # include <cassert>
 # define STRACE(...)  rspTrace(__VA_ARGS__)
 # define TRACE(...)   STRACE("%s(%d):", __FILE__, __LINE__),STRACE(__VA_ARGS__)
-# define ASSERT(...)  assert(__VA_ARGS__)
+# if defined(__DOS__)
+#  define Q(x) #x
+#  define QUOTE(x) Q(x)
+#  define ASSERT(x)  if(!(x)) { TRACE("ASSERT failed! testing: %s", QUOTE(x)); assert(x); }
+# else
+# define ASSERT(x)  assert(x)
+# endif
 #else
 # include <cassert>
 # define STRACE(...)  rspTrace(__VA_ARGS__)
