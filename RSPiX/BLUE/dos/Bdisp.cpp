@@ -65,14 +65,14 @@ namespace display
   static uint16_t initial_mode = get_mode();
   static uint16_t current_mode = initial_mode;
 
-#if !defined(DOS_MEM)
+#if defined(DOS_MEM)
+  static dos::mem<uint8_t, std::max_align_t> framebuffer(640 * 480);
+#else
   namespace aligned_memory
   {
     static std::aligned_storage<sizeof(uint8_t), alignof(std::max_align_t)>::type framebuffer[640 * 480];
   }
   static void* framebuffer = reinterpret_cast<void*>(aligned_memory::framebuffer);
-#else
-  static dos::mem<uint8_t, std::max_align_t> framebuffer(640 * 480);
 #endif
 
   uint16_t set_mode(uint16_t mode)
