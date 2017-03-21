@@ -64,6 +64,7 @@ namespace display
 
   static uint16_t initial_mode = get_mode();
   static uint16_t current_mode = initial_mode;
+
 #if !defined(DOS_MEM)
   namespace aligned_memory
   {
@@ -235,8 +236,6 @@ namespace display
     }
   }
 }
-
-#include <iostream>
 
 extern void Disp_Init(void)    // Returns nothing.
 {
@@ -455,12 +454,9 @@ extern void rspCacheDirtyRect(
   UNUSED(sX,sY,sWidth,sHeight);
 }
 
-bool record_blit = false;
 extern void rspPresentFrame(void)
 {
-  if(record_blit) { TRACE("Blitting... \n"); }
   display::blit_to_screen(display::framebuffer, display::current_mode_info->XResolution * display::current_mode_info->YResolution);
-  if(record_blit) { TRACE("DONE. \n"); }
 }
 
 extern void rspUpdateDisplay(void)
@@ -547,7 +543,9 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
   if(plPitch != nullptr)
     *plPitch = display::current_mode_info->BytesPerScanLine;
 
-  //ASSERT(display::framebuffer.lock());
+#if defined(DOS_MEM)
+  ASSERT(display::framebuffer.lock());
+#endif
   return SUCCESS;
 }
 
@@ -559,7 +557,9 @@ extern int16_t rspLockVideoBuffer(      // Returns 0 if system buffer could be l
 ///////////////////////////////////////////////////////////////////////////////
 extern void rspUnlockVideoBuffer(void)  // Returns nothing.
 {
-  //ASSERT(display::framebuffer.unlock());
+#if defined(DOS_MEM)
+  ASSERT(display::framebuffer.unlock());
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -47,6 +47,7 @@ namespace dos
   uint16_t unlockmem(void* addr, std::size_t size) noexcept;
   void memcpy(uintptr_t dest, void* src, std::size_t length);
 
+#if defined(DOS_MEM)
   template<typename T, typename AlignTo = T>
   class mem
   {
@@ -68,6 +69,21 @@ namespace dos
     T* m_data;
     std::size_t m_size;
   };
+
+#else
+  template<typename T>
+  class mem
+  {
+  public:
+    mem(void) noexcept { m_data = reinterpret_cast<T*>(dos::malloc(sizeof(T))); }
+   ~mem(void) noexcept { dos::free(m_data); m_data = nullptr; }
+    T* operator ->(void) noexcept { return m_data; }
+    operator T*(void) noexcept { return m_data; }
+
+  private:
+    T* m_data;
+  };
+#endif
 
   struct farpointer_t
   {
