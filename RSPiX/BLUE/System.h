@@ -57,6 +57,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Handy defines.
 ////////////////////////////////////////////////////////////////////////////////
+
+#ifndef Q
+#define Q(x) #x
+#define QUOTE(x) Q(x)
+#endif
+
 #ifndef TRUE
 # define TRUE     1
 #endif
@@ -425,8 +431,6 @@ extern void rspTrace(const char* szFrmt, ...);
 # define STRACE(...)  rspTrace(__VA_ARGS__)
 # define TRACE(...)   STRACE("%s(%d):", __FILE__, __LINE__),STRACE(__VA_ARGS__)
 # if defined(__DOS__)
-#  define Q(x) #x
-#  define QUOTE(x) Q(x)
 #  define ASSERT(x)  if(!(x)) { TRACE("ASSERT failed! testing: %s", QUOTE(x)); assert(x); }
 # else
 # define ASSERT(x)  assert(x)

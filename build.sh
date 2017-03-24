@@ -249,11 +249,10 @@ c_standard="-std=c11"
 platform=$(to_lower $(uname -s))
 arch=$(uname -m)
 verbose=false
-clean=false
 noeditor=true
 nomultiplayer=true
 makefile="Makefile.gravis"
-debug_build=true
+make_target=
 build_name="postal"
 backend="sdl2"
 ldflags="-lSDL2"
@@ -308,10 +307,10 @@ usage=$(concat \
       "$nextline [--uninstall]" \
       "$nextline [--builddir=<dir>]" \
       "$nextline [--installdir=<dir>]" \
-      "$nextline [--clean]" \
       "$nextline [--makejobs=<number>]" \
       "$nextline [--verbose]" \
-      "$nextline [--release | --debug]" \
+      "$nextline [--release | --debug | --clean]" \
+      "$nextline [--tracelog=<filename>]" \
       "$nextline [--help | -h]" \
       )
 help=$(concat \
@@ -463,16 +462,21 @@ do
       builddir=$(absolutedir $(arg_value ${option}))
     ;;
 
+
+    --clean)
+      make_target="clean"
+    ;;
+
     --release)
-      debug_build=true
+      make_target="release"
     ;;
 
     --debug)
-      debug_build=true
+      make_target="debug"
     ;;
 
-    --clean)
-      clean=true
+    --tracelog=*)
+      defines="$defines RSP_DEBUG_OUT_FILE RSP_TRACE_LOG_NAME=$(arg_value ${option})"
     ;;
 
     --makejobs=*)
@@ -581,10 +585,6 @@ then
       ldflags=""
       archflags="-m32 -march=i586 -mtune=i586"
       backend_sources="${backend_sources} BLUE/platform.cpp"
-      if ${debug_build}
-      then
-        defines="$defines RSP_DEBUG_OUT_FILE"
-      fi
     ;;
 
     dreamcast) # Sega Dreamcast
@@ -632,14 +632,9 @@ echo "Linker flags: $ldflags"
 echo "Options: $defines"
 echo "Executable: $build_name"
 
-if ${clean}
+if [ -z $make_target ]
 then
-  make_target="clean"
-elif ${debug_build}
-then
-  make_target="debug"
-else
-  make_target="all"
+  make_target=$build_name
 fi
 
 echo "executing: make -f $makefile $make_target -e VERBOSE=\"$verbose\" -e CC=\"$cpp_compiler\" FLAGS=\"$cflags\" LDFLAGS=\"$ldflags\" -e DEFINES=\"$defines\" -e POSTAL_ARCHFLAGS=\"$archflags\" -e POSTAL_BINARY=\"$build_name\" -e BACKEND=\"$backend\" -e CPP_STANDARD=\"$cpp_standard\" -e C_STANDARD=\"$c_standard\" -e BUILD_PATH=\"bin/$(to_lower $platform)${platform_bits}\" -e BACKEND_SOURCES=\"$backend_sources\""

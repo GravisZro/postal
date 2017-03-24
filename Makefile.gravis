@@ -258,7 +258,7 @@ CFLAGS += -I$(SOURCE_PATH)/WishPiX
 
 .PHONY: all OUTPUT_DIR
 
-all: debugoff $(POSTAL_BINARY)
+release: debugoff $(POSTAL_BINARY)
 
 debug: debugon $(POSTAL_BINARY)
 

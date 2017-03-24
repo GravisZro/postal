@@ -80,7 +80,7 @@
 #define MAX_ASSERT_STR	1024
 
 #if defined(RSP_DEBUG_OUT_FILE) && !defined(RSP_TRACE_LOG_NAME)
-#define RSP_TRACE_LOG_NAME	"trace_sdl.txt"
+#define RSP_TRACE_LOG_NAME	trace_sdl.txt
 #endif	// RSP_DEBUG_OUT_FILE / RSP_TRACE_LOG_NAME
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ void rspTrace(const char *frmt, ... )
   static FILE* fs = nullptr;
   if(fs == nullptr)
   {
-    fs = fopen(RSP_TRACE_LOG_NAME, "wt");
+    fs = fopen(QUOTE(RSP_TRACE_LOG_NAME), "wt");
     ASSERT(fs);
     fprintf(fs, "======== Postal build %s %s ========\n", __DATE__, __TIME__);
     time_t sysTime = time(nullptr);
@@ -133,7 +133,7 @@ void rspTrace(const char *frmt, ... )
     va_list varp;
     va_start(varp, frmt);
 #if defined(RSP_DEBUG_OUT_FILE)
-    fs = fopen(RSP_TRACE_LOG_NAME, "a+");
+    fs = fopen(QUOTE(RSP_TRACE_LOG_NAME), "a+");
     ASSERT(fs);
     vfprintf(fs, frmt, varp);
     fclose(fs);
