@@ -411,8 +411,12 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
         strcat(prefpath, "/Library/Application Support/Postal/");
       }
 # elif defined(__unix__)
-      if(((tmp = std::getenv("XDG_DATA_HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX) ||
-         ((tmp = std::getenv("HOME"         )) != nullptr && strlen(tmp) < SAFE_PATH_MAX))
+      if(((tmp = std::getenv("XDG_DATA_HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX))
+      {
+        strcpy(prefpath, tmp);
+        strcat(prefpath, "/Postal/");
+      }
+      else if((tmp = std::getenv("HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX)
       {
         strcpy(prefpath, tmp);
         strcpy(path, prefpath);
