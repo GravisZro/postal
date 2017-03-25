@@ -200,6 +200,7 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 # include <BLUE/stdint_msvc.h>
 # include <BaseTsd.h> // for SSIZE_T
 # include <direct.h> // for mkdir
+#define stat _stat
 typedef uint32_t mode_t; // no sys/types.h
 inline int _mkdir(const char *path, int) { return _mkdir(path); }
 # define mkdir        _mkdir
