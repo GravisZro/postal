@@ -273,14 +273,15 @@ RFile::~RFile(void)
 #include <dirent.h>
 // this is from PhysicsFS originally ( http://icculus.org/physfs/ )
 //  (also zlib-licensed.)
-static int locateOneElement(char *buf)
+static bool locateOneElement(char *buf)
 {
    char *ptr = nullptr;
    DIR *dirp = nullptr;
    struct dirent *dent = nullptr;
 
-	if (access(buf, F_OK) == 0)
-		return 1;  /* quick rejection: exists in current case. */
+   static struct stat file;
+   if (stat(buf, &file) == SUCCESS)
+      return true;  /* quick rejection: exists in current case. */
 
 	ptr = strrchr(buf, '/');  /* find entry at end of path. */
    if (ptr == nullptr)
@@ -297,18 +298,18 @@ static int locateOneElement(char *buf)
 	}
 
    while ((dent = readdir(dirp)) != nullptr)
-	{
+   {
 		if (strcasecmp(dent->d_name, ptr) == 0)
 		{
 			strcpy(ptr, dent->d_name); /* found a match. Overwrite with this case. */
 			closedir(dirp);
-			return 1;
+         return true;
 		}
 	}
 
 	/* no match at all... */
 	closedir(dirp);
-	return 0;
+   return false;
 }
 #endif
 
@@ -334,25 +335,52 @@ static void locateCorrectCase(char *buf)
 #endif
 }
 
+// make directory and parents
+static int mkdir_p(char* pszName, mode_t mode)
+{
+  static struct stat dir;
+  char* path = pszName;
+  do
+  {
+    if (*path == '/' || *path == '\\')
+    {
+      *path = '\0';
+      if (stat(pszName, &dir) != SUCCESS) // if it doesn't exist
+        mkdir(pszName, mode); // allowed to fail some of the time, so don't bail out
+      *path = '/';
+    }
+  } while(*path++);
+  return SUCCESS;
+}
+
+#define SAFE_PATH_MAX (PATH_MAX - 64)
+static_assert(PATH_MAX > 64, "PATH_MAX is too small!");
 
 extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
 {
+
 #if defined(__DREAMCAST__)
 #elif defined(__SATURN__)
 #else
-    static bool initialized = false;
-    static bool nohomedir = false;
-    static char prefpath[PATH_MAX];
-    if (!initialized)
+  static char prefpath[PATH_MAX];
+  static char path[PATH_MAX];
+  static bool initialized = false;
+  static bool nohomedir = false;
+
+  std::memset(path, 0, sizeof(path)); // zero out
+  if (!initialized)
+  {
+    char* tmp = nullptr;
+    strcpy(prefpath, "./");  // default location is the current directory
+
+    TRACE("FindCorrectFile initializing...\n");
+    if (rspCommandLine("nohomedir"))
     {
-        TRACE("FindCorrectFile initializing...\n");
-        if (rspCommandLine("nohomedir"))
-        {
-            TRACE("--nohomedir is on the command line.\n");
-            nohomedir = true;
-        }
-        else
-        {
+      TRACE("--nohomedir is on the command line.\n");
+      nohomedir = true;
+    }
+    else
+    {
 # if defined(__DOS__)
 # elif defined(_WIN32)
             /*
@@ -362,154 +390,95 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
              *     SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE,
              *                          nullptr, &wszPath);
              */
-            strcpy(prefpath, ".\\");  // a default for failure case.
-
-            HMODULE lib = LoadLibraryA("Shell32.dll");
-            if (lib != nullptr)
-            {
-                fnSHGetFolderPathW pSHGetFolderPathW = (fnSHGetFolderPathW) GetProcAddress(lib, "SHGetFolderPathW");
-                if (pSHGetFolderPathW != nullptr)
-                {
-        			WCHAR path[MAX_PATH];
-                    if (SUCCEEDED(pSHGetFolderPathW(nullptr, 0x001A/*CSIDL_APPDATA*/ | 0x8000/*CSIDL_FLAG_CREATE*/, nullptr, 0, path)))
-                    {
-                        // !!! FIXME: screwed if there's a unicode path for now.
-                        snprintf(prefpath, sizeof (prefpath), "%S\\RunningWithScissors", (const wchar_t *) path);
-                        mkdir(prefpath);
-                        snprintf(prefpath, sizeof (prefpath), "%S\\RunningWithScissors\\Postal Plus", (const wchar_t *) path);
-                        mkdir(prefpath);
-                        snprintf(prefpath, sizeof (prefpath), "%S\\RunningWithScissors\\Postal Plus\\", (const wchar_t *) path);
-                    }
-                }
-                FreeLibrary(lib);
-            }
-# elif defined(__APPLE__) && !defined(__arm__) // Mac OSX
-            const char *homedir = getenv("HOME");
-            if ( (!homedir) || ((strlen(homedir) + 32) >= sizeof (prefpath)) )
-                homedir = "./";  // oh well.
-
-            strcpy(prefpath, homedir);
-            if (prefpath[strlen(prefpath)-1] != '/') strcat(prefpath, "/");
-
-            strcat(prefpath, "Library/Application Support/Postal Plus/");
+      HMODULE lib = LoadLibraryA("Shell32.dll");
+      if (lib != nullptr)
+      {
+        wchar_t wpath[PATH_MAX];
+        fnSHGetFolderPathW pSHGetFolderPathW = (fnSHGetFolderPathW) GetProcAddress(lib, "SHGetFolderPathW");
+        if (pSHGetFolderPathW != nullptr &&
+            SUCCEEDED(pSHGetFolderPathW(nullptr, 0x801A /*CSIDL_APPDATA | CSIDL_FLAG_CREATE*/, nullptr, 0, wpath)) && // get desired path in utf16
+            SUCCEEDED(WideCharToMultiByte(CP_UTF8, WC_NO_BEST_FIT_CHARS, wpath, -1, prefpath, sizeof(prefpath), nullptr, nullptr)) && // converts utf16 to utf8
+            strlen(prefpath) < SAFE_PATH_MAX)
+          strcat(prefpath, "/RunningWithScissors/Postal/");
+        else
+          strcpy(prefpath, "./"); // Avoids possibly leaving the path in a bad state
+        FreeLibrary(lib);
+      }
+#elif defined(__APPLE__) && !defined(__arm__) // Mac OSX
+      if((tmp = std::getenv("HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX)
+      {
+        strcpy(prefpath, tmp);
+        strcat(prefpath, "/Library/Application Support/Postal/");
+      }
 # elif defined(__unix__)
-            const char *homedir = getenv("HOME");
-            const char *xdghomedir = getenv("XDG_DATA_HOME");
-            const char *append = "";
-
-            if (xdghomedir == nullptr)
-            {
-                if (homedir == nullptr)
-                    xdghomedir = ".";  // oh well.
-                else
-                {
-                    xdghomedir = homedir;
-                    append = "/.local/share";
-                }
-            }
-
-            snprintf(prefpath, sizeof (prefpath), "%s%s/PostalPlus/", xdghomedir, append);
-
-            if (homedir != nullptr)
-            {
-                char oldpath[PATH_MAX];
-                snprintf(oldpath, sizeof (oldpath), "%s/.postal1", homedir);
-                if (access(oldpath, F_OK) == 0)
-                {
-                    TRACE("using oldschool prefpath at \"%s\"\n", oldpath);
-                    snprintf(prefpath, sizeof (prefpath), "%s/", oldpath);
-                }
-            }
-
-            // try to make sure the dirs exist...
-            for (char *i = prefpath; *i; i++)
-            {
-                if (*i == '/')
-                {
-                    *i = '\0';
-                    mkdir(prefpath, S_IRWXU);
-                    *i = '/';
-                }
-            }
-            mkdir(prefpath, S_IRWXU);
+      if(((tmp = std::getenv("XDG_DATA_HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX) ||
+         ((tmp = std::getenv("HOME"         )) != nullptr && strlen(tmp) < SAFE_PATH_MAX))
+      {
+        strcpy(prefpath, tmp);
+        strcpy(path, prefpath);
+        strcat(path, "/.postal1");
+        struct stat file;
+        if(stat(path, &file) == SUCCESS && S_ISDIR(file.st_mode))
+          strcat(prefpath, "/.postal1/");
+        else
+          strcat(prefpath, "/.local/share/Postal/");
+      }
 # else
-            NOTE("Proceeding with empty preference path.");
+      NOTE("Proceeding with empty preference path.");
 # endif
-            TRACE("prefpath is \"%s\"\n", prefpath);
-        }
-        initialized = true;
+      mkdir_p(prefpath, S_IRWXU); // make sure directory exists
+      TRACE("prefpath is \"%s\"\n", prefpath);
     }
+    initialized = true;
+  }
 
-    static char finalname[PATH_MAX];
-    static bool bail_early = true;
+  static char finalname[PATH_MAX];
+  static bool bail_early = true;
 
-    if (nohomedir)
-        strcpy(finalname, pszName);
+  if(!nohomedir && strlen(pszName) + strlen(prefpath) < sizeof(finalname))
+  {
+    bail_early = false;
+    strcpy(finalname, prefpath);
+    strcat(finalname, pszName);
+  }
+  else
+    strcpy(finalname, pszName);
 
-    else if ((strlen(pszName) + strlen(prefpath)) > sizeof (finalname))
-        strcpy(finalname, pszName); // oh well.
+  locateCorrectCase(finalname);
 
-    else
+  if (bail_early)  // don't choose between prefpath and basedir?
+    return(finalname);
+
+  // writing? Always use prefpath.
+  if (strcspn(pszMode, "aAwW+") < strlen(pszMode))
+  {
+    // read AND write.  :/   Copy the file if it's not there.
+    if ((strchr(pszMode, '+')) && (access(finalname, F_OK) == -1))
     {
-        bail_early = false;
-        sprintf(finalname, "%s%s", prefpath, pszName);
-    }
-
-    locateCorrectCase(finalname);
-
-    if (bail_early)  // don't choose between prefpath and basedir?
-        return(finalname);
-
-    // writing? Always use prefpath.
-    if (strcspn(pszMode, "aAwW+") < strlen(pszMode))
-    {
-        // build directories...
-        for (char *ptr = finalname; *ptr; ptr++)
-        {
-            if (((*ptr == '/') || (*ptr == '\\')) && (ptr != finalname))
-            {
-                *ptr = '\0';
-                if (access(finalname, F_OK) == -1)
-                {
-                    TRACE("Making directory \"%s\"\n", finalname);
-                    mkdir(finalname, S_IRWXU);
-                }
-                *ptr = '/';
-            }
-        }
-
-        // read AND write.  :/   Copy the file if it's not there.
-        if ((strchr(pszMode, '+')) && (access(finalname, F_OK) == -1))
-        {
-            FILE *in = fopen(pszName, "rb");
-            FILE *out = fopen(finalname, "wb");
-            if (in && out)
-            {
-                int ch = 0;
-                while (1)  // !!! FIXME: this is really lame.
-                {
-                    ch = fgetc(in);
-                    if (ch == EOF) break;
-                    fputc(ch, out);
-                }
-            }
-            if (in) fclose(in);
-            if (out) fclose(out);
-        }
-
-        return finalname;
-    }
-
-    else  // reading.
-    {
-        if (access(finalname, R_OK) == -1)  // favor prefpath?
-        {
-            strcpy(finalname, pszName); // nope, use original name.
-            locateCorrectCase(finalname);
-        }
+      FILE* in = fopen(pszName, "rb");
+      FILE* out = fopen(finalname, "wb");
+      if (in && out)
+        for(int ch = fgetc(in); ch != EOF; ch = fgetc(in))
+          fputc(ch, out);
+      if(in != nullptr)
+        fclose(in);
+      if(out != nullptr)
+        fclose(out);
     }
 
     return finalname;
+  }
+
+  else  // reading.
+  {
+    if (access(finalname, R_OK) == -1)  // favor prefpath?
+    {
+      strcpy(finalname, pszName); // nope, use original name.
+      locateCorrectCase(finalname);
+    }
+  }
+
+  return finalname;
 #endif
 }
 
