@@ -156,6 +156,8 @@ struct c_string
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <BLUE/portable_endian.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 // errors raised upon cataclysmic failure
 
@@ -236,7 +238,6 @@ inline int mkdir(const char *path, int) { return mkdir(path); }
 #if defined(_WIN32) // any windows targetable compiler
 # define S_IRWXU  0  // dummy value
 #else // non-Windows compiler
-# include <sys/types.h>
 # if defined(__GNUC__) && defined(__GNUC_MINOR__) // GCC based compiler
 #  define __GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
 # else // non-GCC based compiler

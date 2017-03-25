@@ -366,8 +366,6 @@
 // For file timestamp.
 # include <windows.h>
 # include <time.h>
-# include <sys/types.h>
-# include <sys/stat.h>
 #endif
 
 #if defined(STEAM_CONNECTED)
@@ -2655,7 +2653,6 @@ class CPlayStatus : public CPlay
 
 
 #if 1 //__unix__
-#include <sys/stat.h>
 static void EnumSaveGamesSlots(Menu *menu)
 {
     char gamename[PATH_MAX];

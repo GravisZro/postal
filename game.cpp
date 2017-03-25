@@ -870,7 +870,6 @@ int Stat_LevelsPlayed = 0;
 
 uint32_t Flag_Achievements = 0;
 
-#include <sys/stat.h>
 static void EnumExistingSaveGames(Menu *menu)
 {
     char gamename[PATH_MAX];
