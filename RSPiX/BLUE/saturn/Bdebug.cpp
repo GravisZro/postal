@@ -18,7 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	bdebug.cpp
-// 
+//
 // History:
 //		05/30/96 JMI	Started.
 //
@@ -37,7 +37,7 @@
 //							1024 bytes.  Changed ASSERT's string to same.
 //
 //		11/19/97	JMI	Added more debug output options via macros:
-//							RSP_DEBUG_OUT_MESSAGEBOX, RSP_DEBUG_OUT_FILE, 
+//							RSP_DEBUG_OUT_MESSAGEBOX, RSP_DEBUG_OUT_FILE,
 //							RSP_DEBUG_ASSERT_PASSIVE, & RSP_TRACE_LOG_NAME.
 //							See below for details.
 //
@@ -73,112 +73,41 @@
 #include <CYAN/cyan.h> // For rspMsgBox() used by rspTrace().
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// Macros.
-//////////////////////////////////////////////////////////////////////////////
-#define MAX_TRACE_STR	1024
-#define MAX_ASSERT_STR	1024
-
-#if defined(RSP_DEBUG_OUT_FILE)
-	#if !defined(RSP_TRACE_LOG_NAME)
-		#define RSP_TRACE_LOG_NAME	"TRACE.txt"
-	#endif	// RSP_TRACE_LOG_NAME
-#endif	// RSP_DEBUG_OUT_FILE
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// Used to extract the filename from __FILE__.
-//
-///////////////////////////////////////////////////////////////////////////////
-const char* Debug_FileName(const char* pszPath)
-	{
-	// Start at end of string and work toward beginning or '\\'.
-   const char *p = pszPath + strlen(pszPath) - 1;
-   while(p > pszPath && *p != '\\')
-     p--;
-
-	if (*p == '\\')
-		p++;
-
-	return p;
-	}
-
-#ifdef __ANDROID__
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO,"DUKE", __VA_ARGS__))
-#endif
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Output a formatted debug string to the debug terminal/window.
 //
 ///////////////////////////////////////////////////////////////////////////////
 void rspTrace(const char *frmt, ... )
-	{
-	static int16_t	sSem	= 0;
+   {
+   static int16_t	sSem	= 0;
 
-	// If something called by TRACE calls TRACE, we'd be likely to continue
-	// forever until stack overflow occurred.  So don't allow re-entrance.
-	if (++sSem == 1)
-		{
-		va_list varp;
-		  
-		va_start(varp, frmt);    
-		  
-#ifdef __ANDROID__
-		char errortext[512];
-		vsnprintf (errortext, 512, frmt, varp);
-		va_end (varp);
-		LOGI("%s",errortext);
-#else
-		vfprintf(stderr, frmt, varp);
-#endif
-
-#if defined(RSP_DEBUG_OUT_FILE)
-		static FILE*	fs	= nullptr;	// NOTE that we never fclose this so we can get 
-											// EVERY LAST TRACE -- so this may show up as
-											// a leak.  The system will close it though.
-		// If not yet open . . . 
-		if (fs == nullptr)
-			{
-			// Attempt to open (Note that we never close this -- the system does).
-			// This will probably show up as a leak.
-			fs	= fopen(RSP_TRACE_LOG_NAME, "wt");
-			if (fs)
-			{
-				fprintf(fs, "======== Postal Plus build %s %s ========\n", __DATE__, __TIME__);
-				time_t sysTime = time(nullptr);
-				fprintf(fs, "Debug log file initialized: %s\n", ctime(&sysTime));
-			}
-			}
-
-		// If open . . .
-		if (fs)
-			{
-			char szOutput[512];
-			vsnprintf(szOutput, 512, frmt, varp);
-			fprintf(fs, szOutput);
-			}
-#endif	// RSP_DEBUG_OUT_FILE
-
-		va_end(varp);
+   // If something called by TRACE calls TRACE, we'd be likely to continue
+   // forever until stack overflow occurred.  So don't allow re-entrance.
+   if (++sSem == 1)
+      {
+      va_list varp;
+      va_start(varp, frmt);
+      vfprintf(stderr, frmt, varp);
+      va_end(varp);
 
 #if defined(RSP_DEBUG_OUT_MESSAGEBOX)
-		if (rspMsgBox(
-			RSP_MB_ICN_INFO | RSP_MB_BUT_YESNO,
-			"rspTrace",
-			"\"%s\"\n"
-			"Continue?",
-			szOutput) == RSP_MB_RET_NO)
-			{
-			DebugBreak();
-			exit(EXIT_SUCCESS);
-			}
+      if (rspMsgBox(
+         RSP_MB_ICN_INFO | RSP_MB_BUT_YESNO,
+         "rspTrace",
+         "\"%s\"\n"
+         "Continue?",
+         szOutput) == RSP_MB_RET_NO)
+         {
+         DebugBreak();
+         exit(EXIT_SUCCESS);
+         }
 #endif	// RSP_DEBUG_OUT_MESSAGEBOX
-		}
+      }
 
-	// Remember to reduce.
-	sSem--;
-	}
+   // Remember to reduce.
+   sSem--;
+   }
 
 ///////////////////////////////////////////////////////////////////////////////
 // EOF

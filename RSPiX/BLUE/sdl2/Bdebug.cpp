@@ -76,30 +76,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // Macros.
 //////////////////////////////////////////////////////////////////////////////
-#define MAX_TRACE_STR	1024
-#define MAX_ASSERT_STR	1024
-
 #if defined(RSP_DEBUG_OUT_FILE) && !defined(RSP_TRACE_LOG_NAME)
-#define RSP_TRACE_LOG_NAME	trace_sdl.txt
+#define RSP_TRACE_LOG_NAME	trace_sdl2.txt
 #endif	// RSP_DEBUG_OUT_FILE / RSP_TRACE_LOG_NAME
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// Used to extract the filename from __FILE__.
-//
-///////////////////////////////////////////////////////////////////////////////
-const char* Debug_FileName(const char* pszPath)
-	{
-	// Start at end of string and work toward beginning or '\\'.
-   const char *p = pszPath + strlen(pszPath) - 1;
-   while(p > pszPath && *p != '\\')
-     p--;
-
-	if (*p == '\\')
-		p++;
-
-	return p;
-	}
 
 #ifdef __ANDROID__
 #include <android/log.h>

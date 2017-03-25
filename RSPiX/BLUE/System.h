@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 RWS Inc, All Rights Reserved
 //
@@ -43,22 +43,25 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+// C++
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
 #include <climits>
 #include <cstdint>
-
 #include <map>
 
+// POSIX
+#include <unistd.h>
+
+// RSPiX
 #include <CompileOptions.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handy defines.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef Q
+#ifndef QUOTE
 #define Q(x) #x
 #define QUOTE(x) Q(x)
 #endif
@@ -157,6 +160,39 @@ struct c_string
 
 #include <BLUE/portable_endian.h>
 
+// errors raised upon cataclysmic failure
+
+static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
+
+#if CHAR_BIT != 8
+# error "unsupported char size"
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// POSIX specific fixes
+////////////////////////////////////////////////////////////////////////////////
+
+#if !defined(_POSIX_VERSION) || _POSIX_VERSION < 200112L
+
+#define S_IFMT    0170000  // These bits determine file type.
+#define S_IFDIR   0040000  // Directory.
+#define S_IFCHR   0020000  // Character device.
+#define S_IFBLK   0060000  // Block device.
+#define S_IFREG   0100000  // Regular file.
+#define S_IFIFO   0010000  // FIFO.
+#define S_IFLNK   0120000  // Symbolic link.
+#define S_IFSOCK  0140000  // Socket.
+
+#define S_ISTYPE(mode, mask)  (((mode) & __S_IFMT) == (mask))
+#define S_ISDIR(mode)         S_ISTYPE((mode), S_IFDIR)
+#define S_ISCHR(mode)         S_ISTYPE((mode), S_IFCHR)
+#define S_ISBLK(mode)         S_ISTYPE((mode), S_IFBLK)
+#define S_ISREG(mode)         S_ISTYPE((mode), S_IFREG)
+
+#else
+# include <sys/stat.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // compiler specific fixes
 ////////////////////////////////////////////////////////////////////////////////
@@ -223,12 +259,6 @@ inline int mkdir(const char *path, int) { return mkdir(path); }
 
 #if !defined(R_OK)
 # define R_OK 04
-#endif
-
-static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
-
-#if CHAR_BIT != 8
-# error "unsupported char size"
 #endif
 
 /* Minimum of unsigned integral types.  */
@@ -311,6 +341,7 @@ struct color24_t
   channel_t green;
   channel_t red;
 };
+static_assert(sizeof(color24_t) == 3, "compiler fail!");
 
 struct color32_t
 {
@@ -319,6 +350,8 @@ struct color32_t
   channel_t red;
   channel_t alpha;
 };
+static_assert(sizeof(color32_t) == 4, "compiler fail!");
+
 
 // These pixel types take the endian order of the system into account.
 typedef uint8_t RPixel;
@@ -337,6 +370,7 @@ struct RPixel24
            red   == other.red;
   }
 };
+static_assert(sizeof(RPixel24) == 3, "compiler fail!");
 
 struct RPixel32
 {
@@ -353,10 +387,6 @@ struct RPixel32
            alpha == other.alpha;
   }
 };
-
-static_assert(sizeof(color24_t) == 3, "compiler fail!");
-static_assert(sizeof(color32_t) == 4, "compiler fail!");
-static_assert(sizeof(RPixel24) == 3, "compiler fail!");
 static_assert(sizeof(RPixel32) == 4, "compiler fail!");
 
 ////////////////////////////////////////////////////////////////////////////////
