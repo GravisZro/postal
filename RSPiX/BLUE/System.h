@@ -51,9 +51,6 @@
 #include <cstdint>
 #include <map>
 
-// POSIX
-#include <unistd.h>
-
 // RSPiX
 #include <CompileOptions.h>
 
@@ -191,6 +188,7 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 
 #else
 # include <sys/stat.h>
+# include <unistd.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,6 +213,7 @@ inline int _mkdir(const char *path, int) { return _mkdir(path); }
 typedef SSIZE_T ssize_t;
 # endif
 #elif defined(_WIN32) // everything for Windows that isn't MSVC
+# include <unistd.h>
 # include <sys/stat.h>
 inline int mkdir(const char *path, int) { return mkdir(path); }
 # define DO_PRAGMA(x) _Pragma (#x)
