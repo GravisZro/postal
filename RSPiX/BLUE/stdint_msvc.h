@@ -7,9 +7,7 @@
 
 #include <climits>
 #include <stdint.h>
-#include <BaseTsd.h>
-
-typedef SSIZE_T ssize_t;
+#include <sys/types.h>
 
 #ifndef __WORDSIZE
 #define __WORDSIZE WORDSIZE

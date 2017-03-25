@@ -154,13 +154,8 @@
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
 #include <io.h>
-#include <direct.h>
 #include <malloc.h>
 typedef HRESULT (WINAPI *fnSHGetFolderPathW)(HWND hwnd, int nFolder, HANDLE hToken, DWORD dwFlags, LPWSTR pszPath);
-#endif
-
-#if defined(__DJGPP__)
-# include <sys/stat.h> // for mkdir
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
