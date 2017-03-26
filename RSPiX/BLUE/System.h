@@ -182,7 +182,7 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 #  define S_IFLNK   0120000  // Symbolic link.
 #  define S_IFSOCK  0140000  // Socket.
 
-#  define S_ISTYPE(mode, mask)  (((mode) & __S_IFMT) == (mask))
+#  define S_ISTYPE(mode, mask)  (((mode) & 0170000) == (mask))
 #  define S_ISDIR(mode)         S_ISTYPE((mode), S_IFDIR)
 #  define S_ISCHR(mode)         S_ISTYPE((mode), S_IFCHR)
 #  define S_ISBLK(mode)         S_ISTYPE((mode), S_IFBLK)
