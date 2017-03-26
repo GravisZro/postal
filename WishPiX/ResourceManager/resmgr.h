@@ -204,20 +204,14 @@
 
 #include <CYAN/Cyan.h>
 #include <ORANGE/File/file.h>
-#include <ORANGE/RString/rstring.h>
 
-#if _MSC_VER >= 1020 || __MWERKS__ >= 0x1100 || __GNUC__
-# include <map>
-# include <vector>
-# include <set>
-# include <functional>
-# include <algorithm>
-# include <memory>
-#else
-# include <map.h>
-# include <vector.h>
-# include <set.h>
-#endif
+#include <map>
+#include <vector>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <memory>
+#include <string>
 
 #define SAK_COOKIE 0x204B4153		// Looks like "SAK " in the file
 #define SAK_CURRENT_VERSION 1		// Current version of SAK file format
@@ -327,7 +321,7 @@ struct CResourceBlock
   int16_t  m_sRefCount;
   int16_t  m_sAccessCount;
   void*  m_vpRes;
-  RString m_strFilename;
+  std::string m_strFilename;
   GenericDestroyResFunc* m_pfnDestroy;
 
   CResourceBlock()
@@ -390,7 +384,7 @@ public:
 
   // void load
   int16_t Get(                                  // Returns 0 on success.
-      RString strFilename,                        // In:  Resource name
+      std::string strFilename,                        // In:  Resource name
       void** hRes,                                // Out: Pointer to resource returned here
       RFile::Endian endian,                       // In:  Endian nature of resource file
       GenericCreateResFunc* pfnCreate,            // In:  Pointer to "create" function object
@@ -398,7 +392,7 @@ public:
       GenericLoadResFunc* pfnLoad);               // In:  Pointer to "load" function object
 
   int16_t GetInstance(                          // Returns 0 on success.
-      RString strFilename,                        // In:  Resource name
+      std::string strFilename,                        // In:  Resource name
       void** hRes,                                // Out: Pointer to resource returned here
       RFile::Endian endian,                       // In:  Endian nature of resource file
       GenericCreateResFunc* pfnCreate,            // In:  Pointer to "create" function object
@@ -425,30 +419,30 @@ public:
   // that can be used to make a SAK file.  This function takes
   // a filename and produces a text file giving the list
   // of files that were accessed and their statistics.
-  int16_t Statistics(RString strStatFile);
+  int16_t Statistics(std::string strStatFile);
 
   // Just a more obvious function name for creating
   // the batch files.
-  int16_t CreateSakBatch(RString strBatchFile)
+  int16_t CreateSakBatch(std::string strBatchFile)
   {
     return Statistics(strBatchFile);
   }
 
   // Read in one of the script files created by Statistics()
   // and create a SAK file of the given name.
-  int16_t CreateSak(RString strScriptFile, RString strSakFile);
+  int16_t CreateSak(std::string strScriptFile, std::string strSakFile);
 
   // Open a SAK file and until it is closed, assume that
   //	all resource names refer to resources in this SAK file.
   //	If a resource name is not in the SAK file, then it cannot
   // be loaded.  It does not attempt to load the resource from
   // its individual disk file.
-  int16_t OpenSak(RString strSakFile);
+  int16_t OpenSak(std::string strSakFile);
 
   // Open an Alternate SAK file
   // with an optionnal script file to overload name in Alternate SAK
   // (used for XMas runtime patch)
-  int16_t OpenSakAlt(RString strSakFile, RString strScriptFile = false);
+  int16_t OpenSakAlt(std::string strSakFile, std::string strScriptFile = std::string());
 
   // This function closes the Alt SAK file and all resource names
   void CloseSakAlt()
@@ -474,22 +468,22 @@ public:
   // This function sets a base pathname that will be prepended to
   // the resource name when loading resources from their individaul
   // files.
-  void SetBasePath(RString strBase);
+  void SetBasePath(std::string strBase);
 
   // This function returns the base path.
   const char* GetBasePath(void)
   {
-    return (const char*)m_strBasepath;
+    return m_strBasepath.c_str();
   }
 
   // Helper function to position m_rfSak at correct position
   // for the file you are trying to get
-  RFile* FromSak(RString strResourceName)
+  RFile* FromSak(std::string strResourceName)
   {
     RFile* prf = nullptr;
     if (m_rfSakAlt.IsOpen())
     {
-      int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName.operator std::string()];
+      int32_t	lResSeekPos	= m_SakAltDirectory[strResourceName];
       if (lResSeekPos > 0)
       {
         if (m_rfSakAlt.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
@@ -504,7 +498,7 @@ public:
         }
       }
     }
-    int32_t	lResSeekPos	= m_SakDirectory[strResourceName.operator std::string()];
+    int32_t	lResSeekPos	= m_SakDirectory[strResourceName];
     if (lResSeekPos > 0)
     {
       if (m_rfSak.Seek(lResSeekPos, SEEK_SET) == SUCCESS)
@@ -531,15 +525,24 @@ private:
   // Convert the resource name to an rsp resource name with / slashes,
   // and make sure that it is all lower case to avoid compare problems.
 
-  void NormalizeResName(RString* pstrResourceName)
+  void NormalizeResName(std::string& pstrResourceName)
   {
-    int32_t i;
-    for (i = 0; i < pstrResourceName->GetLen(); i++)
+    for(char& c : pstrResourceName)
     {
-      if (pstrResourceName->GetAt(i) == '\\')
-        pstrResourceName->SetAt(i, '/');
-      pstrResourceName->SetAt(i, tolower(pstrResourceName->GetAt(i)));
+      if(c == '\\')
+        c = '/';
+      else
+        c = tolower(c);
     }
+    /*
+    int32_t i;
+    for (i = 0; i < pstrResourceName.size(); i++)
+    {
+      if (pstrResourceName.at(i) == '\\')
+        pstrResourceName->SetAt(i, '/');
+      pstrResourceName->SetAt(i, tolower(pstrResourceName.at(i)));
+    }
+    */
   }
 
   // This flag will print trace messages of non-cached loads.  You can
@@ -620,13 +623,13 @@ private:
 
   // This is the base pathname to prepend to the resource names
   // when loading a file (not when loading from a SAK file)
-  RString m_strBasepath;
+  std::string m_strBasepath;
 
   // This is a temp variable used by the FromSystempath function to
   // store the last called for pathname.  You must use the RString
   // passed back by FromSystempath before calling it again (where it
   // will be overwritten)
-  RString m_strFullpath;
+  std::string m_strFullpath;
 
   // Write the SAK file header to the current position in
   // the given RFile.
@@ -636,11 +639,11 @@ private:
   // to load your file.
   const char* FromSystempath(const std::string& strResourceName)
   {
-    RString strSystemPartial = rspPathToSystem(strResourceName.c_str());
+    std::string strSystemPartial = rspPathToSystem(strResourceName.c_str());
     m_strFullpath = m_strBasepath + strSystemPartial;
     // Make sure that the RString is not too long for rspix functions
-    ASSERT(m_strFullpath.GetLen() < PATH_MAX);
-    return m_strFullpath;
+    ASSERT(m_strFullpath.size() < PATH_MAX);
+    return m_strFullpath.c_str();
   }
 
   // Purge all resources even if reference count is not

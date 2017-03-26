@@ -238,7 +238,7 @@ RResMgr::~RResMgr(void)
 //////////////////////////////////////////////////////////////////////
 
 int16_t RResMgr::Get(                       // Returns 0 on success.
-    RString strFilename,                      // In:  Resource name
+    std::string strFilename,                      // In:  Resource name
     void** hRes,                              // Out: Pointer to resource returned here
     RFile::Endian	endian,                     // In:  Endian nature of resource file
     GenericCreateResFunc* pfnCreate,          // In:  Pointer to "create" function object
@@ -255,13 +255,13 @@ int16_t RResMgr::Get(                       // Returns 0 on success.
 #ifdef RESMGR_VERBOSE
   TRACE("Getting %s\n", (char*)strFilename);
 #endif // RESMGR_VERBOSE
-  NormalizeResName(&strFilename);
-  resBlock.m_strFilename	= strFilename;
+  NormalizeResName(strFilename);
+  resBlock.m_strFilename = strFilename;
   
   // p is a pair of <iterator, bool> where p.first (iterator) is
   // referencing the map either where the strFilename was found
   // or where it was inserted if it did not previously exist.
-  p = m_map.insert(resclassMap::value_type (strFilename.operator std::string(), resBlock));
+  p = m_map.insert(resclassMap::value_type (strFilename, resBlock));
   // If the requested resource does not already exist, create the resource now and load it
   if ((*(p.first)).second.m_vpRes == nullptr)
   {
@@ -304,7 +304,7 @@ int16_t RResMgr::Get(                       // Returns 0 on success.
     *hRes = (*(p.first)).second.m_vpRes;
     // Add a mapping indexed by pointer to make it easy to find the
     // name of this resource later by using the resource pointer.
-    m_ptrMap[*hRes] = strFilename.operator std::string();
+    m_ptrMap[*hRes] = strFilename;
   }
   else
   {
@@ -345,7 +345,7 @@ int16_t RResMgr::Get(                       // Returns 0 on success.
 //////////////////////////////////////////////////////////////////////
 
 int16_t RResMgr::GetInstance(               // Returns 0 on success.
-    RString strFilename,                      // In:  Resource name
+    std::string strFilename,                      // In:  Resource name
     void** hRes,                              // Out: Pointer to resource returned here
     RFile::Endian endian,                     // In:  Endian nature of resource file
     GenericCreateResFunc* pfnCreate,          // In:  Pointer to "create" function object
@@ -355,7 +355,7 @@ int16_t RResMgr::GetInstance(               // Returns 0 on success.
   int16_t	sReturn	= SUCCESS;	// Assume success for return.
   // Assume failure for safety.
   *hRes	= nullptr;
-  NormalizeResName(&strFilename);
+  NormalizeResName(strFilename);
 
   // Create resource using the specified "create" function
   void* pvInstance = nullptr;
@@ -371,7 +371,7 @@ int16_t RResMgr::GetInstance(               // Returns 0 on success.
     // If SAK file fails try loading from disk.
     if (pfileSrc == nullptr)
     {
-      if (fileNoSak.Open(/*FromSystempath(strFilename)*/strFilename, "rb", endian ) == 0)
+      if (fileNoSak.Open(/*FromSystempath(strFilename)*/strFilename.c_str(), "rb", endian ) == 0)
         pfileSrc	= &fileNoSak;
       else
       {
@@ -543,7 +543,7 @@ void RResMgr::FreeAllResources(void)
   {
     if ((*i).second.m_sRefCount > 0)
       TRACE("RResMgr::FreeAllResources - %s ref count = %d - Releasing anyway\n",
-            (*i).second.m_strFilename.operator const char*(), (*i).second.m_sRefCount);
+            (*i).second.m_strFilename.c_str(), (*i).second.m_sRefCount);
     (*i).second.FreeResource();
     (*i).second.m_sRefCount = 0;
   }
@@ -568,14 +568,14 @@ void RResMgr::FreeAllResources(void)
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t RResMgr::Statistics(RString strStatFile)
+int16_t RResMgr::Statistics(std::string strStatFile)
 {
   int16_t sReturn = SUCCESS;
   std::ofstream txtout;
   resclassMap::iterator i;
 
   m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
-  txtout.open(strStatFile.operator std::string());
+  txtout.open(strStatFile);
   if (txtout.is_open())
   {
     txtout << std::endl << ";";
@@ -605,7 +605,7 @@ int16_t RResMgr::Statistics(RString strStatFile)
   else
   {
     TRACE("RResMgr::Statistics - Error - unable to open stat file %s\n",
-          strStatFile.operator const char *());
+          strStatFile.c_str());
     sReturn = FAILURE;
   }
   return sReturn;
@@ -633,18 +633,18 @@ int16_t RResMgr::Statistics(RString strStatFile)
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
+int16_t RResMgr::CreateSak(std::string strScriptFile, std::string strSakFile)
 {
   int16_t sReturn = SUCCESS;
   std::ifstream script;
-  RString line;
-  RString resname;
+  std::string line;
+  std::string resname;
   //	uint16_t usType;
   char buffer[256];
   RFile sak;
 
-  script.open(strScriptFile.operator std::string());
-  sak.Open(strSakFile, "wb", SAK_FILE_ENDIAN);
+  script.open(strScriptFile);
+  sak.Open(strSakFile.c_str(), "wb", SAK_FILE_ENDIAN);
   if (script.is_open() && sak.IsOpen())
   {
     // Load in all of the resource names to be added to SAK file
@@ -652,11 +652,11 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
     {
       script.getline(buffer, 256);
       resname = buffer;
-      if (resname[(int32_t) 0] != ';' && resname[(int32_t) 0] != ' ' && resname.GetLen() > 0)
+      if (resname[0] != ';' && resname[0] != ' ' && !resname.empty())
       {
-        NormalizeResName(&resname);
+        NormalizeResName(resname);
         m_LoadList.push_back(resname);
-        m_DirectoryMap.insert(dirMap::value_type(resname.operator std::string(), 0));
+        m_DirectoryMap.insert(dirMap::value_type(resname, 0));
       }
       /*
          script >> line;
@@ -742,7 +742,7 @@ int16_t RResMgr::CreateSak(RString strScriptFile, RString strSakFile)
   else
   {
     TRACE("RResMgr::CreateSak - Error opening script file %s or sak file %s",
-          strScriptFile.operator const char *(), strSakFile.operator const char *());
+          strScriptFile.c_str(), strSakFile.c_str());
     sReturn = FAILURE;
   }
   return sReturn;
@@ -821,7 +821,7 @@ int16_t RResMgr::WriteSakHeader(RFile* prf)
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t RResMgr::OpenSak(RString strSakFile)
+int16_t RResMgr::OpenSak(std::string strSakFile)
 {
   int16_t sReturn = SUCCESS;
   uint32_t ulFileType;
@@ -830,7 +830,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
   uint16_t i;
   char char_buffer[256];
   int32_t lOffset;
-  RString strFilename;
+  std::string strFilename;
 
   if (m_rfSak.IsOpen())
   {
@@ -838,7 +838,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
     CloseSak();
   }
 
-  if (m_rfSak.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
+  if (m_rfSak.Open(strSakFile.c_str(), "rb", SAK_FILE_ENDIAN) == SUCCESS)
   {
     m_rfSak.ClearError();
     m_rfSak.Read(&ulFileType);
@@ -856,7 +856,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
           // Read the offset
           m_rfSak.Read(&lOffset);
           //TRACE("%s @ 0x%08x : %s\n", strSakFile.operator const char * (), lOffset, char_buffer);
-          m_SakDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
+          m_SakDirectory.insert(dirMap::value_type (strFilename, lOffset));
           m_SakDirOffset.insert(lOffset);
         }
         // Insert end of SAK file into offset Set container so there is
@@ -880,7 +880,7 @@ int16_t RResMgr::OpenSak(RString strSakFile)
   }
   else
   {
-    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile.operator const char *());
+    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile.c_str());
     sReturn = FAILURE;
   }
 
@@ -910,9 +910,9 @@ int16_t RResMgr::OpenSak(RString strSakFile)
 //
 //////////////////////////////////////////////////////////////////////
 
-void RResMgr::SetBasePath(RString strBasepath)
+void RResMgr::SetBasePath(std::string strBasepath)
 {
-  int16_t sLast = strBasepath.GetLen();
+  int16_t sLast = strBasepath.size();
   if (sLast > 0)
     sLast--;
 
@@ -920,7 +920,7 @@ void RResMgr::SetBasePath(RString strBasepath)
   if (strBasepath[(int32_t) sLast] != '/')
     strBasepath += '/';
   // Make sure it is short enough to work with rspix functions
-  ASSERT(strBasepath.GetLen() < PATH_MAX);
+  ASSERT(strBasepath.size() < PATH_MAX);
   m_strBasepath = strBasepath;
 }
 
@@ -943,7 +943,7 @@ void RResMgr::SetBasePath(RString strBasepath)
 //
 //////////////////////////////////////////////////////////////////////
 
-int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
+int16_t RResMgr::OpenSakAlt(std::string strSakFile, std::string strScriptFile)
 {
   int16_t sReturn = SUCCESS;
   uint32_t ulFileType;
@@ -952,12 +952,12 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
   uint16_t i;
   char char_buffer[256];
   int32_t lOffset;
-  RString strFilename;
+  std::string strFilename;
   std::ifstream script;
   dirMap altNames;
   struct {
     int cnt;
-    RString *names;
+    std::string* names;
   } altMap[1024];
   int num = 0;
 
@@ -966,9 +966,9 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
     TRACE("RResMgr::OpenSakAlt - The currently open Alt SAK file is being closed before loading the new Alt SAK file\n");
     CloseSakAlt();
   }
-  if(strScriptFile)
+  if(!strScriptFile.empty())
   {
-    script.open(strScriptFile.operator std::string());
+    script.open(strScriptFile);
     if (script.is_open())
     {
       // Load in all of the resource names to be added to SAK file
@@ -980,10 +980,10 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
         if((p=strchr(char_buffer,'\r'))!=nullptr)
           *p = '\0';
         strFilename = char_buffer;
-        if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
+        if (strFilename[0] != ';' && strFilename[0] != ' ' && !strFilename.empty())
         {
           num++;
-          altNames.insert(dirMap::value_type(strFilename.operator std::string(), num));
+          altNames.insert(dirMap::value_type(strFilename, num));
           // now get the number of substitutions
           script.getline(char_buffer, 256);
           //clean the \r that can still be there
@@ -994,7 +994,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
           strFilename = char_buffer;
           int cnt = atoi(char_buffer);
           altMap[num].cnt = cnt;
-          altMap[num].names = new RString[cnt];
+          altMap[num].names = new std::string[cnt];
           for(int i=0; i<cnt;)
           {
             script.getline(char_buffer, 256);
@@ -1004,7 +1004,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
               *p = '\0';
             strFilename = char_buffer;
             strFilename = char_buffer;
-            if (strFilename[(int32_t) 0] != ';' && strFilename[(int32_t) 0] != ' ' && strFilename.GetLen() > 0)
+            if (strFilename[0] != ';' && strFilename[0] != ' ' && !strFilename.empty())
             {
               altMap[num].names[i] = strFilename;
               i++;
@@ -1016,7 +1016,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
     }
   }
 
-  if (m_rfSakAlt.Open(strSakFile, "rb", SAK_FILE_ENDIAN) == SUCCESS)
+  if (m_rfSakAlt.Open(strSakFile.c_str(), "rb", SAK_FILE_ENDIAN) == SUCCESS)
   {
     m_rfSakAlt.ClearError();
     m_rfSakAlt.Read(&ulFileType);
@@ -1037,10 +1037,10 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
           if (alt>0)
           {
             for (int i=0; i<altMap[alt].cnt; i++)
-              m_SakAltDirectory.insert(dirMap::value_type (altMap[alt].names[i].operator std::string(), lOffset));
+              m_SakAltDirectory.insert(dirMap::value_type (altMap[alt].names[i], lOffset));
           }
           else
-            m_SakAltDirectory.insert(dirMap::value_type (strFilename.operator std::string(), lOffset));
+            m_SakAltDirectory.insert(dirMap::value_type (strFilename, lOffset));
         }
       }
       else
@@ -1058,7 +1058,7 @@ int16_t RResMgr::OpenSakAlt(RString strSakFile, RString strScriptFile)
   }
   else
   {
-    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile.operator const char *());
+    TRACE("RResMgr::OpenSak - Error opening sak file %s\n", strSakFile.c_str());
     sReturn = FAILURE;
   }
 
