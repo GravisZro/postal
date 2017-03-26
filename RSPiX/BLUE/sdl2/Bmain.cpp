@@ -45,7 +45,6 @@
 
 // POSIX ////////////////////////////////////////////////////////////////////
 #if defined(__unix__)
-#include <unistd.h>
 #include <sys/param.h>
 #endif
 
