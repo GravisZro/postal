@@ -17,10 +17,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
-//	System.h
+//  System.h
 //
 // History:
-//		07/19/96 JMI	Started.
+//    07/19/96 JMI  Started.
 //
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -30,14 +30,14 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 //
-//	UnixSystem.h
+//  UnixSystem.h
 // 
 // History:
-//		06/01/04 RCG    Added.
+//    06/01/04 RCG    Added.
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-//	This file provides typedefs, macros, pragmas, etc. for Unix systems.
+//  This file provides typedefs, macros, pragmas, etc. for Unix systems.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SYSTEM_H
@@ -172,7 +172,25 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 ////////////////////////////////////////////////////////////////////////////////
 
 #if !defined(_POSIX_VERSION) // || _POSIX_VERSION < 200112L
-#if !defined(S_IFMT) // avoid redefinition on MSVC?! o_O?
+
+# if !defined(S_IRUSR)
+#define  S_IRUSR  0400  // Read by owner.
+#define  S_IWUSR  0200  // Write by owner.
+#define  S_IXUSR  0100  // Execute by owner.
+#define  S_IRWXU  0700  // Read, write, and execute by owner.
+
+#define  S_IRGRP  0040  // Read by group.
+#define  S_IWGRP  0020  // Write by group.
+#define  S_IXGRP  0010  // Execute by group.
+#define  S_IRWXG  0070  // Read, write, and execute by group.
+
+#define  S_IROTH  0004  // Read by others.
+#define  S_IWOTH  0002  // Write by others.
+#define  S_IXOTH  0001  // Execute by others.
+#define  S_IRWXO  0007  // Read, write, and execute by others.
+#endif
+
+#if !defined(S_IFMT)
 #  define S_IFMT    0170000  // These bits determine file type.
 #  define S_IFDIR   0040000  // Directory.
 #  define S_IFCHR   0020000  // Character device.
@@ -188,6 +206,7 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 #  define S_ISBLK(mode)         S_ISTYPE((mode), S_IFBLK)
 #  define S_ISREG(mode)         S_ISTYPE((mode), S_IFREG)
 # endif
+
 #else
 # include <unistd.h>
 #endif
@@ -261,15 +280,15 @@ inline int mkdir(const char *path, int) { return mkdir(path); }
 
 // 128-bit got a little trickier...
 #if BYTE_ORDER == LITTLE_ENDIAN
-typedef struct {	uint64_t	lo;
-                  int64_t	hi;} int128_t;
-typedef struct {	uint64_t	lo;
-                  uint64_t	hi;} uint128_t;
+typedef struct { uint64_t lo;
+                  int64_t hi; } int128_t;
+typedef struct { uint64_t lo;
+                 uint64_t hi; } uint128_t;
 #elif BYTE_ORDER == BIG_ENDIAN
-typedef struct {	int64_t	hi;
-                  uint64_t	lo;} int128_t;
-typedef struct {	uint64_t	hi;
-                  uint64_t	lo;} uint128_t;
+typedef struct {  int64_t hi;
+                 uint64_t lo; } int128_t;
+typedef struct { uint64_t hi;
+                 uint64_t lo; } uint128_t;
 #elif BYTE_ORDER == PDP_ENDIAN
 # error Middle-endian is not implemented.
 #elif defined(BYTE_ORDER)
@@ -351,9 +370,9 @@ typedef uint16_t RPixel16;
 
 struct RPixel24
 {
-  channel_t	red;
-  channel_t	green;
-  channel_t	blue;
+  channel_t red;
+  channel_t green;
+  channel_t blue;
 
   constexpr bool operator==(const RPixel24& other)
   {
@@ -366,10 +385,10 @@ static_assert(sizeof(RPixel24) == 3, "compiler fail!");
 
 struct RPixel32
 {
-  channel_t	alpha;
-  channel_t	red;
-  channel_t	green;
-  channel_t	blue;
+  channel_t alpha;
+  channel_t red;
+  channel_t green;
+  channel_t blue;
 
   constexpr bool operator==(const RPixel32& other)
   {
@@ -393,7 +412,7 @@ constexpr T MIN(T a,T b) { return (a < b) ? a : b; }
 template <class T>
 constexpr T MAX(T a,T b) { return (a > b) ? a : b; }
 
-#undef SWAP	// Swaps two identical typed variables
+#undef SWAP // Swaps two identical typed variables
 template <class T>
 constexpr void SWAP(T &a,T &b) { T temp = a; a = b; b = temp; }
 
