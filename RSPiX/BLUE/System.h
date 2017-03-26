@@ -171,43 +171,7 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 // POSIX specific fixes
 ////////////////////////////////////////////////////////////////////////////////
 
-#if !defined(_POSIX_VERSION) // || _POSIX_VERSION < 200112L
-
-# if !defined(S_IRUSR)
-#define  S_IRUSR  0400  // Read by owner.
-#define  S_IWUSR  0200  // Write by owner.
-#define  S_IXUSR  0100  // Execute by owner.
-#define  S_IRWXU  0700  // Read, write, and execute by owner.
-
-#define  S_IRGRP  0040  // Read by group.
-#define  S_IWGRP  0020  // Write by group.
-#define  S_IXGRP  0010  // Execute by group.
-#define  S_IRWXG  0070  // Read, write, and execute by group.
-
-#define  S_IROTH  0004  // Read by others.
-#define  S_IWOTH  0002  // Write by others.
-#define  S_IXOTH  0001  // Execute by others.
-#define  S_IRWXO  0007  // Read, write, and execute by others.
-#endif
-
-#if !defined(S_IFMT)
-#  define S_IFMT    0170000  // These bits determine file type.
-#  define S_IFDIR   0040000  // Directory.
-#  define S_IFCHR   0020000  // Character device.
-#  define S_IFBLK   0060000  // Block device.
-#  define S_IFREG   0100000  // Regular file.
-#  define S_IFIFO   0010000  // FIFO.
-#  define S_IFLNK   0120000  // Symbolic link.
-#  define S_IFSOCK  0140000  // Socket.
-
-#  define S_ISTYPE(mode, mask)  (((mode) & 0170000) == (mask))
-#  define S_ISDIR(mode)         S_ISTYPE((mode), S_IFDIR)
-#  define S_ISCHR(mode)         S_ISTYPE((mode), S_IFCHR)
-#  define S_ISBLK(mode)         S_ISTYPE((mode), S_IFBLK)
-#  define S_ISREG(mode)         S_ISTYPE((mode), S_IFREG)
-# endif
-
-#else
+#if defined(_POSIX_VERSION) // || _POSIX_VERSION < 200112L
 # include <unistd.h>
 #endif
 
@@ -220,6 +184,33 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 # include <BLUE/stdint_msvc.h>
 # include <BaseTsd.h> // for SSIZE_T
 # include <direct.h> // for mkdir
+
+# define S_IRUSR    0400  // Read by owner.
+# define S_IWUSR    0200  // Write by owner.
+# define S_IXUSR    0100  // Execute by owner.
+# define S_IRWXU    0700  // Read, write, and execute by owner.
+# define S_IRGRP    0040  // Read by group.
+# define S_IWGRP    0020  // Write by group.
+# define S_IXGRP    0010  // Execute by group.
+# define S_IRWXG    0070  // Read, write, and execute by group.
+# define S_IROTH    0004  // Read by others.
+# define S_IWOTH    0002  // Write by others.
+# define S_IXOTH    0001  // Execute by others.
+# define S_IRWXO    0007  // Read, write, and execute by others.
+# define S_IFMT     0170000  // These bits determine file type.
+# define S_IFDIR    0040000  // Directory.
+# define S_IFCHR    0020000  // Character device.
+# define S_IFBLK    0060000  // Block device.
+# define S_IFREG    0100000  // Regular file.
+# define S_IFIFO    0010000  // FIFO.
+# define S_IFLNK    0120000  // Symbolic link.
+# define S_IFSOCK   0140000  // Socket.
+# define S_ISTYPE(mode, mask)  (((mode) & 0170000) == (mask))
+# define S_ISDIR(mode)         S_ISTYPE((mode), S_IFDIR)
+# define S_ISCHR(mode)         S_ISTYPE((mode), S_IFCHR)
+# define S_ISBLK(mode)         S_ISTYPE((mode), S_IFBLK)
+# define S_ISREG(mode)         S_ISTYPE((mode), S_IFREG)
+
 #define stat _stat
 typedef uint32_t mode_t; // no sys/types.h
 inline int _mkdir(const char *path, int) { return _mkdir(path); }
@@ -252,9 +243,7 @@ inline int mkdir(const char *path, int) { return mkdir(path); }
 // platform specific fixes
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(_WIN32) // any windows targetable compiler
-# define S_IRWXU  0  // dummy value
-#else // non-Windows compiler
+#if !defined(_WIN32) // non-Windows compiler
 # if defined(__GNUC__) && defined(__GNUC_MINOR__) // GCC based compiler
 #  define __GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
 # else // non-GCC based compiler
