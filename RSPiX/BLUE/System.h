@@ -236,14 +236,6 @@ inline int mkdir(const char *path, int) { return mkdir(path); }
 // non-standard definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-#if !defined(F_OK)
-# define F_OK 00
-#endif
-
-#if !defined(R_OK)
-# define R_OK 04
-#endif
-
 /* Minimum of unsigned integral types.  */
 # define UINT8_MIN  0
 # define UINT16_MIN 0

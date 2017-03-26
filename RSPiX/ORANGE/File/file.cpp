@@ -328,17 +328,54 @@ static void locateCorrectCase(char *buf)
 #endif
 }
 
+
+bool path_is_readable(const char* path)
+{
+  static struct stat state;
+  return stat(path, &state) == SUCCESS &&
+      S_ISREG(state.st_mode) &&
+      state.st_mode | S_IRUSR | S_IRGRP | S_IROTH;
+}
+
+bool path_is_writeable(const char* path)
+{
+  static struct stat state;
+  return stat(path, &state) == SUCCESS &&
+      S_ISREG(state.st_mode) &&
+      state.st_mode | S_IWUSR | S_IWGRP | S_IWOTH;
+}
+
+bool path_is_dir(const char* path)
+{
+  static struct stat state;
+  return stat(path, &state) == SUCCESS &&
+      S_ISDIR(state.st_mode);
+}
+
+bool path_is_file(const char* path)
+{
+  static struct stat state;
+  return stat(path, &state) == SUCCESS &&
+      S_ISREG(state.st_mode);
+}
+
+bool path_exists(const char* path)
+{
+  static struct stat state;
+  return stat(path, &state) == SUCCESS;
+}
+
+
 // make directory and parents
 static int mkdir_p(char* pszName, mode_t mode)
 {
-  static struct stat dir;
   char* path = pszName;
   do
   {
     if (*path == '/' || *path == '\\')
     {
       *path = '\0';
-      if (stat(pszName, &dir) != SUCCESS) // if it doesn't exist
+      if(!path_exists(pszName)) // if it doesn't exist
         mkdir(pszName, mode); // allowed to fail some of the time, so don't bail out
       *path = '/';
     }
@@ -346,12 +383,12 @@ static int mkdir_p(char* pszName, mode_t mode)
   return SUCCESS;
 }
 
+
 #define SAFE_PATH_MAX (PATH_MAX - 64)
 static_assert(PATH_MAX > 64, "PATH_MAX is too small!");
 
-extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
+extern const char* FindCorrectFile(const char *pszName, const char* pszMode)
 {
-
 #if defined(__DREAMCAST__)
 #elif defined(__SATURN__)
 #else
@@ -375,6 +412,7 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
     else
     {
 # if defined(__DOS__)
+      UNUSED(tmp);
 # elif defined(_WIN32)
             /*
              * Vista and later has a new API for this, but SHGetFolderPath works there,
@@ -414,13 +452,13 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
         strcpy(prefpath, tmp);
         strcpy(path, prefpath);
         strcat(path, "/.postal1");
-        struct stat file;
-        if(stat(path, &file) == SUCCESS && S_ISDIR(file.st_mode))
+        if(path_is_dir(path))
           strcat(prefpath, "/.postal1/");
         else
           strcat(prefpath, "/.local/share/Postal/");
       }
 # else
+      UNUSED(tmp);
       NOTE("Proceeding with empty preference path.");
 # endif
       mkdir_p(prefpath, S_IRWXU); // make sure directory exists
@@ -450,7 +488,7 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
   if (strcspn(pszMode, "aAwW+") < strlen(pszMode))
   {
     // read AND write.  :/   Copy the file if it's not there.
-    if ((strchr(pszMode, '+')) && (access(finalname, F_OK) == -1))
+    if ((strchr(pszMode, '+')) && !path_exists(finalname))
     {
       FILE* in = fopen(pszName, "rb");
       FILE* out = fopen(finalname, "wb");
@@ -465,10 +503,10 @@ extern const char *FindCorrectFile(const char *pszName, const char *pszMode)
 
     return finalname;
   }
-
   else  // reading.
   {
-    if (access(finalname, R_OK) == -1)  // favor prefpath?
+    if(!path_is_readable(finalname) ||
+        path_is_dir(finalname))
     {
       strcpy(finalname, pszName); // nope, use original name.
       locateCorrectCase(finalname);

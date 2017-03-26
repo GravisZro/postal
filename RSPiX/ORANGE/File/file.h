@@ -647,7 +647,7 @@ class RFile
 		friend class RRes;
 //////////////////////////////////////////////////////////////////////////////
 
-	public:	// Member variables.
+   public:	// Member variables.
 		FILE*			m_fs;						// Stdio file stream ptr.
 		static CritiCall	ms_criticall;	// Called on every read and write with
 													// the amount that is about to be
@@ -728,7 +728,7 @@ int16_t RFileEZLoad(
 		{
 
 		// Open the file
-		sResult = pFile->Open(pszName, pszMode, endian);
+      sResult = pFile->Open(pszName, pszMode, endian);
 		if (sResult == SUCCESS)
 			{
 
@@ -804,7 +804,7 @@ int16_t RFileEZSave(
 		{
 
 		// Open the file
-		sResult = pFile->Open(pszName, pszMode, endian);
+      sResult = pFile->Open(pszName, pszMode, endian);
 		if (sResult == SUCCESS)
 			{
 
