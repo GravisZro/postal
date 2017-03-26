@@ -171,7 +171,22 @@ static_assert(sizeof(uintptr_t) == sizeof(void*), "your compiler is broken!");
 // POSIX specific fixes
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(_POSIX_VERSION) // _POSIX_VERSION >= 200112L
+#if !defined(_POSIX_VERSION) // || _POSIX_VERSION < 200112L
+# define S_IFMT    0170000  // These bits determine file type.
+# define S_IFDIR   0040000  // Directory.
+# define S_IFCHR   0020000  // Character device.
+# define S_IFBLK   0060000  // Block device.
+# define S_IFREG   0100000  // Regular file.
+# define S_IFIFO   0010000  // FIFO.
+# define S_IFLNK   0120000  // Symbolic link.
+# define S_IFSOCK  0140000  // Socket.
+
+# define S_ISTYPE(mode, mask)  (((mode) & __S_IFMT) == (mask))
+# define S_ISDIR(mode)         S_ISTYPE((mode), S_IFDIR)
+# define S_ISCHR(mode)         S_ISTYPE((mode), S_IFCHR)
+# define S_ISBLK(mode)         S_ISTYPE((mode), S_IFBLK)
+# define S_ISREG(mode)         S_ISTYPE((mode), S_IFREG)
+#else
 # include <unistd.h>
 #endif
 

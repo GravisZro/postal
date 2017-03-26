@@ -143,8 +143,6 @@
 #include <climits>
 #include <cfloat>
 
-#include <sys/stat.h>
-
 #if defined(__unix__)
 #include <dirent.h>
 #include <sys/param.h>
