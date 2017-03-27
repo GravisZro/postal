@@ -534,15 +534,6 @@ private:
       else
         c = tolower(c);
     }
-    /*
-    int32_t i;
-    for (i = 0; i < pstrResourceName.size(); i++)
-    {
-      if (pstrResourceName.at(i) == '\\')
-        pstrResourceName->SetAt(i, '/');
-      pstrResourceName->SetAt(i, tolower(pstrResourceName.at(i)));
-    }
-    */
   }
 
   // This flag will print trace messages of non-cached loads.  You can

@@ -572,7 +572,6 @@ int16_t RResMgr::Statistics(std::string strStatFile)
 {
   int16_t sReturn = SUCCESS;
   std::ofstream txtout;
-  resclassMap::iterator i;
 
   m_duplicateSet.erase(m_duplicateSet.begin(), m_duplicateSet.end());
   txtout.open(strStatFile);
@@ -660,7 +659,7 @@ int16_t RResMgr::CreateSak(std::string strScriptFile, std::string strSakFile)
       }
       /*
          script >> line;
-         if (line[(long) 0] == ';' || line.GetLen() == 0)
+         if (line[0] == ';' || line.empty())
             script.getline(buffer, 256);
          else
          {
@@ -991,7 +990,6 @@ int16_t RResMgr::OpenSakAlt(std::string strSakFile, std::string strScriptFile)
           if((p=strchr(char_buffer,'\r'))!=nullptr)
             *p = '\0';
           strFilename = char_buffer;
-          strFilename = char_buffer;
           int cnt = atoi(char_buffer);
           altMap[num].cnt = cnt;
           altMap[num].names = new std::string[cnt];
@@ -1002,7 +1000,6 @@ int16_t RResMgr::OpenSakAlt(std::string strSakFile, std::string strScriptFile)
             char* p;
             if((p=strchr(char_buffer,'\r'))!=nullptr)
               *p = '\0';
-            strFilename = char_buffer;
             strFilename = char_buffer;
             if (strFilename[0] != ';' && strFilename[0] != ' ' && !strFilename.empty())
             {
