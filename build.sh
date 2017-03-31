@@ -311,6 +311,7 @@ usage=$(concat \
       "$nextline [--verbose]" \
       "$nextline [--release | --debug | --clean]" \
       "$nextline [--tracelog=<filename>]" \
+      "$nextline [--sakmanip]" \
       "$nextline [--help | -h]" \
       )
 help=$(concat \
@@ -483,6 +484,12 @@ do
       makejobs=$(arg_value ${option})
     ;;
 
+    --sakmanip)
+      echo -n "Building SAK Manipulation Tool... "
+      g++ WishPiX/ResourceManager/sakarchive.cpp WishPiX/ResourceManager/filestream.cpp WishPiX/ResourceManager/sakmanip.cpp -o sakmanip
+      echo "Done!"
+      exit 0
+    ;;
 
     -h|--help)
       echo "${usage}"
