@@ -449,9 +449,9 @@ constexpr T SGN3(T x) { return (x == 0) ? (T)0 : ((x < 0) ? (T)-1 : (T)1); }
 extern void rspTrace(const char* szFrmt, ...);
 
 #if defined(RELEASE) || defined(NDEBUG) || defined(_NDEBUG)
-#define STRACE 1 ? (void)0 : rspTrace
-#define TRACE STRACE
-#define ASSERT(...)
+#define STRACE    1 ? (void)0 : rspTrace
+#define TRACE     STRACE
+#define ASSERT(x)
 #elif defined(_DEBUG) || defined(TRACENASSERT)
 # include <cassert>
 # define STRACE(...)  rspTrace(__VA_ARGS__)
@@ -465,7 +465,7 @@ extern void rspTrace(const char* szFrmt, ...);
 # include <cassert>
 # define STRACE(...)  rspTrace(__VA_ARGS__)
 # define TRACE(...)   STRACE(__VA_ARGS__)
-# define ASSERT(...)  assert(__VA_ARGS__)
+# define ASSERT(x)    assert(x)
 #endif
 
 #endif // SYSTEM_H
