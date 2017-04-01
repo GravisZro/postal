@@ -2,9 +2,6 @@
 
 #include <cstring>
 
-#include <unistd.h>
-#include <sys/types.h>
-
 #ifndef ASSERT
 #include <cassert>
 #define ASSERT(x) assert(x)
