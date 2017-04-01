@@ -167,9 +167,13 @@ bool SAKArchiveExt::shiftEntries(int32_t index_diff, int32_t offset_diff, uint32
   for(auto& iter : m_lookup)
   {
     uint32_t original_offset = iter.second.offset;
-    iter.second.offset += index_diff;
-    if(iter.second.offset > offset)
-      iter.second.offset += offset_diff;
+    if(iter.second.offset != offset ||
+       iter.second.length != offset_diff)
+    {
+      iter.second.offset += index_diff;
+      if(iter.second.offset > offset)
+        iter.second.offset += offset_diff;
+    }
 
     shift_data.emplace_back(iter.first, original_offset, iter.second.offset, iter.second.length); // save original offset, new offset and length
     names_offsets.emplace_back(std::make_pair(iter.first, iter.second.offset)); // save name and offset
