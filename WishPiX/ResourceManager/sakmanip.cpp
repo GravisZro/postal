@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <cstdint>
 
 #include <sys/stat.h>
 #include <unistd.h>

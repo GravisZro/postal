@@ -8,6 +8,8 @@
 #include <memory>
 #include <list>
 
+#include <cstdint>
+
 class SAKArchive // "Swiss Army Knife" Archive
 {
 public:
