@@ -2,10 +2,15 @@
 
 #include <cstring>
 
+#include <unistd.h>
+#include <sys/types.h>
+
 #ifndef ASSERT
 #include <cassert>
 #define ASSERT(x) assert(x)
 #endif
+
+#define FILE_COUNT_OFFSET  8
 
 template<typename A, typename B>
 constexpr bool pair_second_greater(const std::pair<A, B>& x, const std::pair<A, B>& y)
@@ -114,42 +119,59 @@ bool SAKArchiveExt::removeFile(const char* filename)
 
   uint32_t old_filesize = m_file.size();
   int32_t entry_size = fileinfo.first.size() + 1 + sizeof(uint32_t);
-  uint32_t new_filesize = old_filesize - entry_size - fileinfo.second.length;
   if(!shiftEntries(0 - entry_size,
                    0 - fileinfo.second.length,
                    fileinfo.second.offset))
     return false;
 
-  return resizeFile(new_filesize);
+  return resizeFile(old_filesize - entry_size - fileinfo.second.length);
 }
 
 bool SAKArchiveExt::appendFile(const char* filename, const uint8_t* filedata, uint32_t datalength)
 {
   uint32_t old_filesize = m_file.size();
 
-  auto result = m_lookup.emplace(std::make_pair(filename, SAKFile(old_filesize, datalength)));
+  auto result = m_lookup.emplace(std::make_pair(filename, SAKFile(UINT32_MAX, datalength)));
   if(!result.second)
     return false;
   const std::pair<std::string, SAKFile>& fileinfo = *result.first;
 
   int32_t entry_size = fileinfo.first.size() + 1 + sizeof(uint32_t);
-  uint32_t new_filesize = old_filesize + entry_size + fileinfo.second.length;
-
-  if(!resizeFile(new_filesize))
-    return false;
+  uint32_t new_offset = old_filesize + entry_size;
 
   if(!shiftEntries(entry_size,
                    fileinfo.second.length,
                    fileinfo.second.offset))
     return false;
 
-  m_file.seekp(fileinfo.second.offset);
+
+  std::string tmp_filename;
+  uint32_t tmp_offset = 0;
+  uint16_t file_count = 0;
+
+  m_file.seekg(FILE_COUNT_OFFSET);
+  m_file >> file_count;
+
+  for(uint16_t i = 0; i < file_count; ++i)
+  {
+    m_file >> tmp_filename;
+    m_file >> tmp_offset;
+    if(tmp_offset == UINT32_MAX)
+    {
+      m_file.seekp(m_file.tellg() - sizeof(uint32_t));
+      m_file << new_offset;
+      break;
+    }
+  }
+
+  m_file.seekp(new_offset);
   m_file.write(reinterpret_cast<const char*>(filedata), fileinfo.second.length);
   return true;
 }
 
 bool SAKArchiveExt::shiftEntries(int32_t index_diff, int32_t offset_diff, uint32_t offset)
 {
+  assert(index_diff != 0);
   struct oldnewlength
   {
     std::string filename;
@@ -167,8 +189,7 @@ bool SAKArchiveExt::shiftEntries(int32_t index_diff, int32_t offset_diff, uint32
   for(auto& iter : m_lookup)
   {
     uint32_t original_offset = iter.second.offset;
-    if(iter.second.offset != offset ||
-       iter.second.length != offset_diff)
+    if(original_offset < UINT32_MAX) // do not modify identifier/bad address
     {
       iter.second.offset += index_diff;
       if(iter.second.offset > offset)
@@ -179,16 +200,6 @@ bool SAKArchiveExt::shiftEntries(int32_t index_diff, int32_t offset_diff, uint32
     names_offsets.emplace_back(std::make_pair(iter.first, iter.second.offset)); // save name and offset
   }
 
-  names_offsets.sort(pair_first_less<std::string, uint32_t>);
-
-  m_file.seekp(8, std::ios::beg); // seek to file count data
-  if(m_file.fail())
-    return false;
-
-  m_file << uint16_t(m_lookup.size());
-  for(auto& iter : names_offsets)
-    m_file << iter.first << iter.second;
-
   if(index_diff > 0) // add file
     shift_data.sort(std::greater<oldnewlength>());
   else // remove file
@@ -197,13 +208,24 @@ bool SAKArchiveExt::shiftEntries(int32_t index_diff, int32_t offset_diff, uint32
   std::vector<uint8_t> data_buffer;
   for(auto& iter : shift_data)
   {
-    m_file.seekg(iter.old_offset); // move get to original offset
-    m_file.seekp(iter.new_offset); // move put to new offset
+    if(iter.old_offset != iter.new_offset) // if file needs to be moved
+    {
+      m_file.seekg(iter.old_offset); // move get to original offset
+      m_file.seekp(iter.new_offset); // move put to new offset
 
-    data_buffer.resize(iter.length);
-    m_file >> data_buffer; // get file data
-    m_file << data_buffer; // put file data
+      data_buffer.resize(iter.length);
+      m_file >> data_buffer; // get file data
+      m_file << data_buffer; // put file data
+    }
   }
+
+  names_offsets.sort(pair_first_less<std::string, uint32_t>);
+  m_file.seekp(FILE_COUNT_OFFSET, std::ios::beg); // seek to file count data
+
+  // write file index
+  m_file << uint16_t(m_lookup.size());
+  for(auto& iter : names_offsets)
+    m_file << iter.first << iter.second;
 
   return true;
 }
