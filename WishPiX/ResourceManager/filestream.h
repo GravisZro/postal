@@ -3,8 +3,7 @@
 
 #include <fstream>
 #include <vector>
-
-#include <iostream>
+#include <string>
 
 // STL fstream with lots of << and >> overloads and independant read and write positions
 class filestream : public std::fstream

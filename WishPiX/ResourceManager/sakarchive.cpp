@@ -1,7 +1,5 @@
 #include "sakarchive.h"
 
-#include <cstring>
-
 #ifndef ASSERT
 #include <cassert>
 #define ASSERT(x) assert(x)
@@ -35,8 +33,6 @@ SAKArchive::SAKArchive(const char* archivename)
   ASSERT(magic_number == consts::magic_number); // "SAK "
 
   m_file >> version;
-  if(version != consts::version)
-    std::cout << "expected: " << std::hex << consts::version << " - got: " << version << std::endl;
   ASSERT(version == consts::version); // only one version exists, so make sure we have it
 
   m_file >> file_count;
