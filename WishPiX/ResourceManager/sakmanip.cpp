@@ -94,15 +94,17 @@ int main(int argc, char **argv)
         if(filename.size() > maxw)
           maxw = filename.size();
 
-      std::cout << std::setw(10) << std::left << " Offset"
+      std::cout << std::setw(10)   << std::left  << " Offset"
                 << std::setw(maxw) << std::left  << "Filename"
-                << std::setw(10) << std::right << "Bytes"
+                << std::setw(10)   << std::right << "Bytes"
                 << std::endl;
+
       std::cout << std::setw(maxw + 20) << std::setfill('-') << "-" << std::endl;
+
       for(std::string& filename : archive->listFiles())
-        std::cout << std::setw(8) << std::setfill('0') << std::hex << std::right << archive->fileOffset(filename.c_str()) << "  "
+        std::cout << std::setw(8)    << std::setfill('0') << std::hex << std::right << archive->fileOffset(filename.c_str()) << "  "
                   << std::setw(maxw) << std::setfill('.') << std::left << filename
-                  << std::setw(10) << std::setfill('.') << std::dec << std::right << archive->fileSize(filename.c_str())
+                  << std::setw(10)   << std::setfill('.') << std::dec << std::right << archive->fileSize(filename.c_str())
                   << std::endl;
       break;
     }
