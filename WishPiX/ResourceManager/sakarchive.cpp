@@ -1,19 +1,13 @@
 #include "sakarchive.h"
 
-#ifndef ASSERT
-#include <cassert>
-#define ASSERT(x) assert(x)
+#if !defined(TARGET)
+# include <cassert>
+# define ASSERT(x) assert(x)
 #endif
-
-#define FILE_COUNT_OFFSET  8
 
 template<typename A, typename B>
 constexpr bool pair_second_greater(const std::pair<A, B>& x, const std::pair<A, B>& y)
   { return x.second > y.second; }
-
-template<typename A, typename B>
-constexpr bool pair_first_less(const std::pair<A, B>& x, const std::pair<A, B>& y)
-  { return x.first < y.first; }
 
 namespace consts
 {
@@ -81,6 +75,13 @@ std::shared_ptr<std::vector<uint8_t>> SAKArchive::getFile(const char* filename)
 }
 
 //=======================================================================================
+#if !defined(TARGET)
+
+#define FILE_COUNT_OFFSET  8
+
+template<typename A, typename B>
+constexpr bool pair_first_less(const std::pair<A, B>& x, const std::pair<A, B>& y)
+  { return x.first < y.first; }
 
 std::list<std::string> SAKArchiveExt::listFiles(void) const
 {
@@ -236,3 +237,5 @@ bool SAKArchiveExt::resizeFile(uint32_t new_size)
   m_file.open(m_archivename, std::ios::in | std::ios::out | std::ios::binary);
   return m_file.good();
 }
+
+#endif

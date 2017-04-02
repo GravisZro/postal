@@ -7,8 +7,11 @@
 #include <vector>
 #include <memory>
 #include <list>
-
 #include <cstdint>
+
+#if !defined(TARGET)
+# include <RSPiX/BLUE/System.h>
+#endif
 
 class SAKArchive // "Swiss Army Knife" Archive
 {
@@ -37,6 +40,7 @@ protected:
 };
 
 //=======================================================================================
+#if !defined(TARGET)
 
 // Extended operations not required for the game
 class SAKArchiveExt : public SAKArchive
@@ -66,5 +70,6 @@ private:
   std::string m_archivename;
 };
 
+#endif
 
 #endif // SAKARCHIVE_H
