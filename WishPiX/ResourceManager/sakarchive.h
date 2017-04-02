@@ -9,7 +9,7 @@
 #include <list>
 #include <cstdint>
 
-#if !defined(TARGET)
+#if defined(TARGET)
 # include <RSPiX/BLUE/System.h>
 #endif
 
