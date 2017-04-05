@@ -1,4 +1,7 @@
 syntax:glob
+res
+gamedata
+trace*.txt
 bin
 Build
 *.plg
@@ -17,4 +20,4 @@ postal*.exe
 postal.pro.user
 *.ini
 CWSDPMI.SWP
-OUTPUT.LOG
+sakmanip
