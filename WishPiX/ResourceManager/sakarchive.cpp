@@ -1,10 +1,5 @@
 #include "sakarchive.h"
 
-#if !defined(TARGET)
-# include <cassert>
-# define ASSERT(x) assert(x)
-#endif
-
 template<typename A, typename B>
 constexpr bool pair_second_greater(const std::pair<A, B>& x, const std::pair<A, B>& y)
   { return x.second > y.second; }
@@ -55,23 +50,24 @@ SAKArchive::SAKArchive(const char* archivename)
   }
 }
 
-std::shared_ptr<std::vector<uint8_t>> SAKArchive::getFile(const char* filename)
+std::shared_ptr<filedata_t> SAKArchive::getFile(const char* filename)
 {
   ASSERT(fileExists(filename)); // The file must exist in this SAK archive
-  std::shared_ptr<std::vector<uint8_t>> data;
+  std::shared_ptr<filedata_t> filedata;
   std::unordered_map<std::string, SAKFile>::iterator iter = m_lookup.find(filename);
 
-  if(iter->second.data.expired()) // expired data pointer means that all instances of it have gone out of scope and it's memory freed
+  if(iter->second.filedata.expired()) // expired data pointer means that all instances of it have gone out of scope and it's memory freed
   {
-    data = std::make_shared<std::vector<uint8_t>>(*new std::vector<uint8_t>()); // make a new vector
-    iter->second.data = data; // store a weak copy so that we can test if it's in use later
-    data->resize(iter->second.length); // resize the newly allocated vector to the file size
+    filedata = std::make_shared<filedata_t>(*new filedata_t()); // make a new vector
+    filedata->loaded = false;
+    filedata->rawdata.resize(iter->second.length); // resize the newly allocated vector to the file size
     m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
-    m_file >> *data; // fill the data vector with the file within the SAK archive
+    m_file >> filedata->rawdata; // fill the data vector with the file within the SAK archive
+    iter->second.filedata = filedata; // store a weak copy so that we can test if it's in use later
   }
   else // data pointer is still valid
-    data = static_cast<std::shared_ptr<std::vector<uint8_t>>>(iter->second.data); // copy data pointer
-  return data;
+    filedata = static_cast<std::shared_ptr<filedata_t>>(iter->second.filedata); // copy data pointer
+  return filedata;
 }
 
 //=======================================================================================

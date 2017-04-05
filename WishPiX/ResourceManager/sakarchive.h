@@ -1,6 +1,14 @@
 #ifndef SAKARCHIVE_H
 #define SAKARCHIVE_H
 
+#if defined(TARGET)
+# include <RSPiX/BLUE/System.h>
+#else
+# include <cassert>
+# define ASSERT(x) assert(x)
+#endif
+
+
 #include "filestream.h"
 
 #include <unordered_map>
@@ -9,9 +17,17 @@
 #include <list>
 #include <cstdint>
 
-#if defined(TARGET)
-# include <RSPiX/BLUE/System.h>
-#endif
+struct filedata_t
+{
+  bool loaded;
+  std::vector<uint8_t> rawdata;
+};
+
+struct filedataio_t : filedata_t
+{
+  virtual void Load(void) = 0;
+  virtual void Save(void) = 0;
+};
 
 class SAKArchive // "Swiss Army Knife" Archive
 {
@@ -23,14 +39,14 @@ public:
   bool fileExists(const char* filename) const { return m_lookup.find(filename) != m_lookup.end(); }
 
   // Returns a pointer to allocated memory.  Memory is allocated/freed ad hoc. (file must exist)
-  std::shared_ptr<std::vector<uint8_t>> getFile(const char* filename);
+  std::shared_ptr<filedata_t> getFile(const char* filename);
 
 protected:
   struct SAKFile
   {
     uint32_t offset;
     uint32_t length;
-    std::weak_ptr<std::vector<uint8_t>> data;
+    std::weak_ptr<filedata_t> filedata;
 
     SAKFile(uint32_t off, uint32_t len) : offset(off), length(len) { }
   };

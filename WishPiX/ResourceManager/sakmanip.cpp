@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   const char* argfilename = nullptr;
   int action = 0;
 
-  for(int opt = 0; opt != -1 && action != -1; opt = getopt(argc, argv, "f:lx:r:a:"))
+  for(int opt = 0; opt != -1 && action != -1; opt = getopt(argc, argv, ":f:lx:r:a:"))
   {
     switch (opt)
     {
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
         if(!mkdir_p(filename.c_str(), S_IRWXU))
         {
           file.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-          file << *archive->getFile(filename.c_str());
+          file << archive->getFile(filename.c_str())->rawdata;
           file.close();
         }
       }
