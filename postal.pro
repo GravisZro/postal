@@ -267,9 +267,11 @@ HEADERS += \
     warp.h \
     weapon.h \
     yatime.h \
-    RSPiX/BLUE/dos/ps2.h \
-    RSPiX/BLUE/dos/keyboard.h \
-    RSPiX/BLUE/dos/mouse.h
+    newpix/resourcemanager.h \
+    newpix/hashstring.h \
+    newpix/filestream.h \
+    newpix/sakarchive.h \
+    newpix/resourcecontainer.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
@@ -433,15 +435,12 @@ SOURCES += \
     update.cpp \
     warp.cpp \
     weapon.cpp \
-    yatime.cpp
-# \
-#    RSPiX/BLUE/dos/video/vid_dos.c \
-#    RSPiX/BLUE/dos/video/vid_ext.c \
-#    RSPiX/BLUE/dos/video/vregset.c \
-#    RSPiX/BLUE/dos/video/vid_vga.c \
-#    RSPiX/BLUE/dos/system/sys_dos.c
+    yatime.cpp \
+    newpix/resourcemanager.cpp \
+    newpix/sakarchive.cpp \
+    newpix/filestream.cpp
 
-CONFIG += dos
+CONFIG += sdl2
 
 dos:QMAKE_CXXFLAGS+= -std=gnu++11
 else:QMAKE_CXXFLAGS+= -std=c++11
@@ -495,6 +494,9 @@ DEFINES += __DJGPP__
 
 HEADERS += \
     RSPiX/BLUE/dos/platform.h \
+    RSPiX/BLUE/dos/ps2.h \
+    RSPiX/BLUE/dos/keyboard.h \
+    RSPiX/BLUE/dos/mouse.h \
     RSPiX/BLUE/dos/video.h \
     RSPiX/BLUE/dos/video/vgamodes.h \
     RSPiX/BLUE/dos/video/vid_dos.h \
@@ -516,6 +518,14 @@ SOURCES += \
     RSPiX/BLUE/dos/Bsound.cpp \
     RSPiX/BLUE/dos/Btime.cpp \
     RSPiX/BLUE/dos/platform.cpp
+
+# \
+#    RSPiX/BLUE/dos/video/vid_dos.c \
+#    RSPiX/BLUE/dos/video/vid_ext.c \
+#    RSPiX/BLUE/dos/video/vregset.c \
+#    RSPiX/BLUE/dos/video/vid_vga.c \
+#    RSPiX/BLUE/dos/system/sys_dos.c
+
 }
 
 dreamcast {
