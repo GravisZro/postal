@@ -38,8 +38,8 @@ int main(int argc, char **argv)
   std::list<std::string> list;
   filestream file;
   std::vector<uint8_t> data;
+  std::string argfilename;
   SAKArchiveExt* archive = nullptr;
-  const char* argfilename = nullptr;
   int action = 0;
 
   for(int opt = 0; opt != -1 && action != -1; opt = getopt(argc, argv, ":f:lx:r:a:"))
@@ -50,8 +50,7 @@ int main(int argc, char **argv)
         continue;
 
       case 'f':
-        archive = new SAKArchiveExt(optarg);
-        optarg = nullptr;
+        archive = new SAKArchiveExt(std::string(optarg));
         break;
 
       case 'l':
@@ -103,23 +102,23 @@ int main(int argc, char **argv)
       std::cout << std::setw(maxw + 20) << std::setfill('-') << "-" << std::endl;
 
       for(std::string& filename : archive->listFiles())
-        std::cout << std::setw(8)    << std::setfill('0') << std::hex << std::right << archive->fileOffset(filename.c_str()) << "  "
+        std::cout << std::setw(8)    << std::setfill('0') << std::hex << std::right << archive->fileOffset(filename) << "  "
                   << std::setw(maxw) << std::setfill('.') << std::left << filename
-                  << std::setw(10)   << std::setfill('.') << std::dec << std::right << archive->fileSize(filename.c_str())
+                  << std::setw(10)   << std::setfill('.') << std::dec << std::right << archive->fileSize(filename)
                   << std::endl;
       break;
     }
     case 'x':
     {
-      if(argfilename != nullptr)
+      if(argfilename.empty())
+        list = archive->listFiles();
+      else
       {
         if(archive->fileExists(argfilename))
           list.push_back(argfilename);
         else
           std::cout << "archive does not contain a file named: " << argfilename << std::endl;
       }
-      else
-        list = archive->listFiles();
 
       for(std::string& filename : list)
       {
@@ -127,7 +126,7 @@ int main(int argc, char **argv)
         if(!mkdir_p(filename.c_str(), S_IRWXU))
         {
           file.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-          file << archive->getFile(filename.c_str())->rawdata;
+          file << archive->getFile(filename)->rawdata;
           file.close();
         }
       }

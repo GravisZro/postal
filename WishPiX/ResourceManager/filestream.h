@@ -10,7 +10,7 @@ class filestream : public std::fstream
 {
 public:
   filestream(void) : m_readpos(0), m_writepos(0) { }
-  filestream(const char* filename, std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary)
+  filestream(const std::string& filename, std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary)
     : std::fstream(filename, mode), m_readpos(0), m_writepos(0) { }
 
   // << and >> overloads for simple insertion and extraction (specialized versions in the implementation file)
@@ -28,8 +28,7 @@ public:
 
   // replacement functions to make read and write positions independent
 
-  void open(const std::string& filename, std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary) { open(filename.data(), mode); }
-  void open(const char*        filename, std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary)
+  void open(const std::string& filename, std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary)
   {
     std::fstream::open(filename, mode);
     endRead();

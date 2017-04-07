@@ -10,7 +10,7 @@ namespace consts
   const uint32_t version = 1;
 }
 
-SAKArchive::SAKArchive(const char* archivename)
+SAKArchive::SAKArchive(const std::string& archivename)
   : m_file(archivename)
 {
   uint32_t magic_number, version;
@@ -50,7 +50,7 @@ SAKArchive::SAKArchive(const char* archivename)
   }
 }
 
-std::shared_ptr<filedata_t> SAKArchive::getFile(const char* filename)
+std::shared_ptr<filedata_t> SAKArchive::getFile(const std::string& filename)
 {
   ASSERT(fileExists(filename)); // The file must exist in this SAK archive
   std::shared_ptr<filedata_t> filedata;
@@ -88,19 +88,19 @@ std::list<std::string> SAKArchiveExt::listFiles(void) const
   return filelist;
 }
 
-uint32_t SAKArchiveExt::fileSize(const char* filename) const
+uint32_t SAKArchiveExt::fileSize(const std::string& filename) const
 {
   ASSERT(fileExists(filename)); // The file must exist in this SAK archive
   return m_lookup.find(filename)->second.length;
 }
 
-uint32_t SAKArchiveExt::fileOffset(const char* filename) const
+uint32_t SAKArchiveExt::fileOffset(const std::string& filename) const
 {
   ASSERT(fileExists(filename)); // The file must exist in this SAK archive
   return m_lookup.find(filename)->second.offset;
 }
 
-bool SAKArchiveExt::removeFile(const char* filename)
+bool SAKArchiveExt::removeFile(const std::string& filename)
 {
   ASSERT(fileExists(filename)); // The file must exist in this SAK archive
 
@@ -117,7 +117,7 @@ bool SAKArchiveExt::removeFile(const char* filename)
   return resizeFile(old_filesize - entry_size - fileinfo.second.length);
 }
 
-bool SAKArchiveExt::appendFile(const char* filename, const uint8_t* filedata, uint32_t datalength)
+bool SAKArchiveExt::appendFile(const std::string& filename, const uint8_t* filedata, uint32_t datalength)
 {
   uint32_t old_filesize = m_file.size();
 
@@ -164,13 +164,13 @@ bool SAKArchiveExt::shiftEntries(int32_t index_diff, int32_t offset_diff, uint32
   assert(index_diff != 0);
   struct oldnewlength
   {
-    std::string filename;
+    const std::string filename;
     uint32_t old_offset;
     uint32_t new_offset;
     uint32_t length;
     bool operator < (const oldnewlength& onl) const { return old_offset < onl.old_offset; }
     bool operator > (const oldnewlength& onl) const { return old_offset > onl.old_offset; }
-    oldnewlength(std::string fn, uint32_t o, uint32_t n, uint32_t l) : filename(fn), old_offset(o), new_offset(n), length(l) { }
+    oldnewlength(const std::string& fn, uint32_t o, uint32_t n, uint32_t l) : filename(fn), old_offset(o), new_offset(n), length(l) { }
   };
 
   std::list<std::pair<std::string, uint32_t>> names_offsets;

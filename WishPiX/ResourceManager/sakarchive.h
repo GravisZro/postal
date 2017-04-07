@@ -33,13 +33,13 @@ class SAKArchive // "Swiss Army Knife" Archive
 {
 public:
   // You MUST provide a valid filename of the SAK archive to open
-  SAKArchive(const char* archivename);
+  SAKArchive(const std::string& archivename);
 
   // Test if a file exists.  Other operations assume the file exists.
-  bool fileExists(const char* filename) const { return m_lookup.find(filename) != m_lookup.end(); }
+  bool fileExists(const std::string& filename) const { return m_lookup.find(filename) != m_lookup.end(); }
 
   // Returns a pointer to allocated memory.  Memory is allocated/freed ad hoc. (file must exist)
-  std::shared_ptr<filedata_t> getFile(const char* filename);
+  std::shared_ptr<filedata_t> getFile(const std::string& filename);
 
 protected:
   struct SAKFile
@@ -63,7 +63,7 @@ class SAKArchiveExt : public SAKArchive
 {
 public:
   // You MUST provide a valid filename of the SAK archive to open
-  SAKArchiveExt(const char* archivename) : SAKArchive(archivename), m_archivename(archivename) { }
+  SAKArchiveExt(const std::string& archivename) : SAKArchive(archivename), m_archivename(archivename) { }
 
   std::string archiveName(void) const { return m_archivename; }
 
@@ -71,13 +71,13 @@ public:
   std::list<std::string> listFiles(void) const;
 
   // Returns the size of the file. (file must exist)
-  uint32_t fileSize(const char* filename) const;
+  uint32_t fileSize(const std::string& filename) const;
 
   // Returns the offset of the file within the archive. (file must exist)
-  uint32_t fileOffset(const char* filename) const;
+  uint32_t fileOffset(const std::string& filename) const;
 
-  bool removeFile(const char* filename);
-  bool appendFile(const char* filename, const uint8_t* filedata, uint32_t datalength);
+  bool removeFile(const std::string& filename);
+  bool appendFile(const std::string& filename, const uint8_t* filedata, uint32_t datalength);
 
 private:
   bool shiftEntries(int32_t index_diff, int32_t offset_diff, uint32_t offset);

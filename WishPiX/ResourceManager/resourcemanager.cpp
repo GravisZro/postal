@@ -1,14 +1,17 @@
 #include "resourcemanager.h"
 
 #include <cctype>
+#include <algorithm>
 
-void Resources::normalize_path(char* path) noexcept
+template<typename T>
+T normalize(T c)
 {
-  for(; *path; ++path)
-  {
-    if(*path == '\\')
-      *path = '/';
-    else
-      *path = tolower(*path);
-  }
+  if(c == '\\')
+    return '/';
+  return std::tolower(c);
+}
+
+void Resources::normalize_path(std::string& path) noexcept
+{
+  std::transform(path.begin(), path.end(), path.begin(), normalize<std::string::value_type>);
 }
