@@ -270,8 +270,7 @@ HEADERS += \
     newpix/resourcemanager.h \
     newpix/hashstring.h \
     newpix/filestream.h \
-    newpix/sakarchive.h \
-    newpix/resourcecontainer.h
+    newpix/sakarchive.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
