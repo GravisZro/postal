@@ -3,18 +3,8 @@
 
 #include "sakarchive.h"
 
-#define SHELL_SAK_FILENAME				"res/shell/shell.sak"
-#define GAME_SAK_FILENAME				"res/game/game.sak"
-#define SAMPLES_SAK_FILENAME_FRMT	"res/game/%i%s%i.sak"
-#define CUTSCENE_SAK_FILENAME_FRMT	"res/cutscene/cutscene%02d.sak"
-#define CHECK_FOR_POSTALSD_FILENAME "res/hoods/ezmart.sak"
-#define XMAS_SAK_FILENAME				"res/xmas/newgame.sak"
-#define XMAS_SAK_SOUND					"res/xmas/new22050_16.sak"
-
 namespace Resources
 {
-  //static std::unordered_map<std::string, SAKArchive> archives;
-
   static void normalize_path(std::string& path) noexcept;
 }
 
@@ -40,10 +30,105 @@ struct Resource : std::shared_ptr<filedata_t>
   }
 };
 
-template <class T>
+
+template<typename T> // type T must inherit filedataio_t
+struct MultiResource : std::shared_ptr<filedata_t>
+{
+  enum type_t : uint16_t
+  {
+    stillframe = 0,
+    animation,
+    complexanimation,
+  };
+
+  uint32_t magic;
+  uint32_t version;
+  type_t   type;
+  uint16_t loopFlags;
+  uint32_t totalTime;
+  uint32_t interval;
+  uint32_t frameCount;
+  std::vector<T*> datapointers;
+
+  MultiResource<T>& operator=(const std::shared_ptr<filedata_t>& other) noexcept
+  {
+    std::shared_ptr<filedata_t>::operator =(other);
+    union
+    {
+      T*        dataptrT;
+      uint8_t*  dataptr8;
+      uint16_t* dataptr16;
+      uint32_t* dataptr32;
+    };
+
+    dataptr8  = const_cast<uint8_t*>(other->rawdata.data());
+    magic     = *dataptr32; ++dataptr32;
+    version   = *dataptr32; ++dataptr32;
+    type      = *dataptr16; ++dataptr16;
+    loopFlags = *dataptr16; ++dataptr16;
+
+    if(type == stillframe)
+    {
+      totalTime  = 0;
+      interval   = 0;
+      frameCount = 1;
+    }
+    else
+    {
+      totalTime  = *dataptr32; ++dataptr32;
+      interval   = *dataptr32; ++dataptr32;
+      frameCount = *dataptr32; ++dataptr32;
+    }
+
+    datapointers.resize(frameCount);
+
+    switch(type)
+    {
+      case complexanimation:
+        for(uint32_t x : frameCount)
+        {
+          if(*dataptr32 == UINT32_MAX)
+          {
+            ++dataptr32;
+            datapointers[x] = dataptrT;
+            ++dataptrT;
+            if(!other->loaded)
+              datapointers[x]->Load();
+          }
+          else
+          {
+            ++dataptr32;
+            datapointers[x] = datapointers[*dataptr32];
+          }
+        }
+        break;
+
+      case stillframe:
+      case animation:
+        for(uint32_t x : frameCount)
+        {
+          datapointers[x] = dataptrT;
+          ++dataptrT;
+          if(!other->loaded)
+            datapointers[x]->Load();
+        }
+        break;
+    }
+
+    other->loaded = true;
+    return *this;
+  }
+
+  T* operator [](uint32_t num) const noexcept
+  {
+    ASSERT(num < frameCount);
+    return dataptr[num];
+  }
+};
+
 bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
                     const std::string& filename,           // In:  Resource name
-                    Resource<T>& res) noexcept      // Out: Resource data pointer
+                    std::shared_ptr<filedata_t>& res) noexcept      // Out: Resource data pointer
 {
   if(archive.fileExists(filename))
     return false;
@@ -53,7 +138,7 @@ bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
 }
 
 template <class T>
-void rspReleaseResource(Resource<T>& res) noexcept  // In:  Pointer to resource
+void rspReleaseResource(std::shared_ptr<filedata_t>& res) noexcept  // In:  Pointer to resource
 {
   res.reset();
 }
