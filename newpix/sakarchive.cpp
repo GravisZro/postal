@@ -1,5 +1,19 @@
 #include "sakarchive.h"
 
+
+template<> filestream& filestream::operator >> (filedata_t& data) // read filedata_t data
+{
+  beginRead();
+  read(data.dataptr, data.size);
+  endRead();
+  return *this;
+}
+
+template<> filestream& filestream::operator << (const filedata_t& data) // write filedata_t data
+  { return write(data.dataptr, data.size); }
+
+
+
 template<typename A, typename B>
 constexpr bool pair_second_greater(const std::pair<A, B>& x, const std::pair<A, B>& y)
   { return x.second > y.second; }
@@ -60,7 +74,7 @@ std::shared_ptr<filedata_t> SAKArchive::getFile(const std::string& filename)
   {
     filedata = std::make_shared<filedata_t>(*new filedata_t(iter->second.length)); // make a new data array with the file size
     m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
-    m_file.read(filedata->dataptr, filedata->size); // fill the data vector with the file within the SAK archive
+    m_file >> filedata; // fill the data vector with the file within the SAK archive
     iter->second.filedata = filedata; // store a weak copy so that we can test if it's in use later
   }
   else // data pointer is still valid

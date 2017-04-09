@@ -71,6 +71,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
       else
         time = 0; // first frame
     }
+    ASSERT(interval);
     ASSERT(time / interval < frameCount); // keep it in range
     return datapointers[time / interval];
   }
@@ -103,6 +104,8 @@ struct MultiResource : std::shared_ptr<filedata_t>
       interval   = *dataptr32++;
       frameCount = *dataptr32++;
     }
+
+    ASSERT(interval);
 
     datapointers.resize(frameCount);
 
