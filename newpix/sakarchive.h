@@ -20,13 +20,24 @@
 struct filedata_t
 {
   bool loaded;
-  std::vector<uint8_t> rawdata;
-};
+  bool allocated;
+  uint8_t* dataptr;
+  uint32_t size;
 
-struct filedataio_t : filedata_t
-{
-  virtual void Load(void) = 0;
-  virtual void Save(void) = 0;
+  filedata_t(uint32_t sz)
+    : loaded(false), allocated(true), dataptr(new uint8_t[sz]), size(sz) { }
+
+  filedata_t(void)
+    : loaded(false), allocated(false), dataptr(nullptr), size(0) { }
+
+  ~filedata_t(void)
+  {
+    if(allocated)
+      delete[] dataptr;
+    dataptr = nullptr;
+  }
+
+  virtual void load (void) { loaded = true; }
 };
 
 class SAKArchive // "Swiss Army Knife" Archive

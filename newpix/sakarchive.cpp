@@ -58,11 +58,9 @@ std::shared_ptr<filedata_t> SAKArchive::getFile(const std::string& filename)
 
   if(iter->second.filedata.expired()) // expired data pointer means that all instances of it have gone out of scope and it's memory freed
   {
-    filedata = std::make_shared<filedata_t>(*new filedata_t()); // make a new vector
-    filedata->loaded = false;
-    filedata->rawdata.resize(iter->second.length); // resize the newly allocated vector to the file size
+    filedata = std::make_shared<filedata_t>(*new filedata_t(iter->second.length)); // make a new data array with the file size
     m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
-    m_file >> filedata->rawdata; // fill the data vector with the file within the SAK archive
+    m_file.read(filedata->dataptr, filedata->size); // fill the data vector with the file within the SAK archive
     iter->second.filedata = filedata; // store a weak copy so that we can test if it's in use later
   }
   else // data pointer is still valid
@@ -155,7 +153,7 @@ bool SAKArchiveExt::appendFile(const std::string& filename, const uint8_t* filed
   }
 
   m_file.seekp(new_offset);
-  m_file.write(reinterpret_cast<const char*>(filedata), fileinfo.second.length);
+  m_file.write(filedata, fileinfo.second.length);
   return true;
 }
 
