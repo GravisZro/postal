@@ -126,7 +126,8 @@ int main(int argc, char **argv)
         if(!mkdir_p(filename.c_str(), S_IRWXU))
         {
           file.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-          file << archive->getFile(filename)->rawdata;
+          auto subfile = archive->getFile(filename);
+          file.write(subfile->dataptr, subfile->size);
           file.close();
         }
       }
