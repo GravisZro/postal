@@ -1,11 +1,9 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include "sakarchive.h"
+#include <RSPiX/BLUE/System.h>
 
-#if !defined(TARGET)
-typedef int32_t milliseconds_t;
-#endif
+#include "sakarchive.h"
 
 namespace Resources
 {
@@ -151,7 +149,6 @@ bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
   return res.operator bool();
 }
 
-template <class T>
 void rspReleaseResource(std::shared_ptr<filedata_t>& res) noexcept  // In:  Resource data pointer
 {
   res.reset();
