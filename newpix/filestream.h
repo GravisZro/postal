@@ -44,18 +44,20 @@ public:
   filestream& seekp(std::streamoff off, std::ios::seekdir dir = std::ios::beg)
     { std::fstream::seekp(off, dir); endWrite(); return *this; }
 
-  filestream& read(char_type *s, std::streamsize n)
+  template<typename T>
+  filestream& read(T* s, std::streamsize n)
   {
     beginRead();
-    std::fstream::read(s, n);
+    std::fstream::read(reinterpret_cast<char_type*>(s), n * sizeof(T) / sizeof(char_type));
     endRead();
     return *this;
   }
 
-  filestream& write(const char_type *s, std::streamsize n)
+  template<typename T>
+  filestream& write(const T* s, std::streamsize n)
   {
     beginWrite();
-    std::fstream::write(s, n);
+    std::fstream::write(reinterpret_cast<const char_type*>(s), n * sizeof(T) / sizeof(char_type));
     endWrite();
     return *this;
   }
