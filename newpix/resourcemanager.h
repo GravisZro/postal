@@ -121,9 +121,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
             dataptr8 += data.size;
           }
           else
-          {
             data = datapointers[*dataptr32++];
-          }
         }
         break;
 
@@ -154,7 +152,7 @@ bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
 }
 
 template <class T>
-void rspReleaseResource(std::shared_ptr<filedata_t>& res) noexcept  // In:  Pointer to resource
+void rspReleaseResource(std::shared_ptr<filedata_t>& res) noexcept  // In:  Resource data pointer
 {
   res.reset();
 }
