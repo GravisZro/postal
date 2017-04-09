@@ -486,7 +486,7 @@ do
 
     --sakmanip)
       echo -n "Building SAK Manipulation Tool... "
-      g++ WishPiX/ResourceManager/sakarchive.cpp WishPiX/ResourceManager/filestream.cpp WishPiX/ResourceManager/sakmanip.cpp -o sakmanip
+      g++ newpix/sakarchive.cpp newpix/filestream.cpp newpix/sakmanip.cpp -o sakmanip
       echo "Done!"
       exit 0
     ;;
