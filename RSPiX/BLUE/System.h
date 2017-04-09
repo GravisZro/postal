@@ -312,10 +312,10 @@ typedef struct { uint64_t hi;
 // Aliases
 ////////////////////////////////////////////////////////////////////////////////
 
-#define MILLISECONDS_MAX UINT32_MAX
+#define MILLISECONDS_MAX  INT32_MAX
 #define MICROSECONDS_MAX UINT64_MAX
 
-typedef uint32_t milliseconds_t;
+typedef  int32_t milliseconds_t;
 typedef uint64_t microseconds_t;
 
 typedef uint8_t volume_t;
