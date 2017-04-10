@@ -48,7 +48,7 @@ void InitTrig()
 
   for(int32_t l = 0; l < MAX_FAST_SQRT; ++l)
   {
-    SQRTQ[l] = int16_t(sqrt(double(l)));
+    SQRTQ[l] = int16_t(std::sqrt(double(l)));
   }
 
   TRACE("QTRIG initialized!\n");

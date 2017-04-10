@@ -1550,7 +1550,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	float	fPosZ			= sZ + fRateZ;
 
 	// Determine amount traveled per iteration on X/Z plane just once.
-	float	fIterDistXZ		= sqrt(ABS2(fRateX, fRateZ) );
+   float	fIterDistXZ		= std::sqrt(ABS2(fRateX, fRateZ) );
 
 	float	fTotalDistXZ	= 0.0F;
 

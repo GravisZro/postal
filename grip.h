@@ -146,7 +146,7 @@ class CGrip
 			// Calculate distance from center of zone to furthest edge of target
 			double dx = sTargetX - m_sZoneX;
 			double dy = sTargetY - m_sZoneY;
-			double dDistance = sqrt((dx * dx) + (dy * dy)) + (double)sTargetR;
+			double dDistance = std::sqrt((dx * dx) + (dy * dy)) + (double)sTargetR;
 
 			// If distance is greater than zone's radius, then we need to move the camera
 			if (dDistance > m_sZoneR)

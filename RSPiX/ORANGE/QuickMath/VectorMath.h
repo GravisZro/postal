@@ -129,7 +129,7 @@ inline void rspMakeHom(RP3d& p)
 // adjusts the length of a vector, ignoring w component
 inline void rspMakeUnit(RP3d& p)
 	{
-   real_t l = sqrt(SQR(p.x)+SQR(p.y)+SQR(p.z));
+   real_t l = std::sqrt(SQR(p.x)+SQR(p.y)+SQR(p.z));
 #ifdef _DEBUG
 	if (l == 0.0)
 		{

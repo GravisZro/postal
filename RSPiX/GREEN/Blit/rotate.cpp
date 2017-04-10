@@ -127,7 +127,7 @@ int16_t   ConvertToROTBUF(RImage* pImage)
 	int32_t	d4 = (SQR(pImage->m_sWidth - cx - 1)+SQR(pImage->m_sHeight - cy - 1));
 
 	int32_t lR = MAX(MAX(d1,d2),MAX(d3,d4)); // distance squared
-	lR = (int32_t)(sqrt(double(lR)) + 0.9999); // actual longest distance, rounded up
+	lR = (int32_t)(std::sqrt(double(lR)) + 0.9999); // actual longest distance, rounded up
 	int32_t	lC = (int32_t)(sqrt2 * lR + 1);// round up
 	int32_t	lNewW = (int32_t)(lC<<1); // new buffer width a test:
 

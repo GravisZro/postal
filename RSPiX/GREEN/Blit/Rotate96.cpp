@@ -563,7 +563,7 @@ int16_t rspAddRotationPadding(RImage* pimSrc,int16_t sHotX,int16_t sHotY)
 	lR = MAX(lR,SQR(sHotX - (pimSrc->m_sWidth - 1) ) + lHotYS ); // LL corner
 	lR = MAX(lR,lHotXS + lHotYS ); // UL corner
 
-	lR = int32_t(0.999999 + sqrt(double(lR) * 2.0)); // round up
+	lR = int32_t(0.999999 + std::sqrt(double(lR) * 2.0)); // round up
 	// The sqrt2 factor is needed because the moving window must enclose the circle.
 
 	int16_t sSize = int16_t(1 + (lR << 1) ); // buffer = 2R + 1

@@ -400,7 +400,7 @@ void RPipeLine::BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius,
 	tFull.PreMulBy(m_tScreen.T);
 
 	// THIS IS IN UNSCALED OBJECT VIEW
-	double dModelRadius = sqrt(
+	double dModelRadius = std::sqrt(
 		SQR(ptCenter.x - ptRadius.x) + 
 		SQR(ptCenter.y - ptRadius.y) + 
 		SQR(ptCenter.z - ptRadius.z) ); // Randy Units

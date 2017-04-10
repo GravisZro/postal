@@ -504,7 +504,7 @@ int16_t RSphericalRegion::Collide(R3DLine* pline)
 		long	lLineLen = SQR(lDelX) + SQR(lDelY) + SQR(lDelZ);
 
 		// OVERHEAD for range check:
-		double dCirLen = sqrt(double(lCirDist));
+		double dCirLen = std::sqrt(double(lCirDist));
 
 		if (lLineLen > (lCirDist + SQR(sCirR) - 2*sCirR * dCirLen) )
 			{
@@ -554,7 +554,7 @@ int16_t RSphericalRegion::Collide(R3DLine* pline)
 		int32_t	lLineLen = SQR(lDelX)/* + SQR(lDelY)*/ + SQR(lDelZ);
 
 		// OVERHEAD for range check:
-		double dCirLen = sqrt(double(lCirDist));
+		double dCirLen = std::sqrt(double(lCirDist));
 
 		if (lLineLen > (lCirDist + SQR(sCirR) - 2*sCirR * dCirLen) )
 			{

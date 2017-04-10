@@ -749,7 +749,7 @@ void CThing3d::EditRect(RRect* pRect)
 			apt3dSrc[1].w	= 1;
 
 			m_pRealm->m_scene.TransformPtsToRealm(&trans, apt3dSrc, apt3dDst, 2);
-			m_sprite.m_sRadius	= sqrt(ABS2(
+         m_sprite.m_sRadius	= std::sqrt(ABS2(
 				apt3dDst[1].x - apt3dDst[0].x, 
 				apt3dDst[1].y - apt3dDst[0].y, 
 				apt3dDst[1].z - apt3dDst[0].z 

@@ -73,7 +73,7 @@ inline int16_t rspSqrt(int32_t lVal)
 {
   if (lVal < MAX_FAST_SQRT)
     return SQRTQ[lVal];
-  return int16_t(sqrt(double(lVal)));
+  return int16_t(std::sqrt(double(lVal)));
 }
 
 inline double rspSin(int16_t sDeg) 

@@ -731,7 +731,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 	float	fRateY		= SINQ[sAngleZ];	
 
 	// Determine amount traveled per iteration just once.
-	float	fIterDist	= sqrt(ABS2(fRateX, fRateY, fRateZ) );
+   float	fIterDist	= std::sqrt(ABS2(fRateX, fRateY, fRateZ) );
 
 	// Set initial position to first point to check (NEVER checks original position).
 	float	fPosX			= sX + fRateX;

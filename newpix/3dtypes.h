@@ -162,7 +162,7 @@ struct RP3d
   // adjusts the length of a vector, ignoring w component
   void makeUnit(void)
   {
-    real_t l = sqrt(SQR(x)+SQR(y)+SQR(z));
+    real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
     ASSERT(l != 0.0);
     x /= l;
     y /= l;

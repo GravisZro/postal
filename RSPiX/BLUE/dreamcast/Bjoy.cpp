@@ -155,7 +155,7 @@ extern void GetDudeVelocity(double* d_Velocity, double* d_Angle)
   int16_t axis_MoveUpDown = ms_ajsCurr[0].axis_MoveUpDown;
   int16_t axis_MoveLeftRight = ms_ajsCurr[0].axis_MoveLeftRight;
 
-  *d_Velocity = sqrt(pow(axis_MoveUpDown, 2) + pow(axis_MoveLeftRight, 2)) / 32768.f;
+  *d_Velocity = std::sqrt(pow(axis_MoveUpDown, 2) + pow(axis_MoveLeftRight, 2)) / 32768.f;
   if (axis_MoveLeftRight != 0)
     *d_Angle = GetStickAngle(axis_MoveLeftRight, axis_MoveUpDown);
   else
