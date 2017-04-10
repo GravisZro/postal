@@ -98,7 +98,7 @@ class RAnimSprite : public RSprite
 		int16_t		m_sNumPictures;	// Number of RImages in this animation
 		int16_t		m_sLoopToFrame;	// -1 if no loop, or frame number to start loop
 		uint32_t		m_ulAnimFlags;		// Animation flags and status
-      uint32_t		m_lTimer;			// timer used for animating
+      milliseconds_t m_lTimer;			// timer used for animating
 		int16_t		m_sCurrFrame;		// current frame in the animation
 		FRAME*	m_aFrames;			// Array of frame structures
 		RImage**	m_apPictures;		// Array of RImage*

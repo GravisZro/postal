@@ -293,7 +293,7 @@ static bool locateOneElement(char *buf)
    {
 		if (strcasecmp(dent->d_name, ptr) == 0)
 		{
-			strcpy(ptr, dent->d_name); /* found a match. Overwrite with this case. */
+         std::strcpy(ptr, dent->d_name); /* found a match. Overwrite with this case. */
 			closedir(dirp);
          return true;
 		}
@@ -400,7 +400,7 @@ extern const char* FindCorrectFile(const char *pszName, const char* pszMode)
   if (!initialized)
   {
     char* tmp = nullptr;
-    strcpy(prefpath, "./");  // default location is the current directory
+    std::strcpy(prefpath, "./");  // default location is the current directory
 
     TRACE("FindCorrectFile initializing...\n");
     if (rspCommandLine("nohomedir"))
@@ -431,25 +431,25 @@ extern const char* FindCorrectFile(const char *pszName, const char* pszMode)
             strlen(prefpath) < SAFE_PATH_MAX)
           strcat(prefpath, "/RunningWithScissors/Postal/");
         else
-          strcpy(prefpath, "./"); // Avoids possibly leaving the path in a bad state
+          std::strcpy(prefpath, "./"); // Avoids possibly leaving the path in a bad state
         FreeLibrary(lib);
       }
 #elif defined(__APPLE__) && !defined(__arm__) // Mac OSX
       if((tmp = std::getenv("HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX)
       {
-        strcpy(prefpath, tmp);
+        std::strcpy(prefpath, tmp);
         strcat(prefpath, "/Library/Application Support/Postal/");
       }
 # elif defined(__unix__)
       if(((tmp = std::getenv("XDG_DATA_HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX))
       {
-        strcpy(prefpath, tmp);
+        std::strcpy(prefpath, tmp);
         strcat(prefpath, "/Postal/");
       }
       else if((tmp = std::getenv("HOME")) != nullptr && strlen(tmp) < SAFE_PATH_MAX)
       {
-        strcpy(prefpath, tmp);
-        strcpy(path, prefpath);
+        std::strcpy(prefpath, tmp);
+        std::strcpy(path, prefpath);
         strcat(path, "/.postal1");
         if(path_is_dir(path))
           strcat(prefpath, "/.postal1/");
@@ -472,11 +472,11 @@ extern const char* FindCorrectFile(const char *pszName, const char* pszMode)
   if(!nohomedir && strlen(pszName) + strlen(prefpath) < sizeof(finalname))
   {
     bail_early = false;
-    strcpy(finalname, prefpath);
+    std::strcpy(finalname, prefpath);
     strcat(finalname, pszName);
   }
   else
-    strcpy(finalname, pszName);
+    std::strcpy(finalname, pszName);
 
   locateCorrectCase(finalname);
 
@@ -507,7 +507,7 @@ extern const char* FindCorrectFile(const char *pszName, const char* pszMode)
     if(!path_is_readable(finalname) ||
         path_is_dir(finalname))
     {
-      strcpy(finalname, pszName); // nope, use original name.
+      std::strcpy(finalname, pszName); // nope, use original name.
       locateCorrectCase(finalname);
     }
   }
@@ -583,11 +583,11 @@ int16_t RFile::Open(		// Returns 0 on success.
 					#ifdef ALLOW_RFILE_REOPEN
 						// Store file flags.
 						ASSERT(strlen(pszFlags) < sizeof(m_szFlags));
-						strcpy(m_szFlags, pszFlags);
+                  std::strcpy(m_szFlags, pszFlags);
 						
 						// Store file name.
 						ASSERT(strlen(pszFileName) < sizeof(m_szFileName));
-						strcpy(m_szFileName, pszFileName);
+                  std::strcpy(m_szFileName, pszFileName);
 
 						// Update access.
 						m_lLastAccess		= Blu_GetTime();

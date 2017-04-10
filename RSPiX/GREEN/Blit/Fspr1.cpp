@@ -470,7 +470,7 @@ int16_t		LoadFSPR1(RImage* pImage, RFile* pcf)
 	pcf->Read(&szTemp[0]);
 
 	// Check type:
-	if (strcmp(szTemp,"__FSPR1__")) // not equal
+	if (std::strcmp(szTemp,"__FSPR1__")) // not equal
 		{
 		TRACE("Load FSPR1: Not correct file type!\n");
       return FAILURE;

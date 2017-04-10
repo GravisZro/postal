@@ -271,7 +271,7 @@ public:
 	void	CacheTile(RImage* pimSrc,int16_t sSrcX,int16_t sSrcY)
 		{
 		// 1) clear buffer tile:
-		memset(m_pimTempTile->m_pData,0,m_lTileLen);
+      std::memset(m_pimTempTile->m_pData,0,m_lTileLen);
 		// 2) do a fully clipping opaque copy into the temp tile:
         RRect rrect(0,0,pimSrc->m_sWidth,pimSrc->m_sHeight);
 		rspBlit(pimSrc,m_pimTempTile,sSrcX,sSrcY,0,0,

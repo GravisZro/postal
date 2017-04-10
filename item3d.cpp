@@ -493,11 +493,11 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 					m_type	= (ItemType)pguiSel->m_ulUserData;
 					if (m_type != Custom)
 						{
-						strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_type]);
+						std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_type]);
 						}
 					else
 						{
-						strcpy(m_szAnimBaseName, peditName->m_szText);
+						std::strcpy(m_szAnimBaseName, peditName->m_szText);
 						}
 					}
 				else
@@ -506,10 +506,10 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 					}
 
 				// Get new rigid body name.
-				strcpy(m_szAnimRigidName, peditRigidName->m_szText);
+				std::strcpy(m_szAnimRigidName, peditRigidName->m_szText);
 
 				// Get new child anim name.
-				strcpy(m_szChildAnimBaseName, peditChildName->m_szText);
+				std::strcpy(m_szChildAnimBaseName, peditChildName->m_szText);
 
 				// Get new rotation velocities.
 				m_dExtRotVelY	= strtod(peditRotY->m_szText, nullptr);
@@ -601,7 +601,7 @@ int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero o
 	// If a known type . . .
 	if (m_type != Custom)
 		{
-		strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_type]);
+		std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_type]);
 		}
 
 	// Load main anim.
@@ -717,7 +717,7 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
 
 	if (pszCustomBaseName != nullptr)
 		{
-		strcpy(m_szAnimBaseName, pszCustomBaseName);
+		std::strcpy(m_szAnimBaseName, pszCustomBaseName);
 		}
 
 	m_u16IdParent	= u16IdParentInstance;

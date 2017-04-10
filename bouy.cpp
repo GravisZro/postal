@@ -744,10 +744,10 @@ int16_t CBouy::BuildRoutingTable(void)
 	{
 		// Initialize the table to unreachable and initialize the
 		// BSF data structures.
-		memset(m_paucRouteTable, 255, m_sRouteTableSize);
-		memset(aVisited, 0, sCurrentNumNodes);
-		memset(aDistance, 255, sCurrentNumNodes);
-		memset(aParent, 0, sCurrentNumNodes);
+      std::memset(m_paucRouteTable, 255, m_sRouteTableSize);
+      std::memset(aVisited, 0, sCurrentNumNodes);
+      std::memset(aDistance, 255, sCurrentNumNodes);
+      std::memset(aParent, 0, sCurrentNumNodes);
 
 		// Breadth-First Search
 		aVisited[m_ucID] = TRUE;

@@ -155,7 +155,7 @@ class CDispenser : public CThing
 			m_pim					= nullptr;
 			m_idDispenseeType	= TotalIDs;			// This means none.
 			m_sSuspend			= FALSE;
-			memset(m_alLogicParms, 0, sizeof(m_alLogicParms) );
+         std::memset(m_alLogicParms, 0, sizeof(m_alLogicParms) );
 			m_sMaxDispensees	= 10;
 			m_sNumDispensees	= 0;
 			m_u16IdDispensee	= CIdBank::IdNil;

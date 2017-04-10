@@ -64,7 +64,7 @@ RFontOld::RFontOld(char*	pszName)
 	m_pszFontName = (char*)
 		calloc(1,strlen(pszName)+1);
 
-	strcpy(m_pszFontName,pszName);
+  std::strcpy(m_pszFontName,pszName);
 	m_sMaxCellHeight = 0;
 	m_pHead = m_pFontList = nullptr;
 	}
@@ -217,7 +217,7 @@ short RFontOld::Create(char *pszFontName,char *pszFullInputName,
 		fTemp.m_sMaxCellHeight = MAX(fTemp.m_sMaxCellHeight,(short)pimLetter->lHeight);
 
 		}
-	strcpy(pszName,pszFontName);
+  std::strcpy(pszName,pszFontName);
 	fTemp.m_pszFontName = pszName;
 	// Save it!
 	// Work on this a bit!
@@ -361,7 +361,7 @@ int16_t	RFontOld::Load(char*	pszName)
 		}
 
 	fscanf(fp,"%s",pszCompare);
-	if ( (strcmp(pszCompare,"FONTFILE")!=0) && (strcmp(pszCompare,"FONTFIL2")!=0) )
+  if ( (std::strcmp(pszCompare,"FONTFILE")!=0) && (std::strcmp(pszCompare,"FONTFIL2")!=0) )
 		{
 		TRACE("ERROR: Font type not supported\n");
 		return FAILURE;
@@ -370,7 +370,7 @@ int16_t	RFontOld::Load(char*	pszName)
 	// get name
 	fscanf(fp,"%s",pszCompare);
 	m_pszFontName = (char*)calloc(1,strlen(pszCompare)+1);// only true overwrite
-	strcpy(m_pszFontName,pszCompare);
+  std::strcpy(m_pszFontName,pszCompare);
 	// get max cell height:
 	fscanf(fp,"%hd\n",&s1); //m_sMaxCellHeight should be logical
 	RImage*	pimLetter = nullptr;
@@ -618,7 +618,7 @@ int16_t RPrint::LineFeed()
 	if ((m_sCurY + m_sCellH) > (m_sT + m_sH)) 
 		{
 		// save remaining buffer:
-		strcpy(m_buffer,m_pCurBuf - 1);
+    std::strcpy(m_buffer,m_pCurBuf - 1);
 		m_pBuf = m_buffer + strlen(m_buffer);
 		m_pCurBuf = m_buffer;
 

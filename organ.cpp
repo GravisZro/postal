@@ -69,7 +69,7 @@ void	PlayWithMyOrgan()
 	RInputEvent	ie;
 
 	// Clear status array.
-	memset(pau8KeyStatus, 0, 128);
+   std::memset(pau8KeyStatus, 0, 128);
 
 	// Let's play some noise!
 	while (ms_sContinue)

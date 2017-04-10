@@ -102,7 +102,7 @@ RMeter::RMeter()
 	{
 	m_lCurVal				= 0L;		// Value for next draw.      
 	m_lStartPeriod			= 0L;		// Start period.             
-	strcpy(m_szUnit, "");			// Unit of measurement text. 
+   std::strcpy(m_szUnit, "");			// Unit of measurement text.
 	m_lMin					= 0L;		// Minimum value.            
 	m_lMax					= 100L;	// Maximum value.            
 	m_dtType					= (DisplayType)(rand() % NumDisplayTypes);	// Type of meter display.
@@ -123,7 +123,7 @@ RMeter::RMeter()
 												// total was last cleared.
 
 	m_lQIndex				= 0;		// Index for histogram history queue.
-	memset(m_asQHistory, 0, sizeof(m_asQHistory));
+   std::memset(m_asQHistory, 0, sizeof(m_asQHistory));
 
 	// Override RGuiItem's default justification.
 	m_justification		= RGuiItem::Centered;
@@ -318,7 +318,7 @@ int16_t RMeter::Draw(					// Returns 0 on success.
 						break;
 					case Percentage:
 						lVal	= ((lVal - m_lMin) * 100) / (m_lMax - m_lMin);
-						strcpy(szExtra, "%");
+                  std::strcpy(szExtra, "%");
 						break;
 					default:
 						TRACE("Draw(): Invalid info type.\n");

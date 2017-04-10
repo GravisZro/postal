@@ -1021,7 +1021,7 @@ static void LogicUserBrowse(	// Returns nothing
 
 	// Get the logic file name . . .
 	char	szLogicFile[PATH_MAX];
-	strcpy(szLogicFile, FullPathHD(pguiLogicFileName->m_szText));
+	std::strcpy(szLogicFile, FullPathHD(pguiLogicFileName->m_szText));
 
 	if (rspOpenBox(
 		"Choose logic file",
@@ -1031,7 +1031,7 @@ static void LogicUserBrowse(	// Returns nothing
       "lgk.") == SUCCESS)
 	{
 		char	szHDPath[PATH_MAX];
-		strcpy(szHDPath, FullPathHD(""));
+		std::strcpy(szHDPath, FullPathHD(""));
 		// Attempt to remove HD path . . .
       if (rspStrnicmp(szLogicFile, szHDPath, strlen(szHDPath) ) == SUCCESS)
 			{

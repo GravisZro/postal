@@ -1337,12 +1337,12 @@ static int16_t GameCore(void)		// Returns 0 on success.
 #ifdef CHECK_EXPIRATION_DATE
 # if defined(_WIN32)
 		char acTime[100];
-		strcpy(acTime, asctime(gmtime(&g_lExpTime)));
+      std::strcpy(acTime, asctime(gmtime(&g_lExpTime)));
 		#define NEXT_LINE "\n\n"
 # else
 		char acTime[100];
 		uint32_t lTime = g_lExpTime + (((365 * 70UL) + 17) * 24 * 60 * 60); // time_fudge 1900->1970
-		strcpy(acTime, ctime(&lTime));
+      std::strcpy(acTime, ctime(&lTime));
        const char* pCR = strchr(acTime, '\n');
       if (pCR != nullptr)
 			*pCR = 0;
@@ -1426,7 +1426,7 @@ static int16_t GameCore(void)		// Returns 0 on success.
 	// a game or two along the way.  If there's no user input for a
 	// certain amount of time, automatically run the self-playing demo.
 	RInputEvent ie;
-	memset(&ie, '\0', sizeof (ie));  // fix valgrind complaining... --ryan.
+   std::memset(&ie, '\0', sizeof (ie));  // fix valgrind complaining... --ryan.
 	while (sResult == 0)
 		{
 		// Clear the end of game flag each time just to be safe, it only needs
@@ -2184,7 +2184,7 @@ static int16_t GameCore(void)		// Returns 0 on success.
 
 					// If not yet used, start out in appropirate directory
 					if (szFileSaved[0] == '\0')
-						strcpy(szFileSaved, FullPathHD(SAVEGAME_DIR));
+                  std::strcpy(szFileSaved, FullPathHD(SAVEGAME_DIR));
 
 					// Display option dialog to let user choose a realm file
                #if 1 //__unix__
@@ -2318,7 +2318,7 @@ static int16_t GetRealmToRecord(	// Returns 0 on success, negative on error, 1 i
 
 	// If not yet used, start out in appropriate directory
 //	if (szFile[0] == '\0')
-		strcpy(szFile, FullPathHD(LEVEL_DIR));
+      std::strcpy(szFile, FullPathHD(LEVEL_DIR));
 
 	// Display open dialog to let user choose a file
 	sResult = SubPathOpenBox(FullPathHD(""), "Choose Realm To Record", szFile, szFile, sizeof(szFile), "rlm");
@@ -2329,7 +2329,7 @@ static int16_t GetRealmToRecord(	// Returns 0 on success, negative on error, 1 i
 		// Check if result will fit into specified buffer
 		if (strlen(pszFullPath) < sMaxFileLen)
 			{
-			strcpy(pszRealmFile, pszFullPath);
+         std::strcpy(pszRealmFile, pszFullPath);
 			}
 		else
 			{
@@ -2364,7 +2364,7 @@ extern int16_t SubPathOpenBox(		// Returns 0 on success, negative on error, 1 if
   size_t	lBasePathLen	= strlen(pszFullPath);
   if (lBasePathLen < sizeof(szBasePath) )
   {
-    strcpy(szBasePath, pszFullPath);
+    std::strcpy(szBasePath, pszFullPath);
 
     // Get index to last character
     int16_t sLastIndex = lBasePathLen;
@@ -2403,7 +2403,7 @@ extern int16_t SubPathOpenBox(		// Returns 0 on success, negative on error, 1 if
       if (rspStrnicmp(szChosenFileName, szBasePath, lFullPathLen) == 0)
       {
         // Copy sub path to destination.
-        strcpy(pszChosenFileName, szChosenFileName + lFullPathLen);
+        std::strcpy(pszChosenFileName, szChosenFileName + lFullPathLen);
       }
       else
       {
@@ -2411,7 +2411,7 @@ extern int16_t SubPathOpenBox(		// Returns 0 on success, negative on error, 1 if
         sResult	= 1;
         // Return fullpath.
         // Copy full path to destination.
-        strcpy(pszChosenFileName, szChosenFileName);
+        std::strcpy(pszChosenFileName, szChosenFileName);
       }
     }
   }
@@ -2441,7 +2441,7 @@ static int16_t GetDemoFile(
 
   // If not yet used, start out in appropriate directory
   if (szFile[0] == '\0')
-    strcpy(szFile, FullPathVD(DEMO_DIR));
+    std::strcpy(szFile, FullPathVD(DEMO_DIR));
 
   // Display save dialog to let user choose a file
   sResult = rspSaveBox(g_pszSaveDemoTitle, szFile, szFile, sizeof(szFile), DEMO_EXT);
@@ -2450,7 +2450,7 @@ static int16_t GetDemoFile(
     // Check if result will fit into specified buffer
     if (strlen(szFile) < sMaxFileLen)
     {
-      strcpy(pszDemoFile, szFile);
+      std::strcpy(pszDemoFile, szFile);
     }
     else
     {
@@ -2508,19 +2508,19 @@ inline void GetSoundPaths(		// Returns nothing.
   }
 
   // Create the samples SAK sub path.
-  strcpy(pszSakPath, SAMPLES_SAK_SUBDIR);
+  std::strcpy(pszSakPath, SAMPLES_SAK_SUBDIR);
   strcat(pszSakPath, szAudioResDescriptor);
   strcat(pszSakPath, ".sak");
 
   // Create the samples NO SAK sub path.
   char	szSamplesNoSakSubPath[PATH_MAX];
-  strcpy(szSamplesNoSakSubPath, "sound/");
+  std::strcpy(szSamplesNoSakSubPath, "sound/");
   strcat(szSamplesNoSakSubPath, szAudioResDescriptor);
   // Note that g_GameSettings.m_szNoSakDir is already system
   // specific and already contains the appropriate ending
   // path delimiter, if any, appropriate to the current
   // platform.
-  strcpy(pszNoSakDir, g_GameSettings.m_szNoSakDir);
+  std::strcpy(pszNoSakDir, g_GameSettings.m_szNoSakDir);
   strcat(pszNoSakDir, rspPathToSystem(szSamplesNoSakSubPath) );
 }
 
@@ -2922,7 +2922,7 @@ extern void Game_StartSinglePlayerGame(
 
       // If not yet used, start out in appropriate directory
       if (szFile[0] == '\0')
-        strcpy(szFile, FullPathHD(LEVEL_DIR));
+        std::strcpy(szFile, FullPathHD(LEVEL_DIR));
 
       if (rspOpenBox("Load Realm", szFile, szFile, sizeof(szFile), ".rlm") == 0)
       {
@@ -3118,7 +3118,7 @@ extern void Game_StartDemoGame(
 			pszDemoFile = szFile;
 			// If not yet used, start out in appropriate directory
 			if (pszDemoFile[0] == '\0')
-				strcpy(pszDemoFile, FullPathHD(szLevelDir) );
+            std::strcpy(pszDemoFile, FullPathHD(szLevelDir) );
 
 			// Display open dialog to let user choose a realm file
 			sprintf(szTitle, "%s", DEMO_OPEN_TITLE);
@@ -3292,8 +3292,8 @@ extern void Game_StartChallengeGame(	// Returns nothing.
 			// Static so dialog will "remember" the previously-used name
          static char	szFile[PATH_MAX]	= "";
 			pszRealmFile	= szFile;
-			strcpy(szLevelDir, TIMED_CHALLENGE_LEVEL_DIR);
-			strcpy(szTitle, TIMED_CHALLENGE_OPEN_TITLE);
+         std::strcpy(szLevelDir, TIMED_CHALLENGE_LEVEL_DIR);
+         std::strcpy(szTitle, TIMED_CHALLENGE_OPEN_TITLE);
 
 			break;
 			}
@@ -3304,8 +3304,8 @@ extern void Game_StartChallengeGame(	// Returns nothing.
 			// Static so dialog will "remember" the previously-used name
          static char	szFile[PATH_MAX]	= "";
 			pszRealmFile	= szFile;
-			strcpy(szLevelDir, GOAL_CHALLENGE_LEVEL_DIR);
-			strcpy(szTitle, GOAL_CHALLENGE_OPEN_TITLE);
+         std::strcpy(szLevelDir, GOAL_CHALLENGE_LEVEL_DIR);
+         std::strcpy(szTitle, GOAL_CHALLENGE_OPEN_TITLE);
 
 			break;
 			}
@@ -3316,8 +3316,8 @@ extern void Game_StartChallengeGame(	// Returns nothing.
 			// Static so dialog will "remember" the previously-used name
          static char	szFile[PATH_MAX]	= "";
 			pszRealmFile	= szFile;
-			strcpy(szLevelDir, FLAG_CHALLENGE_LEVEL_DIR);
-			strcpy(szTitle, FLAG_CHALLENGE_OPEN_TITLE);
+         std::strcpy(szLevelDir, FLAG_CHALLENGE_LEVEL_DIR);
+         std::strcpy(szTitle, FLAG_CHALLENGE_OPEN_TITLE);
 
 			break;
 			}
@@ -3328,8 +3328,8 @@ extern void Game_StartChallengeGame(	// Returns nothing.
 			// Static so dialog will "remember" the previously-used name
          static char	szFile[PATH_MAX]	= "";
 			pszRealmFile	= szFile;
-			strcpy(szLevelDir, CHECKPOINT_CHALLENGE_LEVEL_DIR);
-			strcpy(szTitle, CHECKPOINT_CHALLENGE_OPEN_TITLE);
+         std::strcpy(szLevelDir, CHECKPOINT_CHALLENGE_LEVEL_DIR);
+         std::strcpy(szTitle, CHECKPOINT_CHALLENGE_OPEN_TITLE);
 
 			break;
 			}
@@ -3339,8 +3339,8 @@ extern void Game_StartChallengeGame(	// Returns nothing.
 		{
 		// If not yet used, start out in appropriate directory
 		if (pszRealmFile[0] == '\0')
-			//strcpy(pszRealmFile, FullPathHD(szLevelDir) );
-			strcpy(pszRealmFile, FullPathCD(szLevelDir) );
+         //std::strcpy(pszRealmFile, FullPathHD(szLevelDir) );
+         std::strcpy(pszRealmFile, FullPathCD(szLevelDir) );
 
 		// Display open dialog to let user choose a realm file
 
@@ -3353,7 +3353,7 @@ extern void Game_StartChallengeGame(	// Returns nothing.
 			// the src and dst to be the same, even though the doc says it can!!!!
 			// Workaround is to use temporary buffer.
          char szTmp[PATH_MAX];
-			strcpy(szTmp, m_szRealmFile);
+         std::strcpy(szTmp, m_szRealmFile);
 			rspPathFromSystem(szTmp, m_szRealmFile);
 			m_action				= ACTION_PLAY_CHALLENGE;
 			m_sRealmNum			= -1;
@@ -3913,7 +3913,7 @@ static void GameGetRegistry(void)
                   "", 	REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr,
 						&hkResult, &dwDisposition);
 	// Destroy the source and result.
-   memset(szName, 0xEB, sEncryptedKeyLength);
+   std::memset(szName, 0xEB, sEncryptedKeyLength);
 
 	if (lError == ERROR_SUCCESS && lTime > g_lReleaseTime)
 	{
@@ -3925,7 +3925,7 @@ static void GameGetRegistry(void)
 			Decrypt((char*) szIn, szName, sEncryptedValueLength);
 			szName[sEncryptedValueLength-2] = 0;
 			RegSetValueEx(hkResult, szName, 0, REG_BINARY, (uint8_t *) szTimeEncrypt, dwTimeLength); 
-         memset(szName, 0xEB, sEncryptedValueLength);
+         std::memset(szName, 0xEB, sEncryptedValueLength);
 			g_lRegTime = lTime;
 		}
 		else
@@ -4124,7 +4124,7 @@ static void GameSetRegistry(void)
 	lError = RegCreateKeyEx(HKEY_LOCAL_MACHINE, szName, 0,
                   "", 	REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr,
 						&hkResult, &dwDisposition);
-   memset(szName, 0xEA, sEncryptedKeyLength);
+   std::memset(szName, 0xEA, sEncryptedKeyLength);
 
 	if (lError == ERROR_SUCCESS)
 	{
@@ -4133,7 +4133,7 @@ static void GameSetRegistry(void)
 		Decrypt((char*) szIn, szName, sEncryptedValueLength);
 		szName[sEncryptedValueLength-2] = 0;
 		RegSetValueEx(hkResult, szName, 0, REG_BINARY, (uint8_t *) szTimeEncrypt, dwTimeLength); 
-      memset(szIn, 0xEE, sEncryptedValueLength);
+      std::memset(szIn, 0xEE, sEncryptedValueLength);
 		RegCloseKey(hkResult);
 	}
 	else
@@ -4466,7 +4466,7 @@ extern int16_t GetGammaLevel(void)	// Returns current brighten value.
 // contents are changed every time this function is called!  If you're just
 // going to use the string and then be done with it, this should work fine, but
 // if you need the string to stick around a while, you should probably do a
-// strcpy() into your own string buffer.
+// std::strcpy() into your own string buffer.
 //
 // There are several variations - pick the one you like best.
 //
@@ -4513,7 +4513,7 @@ extern const char* FullPathCD(								// Returns full path in system format
 	{
 	// Start with proper base path
    ASSERT(strlen(g_GameSettings.m_pszCDPath) < PATH_MAX);
-	strcpy(m_acFullPath, g_GameSettings.m_pszCDPath);
+   std::strcpy(m_acFullPath, g_GameSettings.m_pszCDPath);
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be
 	// enough to make a real difference to this test.
@@ -4539,7 +4539,7 @@ extern const char* FullPathHD(								// Returns full path in system format
 	{
 	// Start with proper base path
    ASSERT(strlen(g_GameSettings.m_pszHDPath) < PATH_MAX);
-	strcpy(m_acFullPath, g_GameSettings.m_pszHDPath);
+   std::strcpy(m_acFullPath, g_GameSettings.m_pszHDPath);
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be
 	// enough to make a real difference to this test.
@@ -4565,7 +4565,7 @@ extern const char* FullPathVD(								// Returns full path in system format
 	{
 	// Start with proper base path
    ASSERT(strlen(g_GameSettings.m_pszVDPath) < PATH_MAX);
-	strcpy(m_acFullPath, g_GameSettings.m_pszVDPath);
+   std::strcpy(m_acFullPath, g_GameSettings.m_pszVDPath);
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be
 	// enough to make a real difference to this test.
@@ -4591,7 +4591,7 @@ extern const char* FullPathSound(								// Returns full path in system format
 	{
 	// Start with proper base path
    ASSERT(strlen(g_GameSettings.m_pszSoundPath) < PATH_MAX);
-	strcpy(m_acFullPath, g_GameSettings.m_pszSoundPath);
+   std::strcpy(m_acFullPath, g_GameSettings.m_pszSoundPath);
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be
 	// enough to make a real difference to this test.
@@ -4617,7 +4617,7 @@ extern const char* FullPathGame(								// Returns full path in system format
 	{
 	// Start with proper base path
    ASSERT(strlen(g_GameSettings.m_pszGamePath) < PATH_MAX);
-	strcpy(m_acFullPath, g_GameSettings.m_pszGamePath);
+   std::strcpy(m_acFullPath, g_GameSettings.m_pszGamePath);
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be
 	// enough to make a real difference to this test.
@@ -4642,7 +4642,7 @@ extern const char* FullPathHoods(								// Returns full path in system format
 	{
 	// Start with proper base path
    ASSERT(strlen(g_GameSettings.m_pszHoodsPath) < PATH_MAX);
-	strcpy(m_acFullPath, g_GameSettings.m_pszHoodsPath);
+   std::strcpy(m_acFullPath, g_GameSettings.m_pszHoodsPath);
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be
 	// enough to make a real difference to this test.
@@ -4670,7 +4670,7 @@ extern const char* FullPathCustom(							// Returns full path in system format
     const char*	pszFullSystemPath	= rspPathToSystem(pszFullPath);
 	// Start with proper base path
    ASSERT(strlen(pszFullSystemPath) < PATH_MAX);
-	strcpy(m_acFullPath, pszFullSystemPath);
+   std::strcpy(m_acFullPath, pszFullSystemPath);
 
 	// Make sure partial path isn't too long.  It is possible that the conversion
 	// to the system format will change its length slightly, but it shouldn't be

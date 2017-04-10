@@ -1484,7 +1484,7 @@ int16_t ConvertFromBMP8RLE(RImage* pImage)
 				u8Pixel	= *pu8Comp++;
 
 				// Intrinsic version of this should be faster than C.
-				memset(pu8Uncomp, u8Pixel, u8Num);
+            std::memset(pu8Uncomp, u8Pixel, u8Num);
 
 				pu8Uncomp += u8Num;
 				}

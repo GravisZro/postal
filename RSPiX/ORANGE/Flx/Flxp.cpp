@@ -1313,7 +1313,7 @@ int16_t CFlx::CompressLineDelta(int16_t y,
 	
 	// First let's see if the current line really need to be compressed.
 	dwOffset = (uint32_t)y * (uint32_t)pbufNext->sPitch;
-	if (memcmp(pbSrcNext + dwOffset, pbSrcPrev + dwOffset, (size_t)pbufNext->sPitch) == 0)
+  if (std::memcmp(pbSrcNext + dwOffset, pbSrcPrev + dwOffset, (size_t)pbufNext->sPitch) == 0)
 	{
 		// The current line does not need to be compressed!
 		return 1;

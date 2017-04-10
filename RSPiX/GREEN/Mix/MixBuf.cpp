@@ -642,11 +642,11 @@ void RMixBuf::Silence(void)
 		switch (ms_lMixBitsPerSample)
 			{
 			case 8:
-				memset(m_pu8Mix, SILENCE_8, m_ulMixSize);
+            std::memset(m_pu8Mix, SILENCE_8, m_ulMixSize);
 				break;
 
 			case 16:
-				memset(m_pu8Mix, SILENCE_16, m_ulMixSize);
+            std::memset(m_pu8Mix, SILENCE_16, m_ulMixSize);
 				break;
 
 			default:

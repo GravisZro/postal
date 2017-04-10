@@ -392,9 +392,9 @@ template <class T, class K> class RSList
 		T*	FindItem(SORTKEY skFind)
 			{
 			NODE	nFind;
-			memset(&nFind, 0, sizeof(nFind));
+         std::memset(&nFind, 0, sizeof(nFind));
 			T		t;
-			memset(&t, 0, sizeof(t));
+         std::memset(&t, 0, sizeof(t));
 			
 			nFind.ldData	= &t;
 			nFind.psk		= &skFind;

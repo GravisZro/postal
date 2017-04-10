@@ -2541,7 +2541,7 @@ int16_t RGuiItem::GetText(	// Returns 0 on success.
 
    if (strlen(m_szText) < sMax)
 		{
-		strcpy(pszText, m_szText);
+      std::strcpy(pszText, m_szText);
 		}
 	else
 		{

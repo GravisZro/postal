@@ -891,7 +891,7 @@ static void DownloadLinks(	// Returns nothing.
 					break;
 				
 				case GuiLink::String:
-					strcpy( pagl->psz, pgui->m_szText );
+               std::strcpy( pagl->psz, pgui->m_szText );
 					break;
 				
 				case GuiLink::Gui:
@@ -1679,7 +1679,7 @@ static void AddConsoleMsg(	// Returns nothing.
 		if (bChat)
 			{
 			// Verbatim is good (already includes name and such).
-			strcpy(szMsg, szOutput);
+         std::strcpy(szMsg, szOutput);
 			}
 		else
 			{
@@ -2076,7 +2076,7 @@ static void OnSetupGameMsg(
 		if (bNewRealm)
 			{
 			ms_sSetupRealmNum = pmsg->msg.setupGame.sRealmNum;
-			strcpy(ms_szSetupRealmFile, pmsg->msg.setupGame.acRealmFile);
+         std::strcpy(ms_szSetupRealmFile, pmsg->msg.setupGame.acRealmFile);
 			ms_bGotSetupMsg = true;
 			}
 
@@ -2143,7 +2143,7 @@ static void OnSetupGameMsg(
 			char	szCoop[256] = "";
 			if (pmsg->msg.setupGame.sCoopLevels != 0)
 				{
-				strcpy(szCoop, "Cooperative ");
+            std::strcpy(szCoop, "Cooperative ");
 				}
 
 			char	szRealm[256];
@@ -2161,11 +2161,11 @@ static void OnSetupGameMsg(
 			char	szPlayMode[256];
 			if (pmsg->msg.setupGame.sCoopMode)
 				{
-				strcpy(szPlayMode, "Cooperative");
+            std::strcpy(szPlayMode, "Cooperative");
 				}
 			else
 				{
-				strcpy(szPlayMode, "Deathmatch");
+            std::strcpy(szPlayMode, "Deathmatch");
 				}
 
 			char	szTimeLimit[256];
@@ -3196,7 +3196,7 @@ static int16_t BrowseForSelf(
 				{
 				CNetBrowse::CHost* phost;
 				phost = &hostsAll.GetData(p);
-				if ((strcmp(phost->m_acName, pserver->GetHostName()) == 0) && (phost->m_lMagic == pserver->GetHostMagic()))
+            if ((std::strcmp(phost->m_acName, pserver->GetHostName()) == 0) && (phost->m_lMagic == pserver->GetHostMagic()))
 					{
 					// Return this host's address
 					*paddress = phost->m_address;

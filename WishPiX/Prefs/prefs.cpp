@@ -204,13 +204,13 @@ int16_t RPrefs::Open(					// Returns 0 if successfull, non-zero otherwise
 		delete []m_pszFileName;
 		m_pszFileName = new char[strlen(pszFile) + 1];
 		ASSERT(m_pszFileName);
-		strcpy(m_pszFileName, pszFile);
+      std::strcpy(m_pszFileName, pszFile);
 
 		// Make a copy of the file mode
 		delete []m_pszFileMode;
 		m_pszFileMode = new char[strlen(pszMode) + 1];
 		ASSERT(m_pszFileMode);
-		strcpy(m_pszFileMode, pszMode);
+      std::strcpy(m_pszFileMode, pszMode);
 
 		// Clear error status
       m_sErrorStatus = SUCCESS;
@@ -372,7 +372,7 @@ int16_t RPrefs::Write()
 					// doesn't exist, and that becomes our temp file name.
 					bool bGotTmp = false;
 					char acTmpFileName[PATH_MAX + 20];
-					strcpy(acTmpFileName, m_pszFileName);
+               std::strcpy(acTmpFileName, m_pszFileName);
                char* pTmp = strrchr(acTmpFileName, '/');
 					pTmp = (pTmp != nullptr) ? pTmp + 1 : acTmpFileName;
 					for (int32_t lCount = 0; !bGotTmp && (lCount < 9999999L); lCount++)
@@ -951,7 +951,7 @@ int16_t RPrefs::GetVal(							// Returns 0 if successfull, non-zero otherwise
 			// Return code of 3 indicates an empty value
          if (m_sErrorStatus == FAILURE * 3)
 				{
-				strcpy(pszValue, pszDefault);	// Go with default
+            std::strcpy(pszValue, pszDefault);	// Go with default
             m_sErrorStatus = SUCCESS;
 				}
 			else 
@@ -961,7 +961,7 @@ int16_t RPrefs::GetVal(							// Returns 0 if successfull, non-zero otherwise
 		else
 			{
 			if (pszValue != pszDefault) // pointer comparison.
-				strcpy(pszValue, pszDefault);	// var not found, go with default
+            std::strcpy(pszValue, pszDefault);	// var not found, go with default
          m_sErrorStatus = SUCCESS;				// Not finding a var should not be reported
 			}										// as an error on by return
 		}

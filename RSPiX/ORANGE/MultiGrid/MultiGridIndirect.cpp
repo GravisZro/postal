@@ -352,7 +352,7 @@ int16_t RMultiGridIndirect::Load(RFile* fp)
 	char type[256];
 	fp->Read(type);
 
-	if (strcmp(type,"__MultiGridIndirect__"))
+	if (std::strcmp(type,"__MultiGridIndirect__"))
 		{
 		TRACE("RMultiGridIndirect::Load: Not a MGI!\n");
 		return FAILURE;

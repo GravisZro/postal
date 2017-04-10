@@ -117,7 +117,7 @@ void	RProfile::StartProfile(char* pszFieldName)
 			}
 
 		m_aList[m_sNumTracked].Init();
-		strcpy(m_aList[m_sNumTracked].m_szFieldName,pszFieldName);
+      std::strcpy(m_aList[m_sNumTracked].m_szFieldName,pszFieldName);
 		sKey = m_sNumTracked++; // the new handle
 		}
 
@@ -223,7 +223,7 @@ void	RProfile::EndProfile(char* pszFieldName)
 			}
 
 		m_aList[m_sNumTracked].Init();
-		strcpy(m_aList[m_sNumTracked].m_szFieldName,pszFieldName);
+      std::strcpy(m_aList[m_sNumTracked].m_szFieldName,pszFieldName);
 		sKey = m_sNumTracked++; // the new handle
 		}
 
@@ -430,7 +430,7 @@ void RProfile::Report()
 RProfile::RProfile() 
 	{ 
 	m_sNumTracked = 0; 
-	strcpy(m_szOutputFile,"rspProfile.txt");
+   std::strcpy(m_szOutputFile,"rspProfile.txt");
 	m_sActive = m_sCommandError = m_sInternalError = FALSE;
 	m_sMaxDepth = 0;
 

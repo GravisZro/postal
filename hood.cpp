@@ -258,7 +258,7 @@ CHood::CHood(CRealm* pRealm)
 	m_bResourcesExist = false;
 
 	// Initialize.
-	strcpy(m_acBaseName, "");
+	std::strcpy(m_acBaseName, "");
 
 	m_sSceneRotX		= 30;
 	m_sRealmRotX		= 45;
@@ -537,7 +537,7 @@ static void BrowseBtnUp(	// Returns nothing.  Called on button released in
 			pguiBaseName->SetText(".");
 			}
 
-		strcpy(szSystemPath, FullPathHoods("res/hoods/") );
+		std::strcpy(szSystemPath, FullPathHoods("res/hoods/") );
 		strcat(szSystemPath, pguiBaseName->m_szText);
 
 		int16_t sResult;
@@ -569,7 +569,7 @@ static void BrowseBtnUp(	// Returns nothing.  Called on button released in
 			{
 			// Copy back from system format to RSPiX -- we're actually only looking for one word
 			// anyway (not a path).
-			strcpy(szSystemPath, rspPathFromSystem(szSystemPath) );
+			std::strcpy(szSystemPath, rspPathFromSystem(szSystemPath) );
 
 			// Get rid of extension.
 			int16_t	sIndex;

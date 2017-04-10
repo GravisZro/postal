@@ -220,7 +220,7 @@ extern int16_t rspIsKey(void)        // Returns TRUE if a key is available; FALS
 extern void Key_Init(void)
 {
   /*
-  memset(SDL::ms_au8KeyStatus, '\0', sizeof (SDL::ms_au8KeyStatus));
+  std::memset(SDL::ms_au8KeyStatus, '\0', sizeof (SDL::ms_au8KeyStatus));
 
   while(!ms_qkeEvents.IsEmpty())  // just in case.
     ms_qkeEvents.DeQ();

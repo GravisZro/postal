@@ -50,7 +50,7 @@ extern int16_t rspMsgBox(	// Returns RSP_MB_RET_*.  See switch statement below.
 	va_end(varp);
 
     SDL_MessageBoxData data;
-    memset(&data, 0, sizeof(data));
+    std::memset(&data, 0, sizeof(data));
 
     switch (usFlags & RSP_MB_ICN_MASK)
     {
@@ -66,7 +66,7 @@ extern int16_t rspMsgBox(	// Returns RSP_MB_RET_*.  See switch statement below.
     data.message = szOutput;
 
     SDL_MessageBoxButtonData buttons[3];
-    memset(buttons, 0, sizeof(buttons));
+    std::memset(buttons, 0, sizeof(buttons));
 
     switch (usFlags & RSP_MB_BUT_MASK)
     {

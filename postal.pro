@@ -270,7 +270,8 @@ HEADERS += \
     newpix/resourcemanager.h \
     newpix/hashstring.h \
     newpix/filestream.h \
-    newpix/sakarchive.h
+    newpix/sakarchive.h \
+    newpix/3dtypes.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
@@ -437,7 +438,8 @@ SOURCES += \
     yatime.cpp \
     newpix/resourcemanager.cpp \
     newpix/sakarchive.cpp \
-    newpix/filestream.cpp
+    newpix/filestream.cpp \
+    newpix/3dtypes.cpp
 
 CONFIG += sdl2
 

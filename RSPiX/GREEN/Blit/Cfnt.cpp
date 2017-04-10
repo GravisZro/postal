@@ -86,7 +86,7 @@ int16_t RFont::Add(RFile* pcf)
 
 	// Read the basic header and verify
 	pcf->Read(szCommand);
-	if (strcmp(szCommand,"FONTFILE"))
+	if (std::strcmp(szCommand,"FONTFILE"))
 		{
 		TRACE("RFont::AddFont:Not a valid font file.\n");
       return FAILURE;
@@ -112,13 +112,13 @@ int16_t RFont::Add(RFile* pcf)
 	while (!sDone)
 		{	
 		pcf->Read(szCommand);
-		if (!strcmp(szCommand,"ENDFONT"))
+		if (!std::strcmp(szCommand,"ENDFONT"))
 			{
 			sDone = TRUE;
 			break;
 			}
 
-		if (!strcmp(szCommand,"FONTSET"))
+		if (!std::strcmp(szCommand,"FONTSET"))
 			{
 			int16_t sH,sW;
 			pcf->Read(&sH);
@@ -127,7 +127,7 @@ int16_t RFont::Add(RFile* pcf)
 			continue;
 			}
 
-		if (!strcmp(szCommand,"LETTER_"))
+		if (!std::strcmp(szCommand,"LETTER_"))
 			{
 			uint8_t ucASCII;
 			RImage* pim = new RImage;
@@ -373,7 +373,7 @@ int16_t RFont::Load(RFile* pcf)
 	// Read the basic header
 	//------------------------------
 	pcf->Read(&string[0],9);
-	if (strcmp(&string[0],"FONTFILE")) // not equal
+	if (std::strcmp(&string[0],"FONTFILE")) // not equal
 		{
 		TRACE("RFont::Load: Bad font file!\n");
       return FAILURE;
@@ -403,14 +403,14 @@ int16_t RFont::Load(RFile* pcf)
 	while (!pcf->IsEOF())
 		{
 		pcf->Read(&string[0]);
-		if (!strcmp(&string[0],"FONTSET")) // equal
+		if (!std::strcmp(&string[0],"FONTSET")) // equal
 			{
 			// Don't need overall font set info..
 			pcf->Read(&sDummy);
 			pcf->Read(&sDummy);
 			}
 
-		else if (!strcmp(&string[0],"LETTER_")) // equal
+		else if (!std::strcmp(&string[0],"LETTER_")) // equal
 			{
 			uint8_t c;
 			pcf->Read((uint8_t*)&c);
@@ -424,7 +424,7 @@ int16_t RFont::Load(RFile* pcf)
 				AddLetter(pimLetter); // create the font!
 			}
 
-		else if (!strcmp(&string[0],"ENDFONT")) break; // equal
+		else if (!std::strcmp(&string[0],"ENDFONT")) break; // equal
 		else
 			{
 			TRACE("RFont::Load: Bad font file!\n");

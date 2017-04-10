@@ -84,14 +84,14 @@ public:
 			return;
 			}
 		
-		strcpy(m_pszFileName,pszFileName);
+      std::strcpy(m_pszFileName,pszFileName);
 		m_sCharEOL = sCharEOL;
 		m_sLowFilter = sLowFilter;
 		m_sHighFilter = sHighFilter;
 		m_cStringContext = cString;
 		m_cComment = cComment;
-		if (pszSpecialCharacters) strcpy(m_pszSpecialCharacters,pszSpecialCharacters);
-		if (pszSeparators) strcpy(m_pszSeparators,pszSeparators);
+      if (pszSpecialCharacters) std::strcpy(m_pszSpecialCharacters,pszSpecialCharacters);
+      if (pszSeparators) std::strcpy(m_pszSeparators,pszSeparators);
 		}
 
    void configure(const char* pszSeparators = " \t,",const char* pszSpecialCharacters=nullptr,
@@ -103,8 +103,8 @@ public:
 		m_cStringContext = cString;
 		m_cComment = cComment;
 
-		if (pszSpecialCharacters) strcpy(m_pszSpecialCharacters,pszSpecialCharacters);
-		if (m_pszSeparators) strcpy(m_pszSeparators,pszSeparators);
+      if (pszSpecialCharacters) std::strcpy(m_pszSpecialCharacters,pszSpecialCharacters);
+      if (m_pszSeparators) std::strcpy(m_pszSeparators,pszSeparators);
 		}
 
 	RBatch() // default, no file
@@ -129,7 +129,7 @@ public:
             return FAILURE;
 				}
 
-			strcpy(m_pszFileName,pszFileName);
+         std::strcpy(m_pszFileName,pszFileName);
 			m_lCurrentLine = 0;
 			m_sNumTokens = 0;
 

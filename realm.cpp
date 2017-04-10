@@ -789,11 +789,11 @@ int16_t CRealm::Open(										// Returns 0 if successfull, non-zero otherwise
 			if (sResult != SUCCESS)
 				{
             char pszFullPath[PATH_MAX];
-            strcpy(pszFullPath, FullPathHD(pszFileName));
+            std::strcpy(pszFullPath, FullPathHD(pszFileName));
             sResult = pfile->Open(pszFullPath, "rb", RFile::LittleEndian);
 				if (sResult != SUCCESS)
 					{
-               strcpy(pszFullPath, FullPathCD(pszFileName));
+               std::strcpy(pszFullPath, FullPathCD(pszFileName));
                sResult = pfile->Open(pszFullPath, "rb", RFile::LittleEndian);
 					}
 				}
@@ -2318,7 +2318,7 @@ const char* CRealm::Make2dResPath(	// Returns a ptr to an internal static buffer
 	
 	ASSERT(strlen(pszPath) + strlen(pszResName) < sizeof(szFullPath) );
 
-	strcpy(szFullPath, pszPath);
+	std::strcpy(szFullPath, pszPath);
 	strcat(szFullPath, pszResName);
 
 	return szFullPath;

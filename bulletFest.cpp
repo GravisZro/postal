@@ -609,7 +609,7 @@ void CBulletFest::Flare(		// Returns nothing.
 	CAnimThing*	pat	= new CAnimThing(pRealm);
 	ASSERT(pat != nullptr);
 
-	strcpy(pat->m_szResName, FLARE_RES_NAME);
+   std::strcpy(pat->m_szResName, FLARE_RES_NAME);
 
 	// Start it up:
 	// No looping.
@@ -642,7 +642,7 @@ void CBulletFest::Impact(	// Returns nothing.
 	CAnimThing*	pat	= new CAnimThing(pRealm);
 	ASSERT(pat != nullptr);
 
-	strcpy(pat->m_szResName, IMPACT_RES_NAME);
+   std::strcpy(pat->m_szResName, IMPACT_RES_NAME);
 
 	// Start it up:
 	// No looping.
@@ -669,7 +669,7 @@ void CBulletFest::Ricochet(	// Returns nothing.
 	CAnimThing*	pat	= new CAnimThing(pRealm);
 	ASSERT(pat != nullptr);
 
-	strcpy(pat->m_szResName, RICOCHET_RES_NAME);
+   std::strcpy(pat->m_szResName, RICOCHET_RES_NAME);
 
 	// Start it up:
 	// No looping.

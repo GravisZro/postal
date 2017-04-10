@@ -3551,7 +3551,7 @@ class CPlayInput : public CPlay
 
 					// If not yet used, start out in appropriate directory
 					if (szFile[0] == '\0')
-						strcpy(szFile, FullPathHD(SAVEGAME_DIR));
+                  std::strcpy(szFile, FullPathHD(SAVEGAME_DIR));
 
 					// Display open dialog to let user choose a file
                #if 1 //__unix__
@@ -5592,7 +5592,7 @@ extern int16_t Play_GetRealmInfo(						// Returns 0 if successfull, 1 if no such
 		else if ((strlen(szText) + 1) <= sMaxFileLen)
 			{
 			// Return the file name
-			strcpy(pszFile, szText);
+         std::strcpy(pszFile, szText);
 
 			// Check if caller wants the title, too
 			if ((sMaxTitleLen > 0) && (pszTitle != nullptr))
@@ -5759,7 +5759,7 @@ void Play_GetApplicationDescriptor(			// Returns nothing.
 	{
 	// Set default in case there's an error
 	ASSERT(strlen(DEFAULT_APP_TIMESTAMP) < sMaxBytes);
-	strcpy(pszText, DEFAULT_APP_TIMESTAMP);
+   std::strcpy(pszText, DEFAULT_APP_TIMESTAMP);
 
 	#if defined(_WIN32)
       char	szModuleFileName[PATH_MAX];
@@ -5774,7 +5774,7 @@ void Play_GetApplicationDescriptor(			// Returns nothing.
 					if (strlen(pszText) + strlen(pszTime) < sMaxBytes)
 						{
 						// ctime() returns a string of exactly 26 characters, including /n and null.
-						strcpy(pszText, pszTime);
+                  std::strcpy(pszText, pszTime);
 						}
 
 					// Get rid of trailing '\n'.
@@ -5826,8 +5826,8 @@ extern int16_t Play_InitLevelSelectMenu(	// Returns 0 on success.
 		{
 		// Set text describing input function for this menu item.
 		Play_GetRealmInfo(false, false, false, 3, sInputIndex, 1, tempFile, 256, tempText, 256);
-		memset(levelNames[sInputIndex], '\0', sizeof(levelNames[sInputIndex]));
-		strcpy(levelNames[sInputIndex], tempText);
+      std::memset(levelNames[sInputIndex], '\0', sizeof(levelNames[sInputIndex]));
+      std::strcpy(levelNames[sInputIndex], tempText);
 		// Enable item.
 		pmenu->ami[sInputIndex].sEnabled	= TRUE;
 		}

@@ -57,7 +57,7 @@ extern int16_t rspSetSoundOutMode(				// Returns 0 if successfull, non-zero othe
     if (audio_opened)
         rspKillSoundOutMode();
 
-    memset(&desired, '\0', sizeof (desired));
+    std::memset(&desired, '\0', sizeof (desired));
 
     if ((lChannels < 1) || (lChannels > 2))
     {

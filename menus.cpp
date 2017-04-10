@@ -5602,7 +5602,7 @@ int16_t PickFile(const char *title, void (*enumer)(Menu *), char *buf, size_t bu
     size_t Max = (sizeof(g_menuPickFile.ami) / sizeof(g_menuPickFile.ami[0])) - 1;
 
     g_menuPickFile.menuheader.pszHeaderText = (char *) title;
-    memset(&g_menuPickFile.ami, '\0', sizeof (g_menuPickFile.ami));
+    std::memset(&g_menuPickFile.ami, '\0', sizeof (g_menuPickFile.ami));
     enumer(&g_menuPickFile);
     g_menuPickFile.menuautoitems.sCancelItem = Max;  // the null index
     g_PickFileMenuChoice = nullptr;

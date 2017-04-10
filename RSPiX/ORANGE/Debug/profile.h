@@ -296,7 +296,7 @@ public:
 	//----------------------------
 	void	SetOutput(char *pszOutput)
 		{
-		if (pszOutput) strcpy(m_szOutputFile,pszOutput);
+      if (pszOutput) std::strcpy(m_szOutputFile,pszOutput);
 		}
 
 	void ProfilingOn()

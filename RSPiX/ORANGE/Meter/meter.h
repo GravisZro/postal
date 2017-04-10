@@ -176,7 +176,7 @@ class RMeter : public RDlg
 			char* pszUnit)		// Unit string (ex: "Mbytes" or "ms").
 			{
 			ASSERT(strlen(pszUnit) < sizeof(m_szUnit));
-			strcpy(m_szUnit, pszUnit);
+         std::strcpy(m_szUnit, pszUnit);
 			}
 
 		// Set the colors.

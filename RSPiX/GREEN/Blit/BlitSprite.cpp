@@ -154,7 +154,7 @@ int16_t		LoadFSPR8(RImage* pImage, RFile* pcf)
 	pcf->Read(&szTemp[0]);
 
 	// Check type:
-	if (strcmp(szTemp,"__FSPR8__")) // not equal
+	if (std::strcmp(szTemp,"__FSPR8__")) // not equal
 		{
 		TRACE("Load FSPR8: Not correct file type!\n");
     return FAILURE;

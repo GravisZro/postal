@@ -321,7 +321,7 @@ static int16_t DisplayImage(	// Returns nothing.
 	int16_t sResult;
 	
 	#ifdef KID_FRIENDLY_OPTION
-	if (g_GameSettings.m_sKidMode == TRUE && strcmp(pszImageFile, "Title/Postal.bmp") == 0)
+	if (g_GameSettings.m_sKidMode == TRUE && std::strcmp(pszImageFile, "Title/Postal.bmp") == 0)
 	{
 		sResult = rspGetResource(&g_resmgrShell, "res/unicorn/postal.bmp", &pimTitle);
 	} else {

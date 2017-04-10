@@ -107,7 +107,7 @@ class RSocket
 				{
 				prototype = NO_PROTOCOL;
 				lAddressLen = 0;
-				memset(address, 0, sizeof(address));
+            std::memset(address, 0, sizeof(address));
 				}
 
 			} Address;

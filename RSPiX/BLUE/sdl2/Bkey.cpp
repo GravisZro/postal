@@ -242,7 +242,7 @@ extern int16_t rspIsKey(void)		// Returns TRUE if a key is available; FALSE if n
 #define SET_SDL_TO_RWS_GKEYMAP(x) SET_SDL_TO_RWS_GKEYMAP2(x, x)
 extern void Key_Init(void)
 	{
-	    memset(ms_au8KeyStatus, '\0', sizeof (ms_au8KeyStatus));
+       std::memset(ms_au8KeyStatus, '\0', sizeof (ms_au8KeyStatus));
 
 		while(!ms_qkeEvents.IsEmpty())  // just in case.
 			ms_qkeEvents.DeQ();

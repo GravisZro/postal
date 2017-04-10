@@ -574,7 +574,7 @@ extern void ClearLocalInput(void)
 		}
 
 	// Clear the keys' statuses.
-	memset(rspGetKeyStatusArray(), 0, 128);
+   std::memset(rspGetKeyStatusArray(), 0, 128);
 
 	// Clear cheats.
    for (size_t i = 0; i < NUM_ELEMENTS(ms_acheats); i++)

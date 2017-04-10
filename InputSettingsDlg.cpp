@@ -347,7 +347,7 @@ void InputSettingsDlg_Choice(	// Returns nothing.
 			{
 			ms_bListenForInput	= true;
 			// Clear input array for key type.
-			memset(pau8KeyStatusArray, 0, 128);
+         std::memset(pau8KeyStatusArray, 0, 128);
 			// Clear buttons status for mouse type.
 			ms_sMouseButtons	= 0;
 			// Clear buttons tatus for joy type.

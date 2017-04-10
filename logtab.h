@@ -415,7 +415,7 @@ int16_t CLogTabVar<usertype>::ValToText(				// Returns 0 if successfull, non-zer
 		if ((sVal >= 0) && (sVal < m_sNumStrings))
 			{
 			if (strlen(m_papszStrings[sVal]) < sMaxText)
-				strcpy(pszText, m_papszStrings[sVal]);
+				std::strcpy(pszText, m_papszStrings[sVal]);
 			else
 				{
 				strncpy(pszText, m_papszStrings[sVal], sMaxText - 2);

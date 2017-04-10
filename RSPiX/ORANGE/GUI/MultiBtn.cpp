@@ -219,7 +219,7 @@ int16_t RMultiBtn::SetNumStates(	// Returns 0 on success.
 	if (papimNewStates != nullptr)
 		{
 		// Clear all the ptrs to nullptr.
-		memset(papimNewStates, 0, sizeof(RImage*) * (sNumStates + 1));
+      std::memset(papimNewStates, 0, sizeof(RImage*) * (sNumStates + 1));
 
 		// If there was an old array . . .
 		if (m_papimStates != nullptr)

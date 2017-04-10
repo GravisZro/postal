@@ -152,7 +152,7 @@ int16_t RAlpha::Load(RFile* fp)
 #endif
 
 	fp->Read(name);
-	if (strcmp(name,"RALPHA"))
+	if (std::strcmp(name,"RALPHA"))
 		{
 		TRACE("RAlpha::Load: Not an RAlpha!\n");
       return FAILURE;
@@ -653,7 +653,7 @@ int16_t RMultiAlpha::Load(RFile* pFile)
 	int16_t sVer;
 
 	pFile->Read(type);
-	if (strcmp(type,"MALPHA"))
+	if (std::strcmp(type,"MALPHA"))
 		{
 		TRACE("RMultiAlpha::Load: Bad File Type\n");
       return FAILURE;
@@ -1221,7 +1221,7 @@ int16_t RFastMultiAlphaWrapper::Load(RFile* pf)
 	char	szType[32];
 
 	pf->Read(szType);
-	if (strcmp(szType,"__FMA__"))
+	if (std::strcmp(szType,"__FMA__"))
 		{
 		TRACE("RFastMulitAlphaWrapper::Load:  Wrong file type!\n");
 		return FAILURE;

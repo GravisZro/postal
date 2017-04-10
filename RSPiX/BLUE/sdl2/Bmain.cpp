@@ -239,7 +239,7 @@ extern void rspPlatformInit(void)
     else
     {
         // From the Finder, current working directory is "/", which sucks.
-        if ((getcwd(buf, sizeof (buf)) == nullptr) || (strcmp(buf, "/") == 0))
+        if ((getcwd(buf, sizeof (buf)) == nullptr) || (std::strcmp(buf, "/") == 0))
             return;  // hail mary...probably fail elsewhere.
     }
 

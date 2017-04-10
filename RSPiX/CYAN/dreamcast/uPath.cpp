@@ -61,7 +61,7 @@ extern char* rspPathToSystem(			// Returns pszSystem
 	#endif
 	
   if (pszRSPiX != pszSystem)  // yes, pointer comparison.
-    strcpy(pszSystem, pszRSPiX);
+    std::strcpy(pszSystem, pszRSPiX);
 	return pszSystem;
 	}
 	
@@ -100,7 +100,7 @@ extern char* rspPathFromSystem(		// Returns pszRSPiX
   ASSERT(strlen(pszSystem) <= PATH_MAX);
 
   if (pszRSPiX != pszSystem)  // yes, pointer comparison.
-    strcpy(pszRSPiX, pszSystem);
+    std::strcpy(pszRSPiX, pszSystem);
   return pszRSPiX;
 }
 

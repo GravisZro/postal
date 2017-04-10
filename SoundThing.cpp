@@ -584,7 +584,7 @@ static void BrowseCall(		// Returns nothing.
 			pguiName->SetText(".");
 			}
 
-		strcpy(szSystemPath, FullPathCustom(pszSakpath, pguiName->m_szText) );
+      std::strcpy(szSystemPath, FullPathCustom(pszSakpath, pguiName->m_szText) );
 
 		int16_t sResult;
 		do {

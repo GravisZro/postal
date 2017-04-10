@@ -338,7 +338,7 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Paths", "CD", "", m_pszCDPath);
 #if defined(PANDORA) || defined(ODROID)
-	strcpy(m_pszCDPath, ".");
+   std::strcpy(m_pszCDPath, ".");
 #endif
 
 	sResult = (strlen(m_pszCDPath) + 1) <= PATH_MAX ? 0 : -1;
@@ -349,7 +349,7 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Paths", "HD", "", m_pszHDPath);
 #if defined(PANDORA) || defined(ODROID)
-	strcpy(m_pszHDPath, ".");
+   std::strcpy(m_pszHDPath, ".");
 #endif
 	sResult = (strlen(m_pszHDPath) + 1) <= PATH_MAX ? 0 : -1;
    if (sResult == SUCCESS)
@@ -359,7 +359,7 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Paths", "VD", "", m_pszVDPath);
 #if defined(PANDORA) || defined(ODROID)
-	strcpy(m_pszVDPath, ".");
+   std::strcpy(m_pszVDPath, ".");
 #endif
 	sResult = (strlen(m_pszVDPath) + 1) <= PATH_MAX ? 0 : -1;
    if (sResult == SUCCESS)
@@ -369,7 +369,7 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Paths", "Sound", "", m_pszSoundPath);
 #if defined(PANDORA) || defined(ODROID)
-	strcpy(m_pszSoundPath, ".");
+   std::strcpy(m_pszSoundPath, ".");
 #endif
 	sResult = (strlen(m_pszSoundPath) + 1) <= PATH_MAX ? 0 : -1;
    if (sResult == SUCCESS)
@@ -379,7 +379,7 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Paths", "Game", "", m_pszGamePath);
 #if defined(PANDORA) || defined(ODROID)
-	strcpy(m_pszGamePath, ".");
+   std::strcpy(m_pszGamePath, ".");
 #endif
 	sResult = (strlen(m_pszGamePath) + 1) <= PATH_MAX ? 0 : -1;
    if (sResult == SUCCESS)
@@ -389,7 +389,7 @@ int16_t CGameSettings::LoadPrefs(
 
 	pPrefs->GetVal("Paths", "Hoods", "", m_pszHoodsPath);
 #if defined(PANDORA) || defined(ODROID)
-	strcpy(m_pszHoodsPath, ".");
+   std::strcpy(m_pszHoodsPath, ".");
 #endif
 	sResult = (strlen(m_pszHoodsPath) + 1) <= PATH_MAX ? 0 : -1;
    if (sResult == SUCCESS)

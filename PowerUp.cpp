@@ -529,7 +529,7 @@ void CPowerUp::GetResName(	// Returns nothing.
 			}
 		}
 
-	strcpy(pszResName, ms_apszPowerUpResNames[sTypeInPowerUp]);
+   std::strcpy(pszResName, ms_apszPowerUpResNames[sTypeInPowerUp]);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

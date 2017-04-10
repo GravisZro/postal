@@ -265,7 +265,7 @@ int16_t RLaymage::SetPSD(char* pszFilename)
    RFile cfChannel;
 	int16_t i;
 
-	strcpy(m_szPhotoshopFilename, pszFilename);
+   std::strcpy(m_szPhotoshopFilename, pszFilename);
 
 	if (ReadPSDHeader(pszFilename) != SUCCESS)
 	{
@@ -324,7 +324,7 @@ int16_t RLaymage::LoadPSD(char* pszFilename)
    RFile cfChannel;
 	int16_t i;
 
-	strcpy(m_szPhotoshopFilename, pszFilename);
+   std::strcpy(m_szPhotoshopFilename, pszFilename);
 
 	if (ReadPSDHeader(pszFilename) != SUCCESS)
 	{
@@ -841,7 +841,7 @@ int16_t RLaymage::ReadLayerInfo(int16_t sLayerNum, RFile* pcfLayer,
       if (m_apszLayerNames[sLayerNum] == nullptr)
 			{
 			m_apszLayerNames[sLayerNum] = new char[20+1];
-			strcpy(m_apszLayerNames[sLayerNum], "background");
+         std::strcpy(m_apszLayerNames[sLayerNum], "background");
 			}
 
 		// Allocate 4 channel buffers for Alpha, R, G, and B channels
@@ -1306,7 +1306,7 @@ RImage* RLaymage::GetLayer(char* pszLayerName)
 
 	while (i < m_sNumLayers && pLayerImage == nullptr)
 	{
-		if (strcmp(pszLayerName, m_apszLayerNames[i]) == 0)
+      if (std::strcmp(pszLayerName, m_apszLayerNames[i]) == 0)
 		{
 			pLayerImage = m_apImages[i];
 			if (pLayerImage == nullptr)
@@ -1383,7 +1383,7 @@ void RLaymage::FreeLayer(char* pszLayerName)
 
 	while (i < m_sNumLayers && !bFound)
 	{
-		if (strcmp(pszLayerName, m_apszLayerNames[i]) == 0)
+      if (std::strcmp(pszLayerName, m_apszLayerNames[i]) == 0)
 			bFound = TRUE;
 		else
 			i++;
@@ -1476,7 +1476,7 @@ int16_t RLaymage::GetLayerName(int16_t sLayer, char* pszNameBuffer)
 	
 	if (pszNameBuffer && sLayer >= 0 && sLayer < m_sNumLayers)
 	{
-		strcpy(pszNameBuffer, m_apszLayerNames[sLayer]);	
+      std::strcpy(pszNameBuffer, m_apszLayerNames[sLayer]);
       sResult = SUCCESS;
 	}
 		

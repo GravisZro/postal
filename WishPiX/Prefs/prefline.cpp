@@ -101,7 +101,7 @@ inline int16_t GetVar(	// Returns 0 on success.
 				}
 			else
 				// Copy variable value to out string
-				strcpy(pszVal, &pszLine[i]);
+            std::strcpy(pszVal, &pszLine[i]);
 			}
 		}
 
@@ -117,7 +117,7 @@ RPrefsLine::RPrefsLine (RPrefsLine::ePrefsLineType Type, const char *pszLine)
 	m_Type = Type;
 	m_pszLine = new char[strlen (pszLine) + 1];
 	assert (m_pszLine);
-	strcpy (m_pszLine, pszLine);
+   std::strcpy(m_pszLine, pszLine);
 
 	return;
 	}
@@ -185,7 +185,7 @@ int16_t RPrefsLine::GetSectionName(char *pszSection)
 			}
 		}
 	if (sResult != SUCCESS)
-		strcpy(pszSection, "");
+      std::strcpy(pszSection, "");
 	return (sResult);
 	}
 		
@@ -222,7 +222,7 @@ int16_t RPrefsLine::GetVariableName(char *pszVariable)
 			}
 		}
 	if (sResult != SUCCESS)
-		strcpy(pszVariable, "");
+      std::strcpy(pszVariable, "");
 #else
 		sResult	= GetVar(m_pszLine, pszVariable, nullptr);
 #endif
@@ -268,11 +268,11 @@ int16_t RPrefsLine::GetVariableValue(char *pszValue)
 				}
 			else
 				// Copy variable value to out string
-				strcpy(pszValue, &m_pszLine[i]);
+            std::strcpy(pszValue, &m_pszLine[i]);
 			}
 		}
 	if (sResult != SUCCESS)
-		strcpy(pszValue, "");
+      std::strcpy(pszValue, "");
 #else
 		sResult	= GetVar(m_pszLine, nullptr, pszValue);
 #endif
@@ -312,7 +312,7 @@ int16_t RPrefsLine::SetVariableValue(const char *pszValue)
 			m_pszLine = nullptr;
 			sprintf(pszLine, "%s = %s", pszVariable, pszValue);
 			m_pszLine = new char[strlen(pszLine) + 1];
-			strcpy(m_pszLine, pszLine);
+         std::strcpy(m_pszLine, pszLine);
 			}
 		}
 	return (sResult);

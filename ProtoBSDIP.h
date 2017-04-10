@@ -100,7 +100,7 @@ class RProtocolBSDIP : public RSocket::RProtocol
 						  (lAddressLen == rhs.lAddressLen) &&
 						  (address.sin_family == rhs.address.sin_family) &&
 						  (address.sin_port == rhs.address.sin_port) &&
-						  (memcmp(&address.sin_addr, &rhs.address.sin_addr, sizeof(address.sin_addr)) == 0) )
+                    (std::memcmp(&address.sin_addr, &rhs.address.sin_addr, sizeof(address.sin_addr)) == 0) )
 						return true;
 					return false;
 					}

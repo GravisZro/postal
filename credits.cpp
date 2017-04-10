@@ -542,7 +542,7 @@ public:
 		ASSERT(pszName);
 		ASSERT(m_sNumBackgrounds < MAX_BACKGROUNDS);
 
-		strcpy(m_szBackgroundNames[m_sNumBackgrounds],pszName);
+      std::strcpy(m_szBackgroundNames[m_sNumBackgrounds],pszName);
 		m_pimBackgrounds[m_sNumBackgrounds] = nullptr;
 
 		return m_sNumBackgrounds++;
@@ -653,14 +653,14 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 		//TRACE("TOKEN = '%s'\n",pszToken);
 
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,"color"))
+      if (!std::strcmp(pszToken,"color"))
 			{
 			sCurColor = atoi(m_bf.NextToken());
 
 			continue;
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,"size"))
+      if (!std::strcmp(pszToken,"size"))
 			{
 			pCurPhrase->m_sFontSize = 0;
 
@@ -682,7 +682,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			continue;
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,"back"))
+      if (!std::strcmp(pszToken,"back"))
 			{
 			sLocalY -= atoi(m_bf.NextToken());
 
@@ -694,7 +694,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			continue;
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken+1,"tab"))
+      if (!std::strcmp(pszToken+1,"tab"))
 			{
 			pCurPhrase->m_sLocalX = sCurTabX = atoi(m_bf.NextToken());
 
@@ -710,7 +710,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
          continue;
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,";")) // means new line (& should benew phrase)
+      if (!std::strcmp(pszToken,";")) // means new line (& should benew phrase)
 			{
 			sLocalY += sCurFontSize;
 			sMaxH = MAX(sMaxH,int16_t(sLocalY + sCurFontSize));
@@ -718,13 +718,13 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			continue;
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,"end")) //  if in the sak, no EOF!
+      if (!std::strcmp(pszToken,"end")) //  if in the sak, no EOF!
 			{
 
 			break; // done
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,"skip")) // signals a new chunk!
+      if (!std::strcmp(pszToken,"skip")) // signals a new chunk!
 			{
 			//TRACE("New chunk!\n");
 			bNewChunk = true;
@@ -751,7 +751,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			continue;
 			}
 		//-----------------------------------------------------
-		if (!strcmp(pszToken,"scene")) // describe a scene change:
+      if (!std::strcmp(pszToken,"scene")) // describe a scene change:
 			{
 			// first, parse through it all, then validate the information:
 
@@ -763,31 +763,31 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			// The order doesn't matter - go until ')'
 			pszToken = m_bf.NextToken();
 
-			while (strcmp(pszToken,")")) // until we hit a right parenthesis
+         while (std::strcmp(pszToken,")")) // until we hit a right parenthesis
 				{
-				if (!strcmp(pszToken,"delay"))
+            if (!std::strcmp(pszToken,"delay"))
 					{
 					sDelay = atoi(m_bf.NextToken());
 					}
-				else if (!strcmp(pszToken,"black"))
+            else if (!std::strcmp(pszToken,"black"))
 					{
 					sBlackTime = atoi(m_bf.NextToken());
 					}
-				else if (!strcmp(pszToken,"out"))
+            else if (!std::strcmp(pszToken,"out"))
 					{
 					sFadeOutTime = atoi(m_bf.NextToken());
 					}
-				else if (!strcmp(pszToken,"in"))
+            else if (!std::strcmp(pszToken,"in"))
 					{
 					sFadeInTime = atoi(m_bf.NextToken());
 					}
-				else if (!strcmp(pszToken,"exit"))
+            else if (!std::strcmp(pszToken,"exit"))
 					{
 					sOnExit = TRUE;
 					}
-				else if (!strcmp(pszToken,"name"))
+            else if (!std::strcmp(pszToken,"name"))
 					{
-					strcpy(szName,m_bf.NextToken());
+               std::strcpy(szName,m_bf.NextToken());
 					}
 
 				pszToken = m_bf.NextToken();
@@ -800,7 +800,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 			pNew->m_lBlackTime = sBlackTime;
 			pNew->m_lFadeInTime = sFadeInTime;
 
-			strcpy(pNew->m_szNewName,szName);
+         std::strcpy(pNew->m_szNewName,szName);
 			if (sOnExit) pNew->m_eType = CBackgroundChange::OnExit;
 
 			// Log into the stream:
@@ -827,7 +827,7 @@ int16_t	CFileTextInput::ParseTextInput(FILE* fp)
 		pCurPhrase->m_sLocalY = sLocalY;
 		pCurPhrase->m_sColorIndex = sCurColor;
 
-		strcpy(pCurPhrase->m_szText,pszToken);
+      std::strcpy(pCurPhrase->m_szText,pszToken);
 		// Create a brand new phrase:
 
 		pChunk->AddPhrase(pCurPhrase);
@@ -1113,13 +1113,13 @@ int16_t Credits(SampleMasterID* pMusic,
 
 	// Set defaults:
 	psmidMusic = g_psmidMusic;
-	strcpy(szBackground,g_szBackground);
-	strcpy(szCredits,g_szCredits);
+   std::strcpy(szBackground,g_szBackground);
+   std::strcpy(szCredits,g_szCredits);
 
 	// Set input parameters:
 	if (pMusic) psmidMusic = pMusic;
-	if (pszBackground) strcpy(szBackground,pszBackground);
-	if (pszCredits) strcpy(szCredits,pszCredits);
+   if (pszBackground) std::strcpy(szBackground,pszBackground);
+   if (pszCredits) std::strcpy(szCredits,pszCredits);
 
 	// Start credits music
 	PlaySample(										// Returns nothing.

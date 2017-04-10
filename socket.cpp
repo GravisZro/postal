@@ -706,7 +706,7 @@ int16_t RSocket::GetAddress(								// Returns 0 on success, non-zero otherwise
 			pszName++;
 
 		// Copy resulting string
-		strcpy(azName, pszName);
+		std::strcpy(azName, pszName);
 
 		// Convert trailing whitespace to 0's
 		int32_t index;

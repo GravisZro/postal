@@ -936,7 +936,7 @@ void CCharacter::MakeBloody(
 	CAnimThing*	pat	= new CAnimThing(m_pRealm);
 	if (pat != nullptr)
 		{
-		strcpy(pat->m_szResName, BLOOD_SPLAT_RES_NAME);
+      std::strcpy(pat->m_szResName, BLOOD_SPLAT_RES_NAME);
 
 		// Start it up:
 		// No looping.
@@ -992,7 +992,7 @@ void CCharacter::MakeBloodPool(void)
 	CAnimThing*	pat	= new CAnimThing(m_pRealm);
 	if (pat != nullptr)
 		{
-		strcpy(pat->m_szResName, BLOOD_POOL_RES_NAME);
+      std::strcpy(pat->m_szResName, BLOOD_POOL_RES_NAME);
 
 		// Start it up:
 		// No looping.

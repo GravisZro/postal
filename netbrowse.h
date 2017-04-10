@@ -86,7 +86,7 @@ class CNetBrowse
 				bool IsSameHost(const CHost* rhs) const
 					{
 					// We ignore the user value in comparisons!!!!
-               if ((strcmp(m_acName, rhs->m_acName ) == 0) &&
+               if ((std::strcmp(m_acName, rhs->m_acName ) == 0) &&
 						 (m_address == rhs->m_address) &&
 						 (m_lMagic == rhs->m_lMagic))
 						return true;

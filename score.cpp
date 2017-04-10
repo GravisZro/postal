@@ -1052,7 +1052,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 				if (sOpenRes == 0)
                scores.GetVal(pRealm->m_rsRealmString, szKeyName, "<Empty>", astrNames[sDstIndex]);
 				else
-					strcpy(astrNames[sDstIndex], "<Empty>");
+					std::strcpy(astrNames[sDstIndex], "<Empty>");
 					
 				// Determine if our score beat this score.
 				bool	bPlayerBeatThisScore	= false;
@@ -1173,7 +1173,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 				// Check for safety (future changes).
 				ASSERT(sizeof(astrNames[0]) >= sizeof(astrTempNames[0]) );
 
-				strcpy(astrNames[sDstIndex], astrTempNames[sHighestScoreIndex] );
+				std::strcpy(astrNames[sDstIndex], astrTempNames[sHighestScoreIndex] );
 				// Note that this score is already placed.
 				abAlreadyCopied[sHighestScoreIndex]	= true;
 
@@ -1306,7 +1306,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 						#else
 							if (sPlayersScorePosition == sScoreIndex)
 							{
-								strcpy(astrNames[sScoreIndex], "Dude");
+								std::strcpy(astrNames[sScoreIndex], "Dude");
 							}
 						#endif
 						}

@@ -44,7 +44,7 @@ class CPlugIn
 			{
 			memset(m_aucReserved, 0, sizeof(m_aucReserved)); 
 			m_lMagicSize	= sizeof(CPlugIn);
-			strcpy(m_szMagicTime, __TIMESTAMP__);
+      std::strcpy(m_szMagicTime, __TIMESTAMP__);
 			}
 
       /////////////////////////////////////////////////////////////////////////

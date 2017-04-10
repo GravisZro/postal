@@ -744,7 +744,7 @@ extern void CutSceneStart(
 	// In simple mode, use default bg.  Otherwise, get bg from prefs file.
 	if (bSimple)
 		{
-		strcpy(szText, DEFAULT_BG);
+		std::strcpy(szText, DEFAULT_BG);
 		}
 	else
 		{
@@ -752,46 +752,46 @@ extern void CutSceneStart(
 		#ifdef KID_FRIENDLY_OPTION
 		if (g_GameSettings.m_sKidMode == TRUE)
 		{
-			if (strcmp(szText, "res/cutscene/jacketbg.bmp") == 0)
+			if (std::strcmp(szText, "res/cutscene/jacketbg.bmp") == 0)
 			{
-				strcpy(szText, "res/unicorn/jacketbg.bmp");
+				std::strcpy(szText, "res/unicorn/jacketbg.bmp");
 			}
-			else if (strcmp(szText, "res/cutscene/baboon.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/bluehead.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/dblood.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/dholo.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/dredeye.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/flash.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/forest.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/glassguy.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/guy.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/hellbrth.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/maskfire.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/monster.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/pit.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/texbeast.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/texteeth.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/tossle.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/war.bmp") == 0)
+			else if (std::strcmp(szText, "res/cutscene/baboon.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/bluehead.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/dblood.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/dholo.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/dredeye.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/flash.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/forest.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/glassguy.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/guy.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/hellbrth.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/maskfire.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/monster.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/pit.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/texbeast.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/texteeth.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/tossle.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/war.bmp") == 0)
 			{
-				strcpy(szText, "res/unicorn/baboon.bmp");
+				std::strcpy(szText, "res/unicorn/baboon.bmp");
 			}
-			else if (strcmp(szText, "res/cutscene/abstract.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/real2.bmp") == 0 ||
-			strcmp(szText, "res/cutscene/ttlmorex.bmp") == 0)
+			else if (std::strcmp(szText, "res/cutscene/abstract.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/real2.bmp") == 0 ||
+			std::strcmp(szText, "res/cutscene/ttlmorex.bmp") == 0)
 			{
-				strcpy(szText, "res/unicorn/abstract.bmp");
+				std::strcpy(szText, "res/unicorn/abstract.bmp");
 			}
-			else if (strcmp(szText, "res/cutscene/red2.bmp") == 0)
+			else if (std::strcmp(szText, "res/cutscene/red2.bmp") == 0)
 			{
-					strcpy(szText, "res/unicorn/red2.bmp");
+					std::strcpy(szText, "res/unicorn/red2.bmp");
 			}
 		}
 		#endif
 		if ((strlen(szText) + 1) >= PATH_MAX)
 			{
 			TRACE("CutScene(): Bg file name/path too long: '%s'!\n", szText);
-			strcpy(szText, DEFAULT_BG);
+			std::strcpy(szText, DEFAULT_BG);
 			}
 		}
 
@@ -877,7 +877,7 @@ extern void CutSceneStart(
 	// In simple mode, use default title.  Otherwise, get title from prefs file.
 	if (bSimple)
 		{
-		strcpy(ms_pCut->m_szTitle, DEFAULT_TITLE);
+		std::strcpy(ms_pCut->m_szTitle, DEFAULT_TITLE);
 		}
 	else
 		{
@@ -885,7 +885,7 @@ extern void CutSceneStart(
 		if ((strlen(ms_pCut->m_szTitle) + 1) >= sizeof(ms_pCut->m_szTitle))
 			{
 			TRACE("CutScene(): Title too long: '%s'!\n", ms_pCut->m_szTitle);
-			strcpy(ms_pCut->m_szTitle, DEFAULT_TITLE);
+			std::strcpy(ms_pCut->m_szTitle, DEFAULT_TITLE);
 			}
 		}
 
@@ -896,7 +896,7 @@ extern void CutSceneStart(
 	// In simple mode, use the default music, otherwise get the music from prefs file
 	if (bSimple)
 		{
-		strcpy(ms_pCut->m_szMusic, DEFAULT_MUSIC);
+		std::strcpy(ms_pCut->m_szMusic, DEFAULT_MUSIC);
 		}
 	else
 		{
@@ -904,7 +904,7 @@ extern void CutSceneStart(
 		if ((strlen(ms_pCut->m_szMusic) + 1) >= sizeof(ms_pCut->m_szMusic))
 			{
 			TRACE("CutScene(): Music filename too long: '%s'!\n", ms_pCut->m_szMusic);
-			strcpy(ms_pCut->m_szMusic, DEFAULT_MUSIC);
+			std::strcpy(ms_pCut->m_szMusic, DEFAULT_MUSIC);
 			}
 		}
 
@@ -931,7 +931,7 @@ extern void CutSceneStart(
 	// Get text to be displayed
 	if (bSimple)
 		{
-		strcpy(ms_pCut->m_szText, DEFAULT_TEXT);
+		std::strcpy(ms_pCut->m_szText, DEFAULT_TEXT);
 		}
 	else
 		{
@@ -939,7 +939,7 @@ extern void CutSceneStart(
 		if ((strlen(ms_pCut->m_szText) + 1) >= sizeof(ms_pCut->m_szText))
 			{
 			TRACE("CutScene(): Text too long: '%s'!\n", ms_pCut->m_szText);
-			strcpy(ms_pCut->m_szText, DEFAULT_TEXT);
+			std::strcpy(ms_pCut->m_szText, DEFAULT_TEXT);
 			}
 		}
 

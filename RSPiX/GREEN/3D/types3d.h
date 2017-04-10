@@ -123,7 +123,7 @@ class RTexture
 					{
 					// If both pointers are non-zero then we compare their data
 					if (m_pIndices && rhs.m_pIndices)
-                  result = memcmp(m_pIndices, rhs.m_pIndices, m_sNum) == SUCCESS;
+                  result = std::memcmp(m_pIndices, rhs.m_pIndices, m_sNum) == SUCCESS;
 					else
 						{
 						// If both pointers are not nullptr then they obviously don't match
@@ -135,7 +135,7 @@ class RTexture
 						{
 						// If both pointers are non-zero then we compare their data
 						if (m_pColors && rhs.m_pColors)
-                     result = memcmp(m_pColors, rhs.m_pColors, sizeof(RPixel32) * m_sNum) == SUCCESS;
+                     result = std::memcmp(m_pColors, rhs.m_pColors, sizeof(RPixel32) * m_sNum) == SUCCESS;
 						else
 							{
 							// If both pointers are not nullptr then they obviously don't match
@@ -284,7 +284,7 @@ class RMesh
 					{
 					// If both pointers are non-zero then we compare their data
 					if (m_pArray && rhs.m_pArray)
-                  result = memcmp(m_pArray, rhs.m_pArray, sizeof(uint16_t) * m_sNum * 3) == SUCCESS;
+                  result = std::memcmp(m_pArray, rhs.m_pArray, sizeof(uint16_t) * m_sNum * 3) == SUCCESS;
 					else
 						{
 						// If both pointers are not nullptr then they obviously don't match
@@ -388,7 +388,7 @@ class RSop
 					{
 					// If both pointers are non-zero then we compare their data
 					if (m_pArray && rhs.m_pArray)
-                  result = memcmp(m_pArray, rhs.m_pArray, sizeof(RP3d) * m_lNum) == SUCCESS;
+                  result = std::memcmp(m_pArray, rhs.m_pArray, sizeof(RP3d) * m_lNum) == SUCCESS;
 					else
 						{
 						// If both pointers are not nullptr then they obviously don't match

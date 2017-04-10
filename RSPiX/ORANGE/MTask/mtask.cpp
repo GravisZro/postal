@@ -191,7 +191,7 @@ int16_t MTaskAddFunc(void* pFunction, char* pszFuncName, int16_t sStackSize)
 			ptiNewTask->plStackAddress = plNewStack;
 			ptiNewTask->plSP = (plNewStack + (sLongElements-3));
 			ptiNewTask->pszFunctionName = (char*) calloc(sizeof(pszFuncName), 1);
-			strcpy(ptiNewTask->pszFunctionName, pszFuncName);
+      std::strcpy(ptiNewTask->pszFunctionName, pszFuncName);
 		}
 		else
 		{

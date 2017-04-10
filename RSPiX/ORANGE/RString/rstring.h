@@ -604,46 +604,46 @@ class RString
 // RString -vs- RString
 ////////////////////////////////////////////////////////////////////////////////
 inline int operator==(const RString& lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) == 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) == 0 ? TRUE : FALSE; }
 inline int operator!=(const RString& lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) != 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) != 0 ? TRUE : FALSE; }
 inline int operator<=(const RString& lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) <= 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) <= 0 ? TRUE : FALSE; }
 inline int operator>=(const RString& lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) >= 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) >= 0 ? TRUE : FALSE; }
 inline bool operator<(const RString& lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) < 0; }
+  { return std::strcmp(lhs, rhs) < 0; }
 inline int operator>(const RString& lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) > 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) > 0 ? TRUE : FALSE; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // RString -vs- const char*
 ////////////////////////////////////////////////////////////////////////////////
 inline int operator==(const RString& lhs, const char* rhs)
-  { return strcmp(lhs, rhs) == 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) == 0 ? TRUE : FALSE; }
 inline int operator!=(const RString& lhs, const char* rhs)
-  { return strcmp(lhs, rhs) != 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) != 0 ? TRUE : FALSE; }
 inline int operator<=(const RString& lhs, const char* rhs)
-  { return strcmp(lhs, rhs) <= 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) <= 0 ? TRUE : FALSE; }
 inline int operator>=(const RString& lhs, const char* rhs)
-  { return strcmp(lhs, rhs) >= 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) >= 0 ? TRUE : FALSE; }
 //inline bool operator<(const RString& lhs, const char* rhs)
-//  { return strcmp(lhs, rhs) < 0; }
+//  { return std::strcmp(lhs, rhs) < 0; }
 inline int operator>(const RString& lhs, const char* rhs)
-  { return strcmp(lhs, rhs) > 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) > 0 ? TRUE : FALSE; }
 
 inline int operator==(const char* lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) == 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) == 0 ? TRUE : FALSE; }
 inline int operator!=(const char* lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) != 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) != 0 ? TRUE : FALSE; }
 inline int operator<=(const char* lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) <= 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) <= 0 ? TRUE : FALSE; }
 inline int operator>=(const char* lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) >= 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) >= 0 ? TRUE : FALSE; }
 //inline bool operator<(const char* lhs, const RString& rhs)
-//  { return strcmp(lhs, rhs) < 0; }
+//  { return std::strcmp(lhs, rhs) < 0; }
 inline int operator>(const char* lhs, const RString& rhs)
-  { return strcmp(lhs, rhs) > 0 ? TRUE : FALSE; }
+  { return std::strcmp(lhs, rhs) > 0 ? TRUE : FALSE; }
 
 #endif // RSTRING_H
 ////////////////////////////////////////////////////////////////////////////////

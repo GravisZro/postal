@@ -998,7 +998,7 @@ if (g_bSceneDontBlit == false)
 				}
 			else
 				{
-				strcpy(szMsg, "Render3D(): Unknown class with unknown ID");
+				std::strcpy(szMsg, "Render3D(): Unknown class with unknown ID");
 				}
 			
 			// If there's a parent . . .

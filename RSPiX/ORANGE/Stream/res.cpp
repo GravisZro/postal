@@ -322,7 +322,7 @@ PRESITEM	CRes::GetResItem(char* pszName)
 
 	while (pri != nullptr)
 		{
-		if (strcmp(pri->m_pszName, pszName) == 0)
+		if (std::strcmp(pri->m_pszName, pszName) == 0)
 			{
 			break;
 			}

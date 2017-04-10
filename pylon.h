@@ -99,7 +99,7 @@ class CPylon : public CThing
 			m_sSuspend = 0;
 			
 			// Let's default the whole thing to zero.
-			memset(&m_msg, 0, sizeof(m_msg) );
+         std::memset(&m_msg, 0, sizeof(m_msg) );
 
 			// Then set some portions we can via the generic type.
 			m_msg.msg_Generic.eType = typeGeneric;

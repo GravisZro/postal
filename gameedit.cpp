@@ -1678,7 +1678,7 @@ extern void GameEdit(
 
 	// Set filename such that initially open and save dialogs start in
 	// *.RLM dir.
-	strcpy(ms_szFileName, FullPathVD(INITIAL_REALM_DIR));
+   std::strcpy(ms_szFileName, FullPathVD(INITIAL_REALM_DIR));
 
 	// Clear mouse and keyboard events
 	rspClearAllInputEvents();
@@ -3698,7 +3698,7 @@ static int16_t CloseRealm(
 
 		// Set filename such that initially open and save dialogs start in
 		// *.RLM dir.
-		strcpy(ms_szFileName, FullPathVD(INITIAL_REALM_DIR));
+      std::strcpy(ms_szFileName, FullPathVD(INITIAL_REALM_DIR));
 
 		// Update size dependent stuff.
 		SizeUpdate(ms_pcameraCur, prealm);
@@ -3740,7 +3740,7 @@ static int16_t LoadRealm(
 			
 			// Convert to RSPiX format b/c CRealm::Load() now likes it that way.
 			char	szRealmName[sizeof(ms_szFileName)];
-			strcpy(szRealmName, rspPathFromSystem(ms_szFileName) );
+         std::strcpy(szRealmName, rspPathFromSystem(ms_szFileName) );
 
 			// Load realm in edit mode
 			sResult = prealm->Load(szRealmName, true);
@@ -3991,7 +3991,7 @@ static int16_t SaveRealm(
    int16_t sResult = SUCCESS;
 	
 	// If filename . . .
-	if (strcmp(ms_szFileName, FullPathVD(INITIAL_REALM_DIR)) != 0)
+   if (std::strcmp(ms_szFileName, FullPathVD(INITIAL_REALM_DIR)) != 0)
 		{
 		// Save realm with trigger regions.
 		sResult	= SaveRealm(prealm, ms_szFileName, true);
@@ -4134,7 +4134,7 @@ static void PlayRealm(
 			
 				// Convert to RSPiX format b/c CRealm::Load() now likes it that way.
 				char	szRealmName[sizeof(szFileName)];
-				strcpy(szRealmName, rspPathFromSystem(szFileName) );
+            std::strcpy(szRealmName, rspPathFromSystem(szFileName) );
 
 				// Load realm (false indicates NOT edit mode)
 				sResult	= prealm->Load(szRealmName, false);
@@ -7411,11 +7411,11 @@ static void InitFileCounter(			// Returns nothing.
 	// Make sure string (with some digits) will fit . . .
 	if (strlen(pszDescriptionFrmt) < sizeof(ms_szFileOpDescriptionFrmt) - 10 )
 		{
-		strcpy(ms_szFileOpDescriptionFrmt, pszDescriptionFrmt);
+      std::strcpy(ms_szFileOpDescriptionFrmt, pszDescriptionFrmt);
 		}
 	else
 		{
-      strcpy(ms_szFileOpDescriptionFrmt, "Progress: %i bytes");
+      std::strcpy(ms_szFileOpDescriptionFrmt, "Progress: %i bytes");
 		}
 
 	// Hook the RFile callback and reset the timer.  The callback does nothing
@@ -7594,7 +7594,7 @@ void Pos2Str(		// Returns nothing.
 		}
 	else
 		{
-		strcpy(pszStr, "N/A");
+      std::strcpy(pszStr, "N/A");
 		}
 	}
 
@@ -7744,7 +7744,7 @@ static bool RealmOpProgress(			// Returns true to continue; false to
 		lLastCallTime		= 0;
 
 		// Clear key status array.
-		memset(pau8KeyStatus, 0, 128);
+      std::memset(pau8KeyStatus, 0, 128);
 
 		// Lock the composite buffer for access.
 		rspLockBuffer();

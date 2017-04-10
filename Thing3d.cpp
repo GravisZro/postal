@@ -1853,7 +1853,7 @@ CAnimThing* CThing3d::StartAnim(		// Returns ptr to CAnimThing on success; nullp
 	CAnimThing*	pat	= nullptr;
    if (ConstructWithID(CAnimThingID, m_pRealm, (CThing**)&pat) == SUCCESS)
 		{
-		strcpy(pat->m_szResName, pszAnimResName);
+      std::strcpy(pat->m_szResName, pszAnimResName);
 
 		// Start it up:
 		// No looping.

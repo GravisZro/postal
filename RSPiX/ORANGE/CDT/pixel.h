@@ -59,7 +59,7 @@ class CPixel
 		
 		int operator ==(CPixel &pixel)
 			{
-			if (memcmp(m_au8, pixel.m_au8, MIN(m_sSize, pixel.m_sSize)) == 0)
+         if (std::memcmp(m_au8, pixel.m_au8, MIN(m_sSize, pixel.m_sSize)) == 0)
 				return TRUE;
 			else
 				return FALSE;
