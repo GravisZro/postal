@@ -20,21 +20,30 @@
 struct filedata_t
 {
   bool loaded;
-  bool allocated;
+  bool memalloc;
   uint8_t* dataptr;
   uint32_t size;
 
   filedata_t(uint32_t sz)
-    : loaded(false), allocated(true), dataptr(new uint8_t[sz]), size(sz) { }
+    : loaded(false), memalloc(true), dataptr(new uint8_t[sz]), size(sz) { }
 
   filedata_t(void)
-    : loaded(false), allocated(false), dataptr(nullptr), size(0) { }
+    : loaded(false), memalloc(false), dataptr(nullptr), size(0) { }
 
   ~filedata_t(void)
   {
-    if(allocated)
+    if(memalloc)
       delete[] dataptr;
     dataptr = nullptr;
+  }
+
+  // determines if the pointer is part of filedata_t's memory
+  template<typename T>
+  bool allocated(T* ptr)
+  {
+    return ptr != nullptr &&
+           (reinterpret_cast<uint8_t*>(ptr) < dataptr ||
+            reinterpret_cast<uint8_t*>(ptr) > dataptr + size);
   }
 
   virtual void load (void) { loaded = true; }

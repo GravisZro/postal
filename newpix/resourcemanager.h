@@ -38,19 +38,26 @@ struct MultiResource : std::shared_ptr<filedata_t>
 
   enum type_t : uint16_t
   {
-    stillframe = 0,
-    animation,
-    complexanimation,
+    stillframe       = 0x0000,
+    animation        = 0x0001,
+    complexanimation = 0x0002,
   };
 
-  uint32_t magic;
-  uint32_t version;
-  type_t   type;
-  loop_t   loopFlags;
+  uint32_t    magic;
+  uint16_t    version;
+  type_t      type;
+  std::string name;
+  loop_t      loopFlags;
   milliseconds_t totalTime;
   milliseconds_t interval;
   uint32_t       frameCount;
   std::vector<T> datapointers;
+
+  T& operator ->(void) const noexcept
+  {
+    ASSERT(operator bool()); // must already be allocated
+    return datapointers.front();
+  }
 
   T& operator [](milliseconds_t time) const noexcept
   {
@@ -79,20 +86,31 @@ struct MultiResource : std::shared_ptr<filedata_t>
     std::shared_ptr<filedata_t>::operator =(other);
     union
     {
+      const char*     dataptrChar;
       const uint8_t*  dataptr8;
       const uint16_t* dataptr16;
       const uint32_t* dataptr32;
     };
 
     dataptr8  = get()->dataptr;
+
     magic     = *dataptr32++;
-    version   = *dataptr32++;
-    type      = *dataptr16++;
-    loopFlags = *dataptr16++;
+    version   = *dataptr16++;
+    ASSERT(version == 1);
+    type      = static_cast<type_t>(*dataptr16++);
+
+    uint32_t slen = *dataptr32++; // read length of the name
+    while(slen--)
+      name.push_back(*dataptrChar++); // read name into a string
+
+    if(!name.empty()) // if the file was named
+      version = *dataptr16++; // read file version
+
+    loopFlags = static_cast<loop_t>(*dataptr16++);
 
     if(type == stillframe)
     {
-      totalTime  = 0;
+      totalTime  = 1;
       interval   = 1; // no divide by zero!
       frameCount = 1;
     }
@@ -109,6 +127,25 @@ struct MultiResource : std::shared_ptr<filedata_t>
 
     switch(type)
     {
+      case stillframe:
+      {
+        T& data = datapointers.front();
+        data.dataptr = const_cast<uint8_t*>(dataptr8);
+        data.size = get()->size - (data.dataptr - get()->dataptr); // size is the rest of the file
+        data.load();
+        dataptr8 += data.size;
+        break;
+      }
+
+      case animation:
+        for(T& data : datapointers)
+        {
+          data.dataptr = const_cast<uint8_t*>(dataptr8);
+          data.load();
+          dataptr8 += data.size;
+        }
+        break;
+
       case complexanimation:
         for(T& data : datapointers)
         {
@@ -120,16 +157,6 @@ struct MultiResource : std::shared_ptr<filedata_t>
           }
           else
             data = datapointers[*dataptr32++];
-        }
-        break;
-
-      case stillframe:
-      case animation:
-        for(T& data : datapointers)
-        {
-          data.dataptr = const_cast<uint8_t*>(dataptr8);
-          data.load();
-          dataptr8 += data.size;
         }
         break;
     }
