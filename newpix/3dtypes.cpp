@@ -1,9 +1,9 @@
 #include "3dtypes.h"
 
 #include <RSPiX/ORANGE/color/colormatch.h>
+#include <RSPiX/ORANGE/QuickMath/QuickMath.h>
 
 #include <cstring>
-#include <cmath>
 
 template<typename T, typename S>
 inline bool arrays_match(T* a, T* b, S count)
@@ -229,41 +229,67 @@ bool RSop::operator ==(const RSop& other) const
 }
 
 
+inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, int row, int col)
+{
+  matOut[(row * 4) + col] =
+      matA[(row * 4) + 0] * matB[0x0 + col] +
+      matA[(row * 4) + 1] * matB[0x4 + col] +
+      matA[(row * 4) + 2] * matB[0x8 + col] +
+      matA[(row * 4) + 3] * matB[0xC + col];
+}
 
-
-// Macros ensure the unrolling of loops without any runtime overhead
-
-#define ExecOp3(op, ...) \
-  op(__VA_ARGS__, 0x0); \
-  op(__VA_ARGS__, 0x1); \
-  op(__VA_ARGS__, 0x2)
+inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, int col)
+{
+  mat[(0 * 4) + col] *= x;
+  mat[(1 * 4) + col] *= y;
+  mat[(2 * 4) + col] *= z;
+}
 
 #define ExecOp4(op, ...) \
-  ExecOp3(op, __VA_ARGS__); \
-  op(__VA_ARGS__, 0x3)
+  op(__VA_ARGS__, 0); \
+  op(__VA_ARGS__, 1); \
+  op(__VA_ARGS__, 2); \
+  op(__VA_ARGS__, 3)
 
-#define MatrixScaleColumn(mat, x, y, z, col) \
-  mat[(0 * 4) + col] *= x; \
-  mat[(1 * 4) + col] *= y; \
-  mat[(2 * 4) + col] *= z
 
-#define MatrixScaleXYZ(mat, x, y, z) \
-  ExecOp4(MatrixScaleColumn, mat, x, y, z);
+#define ExecOp3x4(op, ...) \
+  op(__VA_ARGS__, 0, 0); \
+  op(__VA_ARGS__, 0, 1); \
+  op(__VA_ARGS__, 0, 2); \
+  op(__VA_ARGS__, 0, 3); \
+  op(__VA_ARGS__, 1, 0); \
+  op(__VA_ARGS__, 1, 1); \
+  op(__VA_ARGS__, 1, 2); \
+  op(__VA_ARGS__, 1, 3); \
+  op(__VA_ARGS__, 2, 0); \
+  op(__VA_ARGS__, 2, 1); \
+  op(__VA_ARGS__, 2, 2); \
+  op(__VA_ARGS__, 2, 3)
 
-#define MatrixMultiplyRowCol(matOut, matA, matB, row, col) \
-  matOut[(row * 4) + col] = \
-  matA[(row * 4) + 0] * matB[0x0 + col] + \
-  matA[(row * 4) + 1] * matB[0x4 + col] + \
-  matA[(row * 4) + 2] * matB[0x8 + col] + \
-  matA[(row * 4) + 3] * matB[0xC + col];
+#if 0
+template<typename Func, typename... Args>
+inline void ExecOp4(Func op, Args... args)
+{
+  op(args..., 0);
+  op(args..., 1);
+  op(args..., 2);
+  op(args..., 3);
+}
 
-#define MatrixMultiply3x4(matOut, matA, matB) \
-  ExecOp3(ExecOp4, MatrixMultiplyRowCol, matOut, matA, matB)
+template<typename Func, typename... Args>
+inline void ExecOp3x4(Func op, Args... args)
+{
+  ExecOp4(op, args..., 0);
+  ExecOp4(op, args..., 1);
+  ExecOp4(op, args..., 2);
+}
+#endif
 
-const real_t identity_data[16] = { 1.0,0.0,0.0,0.0,
-                                   0.0,1.0,0.0,0.0,
-                                   0.0,0.0,1.0,0.0,
-                                   0.0,0.0,0.0,1.0 };
+
+constexpr real_t identity_data[16] = { 1.0,0.0,0.0,0.0,
+                                       0.0,1.0,0.0,0.0,
+                                       0.0,0.0,1.0,0.0,
+                                       0.0,0.0,0.0,1.0 };
 
 RTransform::RTransform(void) // init to an identity transform
 {
@@ -341,13 +367,13 @@ void RTransform::makeNull(void) // null matrix
 // A Partial transform, assuming R3 = {0,0,0,1};
 void RTransform::PreMulBy(real_t* M)
 {
-  MatrixMultiply3x4(data, M, data);
+  ExecOp3x4(MatrixMultiply, data, M, data);
 }
 
 // Oversets the current data with the result!
 void RTransform::Mul(real_t* A, real_t* B) // 4x4 transforms:
 {
-  MatrixMultiply3x4(data, A, B);
+  ExecOp3x4(MatrixMultiply, data, A, B);
 }
 
 // Assumes R3 = {0,0,0,1}
@@ -360,7 +386,7 @@ void RTransform::Translate(real_t x,real_t y,real_t z)
 
 void RTransform::Scale(real_t x,real_t y, real_t z)
 {
-  MatrixScaleXYZ(data, x, y, z);
+  ExecOp4(MatrixScale, data, x, y, z);
 }
 
 
@@ -371,7 +397,7 @@ void RTransform::MakeRotTo(RP3d point, RP3d up)
   RP3d third;
   point.makeUnit();
   up.makeUnit();
-  third = point * up;
+  third = point.multiply(up);
 
   // store as columns
   makeNull();
@@ -396,7 +422,7 @@ void RTransform::MakeRotFrom(RP3d point, RP3d up)
   RP3d third;
   point.makeUnit();
   up.makeUnit();
-  third = point * up;
+  third = point.multiply(up);
 
   // store as rows
   makeNull();
@@ -413,83 +439,65 @@ void RTransform::MakeRotFrom(RP3d point, RP3d up)
   data[(2 * 4) + 2] = third.z;
 }
 
-
-
-
 // Transform an actual point ( overwrites old point )
-// Does a premultiply!
-void RTransform::Transform(RP3d &p)
+void RTransform::Transform(RP3d& p) const
 {
-  RP3d temp = { 0.0, 0.0, 0.0, 1.0 }; // asume 3 row form!
-  real_t *pT = data,*pV;
-  int16_t i,j;
-
-  for (j = 0; j < 3; ++j) // asume 3 row form!
-    for (i = 0,pV = p.v; i < 4; ++i)
-      temp.v[j] += (*pV++) * (*pT++);
-  // overwrite original
-  for (i = 0; i < 4; ++i)
-    p.v[i] = temp.v[i];
+  RP3d temp;
+  temp += p.dot(*reinterpret_cast<const RP3d*>(data + 0));
+  temp += p.dot(*reinterpret_cast<const RP3d*>(data + 4));
+  temp += p.dot(*reinterpret_cast<const RP3d*>(data + 8));
+  p = temp;
 }
 
 // Transform an actual point, and places the answer into a different pt
-// Does a premultiply!
-void RTransform::TransformInto(const RP3d& vSrc, RP3d& vDst)
+void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
 {
-  vDst.v[0] = vDst.v[1] = vDst.v[2] = 0.0;
-  vDst.v[3] = 1.0;
-
-  real_t *pT = T,*pV;
-  int16_t i,j;
-
-  for (j=0;j<3;j++) // asume 3 row form!
-    for (i=0,pV = vSrc.v;i<4;i++)
-    {
-      vDst.v[j] += (*pV++) * (*pT++);
-    }
+  RP3d temp;
+  temp += src.dot(*reinterpret_cast<const RP3d*>(data + 0));
+  temp += src.dot(*reinterpret_cast<const RP3d*>(data + 4));
+  temp += src.dot(*reinterpret_cast<const RP3d*>(data + 8));
+  dest = temp;
 }
-
-
 
 void RTransform::Rz(int16_t sDeg) // CCW!
 {
-  real_t S = rspfSin(sDeg);
-  real_t C = rspfCos(sDeg);
-  real_t NewVal; // two vertical numbers depend on each other
+  register real_t S = rspfSin(sDeg);
+  register real_t C = rspfCos(sDeg);
 
   for (int16_t i = 0; i < 4; ++i)
   {
-    NewVal = data[ROW0 + i] * C - data[ROW1 + i] * S;
-    data[ROW1 + i] = data[ROW0 + i] * S + data[ROW1 + i] * C;
-    data[ROW0 + i] = NewVal;
+    register real_t row1 = data[4 + i];
+    register real_t row0 = data[0 + i];
+    data[4 + i] = row0 * S + row1 * C;
+    data[0 + i] = row0 * C - row1 * S;
   }
 }
 
 void RTransform::Rx(int16_t sDeg) // CCW!
 {
-  real_t S = rspfSin(sDeg);
-  real_t C = rspfCos(sDeg);
-  real_t NewVal; // two vertical numbers depend on each other
+  register real_t S = rspfSin(sDeg);
+  register real_t C = rspfCos(sDeg);
 
   for (int16_t i = 0; i < 4; ++i)
   {
-    NewVal = data[ROW1 + i] * C - data[ROW2 + i] * S;
-    data[ROW2 + i] = data[ROW1 + i] * S + data[ROW2 + i] * C;
-    data[ROW1 + i] = NewVal;
+    register real_t row1 = data[4 + i];
+    register real_t row2 = data[8 + i];
+    data[8 + i] = row1 * S + row2 * C;
+    data[4 + i] = row1 * C - row2 * S;
   }
 }
 
 void RTransform::Ry(int16_t sDeg) // CCW!
 {
-  real_t S = rspfSin(sDeg);
-  real_t C = rspfCos(sDeg);
-  real_t NewVal; // two vertical numbers depend on each other
+  register real_t S = rspfSin(sDeg);
+  register real_t C = rspfCos(sDeg);
 
   for (int16_t i = 0; i < 4; ++i)
   {
-    NewVal = data[ROW0 + i] * C + data[ROW2 + i] * S;
-    data[ROW2 + i] = -data[ROW0 + i] * S + data[ROW2 + i] * C;
-    data[ROW0 + i] = NewVal;
+    register real_t row0 = data[0 + i];
+    register real_t row2 = data[8 + i];
+    data[8 + i] = -row0 * S + row2 * C;
+    data[0 + i] =  row0 * C + row2 * S;
   }
 }
 
@@ -498,11 +506,11 @@ void RTransform::Ry(int16_t sDeg) // CCW!
 // Use rspSub to create w vertices (w,h,d)
 // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
 //
-void RTransform::MakeBoxXF(RP3d &x1,RP3d &w1,RP3d &x2,RP3d &w2)
+void RTransform::MakeBoxXF(RP3d &x1, RP3d &w1, RP3d &x2, RP3d &w2)
 {
   // NOT OF MAXIMUM SPEED!
   makeIdentity();
-  Translate(-x1.x,-x1.y,-x1.z);
-  Scale(w2.x/w1.x,w2.y/w1.y,w2.z/w1.z);
-  Translate(x2.x,x2.y,x2.z);
+  Translate(-x1.x, -x1.y, -x1.z);
+  Scale(w2.x/w1.x, w2.y/w1.y, w2.z/w1.z);
+  Translate(x2.x, x2.y, x2.z);
 }

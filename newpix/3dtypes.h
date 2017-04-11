@@ -5,6 +5,9 @@
 
 #include "sakarchive.h"
 
+#include <cmath>
+
+
 typedef float real_t;
 struct RP3d;
 
@@ -110,7 +113,9 @@ struct RP3d
            w == other.w;
   }
 
-  const RP3d& operator =(const RP3d& other) // ignore w!
+// <ignore W>
+
+  const RP3d& operator =(const RP3d& other)
   {
     x = other.x;
     y = other.y;
@@ -118,11 +123,18 @@ struct RP3d
     return other;
   }
 
-  RP3d operator *(const RP3d& other)
+  RP3d multiply(const RP3d& other) const
   {
     return RP3d(y * other.z - z * other.y,
                 x * other.y - y * other.x,
                 z * other.x - x * other.z);
+  }
+
+  RP3d dot(const RP3d& other) const
+  {
+    return RP3d(y * other.z,
+                x * other.y,
+                z * other.x);
   }
 
   RP3d& operator -=(const RP3d& other)
@@ -149,6 +161,8 @@ struct RP3d
     return *this;
   }
 
+// </ignore W>
+
   RP3d& makeHomogeneous(void)
   {
     ASSERT(w != 0.0);
@@ -160,25 +174,16 @@ struct RP3d
   }
 
   // adjusts the length of a vector, ignoring w component
-  void makeUnit(void)
+  RP3d& makeUnit(void)
   {
     real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
     ASSERT(l != 0.0);
     x /= l;
     y /= l;
     z /= l;
+    return *this;
   }
 };
-
-
-
-
-
-// And some useful constants for manipulation:
-const int16_t ROW0 = 0;
-const int16_t ROW1 = 4;
-const int16_t ROW2 = 8;
-const int16_t ROW3 = 12;
 
 
 // NOW, the class based transform allows matrix
@@ -213,11 +218,11 @@ struct RTransform : filedata_t
 
   // Transform an actual point ( overwrites old point )
   // Does a premultiply!
-  void Transform(RP3d &p);
+  void Transform(RP3d &p) const;
 
   // Transform an actual point, and places the answer into a different pt
   // Does a premultiply!
-  void TransformInto(const RP3d& vSrc, RP3d& vDst);
+  void TransformInto(const RP3d& src, RP3d& dest) const;
 
   void Rz(int16_t sDeg); // CCW!
 
@@ -230,7 +235,7 @@ struct RTransform : filedata_t
   // Use rspSub to create w vertices (w,h,d)
   // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
   //
-  void MakeBoxXF(RP3d &x1,RP3d &w1,RP3d &x2,RP3d &w2);
+  void MakeBoxXF(RP3d &x1, RP3d &w1, RP3d &x2, RP3d &w2);
 
   // This is NOT hyper fast, and the result IS a rotation matrix
   // For now, point is it's x-axis and up i s it's y-axis.
