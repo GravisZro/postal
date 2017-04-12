@@ -11,22 +11,40 @@
 typedef float real_t;
 struct RP3d;
 
+template<typename T>
+struct Raw : filedata_t, T
+{
+  Raw(uint32_t sz) : filedata_t(sz) { }
+  void load(void) { }
+};
+
+template<>
+struct Raw<uint8_t> : filedata_t
+{
+  Raw(uint32_t sz) : filedata_t(sz) { }
+  uint8_t operator =(uint8_t d) { return raw = d; }
+  operator uint8_t (void) { return raw; }
+  void load(void) { }
+  uint8_t raw;
+};
+
+
 struct RTexture : filedata_t
 {
   enum flags_t : uint16_t
   {
     none    = 0x0000,
-    indexes = 0x0001,
-    colors  = 0x0002,
+    indexarr = 0x0001,
+    colorarr  = 0x0002,
   };
 
-  uint16_t  count;    // Number of colors in array(s)
   flags_t   flags;    // option flags
-  uint8_t*  indexptr; // Array of indices
-  RPixel32* colorptr; // Array of colors
+  uint32_t  count;    // size of array(s)
+  shared_arr<uint8_t>  indexes; // Array of indices
+  shared_arr<RPixel32> colors; // Array of colors
 
-  RTexture(void);
- ~RTexture(void);
+  RTexture(uint32_t sz = 0)
+    : filedata_t(sz), flags(flags_t::none) { }
 
   void load(void);
 
@@ -67,10 +85,9 @@ typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
 
 struct RMesh : filedata_t
 {
-  uint16_t    count;  // Number of triangles in array
-  triangle_t* triptr; // Array of triangles
+  shared_arr<triangle_t> triangles; // Array of triangles
 
-  RMesh(void);
+  RMesh(uint32_t sz = 0);
  ~RMesh(void);
 
   void load(void);
@@ -80,10 +97,9 @@ struct RMesh : filedata_t
 
 struct RSop : filedata_t
 {
-  uint32_t count;     // Number of points in array (only 65536 currently accessible)
-  RP3d*    pointptr;  // Array of points
+  shared_arr<RP3d> points;  // Array of points
 
-  RSop(void);
+  RSop(uint32_t sz = 0);
  ~RSop(void);
 
   void load(void);
@@ -195,8 +211,13 @@ struct RTransform : filedata_t
 {
   real_t data[16]; // This is compatible with the aggregate transform
 
-  RTransform(void);
+  RTransform(uint32_t sz = 0);
  ~RTransform(void);
+
+  void load(void)
+  {
+
+  }
 
   void makeIdentity(void); // identity matrix
   void makeNull(void); // null matrix

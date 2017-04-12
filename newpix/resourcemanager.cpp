@@ -3,6 +3,8 @@
 #include <cctype>
 #include <algorithm>
 
+SAKArchive g_GameSAK("res/game/game.sak");
+
 template<typename T>
 T normalize(T c)
 {

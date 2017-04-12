@@ -17,36 +17,55 @@
 #include <list>
 #include <cstdint>
 
+
+template<typename T>
+struct shared_arr : std::shared_ptr<T>
+{
+  uint32_t count;
+
+  bool allocate(uint32_t cnt)
+  {
+    std::shared_ptr<T>::reset();
+    if(cnt > 0)
+    {
+      std::shared_ptr<T>::operator =(std::shared_ptr<T>(new T[cnt], std::default_delete<T[]>()));
+      //std::make_shared<T>(new T[cnt], std::default_delete<T[]>());
+      //std::shared_ptr<T>::operator =(
+    }
+    count = cnt;
+    return true;
+  }
+
+  T* operator =(T* ptr)
+  {
+    std::shared_ptr<T>::operator =(std::shared_ptr<T>(ptr, [this](T const*) { count = 0; }));
+    return ptr;
+  }
+
+  operator T*(void)
+    { return std::shared_ptr<T>::get(); }
+
+  T& operator [](uint32_t num)
+    { ASSERT(num < count); return std::shared_ptr<T>::get()[num]; }
+
+  bool operator =(const shared_arr<T>& ptr)
+  {
+    return count == ptr.count &&
+        (!count || std::memcmp(std::shared_ptr<T>::get(), ptr.get(), sizeof(T) * count) == SUCCESS);  // memory does match))
+  }
+};
+
+// abstract struct
 struct filedata_t
 {
   bool loaded;
-  bool memalloc;
-  uint8_t* dataptr;
-  uint32_t size;
+  shared_arr<uint8_t> data;
 
-  filedata_t(uint32_t sz)
-    : loaded(false), memalloc(true), dataptr(new uint8_t[sz]), size(sz) { }
+  filedata_t(uint32_t sz = 0)
+    : loaded(false)
+  { data.allocate(sz); }
 
-  filedata_t(void)
-    : loaded(false), memalloc(false), dataptr(nullptr), size(0) { }
-
-  ~filedata_t(void)
-  {
-    if(memalloc)
-      delete[] dataptr;
-    dataptr = nullptr;
-  }
-
-  // determines if the pointer is part of filedata_t's memory
-  template<typename T>
-  bool allocated(T* ptr)
-  {
-    return ptr != nullptr &&
-           (reinterpret_cast<uint8_t*>(ptr) < dataptr ||
-            reinterpret_cast<uint8_t*>(ptr) > dataptr + size);
-  }
-
-  virtual void load (void) { loaded = true; }
+  virtual void load (void) = 0;
 };
 
 class SAKArchive // "Swiss Army Knife" Archive
@@ -59,7 +78,25 @@ public:
   bool fileExists(const std::string& filename) const { return m_lookup.find(filename) != m_lookup.end(); }
 
   // Returns a pointer to allocated memory.  Memory is allocated/freed ad hoc. (file must exist)
-  std::shared_ptr<filedata_t> getFile(const std::string& filename);
+  template<typename T>
+  std::shared_ptr<T> getFile(const std::string& filename)
+  {
+    ASSERT(fileExists(filename)); // The file must exist in this SAK archive
+    std::shared_ptr<filedata_t> filedata;
+    std::unordered_map<std::string, SAKFile>::iterator iter = m_lookup.find(filename);
+
+    if(iter->second.filedata.expired()) // expired data pointer means that all instances of it have gone out of scope and it's memory freed
+    {
+      filedata = std::make_shared<T>(*new T(iter->second.length)); // make a new data array with the file size
+      ASSERT(filedata.operator bool());
+      m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
+      m_file >> *filedata; // fill the data vector with the file within the SAK archive
+      iter->second.filedata = filedata; // store a weak copy so that we can test if it's in use later
+    }
+    else // data pointer is still valid
+      filedata = iter->second.filedata.lock();
+    return std::static_pointer_cast<T, filedata_t>(filedata);
+  }
 
 protected:
   struct SAKFile
@@ -107,5 +144,25 @@ private:
 };
 
 #endif
+/*
+template<typename T>
+std::shared_ptr<T> SAKArchive::getFile(const std::string& filename)
+{
+  ASSERT(fileExists(filename)); // The file must exist in this SAK archive
+  std::shared_ptr<T> filedata;
+  std::unordered_map<std::string, SAKFile>::iterator iter = m_lookup.find(filename);
 
+  if(iter->second.filedata.expired()) // expired data pointer means that all instances of it have gone out of scope and it's memory freed
+  {
+    filedata = std::make_shared<T>(*new T(iter->second.length)); // make a new data array with the file size
+    ASSERT(filedata.operator bool());
+    m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
+    m_file >> *filedata; // fill the data vector with the file within the SAK archive
+    iter->second.filedata = std::static_pointer_cast<T, filedata_t>(filedata); // store a weak copy so that we can test if it's in use later
+  }
+  else // data pointer is still valid
+    filedata = std::static_pointer_cast<filedata_t, T>(iter->second.filedata.lock()); // copy data pointer
+  return filedata;
+}
+*/
 #endif // SAKARCHIVE_H

@@ -5,39 +5,44 @@
 
 #include "sakarchive.h"
 
+extern SAKArchive g_GameSAK;
+
+
 namespace Resources
 {
   static void normalize_path(std::string& path) noexcept;
 }
 
 template<typename T> // type T must inherit filedata_t
-struct Resource : std::shared_ptr<filedata_t>
+struct Resource : shared_arr<T>
 {
   T& operator ->(void) const noexcept
   {
-    ASSERT(operator bool()); // must already be allocated
-    return *reinterpret_cast<T*>(get()->dataptr);
+    ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
+    return *std::shared_ptr<T>::get()->dataptr;
   }
 
   std::shared_ptr<filedata_t>& operator =(std::shared_ptr<filedata_t>& other) noexcept
   {
     std::shared_ptr<filedata_t>::operator =(other);
-    static_cast<T*>(get())->load();
+    std::shared_ptr<T>::get()->load();
     return other;
   }
 };
 
 template<typename T> // type T must inherit filedata_t
-struct MultiResource : std::shared_ptr<filedata_t>
+struct MultiResource : shared_arr<T>
 {
   enum loop_t : uint16_t
   {
+    none        = 0x0000,
     backtofront = 0x0001,
     fronttoback = 0x0002,
   };
 
   enum type_t : uint16_t
   {
+    uninitialized    = 0xFFFF,
     stillframe       = 0x0000,
     animation        = 0x0001,
     complexanimation = 0x0002,
@@ -53,15 +58,26 @@ struct MultiResource : std::shared_ptr<filedata_t>
   uint32_t       frameCount;
   std::vector<T> datapointers;
 
+  MultiResource(void)
+    : magic(0),
+      version(0),
+      type(uninitialized),
+      loopFlags(none),
+      totalTime(0),
+      interval(0),
+      frameCount(0)
+  {
+  }
+
   T& operator ->(void) const noexcept
   {
-    ASSERT(operator bool()); // must already be allocated
+    ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
     return datapointers.front();
   }
 
-  T& operator [](milliseconds_t time) const noexcept
+  T& operator [](milliseconds_t time) noexcept
   {
-    ASSERT(operator bool()); // must already be allocated
+    ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
     if (time >= totalTime) // for playing animation
     {
       if (loopFlags & loop_t::backtofront) // loop at the end to the beginning
@@ -77,13 +93,13 @@ struct MultiResource : std::shared_ptr<filedata_t>
         time = 0; // first frame
     }
     ASSERT(interval);
-    ASSERT(time / interval < frameCount); // keep it in range
+    ASSERT(time / interval < milliseconds_t(frameCount)); // keep it in range
     return datapointers[time / interval];
   }
 
   std::shared_ptr<filedata_t>& operator =(std::shared_ptr<filedata_t>& other) noexcept
   {
-    std::shared_ptr<filedata_t>::operator =(other);
+    std::shared_ptr<T>::operator =(other);
     union
     {
       const char*     dataptrChar;
@@ -92,7 +108,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
       const uint32_t* dataptr32;
     };
 
-    dataptr8  = get()->dataptr;
+    dataptr8  = std::shared_ptr<T>::get()->dataptr;
 
     magic     = *dataptr32++;
     version   = *dataptr16++;
@@ -121,7 +137,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
       frameCount = *dataptr32++;
     }
 
-    ASSERT(interval);
+    ASSERT(interval > 0);
 
     datapointers.resize(frameCount);
 
@@ -131,7 +147,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
       {
         T& data = datapointers.front();
         data.dataptr = const_cast<uint8_t*>(dataptr8);
-        data.size = get()->size - (data.dataptr - get()->dataptr); // size is the rest of the file
+        data.size = std::shared_ptr<T>::get()->size - (data.dataptr - std::shared_ptr<T>::get()->dataptr); // size is the rest of the file
         data.load();
         dataptr8 += data.size;
         break;
@@ -142,7 +158,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
         {
           data.dataptr = const_cast<uint8_t*>(dataptr8);
           data.load();
-          dataptr8 += data.size;
+          dataptr8 += data.dataptr.count;
         }
         break;
 
@@ -153,7 +169,7 @@ struct MultiResource : std::shared_ptr<filedata_t>
           {
             data.dataptr = const_cast<uint8_t*>(dataptr8);
             data.load();
-            dataptr8 += data.size;
+            dataptr8 += data.dataptr.count;
           }
           else
             data = datapointers[*dataptr32++];
@@ -164,19 +180,27 @@ struct MultiResource : std::shared_ptr<filedata_t>
   }
 };
 
-
+template<typename T>
+static
 bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
                     const std::string& filename,           // In:  Resource name
-                    std::shared_ptr<filedata_t>& res) noexcept      // Out: Resource data pointer
+                    std::shared_ptr<T>& res) noexcept      // Out: Resource data pointer
 {
-  if(archive.fileExists(filename))
+  if(!archive.fileExists(filename))
+  {
+    TRACE("Couldn't open resource: %s\n", filename.c_str());
     return false;
+  }
 
-  res = archive.getFile(filename);
+  res = archive.getFile<T>(filename);
+  reinterpret_cast<T*>(res.get())->load();
+  //std::static_pointer_cast<T, filedata_t>(res)->load();
   return res.operator bool();
 }
 
-void rspReleaseResource(std::shared_ptr<filedata_t>& res) noexcept  // In:  Resource data pointer
+template<typename T>
+static
+void rspReleaseResource(std::shared_ptr<T>& res) noexcept  // In:  Resource data pointer
 {
   res.reset();
 }

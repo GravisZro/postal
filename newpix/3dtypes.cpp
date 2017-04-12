@@ -5,33 +5,6 @@
 
 #include <cstring>
 
-template<typename T, typename S>
-inline bool arrays_match(T* a, T* b, S count)
-{
-  return !count ||                            // if array size is zero OR
-         ((a == nullptr) == (b == nullptr) && // (they are the same AND
-          (a == nullptr ||                    //  (both are null OR
-           std::memcmp(a, b, sizeof(T) * count) == SUCCESS));  //   memory does match))
-}
-
-RTexture::RTexture(void)
-  : count(0),
-    flags(none),
-    indexptr(nullptr),
-    colorptr(nullptr)
-{
-}
-
-RTexture::~RTexture(void)
-{
-  if(allocated(indexptr))
-    delete[] indexptr;
-  indexptr = nullptr;
-
-  if(allocated(colorptr))
-    delete[] colorptr;
-  colorptr = nullptr;
-}
 
 void RTexture::load(void)
 {
@@ -42,30 +15,31 @@ void RTexture::load(void)
     const RPixel32* dataptrP32;
   };
 
-  dataptr8 = dataptr;
-  count   = *dataptr16++;
-  flags   = static_cast<flags_t>(*dataptr16++);
+  dataptr8 = data;
+  count = *dataptr16++;
+  flags = static_cast<flags_t>(*dataptr16++);
 
-  if(flags & indexes)
+  if(flags & flags_t::indexarr)
   {
-    indexptr = const_cast<uint8_t*>(dataptr8);
+    indexes = const_cast<uint8_t*>(dataptr8);
+    indexes.count = count;
     dataptr8 += count;
   }
-  if(flags & colors)
+  if(flags & flags_t::colorarr)
   {
-    colorptr = const_cast<RPixel32*>(dataptrP32);
+    colors = const_cast<RPixel32*>(dataptrP32);
+    colors.count = count;
     dataptrP32 += count;
   }
 
-  size = dataptr8 - dataptr;
+  data.count = dataptr8 - data;
   loaded = true;
 }
 
 bool RTexture::operator ==(const RTexture& other) const
 {
-  return count == other.count && // same number of elements AND
-         arrays_match(indexptr, other.indexptr, count) && // indexptr arrays match AND
-         arrays_match(colorptr, other.colorptr, count); //  colorptr arrays match
+  return indexes == other.indexes &&
+         colors == other.colors;
 }
 
 // Map colors onto the specified palette.  For each color, the best
@@ -80,17 +54,17 @@ void RTexture::remap(
     channel_t* pb,
     uint32_t linc)
 {
-  ASSERT(colorptr != nullptr);
+  ASSERT(colors != nullptr);
 
-  if (indexptr == nullptr)
-    indexptr = new uint8_t[count];
+  if (indexes == nullptr)
+    indexes.allocate(count);
 
   for (int16_t i = 0; i < count; i++)
   {
-    indexptr[i] = rspMatchColorRGB(
-                    int32_t(colorptr[i].red),
-                    int32_t(colorptr[i].green),
-                    int32_t(colorptr[i].blue),
+    indexes[i] = rspMatchColorRGB(
+                    int32_t(colors[i].red),
+                    int32_t(colors[i].green),
+                    int32_t(colors[i].blue),
                     sStartIndex,sNumIndex,
                     pr,pg,pb,linc);
   }
@@ -108,13 +82,13 @@ void RTexture::unmap(
     uint32_t lInc)
 {
   UNUSED(lInc);
-  ASSERT(indexptr != nullptr);
+  ASSERT(indexes != nullptr);
 
-  if (colorptr == nullptr)
-    colorptr = new RPixel32[count];
+  if (colors == nullptr)
+    colors.allocate(count);
 
-  uint8_t*  pu8    = indexptr;
-  RPixel32* ppix   = colorptr;
+  uint8_t*  pu8    = indexes;
+  RPixel32* ppix   = colors;
   int16_t   sCount = count;
   while (sCount--)
   {
@@ -138,11 +112,11 @@ void RTexture::adjust(
    float fAdjustment,	// In:  Adjustment factor (1.0 == same, < 1 == dimmer, > 1 == brighter).
    uint32_t lInc)				// In:  Number of colors to skip.
 {
-  ASSERT(colorptr);
+  ASSERT(colors);
   ASSERT(fAdjustment >= 0.0f);
 
-  RPixel32* ppix = colorptr;
-  int16_t	sCount = count / lInc;
+  RPixel32* ppix = colors;
+  int16_t	sCount = colors.count / lInc;
   while (sCount--)
   {
     ppix->red   = clampColorChannel(ppix->red   * fAdjustment);
@@ -153,17 +127,13 @@ void RTexture::adjust(
 }
 
 
-RMesh::RMesh(void)
-  : count(0),
-    triptr(nullptr)
+RMesh::RMesh(uint32_t sz)
+  : filedata_t(sz)
 {
 }
 
 RMesh::~RMesh(void)
 {
-  if(allocated(triptr))
-    delete[] triptr;
-  triptr = nullptr;
 }
 
 void RMesh::load(void)
@@ -175,33 +145,28 @@ void RMesh::load(void)
     const triangle_t* dataptrTri;
   };
 
-  dataptr8 = dataptr;
-  count   = *dataptr16++;
-  triptr = const_cast<triangle_t*>(dataptrTri);
-  dataptrTri += count;
+  dataptr8 = data;
+  triangles.count = *dataptr16++;
+  triangles = const_cast<triangle_t*>(dataptrTri);
+  dataptrTri += triangles.count;
 
-  size = dataptr8 - dataptr;
+  data.count = dataptr8 - data;
   loaded = true;
 }
 
 bool RMesh::operator ==(const RMesh& other) const
 {
-  return count == other.count && // same number of elements AND
-         arrays_match(triptr, other.triptr, count); // triptr arrays match
+  return triangles == other.triangles;
 }
 
 
-RSop::RSop(void)
-  : count(0),
-    pointptr(nullptr)
+RSop::RSop(uint32_t sz)
+  : filedata_t(sz)
 {
 }
 
 RSop::~RSop(void)
 {
-  if(allocated(pointptr))
-    delete[] pointptr;
-  pointptr = nullptr;
 }
 
 void RSop::load(void)
@@ -213,19 +178,18 @@ void RSop::load(void)
     const RP3d*     dataptr3d;
   };
 
-  dataptr8 = dataptr;
-  count   = *dataptr16++;
-  pointptr = const_cast<RP3d*>(dataptr3d);
-  dataptr3d += count;
+  dataptr8 = data;
+  points.count = *dataptr16++;
+  points = const_cast<RP3d*>(dataptr3d);
+  dataptr3d += points.count;
 
-  size = dataptr8 - dataptr;
+  data.count = dataptr8 - data;
   loaded = true;
 }
 
 bool RSop::operator ==(const RSop& other) const
 {
-  return count == other.count && // same number of elements AND
-         arrays_match(pointptr, other.pointptr, count); // triptr arrays match
+  return points == other.points;
 }
 
 
@@ -291,9 +255,9 @@ constexpr real_t identity_data[16] = { 1.0,0.0,0.0,0.0,
                                        0.0,0.0,1.0,0.0,
                                        0.0,0.0,0.0,1.0 };
 
-RTransform::RTransform(void) // init to an identity transform
+RTransform::RTransform(uint32_t sz)  // init to an identity transform
+  : filedata_t(sz)
 {
-  size = 16 * sizeof(real_t);
   makeIdentity();
 }
 
