@@ -1,17 +1,11 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include <RSPiX/BLUE/System.h>
+#include <BLUE/System.h>
 
 #include "sakarchive.h"
 
 extern SAKArchive g_GameSAK;
-
-
-namespace Resources
-{
-  static void normalize_path(std::string& path) noexcept;
-}
 
 template<typename T> // type T must inherit filedata_t
 struct Resource : shared_arr<T>
@@ -31,22 +25,26 @@ struct Resource : shared_arr<T>
 };
 
 template<typename T> // type T must inherit filedata_t
-struct MultiResource : shared_arr<T>
+struct MultiResource : filedata_t
 {
-  enum loop_t : uint16_t
+  enum class loop_t : uint16_t
   {
-    none        = 0x0000,
-    backtofront = 0x0001,
-    fronttoback = 0x0002,
+    uninitialized = 0xFFF0,
+    none          = 0x0000,
+    backtofront   = 0x0001,
+    fronttoback   = 0x0002,
   };
 
-  enum type_t : uint16_t
+  enum class type_t : uint16_t
   {
-    uninitialized    = 0xFFFF,
-    stillframe       = 0x0000,
-    animation        = 0x0001,
-    complexanimation = 0x0002,
+    uninitialized     = 0xFFF0,
+    stillframe        = 0x0000,
+    animation         = 0x0001,
+    complexanimation  = 0x0002,
   };
+
+  friend constexpr bool operator &(loop_t a, loop_t b) { return uint16_t(a) & uint16_t(b); }
+  friend constexpr bool operator &(type_t a, type_t b) { return uint16_t(a) & uint16_t(b); }
 
   uint32_t    magic;
   uint16_t    version;
@@ -58,11 +56,12 @@ struct MultiResource : shared_arr<T>
   uint32_t       frameCount;
   std::vector<T> datapointers;
 
-  MultiResource(void)
-    : magic(0),
+  MultiResource(uint32_t sz = 0)
+    : filedata_t(sz),
+      magic(0),
       version(0),
-      type(uninitialized),
-      loopFlags(none),
+      type(type_t::uninitialized),
+      loopFlags(loop_t::uninitialized),
       totalTime(0),
       interval(0),
       frameCount(0)
@@ -71,13 +70,13 @@ struct MultiResource : shared_arr<T>
 
   T& operator ->(void) const noexcept
   {
-    ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
+    ASSERT(data.operator bool()); // must already be allocated
     return datapointers.front();
   }
 
-  T& operator [](milliseconds_t time) noexcept
+  T& atTime(milliseconds_t time) noexcept
   {
-    ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
+    ASSERT(data.operator bool()); // must already be allocated
     if (time >= totalTime) // for playing animation
     {
       if (loopFlags & loop_t::backtofront) // loop at the end to the beginning
@@ -97,9 +96,8 @@ struct MultiResource : shared_arr<T>
     return datapointers[time / interval];
   }
 
-  std::shared_ptr<filedata_t>& operator =(std::shared_ptr<filedata_t>& other) noexcept
+  void load(void) noexcept
   {
-    std::shared_ptr<T>::operator =(other);
     union
     {
       const char*     dataptrChar;
@@ -108,7 +106,7 @@ struct MultiResource : shared_arr<T>
       const uint32_t* dataptr32;
     };
 
-    dataptr8  = std::shared_ptr<T>::get()->dataptr;
+    dataptr8  = data;
 
     magic     = *dataptr32++;
     version   = *dataptr16++;
@@ -118,13 +116,14 @@ struct MultiResource : shared_arr<T>
     uint32_t slen = *dataptr32++; // read length of the name
     while(slen--)
       name.push_back(*dataptrChar++); // read name into a string
+    slen = 0;
 
     if(!name.empty()) // if the file was named
       version = *dataptr16++; // read file version
 
     loopFlags = static_cast<loop_t>(*dataptr16++);
 
-    if(type == stillframe)
+    if(type == type_t::stillframe)
     {
       totalTime  = 1;
       interval   = 1; // no divide by zero!
@@ -143,48 +142,53 @@ struct MultiResource : shared_arr<T>
 
     switch(type)
     {
-      case stillframe:
+      default:
+        ASSERT(false);
+        break;
+
+      case type_t::stillframe:
       {
-        T& data = datapointers.front();
-        data.dataptr = const_cast<uint8_t*>(dataptr8);
-        data.size = std::shared_ptr<T>::get()->size - (data.dataptr - std::shared_ptr<T>::get()->dataptr); // size is the rest of the file
-        data.load();
-        dataptr8 += data.size;
+        T& d = datapointers.front();
+        d.data = const_cast<uint8_t*>(dataptr8);
+        d.data.count = data.count - (dataptr8 - data); // size is the rest of the file
+        d.load();
+        dataptr8 += d.data.count;
         break;
       }
 
-      case animation:
-        for(T& data : datapointers)
+      case type_t::animation:
+        for(T& d : datapointers)
         {
-          data.dataptr = const_cast<uint8_t*>(dataptr8);
-          data.load();
-          dataptr8 += data.dataptr.count;
+          d.data = const_cast<uint8_t*>(dataptr8);
+          d.load();
+          dataptr8 += d.data.count;
+          ++slen;
         }
         break;
 
-      case complexanimation:
-        for(T& data : datapointers)
+      case type_t::complexanimation:
+        for(T& d : datapointers)
         {
-          if(*dataptr32++ == UINT32_MAX)
+          if(*dataptr32 == UINT32_MAX)
           {
-            data.dataptr = const_cast<uint8_t*>(dataptr8);
-            data.load();
-            dataptr8 += data.dataptr.count;
+            dataptr32++;
+            d.data = const_cast<uint8_t*>(dataptr8);
+            d.load();
+            dataptr8 += d.data.count;
           }
           else
-            data = datapointers[*dataptr32++];
+            d = datapointers[*dataptr32++];
+          ++slen;
         }
         break;
     }
-    return other;
   }
 };
 
 template<typename T>
-static
-bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
-                    const std::string& filename,           // In:  Resource name
-                    std::shared_ptr<T>& res) noexcept      // Out: Resource data pointer
+static bool rspGetResource(SAKArchive& archive,                   // In:  Archive to be used
+                           const std::string& filename,           // In:  Resource name
+                           std::shared_ptr<T>& res) noexcept      // Out: Resource data pointer
 {
   if(!archive.fileExists(filename))
   {
@@ -194,13 +198,12 @@ bool rspGetResource(SAKArchive& archive,        // In:  Archive to be used
 
   res = archive.getFile<T>(filename);
   reinterpret_cast<T*>(res.get())->load();
-  //std::static_pointer_cast<T, filedata_t>(res)->load();
+  TRACE("loaded %s\n", filename.c_str());
   return res.operator bool();
 }
 
 template<typename T>
-static
-void rspReleaseResource(std::shared_ptr<T>& res) noexcept  // In:  Resource data pointer
+static void rspReleaseResource(std::shared_ptr<T>& res) noexcept  // In:  Resource data pointer
 {
   res.reset();
 }

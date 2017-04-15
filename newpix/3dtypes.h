@@ -1,7 +1,7 @@
 #ifndef _3DTYPES_H_
 #define _3DTYPES_H_
 
-#include <RSPiX/BLUE/System.h>
+#include <BLUE/System.h>
 
 #include "sakarchive.h"
 
@@ -14,14 +14,14 @@ struct RP3d;
 template<typename T>
 struct Raw : filedata_t, T
 {
-  Raw(uint32_t sz) : filedata_t(sz) { }
+  Raw(uint32_t sz = 0) : filedata_t(sz) { }
   void load(void) { }
 };
 
 template<>
 struct Raw<uint8_t> : filedata_t
 {
-  Raw(uint32_t sz) : filedata_t(sz) { }
+  Raw(uint32_t sz = 0) : filedata_t(sz) { }
   uint8_t operator =(uint8_t d) { return raw = d; }
   operator uint8_t (void) { return raw; }
   void load(void) { }
@@ -33,13 +33,13 @@ struct RTexture : filedata_t
 {
   enum flags_t : uint16_t
   {
-    none    = 0x0000,
+    none     = 0x0000,
     indexarr = 0x0001,
-    colorarr  = 0x0002,
+    colorarr = 0x0002,
   };
 
   flags_t   flags;    // option flags
-  uint32_t  count;    // size of array(s)
+  uint16_t  count;    // size of array(s)
   shared_arr<uint8_t>  indexes; // Array of indices
   shared_arr<RPixel32> colors; // Array of colors
 
@@ -118,89 +118,29 @@ struct RP3d
   RP3d(real_t _x = 0.0,
        real_t _y = 0.0,
        real_t _z = 0.0,
-       real_t _w = 1.0)
-    : x(_x), y(_y), z(_z), w(_w) { }
+       real_t _w = 1.0);
 
-  bool operator ==(const RP3d& other)
-  {
-    return x == other.x &&
-           y == other.y &&
-           z == other.z &&
-           w == other.w;
-  }
+  const RP3d& operator =(const RP3d& other);
 
-// <ignore W>
+  RP3d  operator  *(const RP3d& other) const;
+  RP3d& operator -=(const RP3d& other);
+  RP3d& operator +=(const RP3d& other);
 
-  const RP3d& operator =(const RP3d& other)
-  {
-    x = other.x;
-    y = other.y;
-    z = other.z;
-    return other;
-  }
+  real_t dot(const RP3d& other) const;
 
-  RP3d multiply(const RP3d& other) const
-  {
-    return RP3d(y * other.z - z * other.y,
-                x * other.y - y * other.x,
-                z * other.x - x * other.z);
-  }
+  RP3d& scale(real_t s);
 
-  RP3d dot(const RP3d& other) const
-  {
-    return RP3d(y * other.z,
-                x * other.y,
-                z * other.x);
-  }
-
-  RP3d& operator -=(const RP3d& other)
-  {
-    x -= other.x;
-    y -= other.y;
-    z -= other.z;
-    return *this;
-  }
-
-  RP3d& operator +=(const RP3d& other)
-  {
-    x += other.x;
-    y += other.y;
-    z += other.z;
-    return *this;
-  }
-
-  RP3d& scale(real_t s)
-  {
-    x *= s;
-    y *= s;
-    z *= s;
-    return *this;
-  }
-
-// </ignore W>
-
-  RP3d& makeHomogeneous(void)
-  {
-    ASSERT(w != 0.0);
-    x /= w;
-    y /= w;
-    z /= w;
-    w = 1.0;
-    return *this;
-  }
+  RP3d& makeHomogeneous(void); // factor out the w component
 
   // adjusts the length of a vector, ignoring w component
-  RP3d& makeUnit(void)
-  {
-    real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
-    ASSERT(l != 0.0);
-    x /= l;
-    y /= l;
-    z /= l;
-    return *this;
-  }
+  RP3d& makeUnit(void);
 };
 
+static_assert(sizeof(RP3d) == sizeof(real_t) * 4, "bad size!");
+
+
+template<typename R, typename C>
+constexpr uint32_t rowcol(R row, C col) { return (row * 4) + col; }
 
 // NOW, the class based transform allows matrix
 // multiplication to occur WITHOUT multiplying
@@ -209,15 +149,12 @@ struct RP3d
 //
 struct RTransform : filedata_t
 {
-  real_t data[16]; // This is compatible with the aggregate transform
+  shared_arr<real_t> transdata; // This is compatible with the aggregate transform
 
   RTransform(uint32_t sz = 0);
  ~RTransform(void);
 
-  void load(void)
-  {
-
-  }
+  void load(void);
 
   void makeIdentity(void); // identity matrix
   void makeNull(void); // null matrix
@@ -232,9 +169,9 @@ struct RTransform : filedata_t
   void Mul(real_t* A, real_t* B); // 4x4 transforms:
 
   // Assumes R3 = {0,0,0,1}
-  void Translate(real_t x,real_t y,real_t z);
+  void Translate(real_t x, real_t y, real_t z);
 
-  void Scale(real_t x,real_t y, real_t z);
+  void Scale(real_t x, real_t y, real_t z);
 
 
   // Transform an actual point ( overwrites old point )
@@ -256,7 +193,7 @@ struct RTransform : filedata_t
   // Use rspSub to create w vertices (w,h,d)
   // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
   //
-  void MakeBoxXF(RP3d &x1, RP3d &w1, RP3d &x2, RP3d &w2);
+  void MakeBoxXF(RP3d& x1, RP3d& w1, RP3d& x2, RP3d& w2);
 
   // This is NOT hyper fast, and the result IS a rotation matrix
   // For now, point is it's x-axis and up i s it's y-axis.

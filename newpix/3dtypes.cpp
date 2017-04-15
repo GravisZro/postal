@@ -1,7 +1,7 @@
 #include "3dtypes.h"
 
-#include <RSPiX/ORANGE/color/colormatch.h>
-#include <RSPiX/ORANGE/QuickMath/QuickMath.h>
+#include <ORANGE/color/colormatch.h>
+#include <ORANGE/QuickMath/QuickMath.h>
 
 #include <cstring>
 
@@ -59,7 +59,7 @@ void RTexture::remap(
   if (indexes == nullptr)
     indexes.allocate(count);
 
-  for (int16_t i = 0; i < count; i++)
+  for (uint32_t i = 0; i < count; i++)
   {
     indexes[i] = rspMatchColorRGB(
                     int32_t(colors[i].red),
@@ -174,12 +174,12 @@ void RSop::load(void)
   union
   {
     const uint8_t*  dataptr8;
-    const uint16_t* dataptr16;
+    const uint32_t* dataptr32;
     const RP3d*     dataptr3d;
   };
 
   dataptr8 = data;
-  points.count = *dataptr16++;
+  points.count = *dataptr32++;
   points = const_cast<RP3d*>(dataptr3d);
   dataptr3d += points.count;
 
@@ -193,20 +193,98 @@ bool RSop::operator ==(const RSop& other) const
 }
 
 
-inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, int row, int col)
+RP3d::RP3d(real_t _x,
+           real_t _y,
+           real_t _z,
+           real_t _w)
+  : x(_x), y(_y), z(_z), w(_w) { }
+
+const RP3d& RP3d::operator =(const RP3d& other)
 {
-  matOut[(row * 4) + col] =
-      matA[(row * 4) + 0] * matB[0x0 + col] +
-      matA[(row * 4) + 1] * matB[0x4 + col] +
-      matA[(row * 4) + 2] * matB[0x8 + col] +
-      matA[(row * 4) + 3] * matB[0xC + col];
+  x = other.x;
+  y = other.y;
+  z = other.z;
+  return other;
 }
 
-inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, int col)
+RP3d RP3d::operator *(const RP3d& other) const
 {
-  mat[(0 * 4) + col] *= x;
-  mat[(1 * 4) + col] *= y;
-  mat[(2 * 4) + col] *= z;
+  return RP3d(y * other.z - z * other.y,
+              z * other.x - x * other.z,
+              x * other.y - y * other.x);
+}
+
+real_t RP3d::dot(const RP3d& other) const
+{
+  return x * other.x +
+      y * other.y +
+      z * other.z +
+      w * other.w;
+}
+
+RP3d& RP3d::operator -=(const RP3d& other)
+{
+  x -= other.x;
+  y -= other.y;
+  z -= other.z;
+  return *this;
+}
+
+RP3d& RP3d::operator +=(const RP3d& other)
+{
+  x += other.x;
+  y += other.y;
+  z += other.z;
+  return *this;
+}
+
+RP3d& RP3d::scale(real_t s)
+{
+  x *= s;
+  y *= s;
+  z *= s;
+  return *this;
+}
+
+RP3d& RP3d::makeHomogeneous(void) // factor out the w component
+{
+  ASSERT(w != 0.0);
+  x /= w;
+  y /= w;
+  z /= w;
+  w = 1.0;
+  return *this;
+}
+
+// adjusts the length of a vector, ignoring w component
+RP3d& RP3d::makeUnit(void)
+{
+  real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
+  ASSERT(l != 0.0);
+  x /= l;
+  y /= l;
+  z /= l;
+  return *this;
+}
+
+
+
+//constexpr uint8_t rowcol(uint8_t row, uint8_t col) { return (row * 4) + col; }
+
+inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, uint8_t row, uint8_t col)
+{
+  matOut[rowcol(row, col)] =
+      matA[rowcol(row, 0)] * matB[rowcol(0, col)] +
+      matA[rowcol(row, 1)] * matB[rowcol(1, col)] +
+      matA[rowcol(row, 2)] * matB[rowcol(2, col)] +
+      matA[rowcol(row, 3)] * matB[rowcol(3, col)];
+}
+
+inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col)
+{
+  mat[rowcol(0, col)] *= x;
+  mat[rowcol(1, col)] *= y;
+  mat[rowcol(2, col)] *= z;
 }
 
 #define ExecOp4(op, ...) \
@@ -250,14 +328,16 @@ inline void ExecOp3x4(Func op, Args... args)
 #endif
 
 
-constexpr real_t identity_data[16] = { 1.0,0.0,0.0,0.0,
-                                       0.0,1.0,0.0,0.0,
-                                       0.0,0.0,1.0,0.0,
-                                       0.0,0.0,0.0,1.0 };
+constexpr real_t identity_data[16] = { 1.0, 0.0, 0.0, 0.0,
+                                       0.0, 1.0, 0.0, 0.0,
+                                       0.0, 0.0, 1.0, 0.0,
+                                       0.0, 0.0, 0.0, 1.0 };
 
 RTransform::RTransform(uint32_t sz)  // init to an identity transform
   : filedata_t(sz)
 {
+  if(!data)
+    transdata.allocate(16);
   makeIdentity();
 }
 
@@ -265,94 +345,51 @@ RTransform::~RTransform(void)
 {
 }
 
+void RTransform::load(void)
+{
+  data.count = 16 * sizeof(real_t);
+  transdata = reinterpret_cast<real_t*>(data.get());
+  transdata.count = 16;
+  loaded = true;
+}
+
 void RTransform::makeIdentity(void) // identity matrix
 {
-  std::memcpy(data, identity_data, sizeof(real_t) * 16);
+  ASSERT(transdata.count >= 16);
+  std::memcpy(transdata, identity_data, sizeof(real_t) * 16);
 }
 
 void RTransform::makeNull(void) // null matrix
 {
-  std::memset(data, 0, sizeof(real_t) * 15);
-  data[15] = 1;
+  ASSERT(transdata.count >= 16);
+  std::memset(transdata, 0, sizeof(real_t) * 15);
+  transdata[15] = 1;
 }
-
-//------------------------
-
-/*
-  void PreMulBy(real_t* M)
-  {
-    //real_t* MLine = M;
-    //real_t* TCol = T;
-    //real_t tot;
-    int16_t r,c;
-    // Unroll this puppy!
-    // Much optimizing needed!
-    for (r = 0; r < 3; ++r) // 3/4 XFORM!
-      for (c = 0; c < 4; ++c)
-      {
-        data[ROW[r] + c] =
-            M[ROW[r]] * data[c] +
-            M[ROW[r] + 1] * data[ROW1 + c] +
-            M[ROW[r] + 2] * data[ROW2 + c] +
-            M[ROW[r] + 3] * data[ROW3 + c];
-      }
-  }
-
-  // Oversets the current Transform with the resultant!
-  // = A * B
-  void Mul(real_t* A, real_t* B) // 4x4 transforms:
-  {
-    int16_t r,c;
-    // Unroll this puppy!
-    // Much optimizing needed!
-    for (r = 0; r < 3; ++r) // 3/4 XFORM!
-      for (c = 0; c < 4; ++c)
-      {
-        data[ROW[r] + c] =
-            A[ROW[r] + 0] * B[ROW0 + c] +
-            A[ROW[r] + 1] * B[ROW1 + c] +
-            A[ROW[r] + 2] * B[ROW2 + c] +
-            A[ROW[r] + 3] * B[ROW3 + c];
-      }
-  }
-
-  void Scale(real_t x,real_t y, real_t z)
-  {
-    for (int16_t i = 0; i < 4; ++i)
-    {
-      data[ROW0 + i] *= x;
-      data[ROW1 + i] *= y;
-      data[ROW2 + i] *= z;
-    }
-  }
-*/
-
 
 // A Partial transform, assuming R3 = {0,0,0,1};
 void RTransform::PreMulBy(real_t* M)
 {
-  ExecOp3x4(MatrixMultiply, data, M, data);
+  ExecOp3x4(MatrixMultiply, transdata, M, transdata);
 }
 
 // Oversets the current data with the result!
 void RTransform::Mul(real_t* A, real_t* B) // 4x4 transforms:
 {
-  ExecOp3x4(MatrixMultiply, data, A, B);
-}
-
-// Assumes R3 = {0,0,0,1}
-void RTransform::Translate(real_t x,real_t y,real_t z)
-{
-  data[(0 * 4) + 3] += x;
-  data[(1 * 4) + 3] += y;
-  data[(2 * 4) + 3] += z;
+  ExecOp3x4(MatrixMultiply, transdata, A, B);
 }
 
 void RTransform::Scale(real_t x,real_t y, real_t z)
 {
-  ExecOp4(MatrixScale, data, x, y, z);
+  ExecOp4(MatrixScale, transdata, x, y, z);
 }
 
+// Assumes R3 = {0,0,0,1}
+void RTransform::Translate(real_t x, real_t y, real_t z)
+{
+  transdata[rowcol(0, 3)] += x;
+  transdata[rowcol(1, 3)] += y;
+  transdata[rowcol(2, 3)] += z;
+}
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
@@ -361,22 +398,21 @@ void RTransform::MakeRotTo(RP3d point, RP3d up)
   RP3d third;
   point.makeUnit();
   up.makeUnit();
-  third = point.multiply(up);
+  third = point * up;
 
   // store as columns
   makeNull();
-  data[(0 * 4) + 0] = point.x;
-  data[(1 * 4) + 0] = point.y;
-  data[(2 * 4) + 0] = point.z;
+  transdata[rowcol(0, 0)] = point.x;
+  transdata[rowcol(1, 0)] = point.y;
+  transdata[rowcol(2, 0)] = point.z;
 
-  data[(0 * 4) + 1] = up.x;
-  data[(1 * 4) + 1] = up.y;
-  data[(2 * 4) + 1] = up.z;
+  transdata[rowcol(0, 1)] = up.x;
+  transdata[rowcol(1, 1)] = up.y;
+  transdata[rowcol(2, 1)] = up.z;
 
-  data[(0 * 4) + 2] = third.x;
-  data[(1 * 4) + 2] = third.y;
-  data[(2 * 4) + 2] = third.z;
-
+  transdata[rowcol(0, 2)] = third.x;
+  transdata[rowcol(1, 2)] = third.y;
+  transdata[rowcol(2, 2)] = third.z;
 }
 
 // This is NOT hyper fast, and the result IS a rotation matrix
@@ -386,54 +422,92 @@ void RTransform::MakeRotFrom(RP3d point, RP3d up)
   RP3d third;
   point.makeUnit();
   up.makeUnit();
-  third = point.multiply(up);
+  third = point * up;
 
   // store as rows
   makeNull();
-  data[(0 * 4) + 0] = point.x;
-  data[(0 * 4) + 1] = point.y;
-  data[(0 * 4) + 2] = point.z;
+  transdata[rowcol(0, 0)] = point.x;
+  transdata[rowcol(0, 1)] = point.y;
+  transdata[rowcol(0, 2)] = point.z;
 
-  data[(1 * 4) + 0] = up.x;
-  data[(1 * 4) + 1] = up.y;
-  data[(1 * 4) + 2] = up.z;
+  transdata[rowcol(1, 0)] = up.x;
+  transdata[rowcol(1, 1)] = up.y;
+  transdata[rowcol(1, 2)] = up.z;
 
-  data[(2 * 4) + 0] = third.x;
-  data[(2 * 4) + 1] = third.y;
-  data[(2 * 4) + 2] = third.z;
+  transdata[rowcol(2, 0)] = third.x;
+  transdata[rowcol(2, 1)] = third.y;
+  transdata[rowcol(2, 2)] = third.z;
 }
 
+#if 0
+// Transform an actual point ( overwrites old point )
+// Does a premultiply!
+void RTransform::Transform(RP3d& p) const
+   {
+   RP3d temp;
+   const real_t *pT = transdata,*pV;
+   int16_t i,j;
+
+   for (j = 0; j < 3; ++j) // asume 3 row form!
+      for (i = 0,pV = reinterpret_cast<real_t*>(&p); i < 4; ++i)
+         reinterpret_cast<real_t*>(&temp)[j] += (*pV++) * (*pT++);
+   // overwrite original
+   for (i = 0; i < 4; ++i)
+     reinterpret_cast<real_t*>(&p)[i] = reinterpret_cast<real_t*>(&temp)[i];
+   }
+
+// Transform an actual point, and places the answer into a different pt
+// Does a premultiply!
+void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
+   {
+  dest = RP3d();
+
+   const real_t* pT = transdata, *pV;
+   int16_t i,j;
+
+   for (j=0;j<3;j++) // asume 3 row form!
+      for (i=0,pV = reinterpret_cast<const real_t*>(&src);i<4;i++)
+         {
+         reinterpret_cast<real_t*>(&dest)[j] += (*pV++) * (*pT++);
+         }
+   }
+
+#else
 // Transform an actual point ( overwrites old point )
 void RTransform::Transform(RP3d& p) const
 {
+  const RP3d* d = reinterpret_cast<const RP3d*>(transdata.get());
   RP3d temp;
-  temp += p.dot(*reinterpret_cast<const RP3d*>(data + 0));
-  temp += p.dot(*reinterpret_cast<const RP3d*>(data + 4));
-  temp += p.dot(*reinterpret_cast<const RP3d*>(data + 8));
+  temp.x = p.dot(d[0]);
+  temp.y = p.dot(d[1]);
+  temp.z = p.dot(d[2]);
   p = temp;
+  p.w = 1.0;
 }
 
 // Transform an actual point, and places the answer into a different pt
 void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
 {
-  RP3d temp;
-  temp += src.dot(*reinterpret_cast<const RP3d*>(data + 0));
-  temp += src.dot(*reinterpret_cast<const RP3d*>(data + 4));
-  temp += src.dot(*reinterpret_cast<const RP3d*>(data + 8));
-  dest = temp;
+  const RP3d* d = reinterpret_cast<const RP3d*>(transdata.get());
+  dest.x = src.dot(d[0]);
+  dest.y = src.dot(d[1]);
+  dest.z = src.dot(d[2]);
+  dest.w = 1.0;
 }
+#endif
+
 
 void RTransform::Rz(int16_t sDeg) // CCW!
 {
   register real_t S = rspfSin(sDeg);
   register real_t C = rspfCos(sDeg);
 
-  for (int16_t i = 0; i < 4; ++i)
+  for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row1 = data[4 + i];
-    register real_t row0 = data[0 + i];
-    data[4 + i] = row0 * S + row1 * C;
-    data[0 + i] = row0 * C - row1 * S;
+    register real_t row1 = transdata[rowcol(1, i)];
+    register real_t row0 = transdata[rowcol(0, i)];
+    transdata[rowcol(1, i)] = row0 * S + row1 * C;
+    transdata[rowcol(0, i)] = row0 * C - row1 * S;
   }
 }
 
@@ -442,12 +516,12 @@ void RTransform::Rx(int16_t sDeg) // CCW!
   register real_t S = rspfSin(sDeg);
   register real_t C = rspfCos(sDeg);
 
-  for (int16_t i = 0; i < 4; ++i)
+  for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row1 = data[4 + i];
-    register real_t row2 = data[8 + i];
-    data[8 + i] = row1 * S + row2 * C;
-    data[4 + i] = row1 * C - row2 * S;
+    register real_t row1 = transdata[rowcol(1, i)];
+    register real_t row2 = transdata[rowcol(2, i)];
+    transdata[rowcol(2, i)] = row1 * S + row2 * C;
+    transdata[rowcol(1, i)] = row1 * C - row2 * S;
   }
 }
 
@@ -456,12 +530,12 @@ void RTransform::Ry(int16_t sDeg) // CCW!
   register real_t S = rspfSin(sDeg);
   register real_t C = rspfCos(sDeg);
 
-  for (int16_t i = 0; i < 4; ++i)
+  for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row0 = data[0 + i];
-    register real_t row2 = data[8 + i];
-    data[8 + i] = -row0 * S + row2 * C;
-    data[0 + i] =  row0 * C + row2 * S;
+    register real_t row0 = transdata[rowcol(0, i)];
+    register real_t row2 = transdata[rowcol(2, i)];
+    transdata[rowcol(2, i)] = -row0 * S + row2 * C;
+    transdata[rowcol(0, i)] =  row0 * C + row2 * S;
   }
 }
 
@@ -470,7 +544,7 @@ void RTransform::Ry(int16_t sDeg) // CCW!
 // Use rspSub to create w vertices (w,h,d)
 // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
 //
-void RTransform::MakeBoxXF(RP3d &x1, RP3d &w1, RP3d &x2, RP3d &w2)
+void RTransform::MakeBoxXF(RP3d& x1, RP3d& w1, RP3d& x2, RP3d& w2)
 {
   // NOT OF MAXIMUM SPEED!
   makeIdentity();
