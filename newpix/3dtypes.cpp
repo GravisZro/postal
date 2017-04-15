@@ -308,25 +308,6 @@ inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col)
   op(__VA_ARGS__, 2, 2); \
   op(__VA_ARGS__, 2, 3)
 
-#if 0
-template<typename Func, typename... Args>
-inline void ExecOp4(Func op, Args... args)
-{
-  op(args..., 0);
-  op(args..., 1);
-  op(args..., 2);
-  op(args..., 3);
-}
-
-template<typename Func, typename... Args>
-inline void ExecOp3x4(Func op, Args... args)
-{
-  ExecOp4(op, args..., 0);
-  ExecOp4(op, args..., 1);
-  ExecOp4(op, args..., 2);
-}
-#endif
-
 
 constexpr real_t identity_data[16] = { 1.0, 0.0, 0.0, 0.0,
                                        0.0, 1.0, 0.0, 0.0,
@@ -439,40 +420,6 @@ void RTransform::MakeRotFrom(RP3d point, RP3d up)
   transdata[rowcol(2, 2)] = third.z;
 }
 
-#if 0
-// Transform an actual point ( overwrites old point )
-// Does a premultiply!
-void RTransform::Transform(RP3d& p) const
-   {
-   RP3d temp;
-   const real_t *pT = transdata,*pV;
-   int16_t i,j;
-
-   for (j = 0; j < 3; ++j) // asume 3 row form!
-      for (i = 0,pV = reinterpret_cast<real_t*>(&p); i < 4; ++i)
-         reinterpret_cast<real_t*>(&temp)[j] += (*pV++) * (*pT++);
-   // overwrite original
-   for (i = 0; i < 4; ++i)
-     reinterpret_cast<real_t*>(&p)[i] = reinterpret_cast<real_t*>(&temp)[i];
-   }
-
-// Transform an actual point, and places the answer into a different pt
-// Does a premultiply!
-void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
-   {
-  dest = RP3d();
-
-   const real_t* pT = transdata, *pV;
-   int16_t i,j;
-
-   for (j=0;j<3;j++) // asume 3 row form!
-      for (i=0,pV = reinterpret_cast<const real_t*>(&src);i<4;i++)
-         {
-         reinterpret_cast<real_t*>(&dest)[j] += (*pV++) * (*pT++);
-         }
-   }
-
-#else
 // Transform an actual point ( overwrites old point )
 void RTransform::Transform(RP3d& p) const
 {
@@ -494,8 +441,6 @@ void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
   dest.z = src.dot(d[2]);
   dest.w = 1.0;
 }
-#endif
-
 
 void RTransform::Rz(int16_t sDeg) // CCW!
 {
