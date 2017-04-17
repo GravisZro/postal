@@ -292,6 +292,14 @@ inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col)
   op(__VA_ARGS__, 2, 2); \
   op(__VA_ARGS__, 2, 3)
 
+#define setRow(row, val) \
+  reinterpret_cast<RP3d*>(matdata.get())[row] = val;
+
+#define setColumn(col, val) \
+  matdata[rowcol(0, col)] = val.x; \
+  matdata[rowcol(1, col)] = val.y; \
+  matdata[rowcol(2, col)] = val.z;
+
 
 constexpr real_t identity_data[16] = { 1.0, 0.0, 0.0, 0.0,
                                        0.0, 1.0, 0.0, 0.0,
@@ -302,108 +310,85 @@ RTransform::RTransform(uint32_t sz)  // init to an identity transform
   : filedata_t(sz)
 {
   if(!data)
-    transdata.allocate(16);
+    matdata.allocate(16);
   makeIdentity();
 }
 
 void RTransform::load(void)
 {
   data.count = 16 * sizeof(real_t);
-  transdata = reinterpret_cast<real_t*>(data.get());
-  transdata.count = 16;
+  matdata = reinterpret_cast<real_t*>(data.get());
+  matdata.count = 16;
   loaded = true;
 }
 
 void RTransform::makeIdentity(void) // identity matrix
 {
-  ASSERT(transdata.count >= 16);
-  std::memcpy(transdata, identity_data, sizeof(real_t) * 16);
+  ASSERT(matdata.count >= 16);
+  std::memcpy(matdata, identity_data, sizeof(real_t) * 16);
 }
 
 void RTransform::makeNull(void) // null matrix
 {
-  ASSERT(transdata.count >= 16);
-  std::memset(transdata, 0, sizeof(real_t) * 15);
-  transdata[15] = 1;
+  ASSERT(matdata.count >= 16);
+  std::memset(matdata, 0, sizeof(real_t) * 15);
+  matdata[15] = 1;
 }
 
 // A Partial transform, assuming R3 = {0,0,0,1};
 void RTransform::PreMulBy(real_t* M)
 {
-  ExecOp3x4(MatrixMultiply, transdata, M, transdata);
+  ExecOp3x4(MatrixMultiply, matdata, M, matdata);
 }
 
 // Oversets the current data with the result!
 void RTransform::Mul(real_t* A, real_t* B) // 4x4 transforms:
 {
-  ExecOp3x4(MatrixMultiply, transdata, A, B);
+  ExecOp3x4(MatrixMultiply, matdata, A, B);
 }
 
 void RTransform::Scale(real_t x,real_t y, real_t z)
 {
-  ExecOp4(MatrixScale, transdata, x, y, z);
+  ExecOp4(MatrixScale, matdata, x, y, z);
 }
 
 // Assumes R3 = {0,0,0,1}
 void RTransform::Translate(real_t x, real_t y, real_t z)
 {
-  transdata[rowcol(0, 3)] += x;
-  transdata[rowcol(1, 3)] += y;
-  transdata[rowcol(2, 3)] += z;
+  matdata[rowcol(0, 3)] += x;
+  matdata[rowcol(1, 3)] += y;
+  matdata[rowcol(2, 3)] += z;
 }
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
 void RTransform::MakeRotTo(RP3d point, RP3d up)
 {
-  RP3d third;
   point.makeUnit();
   up.makeUnit();
-  third = point * up;
-
-  // store as columns
   makeNull();
-  transdata[rowcol(0, 0)] = point.x;
-  transdata[rowcol(1, 0)] = point.y;
-  transdata[rowcol(2, 0)] = point.z;
-
-  transdata[rowcol(0, 1)] = up.x;
-  transdata[rowcol(1, 1)] = up.y;
-  transdata[rowcol(2, 1)] = up.z;
-
-  transdata[rowcol(0, 2)] = third.x;
-  transdata[rowcol(1, 2)] = third.y;
-  transdata[rowcol(2, 2)] = third.z;
+  RP3d tmp = up * point;
+  setColumn(0, point);
+  setColumn(1, up);
+  setColumn(2, tmp);
 }
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
 void RTransform::MakeRotFrom(RP3d point, RP3d up)
 {
-  RP3d third;
   point.makeUnit();
   up.makeUnit();
-  third = point * up;
-
-  // store as rows
   makeNull();
-  transdata[rowcol(0, 0)] = point.x;
-  transdata[rowcol(0, 1)] = point.y;
-  transdata[rowcol(0, 2)] = point.z;
-
-  transdata[rowcol(1, 0)] = up.x;
-  transdata[rowcol(1, 1)] = up.y;
-  transdata[rowcol(1, 2)] = up.z;
-
-  transdata[rowcol(2, 0)] = third.x;
-  transdata[rowcol(2, 1)] = third.y;
-  transdata[rowcol(2, 2)] = third.z;
+  setRow(0, point);
+  setRow(1, up);
+  setRow(2, point * up);
 }
 
 // Transform an actual point ( overwrites old point )
 void RTransform::Transform(RP3d& p) const
 {
-  const RP3d* d = reinterpret_cast<const RP3d*>(transdata.get());
+  RP3d* d = reinterpret_cast<RP3d*>(matdata.get());
   RP3d temp;
   temp.x = p.dot(d[0]);
   temp.y = p.dot(d[1]);
@@ -415,7 +400,7 @@ void RTransform::Transform(RP3d& p) const
 // Transform an actual point, and places the answer into a different pt
 void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
 {
-  const RP3d* d = reinterpret_cast<const RP3d*>(transdata.get());
+  RP3d* d = reinterpret_cast<RP3d*>(matdata.get());
   dest.x = src.dot(d[0]);
   dest.y = src.dot(d[1]);
   dest.z = src.dot(d[2]);
@@ -429,10 +414,10 @@ void RTransform::Rz(int16_t sDeg) // CCW!
 
   for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row1 = transdata[rowcol(1, i)];
-    register real_t row0 = transdata[rowcol(0, i)];
-    transdata[rowcol(1, i)] = row0 * S + row1 * C;
-    transdata[rowcol(0, i)] = row0 * C - row1 * S;
+    register real_t row1 = matdata[rowcol(1, i)];
+    register real_t row0 = matdata[rowcol(0, i)];
+    matdata[rowcol(1, i)] = row0 * S + row1 * C;
+    matdata[rowcol(0, i)] = row0 * C - row1 * S;
   }
 }
 
@@ -443,10 +428,10 @@ void RTransform::Rx(int16_t sDeg) // CCW!
 
   for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row1 = transdata[rowcol(1, i)];
-    register real_t row2 = transdata[rowcol(2, i)];
-    transdata[rowcol(2, i)] = row1 * S + row2 * C;
-    transdata[rowcol(1, i)] = row1 * C - row2 * S;
+    register real_t row1 = matdata[rowcol(1, i)];
+    register real_t row2 = matdata[rowcol(2, i)];
+    matdata[rowcol(2, i)] = row1 * S + row2 * C;
+    matdata[rowcol(1, i)] = row1 * C - row2 * S;
   }
 }
 
@@ -457,10 +442,10 @@ void RTransform::Ry(int16_t sDeg) // CCW!
 
   for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row0 = transdata[rowcol(0, i)];
-    register real_t row2 = transdata[rowcol(2, i)];
-    transdata[rowcol(2, i)] = -row0 * S + row2 * C;
-    transdata[rowcol(0, i)] =  row0 * C + row2 * S;
+    register real_t row0 = matdata[rowcol(0, i)];
+    register real_t row2 = matdata[rowcol(2, i)];
+    matdata[rowcol(2, i)] = -row0 * S + row2 * C;
+    matdata[rowcol(0, i)] =  row0 * C + row2 * S;
   }
 }
 

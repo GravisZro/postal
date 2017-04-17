@@ -18,7 +18,9 @@ constexpr uint32_t rowcol(R row, C col) { return (row * 4) + col; }
 template<typename T>
 struct Raw : filedata_t // special type to wrap types that do not inherit filedata_t
 {
-  Raw(uint32_t sz = 0) : filedata_t(sz), raw(nullptr) { }
+  Raw(uint32_t sz = 0)
+    : filedata_t(sz), raw(nullptr) { }
+
   const T& operator =(const T& d) { return *raw = d; }
   operator T (void) const { return *raw; }
   T* operator &(void) const { return raw; }
@@ -154,7 +156,7 @@ struct RSop : filedata_t
 //
 struct RTransform : filedata_t
 {
-  shared_arr<real_t> transdata; // This is compatible with the aggregate transform
+  shared_arr<real_t> matdata; // This is compatible with the aggregate transform
 
   RTransform(uint32_t sz = 0);
 
@@ -176,7 +178,7 @@ struct RTransform : filedata_t
 
 
   // Transform an actual point ( overwrites old point )
-  void Transform(RP3d &p) const;
+  void Transform(RP3d& p) const;
 
   // Transform an actual point, and places the answer into a different pt
   void TransformInto(const RP3d& src, RP3d& dest) const;
