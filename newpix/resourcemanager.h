@@ -205,7 +205,7 @@ static bool rspGetResource(SAKArchive& archive,                   // In:  Archiv
 
   res = archive.getFile<T>(filename);
   reinterpret_cast<T*>(res.get())->load();
-  return res;
+  return res.operator bool();
 }
 
 template<typename T>
