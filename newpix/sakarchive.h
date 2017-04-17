@@ -23,12 +23,12 @@ struct shared_arr : std::shared_ptr<T>
 {
   uint32_t count;
 
-  bool allocate(uint32_t cnt)
+  bool allocate(uint32_t cnt) // allocate cnt copies of T
   {
-    std::shared_ptr<T>::reset();
-    if(cnt > 0)
-      std::shared_ptr<T>::operator =(std::shared_ptr<T>(new T[cnt], std::default_delete<T[]>()));
-    count = cnt;
+    std::shared_ptr<T>::reset(); // release old data
+    if(cnt > 0) // if actually allocating data
+      std::shared_ptr<T>::operator =(std::shared_ptr<T>(new T[cnt], std::default_delete<T[]>())); // allocate new data with auto deleter
+    count = cnt; // save the number of copies created
     return true;
   }
 
@@ -39,22 +39,22 @@ struct shared_arr : std::shared_ptr<T>
     return other;
   }
 
-  T* operator =(T* ptr)
+  T* operator =(T* ptr) // use external pointer data
   {
-    std::shared_ptr<T>::operator =(std::shared_ptr<T>(ptr, [this](T const*) { count = 0; }));
+    std::shared_ptr<T>::operator =(std::shared_ptr<T>(ptr, [](T const*) { })); // use pointer but do not deallocate
     return ptr;
   }
 
   operator T*(void) const
-    { return std::shared_ptr<T>::get(); }
+    { return std::shared_ptr<T>::get(); } // get pointer to all data
 
   T& operator [](uint32_t num)
-    { ASSERT(num < count); return std::shared_ptr<T>::get()[num]; }
+    { ASSERT(num < count); return std::shared_ptr<T>::get()[num]; } // get data
 
   T* operator +(uint32_t num) const
-    { ASSERT(num < count); return std::shared_ptr<T>::get() + num; }
+    { ASSERT(num < count); return std::shared_ptr<T>::get() + num; } // get pointer to data
 
-  bool operator ==(const shared_arr<T>& ptr)
+  bool operator ==(const shared_arr<T>& ptr) // compare pointers first by size and then by data
   {
     return count == ptr.count &&
         (!count || std::memcmp(std::shared_ptr<T>::get(), ptr.get(), sizeof(T) * count) == SUCCESS);  // memory does match))
@@ -67,9 +67,9 @@ struct filedata_t
   bool loaded;
   shared_arr<uint8_t> data;
 
-  filedata_t(uint32_t sz = 0)
+  filedata_t(uint32_t sz = 0) // number of bytes to allocate (0 by default)
     : loaded(false)
-  { data.allocate(sz); }
+  { data.allocate(sz); } // doesn't allocate data if sz = 0
 
   virtual void load (void) = 0;
 };
@@ -88,20 +88,20 @@ public:
   std::shared_ptr<T> getFile(const std::string& filename)
   {
     ASSERT(fileExists(filename)); // The file must exist in this SAK archive
-    std::shared_ptr<filedata_t> filedata;
+    std::shared_ptr<filedata_t> filedata; // agnostic data pointer
     std::unordered_map<std::string, SAKFile>::iterator iter = m_lookup.find(filename);
 
     if(iter->second.filedata.expired()) // expired data pointer means that all instances of it have gone out of scope and it's memory freed
     {
-      filedata = std::make_shared<T>(*new T(iter->second.length)); // make a new data array with the file size
+      filedata = std::make_shared<T>(*new T(iter->second.length)); // make a new data type with the file size in bytes as the constructor argument
       ASSERT(filedata.operator bool());
       m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
       m_file >> *filedata; // fill the data vector with the file within the SAK archive
       iter->second.filedata = filedata; // store a weak copy so that we can test if it's in use later
     }
     else // data pointer is still valid
-      filedata = iter->second.filedata.lock();
-    return std::static_pointer_cast<T, filedata_t>(filedata);
+      filedata = iter->second.filedata.lock(); // make a shared pointer copy!
+    return std::static_pointer_cast<T, filedata_t>(filedata); // return as the shared pointer type that we want
   }
 
 protected:

@@ -5,28 +5,71 @@
 
 #include "sakarchive.h"
 
-#include <cmath>
 
-
+// helper types
 typedef float real_t;
-struct RP3d;
+typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
 
+// helper constant expressions
+template<typename R, typename C>
+constexpr uint32_t rowcol(R row, C col) { return (row * 4) + col; }
+
+// types
 template<typename T>
-struct Raw : filedata_t, T
+struct Raw : filedata_t // special type to wrap types that do not inherit filedata_t
 {
-  Raw(uint32_t sz = 0) : filedata_t(sz) { }
-  void load(void) { }
+  Raw(uint32_t sz = 0) : filedata_t(sz), raw(nullptr) { }
+  const T& operator =(const T& d) { return *raw = d; }
+  operator T (void) const { return *raw; }
+  T* operator &(void) const { return raw; }
+
+  void load(void)
+  {
+    union
+    {
+      const uint8_t*  dataptr8;
+      const T*        dataptrT;
+    };
+
+    dataptr8 = data;
+    raw = const_cast<T*>(dataptrT);
+    ++dataptrT;
+    data.count = dataptr8 - data;
+    loaded = true;
+  }
+
+  T* raw;
 };
 
-template<>
-struct Raw<uint8_t> : filedata_t
+struct RP3d
 {
-  Raw(uint32_t sz = 0) : filedata_t(sz) { }
-  uint8_t operator =(uint8_t d) { return raw = d; }
-  operator uint8_t (void) { return raw; }
-  void load(void) { }
-  uint8_t raw;
+  real_t x;
+  real_t y;
+  real_t z;
+  real_t w;
+
+  RP3d(real_t _x = 0.0,
+       real_t _y = 0.0,
+       real_t _z = 0.0,
+       real_t _w = 1.0);
+
+  const RP3d& operator =(const RP3d& other);
+
+  RP3d  operator  *(const RP3d& other) const;
+  RP3d& operator -=(const RP3d& other);
+  RP3d& operator +=(const RP3d& other);
+
+  real_t dot(const RP3d& other) const;
+
+  RP3d& scale(real_t s);
+
+  RP3d& makeHomogeneous(void); // factor out the w component
+
+  // adjusts the length of a vector, ignoring w component
+  RP3d& makeUnit(void);
 };
+
+static_assert(sizeof(RP3d) == sizeof(real_t) * 4, "bad size!");
 
 
 struct RTexture : filedata_t
@@ -81,14 +124,11 @@ struct RTexture : filedata_t
      uint32_t lInc);				// In:  Number of colors to skip.
 };
 
-typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
-
 struct RMesh : filedata_t
 {
   shared_arr<triangle_t> triangles; // Array of triangles
 
-  RMesh(uint32_t sz = 0);
- ~RMesh(void);
+  RMesh(uint32_t sz = 0) : filedata_t(sz) { }
 
   void load(void);
 
@@ -99,48 +139,13 @@ struct RSop : filedata_t
 {
   shared_arr<RP3d> points;  // Array of points
 
-  RSop(uint32_t sz = 0);
- ~RSop(void);
+  RSop(uint32_t sz = 0) : filedata_t(sz) { }
 
   void load(void);
 
   bool operator ==(const RSop& other) const;
 };
 
-
-struct RP3d
-{
-  real_t x;
-  real_t y;
-  real_t z;
-  real_t w;
-
-  RP3d(real_t _x = 0.0,
-       real_t _y = 0.0,
-       real_t _z = 0.0,
-       real_t _w = 1.0);
-
-  const RP3d& operator =(const RP3d& other);
-
-  RP3d  operator  *(const RP3d& other) const;
-  RP3d& operator -=(const RP3d& other);
-  RP3d& operator +=(const RP3d& other);
-
-  real_t dot(const RP3d& other) const;
-
-  RP3d& scale(real_t s);
-
-  RP3d& makeHomogeneous(void); // factor out the w component
-
-  // adjusts the length of a vector, ignoring w component
-  RP3d& makeUnit(void);
-};
-
-static_assert(sizeof(RP3d) == sizeof(real_t) * 4, "bad size!");
-
-
-template<typename R, typename C>
-constexpr uint32_t rowcol(R row, C col) { return (row * 4) + col; }
 
 // NOW, the class based transform allows matrix
 // multiplication to occur WITHOUT multiplying
@@ -152,17 +157,13 @@ struct RTransform : filedata_t
   shared_arr<real_t> transdata; // This is compatible with the aggregate transform
 
   RTransform(uint32_t sz = 0);
- ~RTransform(void);
 
   void load(void);
 
   void makeIdentity(void); // identity matrix
   void makeNull(void); // null matrix
 
-  //------------------------
-  // ALL TRANSFORMATIONS ARE PRE-MULTIPLIES,
   // A Partial transform, assuming R3 = {0,0,0,1};
-  //
   void PreMulBy(real_t* M);
 
   // Oversets the current data with the result!
@@ -175,11 +176,9 @@ struct RTransform : filedata_t
 
 
   // Transform an actual point ( overwrites old point )
-  // Does a premultiply!
   void Transform(RP3d &p) const;
 
   // Transform an actual point, and places the answer into a different pt
-  // Does a premultiply!
   void TransformInto(const RP3d& src, RP3d& dest) const;
 
   void Rz(int16_t sDeg); // CCW!
@@ -202,7 +201,6 @@ struct RTransform : filedata_t
   // This is NOT hyper fast, and the result IS a rotation matrix
   // For now, point is it's x-axis and up i s it's y-axis.
   void MakeRotFrom(RP3d point, RP3d up);
-
 };
 
 #endif // _3DTYPES_H_

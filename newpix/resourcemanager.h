@@ -96,6 +96,13 @@ struct MultiResource : filedata_t
     return datapointers[time / interval];
   }
 
+  bool SetLooping(uint16_t val)
+  {
+    loop_t old = loopFlags;
+    loopFlags = loop_t(val);
+    return old == loopFlags;
+  }
+
   void load(void) noexcept
   {
     union

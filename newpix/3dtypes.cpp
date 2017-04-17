@@ -4,7 +4,84 @@
 #include <ORANGE/QuickMath/QuickMath.h>
 
 #include <cstring>
+#include <cmath>
 
+
+RP3d::RP3d(real_t _x,
+           real_t _y,
+           real_t _z,
+           real_t _w)
+  : x(_x), y(_y), z(_z), w(_w) { }
+
+const RP3d& RP3d::operator =(const RP3d& other)
+{
+  x = other.x;
+  y = other.y;
+  z = other.z;
+  return other;
+}
+
+RP3d RP3d::operator *(const RP3d& other) const
+{
+  return RP3d(y * other.z - z * other.y,
+              z * other.x - x * other.z,
+              x * other.y - y * other.x);
+}
+
+real_t RP3d::dot(const RP3d& other) const
+{
+  return x * other.x +
+      y * other.y +
+      z * other.z +
+      w * other.w;
+}
+
+RP3d& RP3d::operator -=(const RP3d& other)
+{
+  x -= other.x;
+  y -= other.y;
+  z -= other.z;
+  return *this;
+}
+
+RP3d& RP3d::operator +=(const RP3d& other)
+{
+  x += other.x;
+  y += other.y;
+  z += other.z;
+  return *this;
+}
+
+RP3d& RP3d::scale(real_t s)
+{
+  x *= s;
+  y *= s;
+  z *= s;
+  return *this;
+}
+
+RP3d& RP3d::makeHomogeneous(void) // factor out the w component
+{
+  ASSERT(w != 0.0);
+  x /= w;
+  y /= w;
+  z /= w;
+  w = 1.0;
+  return *this;
+}
+
+// adjusts the length of a vector, ignoring w component
+RP3d& RP3d::makeUnit(void)
+{
+  real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
+  ASSERT(l != 0.0);
+  x /= l;
+  y /= l;
+  z /= l;
+  return *this;
+}
+
+//==============================================================================
 
 void RTexture::load(void)
 {
@@ -126,15 +203,7 @@ void RTexture::adjust(
   }
 }
 
-
-RMesh::RMesh(uint32_t sz)
-  : filedata_t(sz)
-{
-}
-
-RMesh::~RMesh(void)
-{
-}
+//==============================================================================
 
 void RMesh::load(void)
 {
@@ -159,15 +228,7 @@ bool RMesh::operator ==(const RMesh& other) const
   return triangles == other.triangles;
 }
 
-
-RSop::RSop(uint32_t sz)
-  : filedata_t(sz)
-{
-}
-
-RSop::~RSop(void)
-{
-}
+//==============================================================================
 
 void RSop::load(void)
 {
@@ -192,84 +253,7 @@ bool RSop::operator ==(const RSop& other) const
   return points == other.points;
 }
 
-
-RP3d::RP3d(real_t _x,
-           real_t _y,
-           real_t _z,
-           real_t _w)
-  : x(_x), y(_y), z(_z), w(_w) { }
-
-const RP3d& RP3d::operator =(const RP3d& other)
-{
-  x = other.x;
-  y = other.y;
-  z = other.z;
-  return other;
-}
-
-RP3d RP3d::operator *(const RP3d& other) const
-{
-  return RP3d(y * other.z - z * other.y,
-              z * other.x - x * other.z,
-              x * other.y - y * other.x);
-}
-
-real_t RP3d::dot(const RP3d& other) const
-{
-  return x * other.x +
-      y * other.y +
-      z * other.z +
-      w * other.w;
-}
-
-RP3d& RP3d::operator -=(const RP3d& other)
-{
-  x -= other.x;
-  y -= other.y;
-  z -= other.z;
-  return *this;
-}
-
-RP3d& RP3d::operator +=(const RP3d& other)
-{
-  x += other.x;
-  y += other.y;
-  z += other.z;
-  return *this;
-}
-
-RP3d& RP3d::scale(real_t s)
-{
-  x *= s;
-  y *= s;
-  z *= s;
-  return *this;
-}
-
-RP3d& RP3d::makeHomogeneous(void) // factor out the w component
-{
-  ASSERT(w != 0.0);
-  x /= w;
-  y /= w;
-  z /= w;
-  w = 1.0;
-  return *this;
-}
-
-// adjusts the length of a vector, ignoring w component
-RP3d& RP3d::makeUnit(void)
-{
-  real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
-  ASSERT(l != 0.0);
-  x /= l;
-  y /= l;
-  z /= l;
-  return *this;
-}
-
-
-
-//constexpr uint8_t rowcol(uint8_t row, uint8_t col) { return (row * 4) + col; }
+//==============================================================================
 
 inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, uint8_t row, uint8_t col)
 {
@@ -320,10 +304,6 @@ RTransform::RTransform(uint32_t sz)  // init to an identity transform
   if(!data)
     transdata.allocate(16);
   makeIdentity();
-}
-
-RTransform::~RTransform(void)
-{
 }
 
 void RTransform::load(void)
