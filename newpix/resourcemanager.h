@@ -25,7 +25,7 @@ struct Resource : shared_arr<T>
 };
 
 template<typename T> // type T must inherit filedata_t
-struct MultiResource : filedata_t
+struct AnimatedResource : filedata_t
 {
   enum class loop_t : uint16_t
   {
@@ -56,7 +56,7 @@ struct MultiResource : filedata_t
   uint32_t       frameCount;
   std::vector<T> datapointers;
 
-  MultiResource(uint32_t sz = 0)
+  AnimatedResource(uint32_t sz = 0)
     : filedata_t(sz),
       magic(0),
       version(0),
@@ -205,8 +205,7 @@ static bool rspGetResource(SAKArchive& archive,                   // In:  Archiv
 
   res = archive.getFile<T>(filename);
   reinterpret_cast<T*>(res.get())->load();
-  TRACE("loaded %s\n", filename.c_str());
-  return res.operator bool();
+  return res;
 }
 
 template<typename T>
