@@ -615,27 +615,13 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,RRect* prSrc,const RRect* prDst,
 	return SUCCESS;
 	}
 
-// easy call overloads:
-//
-#if 0 && defined(_WIN32)
-	inline
-#else
-	extern
-#endif
 int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 					int16_t sDstW,int16_t sDstH,const RRect* prDstClip)
 	{
 	RRect rSrc,rDst;
 
-#ifdef _DEBUG
-
-	if (!pimSrc || !pimDst)
-		{
-      TRACE("rspBlitT: nullptr images passed!\n");
-      return FAILURE;
-		}
-
-#endif
+   ASSERT(pimSrc);
+   ASSERT(pimDst);
 
 	rSrc.sX = rSrc.sY = 0;
 	rSrc.sW = pimSrc->m_sWidth;
@@ -649,25 +635,12 @@ int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 	return rspBlitT(pimSrc,pimDst,&rSrc,&rDst,prDstClip);
 	}
 
-// easy call overloads:
-//
-#if defined(_WIN32)
-	inline
-#else
-	extern
-#endif
+
 int16_t rspBlitT(RImage* pimSrc,RImage* pimDst,int16_t sDstX,int16_t sDstY,
 							 double dRatW,double dRatH,const RRect* prDstClip)
-	{
-#ifdef _DEBUG
-
-	if (!pimSrc || !pimDst)
-		{
-      TRACE("rspBlitT: nullptr images passed!\n");
-      return FAILURE;
-		}
-
-#endif
+   {
+  ASSERT(pimSrc);
+  ASSERT(pimDst);
 
 	return rspBlitT(pimSrc,pimDst,sDstX,sDstY,(int16_t)(dRatW * pimSrc->m_sWidth),
 		(int16_t)(dRatH * pimSrc->m_sHeight),prDstClip);
