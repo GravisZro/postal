@@ -78,4 +78,8 @@ private:
   off_type m_writepos;
 };
 
+// forward declaration of specialization
+template<> filestream& filestream::operator >> (std::string& data);
+template<> filestream& filestream::operator << (const std::string& data);
+
 #endif // FILESTREAM_H

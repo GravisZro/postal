@@ -1,7 +1,7 @@
 #include "resourcemanager.h"
 
-#include <cctype>
-#include <algorithm>
+//#include <cctype>
+//#include <algorithm>
 
 SAKArchive g_GameSAK("res/game/game.sak");
 

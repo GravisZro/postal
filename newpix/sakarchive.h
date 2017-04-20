@@ -8,58 +8,14 @@
 # define ASSERT(x) assert(x)
 #endif
 
-
 #include "filestream.h"
+#include "sharedarray.h"
 
-#include <unordered_map>
-#include <vector>
-#include <memory>
-#include <list>
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
-
-template<typename T>
-struct shared_arr : std::shared_ptr<T>
-{
-  uint32_t count;
-
-  bool allocate(uint32_t cnt) // allocate cnt copies of T
-  {
-    std::shared_ptr<T>::reset(); // release old data
-    if(cnt > 0) // if actually allocating data
-      std::shared_ptr<T>::operator =(std::shared_ptr<T>(new T[cnt], std::default_delete<T[]>())); // allocate new data with auto deleter
-    count = cnt; // save the number of copies created
-    return true;
-  }
-
-  const shared_arr<T>& operator =(const shared_arr<T>& other)
-  {
-    std::shared_ptr<T>::operator =(other);
-    count = other.count;
-    return other;
-  }
-
-  T* operator =(T* ptr) // use external pointer data
-  {
-    std::shared_ptr<T>::operator =(std::shared_ptr<T>(ptr, [](T const*) { })); // use pointer but do not deallocate
-    return ptr;
-  }
-
-  operator T*(void) const
-    { return std::shared_ptr<T>::get(); } // get pointer to all data
-
-  T& operator [](uint32_t num)
-    { ASSERT(num < count); return std::shared_ptr<T>::get()[num]; } // get data
-
-  T* operator +(uint32_t num) const
-    { ASSERT(num < count); return std::shared_ptr<T>::get() + num; } // get pointer to data
-
-  bool operator ==(const shared_arr<T>& ptr) // compare pointers first by size and then by data
-  {
-    return count == ptr.count &&
-        (!count || std::memcmp(std::shared_ptr<T>::get(), ptr.get(), sizeof(T) * count) == SUCCESS);  // memory does match))
-  }
-};
 
 // abstract struct
 struct filedata_t
@@ -73,6 +29,11 @@ struct filedata_t
 
   virtual void load (void) = 0;
 };
+
+// forward declaration of specialization
+template<> filestream& filestream::operator >> (filedata_t& fdata);
+template<> filestream& filestream::operator << (const filedata_t& fdata);
+
 
 class SAKArchive // "Swiss Army Knife" Archive
 {
@@ -96,7 +57,7 @@ public:
       filedata = std::make_shared<T>(*new T(iter->second.length)); // make a new data type with the file size in bytes as the constructor argument
       ASSERT(filedata.operator bool());
       m_file.seekg(iter->second.offset, std::ios::beg); // seek to the file within the SAK archive
-      m_file >> *filedata; // fill the data vector with the file within the SAK archive
+      m_file >> *filedata; // fill filedata_t with the file within the SAK archive (specialized template functions in implementation file)
       iter->second.filedata = filedata; // store a weak copy so that we can test if it's in use later
     }
     else // data pointer is still valid
@@ -120,6 +81,7 @@ protected:
 
 //=======================================================================================
 #if !defined(TARGET)
+#include <list>
 
 // Extended operations not required for the game
 class SAKArchiveExt : public SAKArchive

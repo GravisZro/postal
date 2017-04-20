@@ -1,28 +1,27 @@
 #include "sakarchive.h"
 
+#include <list>
 
 template<> filestream& filestream::operator >> (filedata_t& fdata) // read filedata_t data
-{
-  beginRead();
-  read(fdata.data.get(), fdata.data.count);
-  endRead();
-  return *this;
-}
+  { return read(fdata.data.get(), fdata.data.count); }
 
 template<> filestream& filestream::operator << (const filedata_t& fdata) // write filedata_t data
   { return write(fdata.data.get(), fdata.data.count); }
-
 
 
 template<typename A, typename B>
 constexpr bool pair_second_greater(const std::pair<A, B>& x, const std::pair<A, B>& y)
   { return x.second > y.second; }
 
-namespace consts
+enum class consts : uint32_t
 {
-  const uint32_t magic_number = 0x204B4153; // "SAK "
-  const uint32_t version = 1;
-}
+  magic_number = 0x204B4153, // "SAK "
+  version = 1,
+};
+
+template<typename S>
+constexpr bool operator == (S a, consts b)
+  { return a == S(b); }
 
 SAKArchive::SAKArchive(const std::string& archivename)
   : m_file(archivename)
@@ -67,6 +66,8 @@ SAKArchive::SAKArchive(const std::string& archivename)
 
 //=======================================================================================
 #if !defined(TARGET)
+
+#include <vector>
 
 #define FILE_COUNT_OFFSET  8
 
