@@ -37,7 +37,7 @@
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
 #include <cstddef>
-
+#include "sharedarray.h"
 
 extern SDL_Window *sdlWindow;
 static const char *sdlAppName;
@@ -47,8 +47,8 @@ static int RequestedWidth = 0;
 static int RequestedHeight = 0;
 static int FramebufferWidth = 0;
 static int FramebufferHeight = 0;
-static color32_t *TexturePointer = nullptr;
-static uint8_t *PalettedTexturePointer = nullptr;
+static shared_arr<color32_t> TexturePointer;
+static shared_arr<uint8_t> PalettedTexturePointer;
 
 typedef struct		// Stores information on usable video modes.
 	{
@@ -193,7 +193,6 @@ extern int16_t CompareModes(            // Returns as described above.
   return sReturn;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Attempts to find a mode that is sWidth by sHeight or larger
@@ -234,8 +233,8 @@ extern int16_t rspSuggestVideoMode(		// Returns 0 if successfull, non-zero other
 	int16_t	sModePages;
 
 	// Best results.
-	int16_t sBestModeWidth		= 16380;
-	int16_t	sBestModeHeight	= 16380;
+   int16_t sBestModeWidth		= INT16_MAX;
+   int16_t	sBestModeHeight	= INT16_MAX;
 	int16_t	sModeFound			= FALSE;
 
 	while (rspQueryVideoMode(&sModeColorDepth, &sModeWidth, &sModeHeight, &sModePages) == SUCCESS)
@@ -520,12 +519,6 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
         //ASSERT(sWidth == 640);
         ASSERT(sHeight == 480);
 
-        if(sdlWindow)
-        {
-          TRACE("Nope, we're good.  No need to do something crazy.  Thank you, go away.\n");
-          return FAILURE;
-        }
-
         for (uint16_t i = 0; i < palette::size; i++)
             palette::buffer[i].alpha= 0xFF;
 
@@ -558,6 +551,9 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
         flags |= SDL_WINDOW_BORDERLESS;   // don't show the status bar
 #endif
         //TRACE("RequestedWidth %d   RequestedHeight %d\n",RequestedWidth,RequestedHeight);
+
+        if(sdlWindow)
+          SDL_DestroyWindow(sdlWindow);
 
         const char *title = sdlAppName ? sdlAppName : "";
         sdlWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, RequestedWidth, RequestedHeight, flags);
@@ -625,16 +621,14 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
             exit(1);
         }
 
-        TexturePointer = new color32_t[FramebufferWidth * FramebufferHeight];
-        PalettedTexturePointer = new uint8_t[FramebufferWidth * FramebufferHeight];
+        TexturePointer.allocate(FramebufferWidth * FramebufferHeight);
+        PalettedTexturePointer.allocate(FramebufferWidth * FramebufferHeight);
         SDL_memset(TexturePointer, '\0', FramebufferWidth * FramebufferHeight * sizeof (color32_t));
         SDL_memset(PalettedTexturePointer, '\0', FramebufferWidth * FramebufferHeight * sizeof (uint8_t));
         SDL_UpdateTexture(sdlTexture, nullptr, TexturePointer, FramebufferWidth * 4);
 
-    	SDL_ShowCursor(0);
-        //SDL_SetRelativeMouseMode(mouse_grabbed ? SDL_TRUE : SDL_FALSE);
-
-        return SUCCESS;
+      SDL_ShowCursor(0);
+      return SUCCESS;
 	}
 
 //////////////////////////////////////////////////////////////////////////////
