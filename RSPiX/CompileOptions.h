@@ -479,7 +479,6 @@
 #  endif
 # elif TARGET == POSTAL_2015
 #  define MULTIPLAYER_REMOVED
-#  define EDITOR_REMOVED
 //#  define LOADLEVEL_REMOVED
 #  define START_MENU_ADDON_ITEM
 # endif
@@ -487,7 +486,6 @@
 
 #if defined(_WIN32)
 # define MULTIPLAYER_REMOVED
-# define EDITOR_REMOVED
 #endif
 
 //#define RESMGR_VERBOSE
