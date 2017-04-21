@@ -130,7 +130,9 @@ extern void Mouse_Event(SDL_Event *event)
   mouse_event_t*	pme = ms_ameEvents;
   pme->lTime = SDL_GetTicks();
 #if SDL_MAJOR_VERSION > 2 || (SDL_MAJOR_VERSION == 2 && (SDL_MINOR_VERSION > 0 || SDL_PATCHLEVEL >= 2))
-  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? event->button.clicks : 0;  // append click count (if clicking)
+  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? event->button.clicks : 0;  // click count (if clicking)
+#else
+  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? 1 : 0; // no double click for you! (need to fix!)
 #endif
 
   static int16_t buttonState = 0;
