@@ -50,7 +50,7 @@ struct RInputEvent
 {
   enum Type
   {
-    None,		// No event.  Use this value to indicate no event.
+    None = 0,		// No event.  Use this value to indicate no event.
     Mouse,	// Mouse event.
     Key,		// Keyboard event.
     Joy		// Joystick event (NYI) ???
@@ -99,7 +99,7 @@ typedef struct
 {
 	typedef enum
 	{
-		None,		// Nothing to report on this button.
+      None = 0,		// Nothing to report on this button.
 		Press,		// This button was pressed.
 		Release		// This button was released.
 	} EButtonState;	// State of button (pushed, released, or None)

@@ -90,80 +90,59 @@ static XInputState	ms_XInputState = {};		// CURRENT XInput state.
 //////////////////////////////////////////////////////////////////////////////
 int16_t rspGetNextInputEvent(	// Returns 1 if there is an event, 0 if none.
 	RInputEvent*	pie)			// Out: Filled with input event type and details.
-	{
-	int16_t	sGotEvent	= 1;	// Assume we have one.
+{
+  int16_t sResult = TRUE;	// Assume we have one.
 
-	// If no current mouse event . . .
-	if (ms_sMouseEvent == FALSE)
-		{
-		// Get one, if avaliable.
-		if (rspGetMouseEvent(
-			&ms_ieMouse.sPosX, 
-			&ms_ieMouse.sPosY, 
-			&ms_ieMouse.sButtons, 
-			&ms_ieMouse.lTime, 
-			&ms_ieMouse.sEvent) == 1)
-			{
-			ms_sMouseEvent	= TRUE;
-			}
-		}
+  if (ms_sMouseEvent == FALSE) // If no current mouse event . . .
+    ms_sMouseEvent = rspGetMouseEvent(&ms_ieMouse.sPosX,  // Get one, if avaliable.
+                                      &ms_ieMouse.sPosY,
+                                      &ms_ieMouse.sButtons,
+                                      &ms_ieMouse.lTime,
+                                      &ms_ieMouse.sEvent);
 
-	// If no current key event . . .
-	if (ms_sKeyEvent == FALSE)
-		{
-		// Get one, if avaliable.
-		if (rspGetKey(
-			&ms_ieKey.lKey, 
-			&ms_ieKey.lTime) == 1)
-			{
-			ms_sKeyEvent	= TRUE;
-			}
-		}
+  if (ms_sKeyEvent == FALSE) // If no current key event . . .
+    ms_sKeyEvent = rspGetKey(&ms_ieKey.lKey, // Get one, if avaliable.
+                             &ms_ieKey.lTime);
 
-	// If there are two events . . .
-	if (ms_sMouseEvent != FALSE && ms_sKeyEvent != FALSE)
-		{
-		// Pick earlier one . . .
-		if (ms_ieMouse.lTime < ms_ieKey.lTime)
-			{
-			*pie	= ms_ieMouse;
-			// Invalidate current mouse event.
-			ms_sMouseEvent	= FALSE;
-			}
-		else
-			{
-			*pie	= ms_ieKey;
-			// Invalidate current key event.
-			ms_sKeyEvent	= FALSE;
-			}
-		}
-	else
-		{
-		// Pick whichever is available . . .
-		if (ms_sMouseEvent != FALSE)
-			{
-			*pie	= ms_ieMouse;
-			// Invalidate current mouse event.
-			ms_sMouseEvent	= FALSE;
-			}
-		else
-			{
-			if (ms_sKeyEvent != FALSE)
-				{
-				*pie	= ms_ieKey;
-				// Invalidate current key event.
-				ms_sKeyEvent	= FALSE;
-				}
-			else
-				{
-				// No event.
-				sGotEvent	= 0;
-				}
-			}
-		}
+  // If there are two events . . .
+  if (ms_sMouseEvent != FALSE && ms_sKeyEvent != FALSE)
+  {
 
-	return sGotEvent;
-	}
+    if (ms_ieMouse.lTime < ms_ieKey.lTime) // Pick the one that occured first
+    {
+      *pie	= ms_ieMouse;
+      ms_sMouseEvent	= FALSE; // Invalidate current mouse event.
+    }
+    else
+    {
+      *pie	= ms_ieKey;
+      ms_sKeyEvent	= FALSE; // Invalidate current key event.
+    }
+  }
+  else
+  {
+    // Pick whichever is available . . .
+    if (ms_sMouseEvent != FALSE)
+    {
+      *pie	= ms_ieMouse;
+      ms_sMouseEvent	= FALSE; // Invalidate current mouse event.
+    }
+    else
+    {
+      if (ms_sKeyEvent != FALSE)
+      {
+        *pie	= ms_ieKey;
+        ms_sKeyEvent	= FALSE; // Invalidate current key event.
+      }
+      else
+      {
+        sResult = FALSE; // No event.
+      }
+    }
+  }
+
+  return sResult;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 //
