@@ -111,13 +111,9 @@ extern void rspGetMouse(
 
   if (psButton != nullptr)
   {
-    *psButton  = (buttons & SDL_BUTTON_LMASK ) ? 0x0001 : 0;
-    *psButton |= (buttons & SDL_BUTTON_RMASK ) ? 0x0002 : 0;
-    *psButton |= (buttons & SDL_BUTTON_MMASK ) ? 0x0004 : 0;
-    *psButton |= (buttons & SDL_BUTTON_X1MASK) ? 0x0008 : 0;
-    *psButton |= (buttons & SDL_BUTTON_X2MASK) ? 0x0010 : 0;
-    *psButton |= (MouseWheelState & 0x0020) ? 0x0020 : 0;
-    *psButton |= (MouseWheelState & 0x0040) ? 0x0040 : 0;
+    *psButton  = buttons << 3;
+    *psButton |= MouseWheelState & 0x2000;
+    *psButton |= MouseWheelState & 0x4000;
   }
 
   MouseWheelState = 0;
@@ -133,13 +129,15 @@ extern void Mouse_Event(SDL_Event *event)
   // memory fragmentation.
   mouse_event_t*	pme = ms_ameEvents;
   pme->lTime = SDL_GetTicks();
+#if SDL_MAJOR_VERSION > 2 || (SDL_MAJOR_VERSION == 2 && (SDL_MINOR_VERSION > 0 || SDL_PATCHLEVEL >= 2))
   pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? event->button.clicks : 0;  // append click count (if clicking)
+#endif
 
   static int16_t buttonState = 0;
 
   bool bQueueMouseWheelRelease = false;
 
-  buttonState &= ~(0x0020 | 0x0040); // unset mousewheel
+  buttonState &= ~(0x2000 | 0x4000); // unset mousewheel
 
   switch (event->type)
   {
@@ -161,9 +159,9 @@ extern void Mouse_Event(SDL_Event *event)
     case SDL_MOUSEWHEEL:
     {
       if (event->wheel.y > 0)
-        MouseWheelState = 0x0020;
+        MouseWheelState = 0x2000;
       else if (event->wheel.y < 0)
-        MouseWheelState = 0x0040;
+        MouseWheelState = 0x4000;
       else
         MouseWheelState = 0x0000;
 
@@ -267,8 +265,6 @@ extern int16_t rspGetLastMouseEvent(	// Returns 0 if no event was available, non
 
 	return sResult;
 	}
-
-#include <GREEN/InputEvent/InputEvent.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
