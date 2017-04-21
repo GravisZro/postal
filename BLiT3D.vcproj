@@ -309,7 +309,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-        RelativePath="RSPiX\GREEN\3D\types3d.cpp"
+        RelativePath="newpix\3dtypes.cpp"
 				>
 				<FileConfiguration
 					Name="Optimized Debug|Win32"
@@ -390,7 +390,7 @@
 				>
 			</File>
 			<File
-        RelativePath="RSPiX\green\3d\types3d.h"
+        RelativePath="newpix\3dtypes.h"
 				>
 			</File>
 			<File

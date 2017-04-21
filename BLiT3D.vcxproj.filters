@@ -21,7 +21,7 @@
     <ClCompile Include="RSPiX\GREEN\3D\render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RSPiX\GREEN\3D\types3d.cpp">
+    <ClCompile Include="newpix/3dtypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RSPiX\GREEN\3D\zbuffer.cpp">
@@ -35,7 +35,7 @@
     <ClInclude Include="RSPiX\green\3d\render.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RSPiX\green\3d\types3d.h">
+    <ClInclude Include="newpix/3dtypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RSPiX\green\3d\zbuffer.h">

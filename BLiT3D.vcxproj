@@ -199,7 +199,7 @@
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release(DebugLog)|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="RSPiX\GREEN\3D\types3d.cpp">
+    <ClCompile Include="newpix\3dtypes.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Optimized Debug|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
@@ -215,7 +215,7 @@
   <ItemGroup>
     <ClInclude Include="RSPiX\green\3d\pipeline.h" />
     <ClInclude Include="RSPiX\green\3d\render.h" />
-    <ClInclude Include="RSPiX\green\3d\types3d.h" />
+    <ClInclude Include="newpix/3dtypes.h" />
     <ClInclude Include="RSPiX\green\3d\zbuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
