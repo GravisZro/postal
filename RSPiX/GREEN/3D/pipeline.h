@@ -34,9 +34,8 @@
 #define PIPELINE_H
 //================================================== 
 #include <BLUE/System.h>
-#include <ORANGE/QuickMath/VectorMath.h>
 #include <ORANGE/color/colormatch.h>
-#include "types3d.h"
+#include <3dtypes.h>
 #include "zbuffer.h"
 #include "render.h"
 
@@ -87,8 +86,8 @@ public:
 	// WARNING: May be inhomogeneous!
 	void GetScreenXF(RTransform& tDst)
 		{
-		tDst.Make1();
-		tDst.Mul(m_tScreen.T,m_tView.T);
+      tDst.makeIdentity();
+      tDst.Mul(m_tScreen.matdata,m_tView.matdata);
 		}
 
 	// Strictly for convenience:
@@ -102,9 +101,9 @@ public:
 		RTransform tFull;
 		RP3d ptDst;
 
-		tFull.Make1();
-		tFull.Mul(m_tView.T,tObj.T);
-		tFull.PreMulBy(m_tScreen.T);
+      tFull.makeIdentity();
+      tFull.Mul(m_tView.matdata,tObj.matdata);
+      tFull.PreMulBy(m_tScreen.matdata);
 
 		tFull.TransformInto(v3d,ptDst);
 		sDstX = int16_t(ptDst.x);

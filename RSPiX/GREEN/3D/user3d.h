@@ -20,8 +20,7 @@
 
 // 3d stuff:
 #include <BLUE/System.h>
-#include <ORANGE/QuickMath/VectorMath.h>
-#include "types3d.h"
+#include <3dtypes.h>
 #include "zbuffer.h"
 #include "render.h"
 #include "pipeline.h"

@@ -30,6 +30,7 @@
 //
 ///////////////////////////////////////////////////////////////
 
+
 uint32_t RPipeLine::ms_lNumPts = 0;
 uint32_t	RPipeLine::ms_lNumPipes = 0;
 
@@ -49,9 +50,9 @@ void RPipeLine::Init()
 	m_sUseBoundingRect = FALSE;
 	m_dShadowScale = 1.0;
 
-	m_tScreen.Make1();
-	m_tView.Make1();
-	m_tShadow.Make1();
+   m_tScreen.makeIdentity();
+   m_tView.makeIdentity();
+   m_tShadow.makeIdentity();
 	}
 
 // assume the clip rect is identical situation to zBUF:
@@ -102,11 +103,11 @@ int16_t RPipeLine::CreateShadow(int16_t sAngleY,
 	ASSERT(dTanDeclension > 0.0);
 
 	// Create the shadow transform:
-	m_tShadow.Make1();
+   m_tShadow.makeIdentity();
 	m_dShadowScale = dTanDeclension;
-   m_tShadow.T[1 + ROW0] = real_t(m_dShadowScale * rspCos(sAngleY));
-	m_tShadow.T[1 + ROW1] = 0.0;
-   m_tShadow.T[1 + ROW2] = real_t(m_dShadowScale * rspSin(sAngleY));
+   m_tShadow.matdata[rowcol(0, 1)] = real_t(m_dShadowScale * rspCos(sAngleY));
+   m_tShadow.matdata[rowcol(1, 1)] = 0.0;
+   m_tShadow.matdata[rowcol(2, 1)] = real_t(m_dShadowScale * rspSin(sAngleY));
 
 	// Allocate the buffer, if applicable:
 	if (sBufSize <= 0)	// default case:
@@ -174,17 +175,17 @@ RPipeLine::~RPipeLine()
 void RPipeLine::Transform(RSop* pPts,RTransform& tObj)
 	{
    RTransform tFull;
-	// Use to stretch to z-buffer!
+   // Use to stretch to z-buffer!
 
-	tFull.Make1();
-	tFull.Mul(m_tView.T,tObj.T);
+   tFull.makeIdentity();
+   tFull.Mul(m_tView.matdata,tObj.matdata);
 	// If there were inhomogeneous transforms, you would need to 
 	// trasnform each pt by two transforms separately!
-	tFull.PreMulBy(m_tScreen.T);
+   tFull.PreMulBy(m_tScreen.matdata);
 
-   for (size_t i = 0; i < pPts->m_lNum; i++)
+   for (size_t i = 0; i < pPts->points.count; i++)
 		{
-		tFull.TransformInto(pPts->m_pArray[i],ms_pPts[i]);
+      tFull.TransformInto(pPts->points[i],ms_pPts[i]);
 		// Note that you can now use RP3d directly with the renderers! 
 		}
 	}
@@ -198,11 +199,11 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
    RTransform tFull;
 	// Use to stretch to z-buffer!
 
-	tFull.Make1();
+   tFull.makeIdentity();
 	// 1) Create Shadow
-	tFull.Mul(m_tShadow.T,tObj.T);
+   tFull.Mul(m_tShadow.matdata,tObj.matdata);
 	// 2) Add in normal view
-	tFull.PreMulBy(m_tView.T);
+   tFull.PreMulBy(m_tView.matdata);
 	// If there were inhomogeneous transforms, you would need to 
 	// trasnform each pt by two transforms separately!
 
@@ -211,21 +212,21 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 		// (1) convert to 3d shadow point:
 		RP3d	pOffset = {0.0,static_cast<float>(sHeight),0.0,};
 #ifdef UNUSED_VARIABLES
-		double dOffX = sHeight * m_tShadow.T[ROW0 + 1];
+      double dOffX = sHeight * m_tShadow.data[rowcol(0, 1)];
 		double dOffY = 0.0;
-		double dOffZ = sHeight * m_tShadow.T[ROW2 + 1]; // y is height here
+      double dOffZ = sHeight * m_tShadow.data[rowcol(2, 1)]; // y is height here
 #endif
 		// (2) partially project
 		m_tShadow.Transform(pOffset);
 		m_tView.Transform(pOffset);
 		// Undo randy slide:
-		RP3d pTemp = {m_tView.T[3 + ROW0],m_tView.T[3 + ROW1],
-			m_tView.T[3 + ROW2]};
+      RP3d pTemp = {m_tView.matdata[rowcol(0, 3)],m_tView.matdata[rowcol(1, 3)],
+         m_tView.matdata[rowcol(2, 3)]};
 
-		rspSub(pOffset,pTemp);
+      pOffset -= pTemp;
 		// Just use screen for scale:
-		pOffset.x *= m_tScreen.T[0 + ROW0];
-		pOffset.y *= m_tScreen.T[1 + ROW1];
+      pOffset.x *= m_tScreen.matdata[rowcol(0, 0)];
+      pOffset.y *= m_tScreen.matdata[rowcol(1, 1)];
 
 		// store result
 		*psOffX = int16_t (pOffset.x);
@@ -233,16 +234,16 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 		}
 
 	// 3) Project to the "screen"
-	tFull.PreMulBy(m_tScreen.T);
+   tFull.PreMulBy(m_tScreen.matdata);
 
 	// 4) Adjust the screen transform to keep scaling and mirroring
 	// from normal screen transform, but adjust size for shadow buffer
 	// This is hard coded to the postal coordinate system
-	tFull.Trans(0.0,m_pimShadowBuf->m_sHeight-m_tScreen.T[3 + ROW1],0.0);
+   tFull.Translate(0.0,m_pimShadowBuf->m_sHeight-m_tScreen.matdata[rowcol(1, 3)],0.0);
 
-   for (size_t i = 0; i < pPts->m_lNum; i++)
+   for (size_t i = 0; i < pPts->points.count; i++)
 		{
-		tFull.TransformInto(pPts->m_pArray[i],ms_pPts[i]);
+      tFull.TransformInto(pPts->points[i],ms_pPts[i]);
 		// Note that you can now use RP3d directly with the renderers! 
 		}
 
@@ -268,17 +269,16 @@ int16_t RPipeLine::NotCulled(RP3d *p1,RP3d *p2,RP3d *p3)
 //
 void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 		RMesh* pMesh,uint8_t ucColor) // wire!
-	{
-	int32_t i;
+   {
 	int32_t v1,v2,v3;
-	uint16_t *psVertex = pMesh->m_pArray;
+   triangle_t* psVertex = pMesh->triangles;
 	int32_t lNumHidden = 0;
 
-	for (i=0;i < pMesh->m_sNum; i++)
+   for (uint32_t i = 0; i < pMesh->triangles.count; ++i)
 		{
-		v1 = *psVertex++;
-		v2 = *psVertex++;
-		v3 = *psVertex++;
+      v1 = psVertex[i][0];
+      v2 = psVertex[i][1];
+      v3 = psVertex[i][2];
 
 		if (NotCulled(ms_pPts+v1,ms_pPts+v2,ms_pPts+v3))
 			{
@@ -298,16 +298,15 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 // Uses the static transformed point buffer.
 //
 void RPipeLine::RenderShadow(RImage* pimDst,RMesh* pMesh,uint8_t ucColor)
-	{
-	int32_t i;
+   {
 	int32_t v1,v2,v3;
-	uint16_t *psVertex = pMesh->m_pArray;
+   triangle_t* psVertex = pMesh->triangles;
 
-	for (i=0;i < pMesh->m_sNum; i++)
+   for (uint32_t i = 0; i < pMesh->triangles.count; ++i)
 		{
-		v1 = *psVertex++;
-		v2 = *psVertex++;
-		v3 = *psVertex++;
+     v1 = psVertex[i][0];
+     v2 = psVertex[i][1];
+     v3 = psVertex[i][2];
 
 		if (NotCulled(ms_pPts+v1,ms_pPts+v2,ms_pPts+v3))
 			{
@@ -327,19 +326,18 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 		int16_t sFogOffset,RAlpha* pAlpha,
 		int16_t sOffsetX/* = 0*/,		// In: 2D offset for pimDst and pZB.
 		int16_t sOffsetY/* = 0*/) 	// In: 2D offset for pimDst and pZB.
-	{
-	int32_t i;
+   {
 	int32_t v1,v2,v3;
-	uint16_t *psVertex = pMesh->m_pArray;
-	uint8_t *pColor = pTexColors->m_pIndices;
+   triangle_t* psVertex = pMesh->triangles;
+   uint8_t *pColor = pTexColors->indexes;
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pDst = pimDst->m_pData + (sDstX + sOffsetX) + lDstP * (sDstY + sOffsetY);
 
-	for (i=0;i < pMesh->m_sNum; i++,pColor++)
+   for (uint32_t i = 0; i < pMesh->triangles.count; ++i, ++pColor)
 		{
-		v1 = *psVertex++;
-		v2 = *psVertex++;
-		v3 = *psVertex++;
+     v1 = psVertex[i][0];
+     v2 = psVertex[i][1];
+     v3 = psVertex[i][2];
 
 		if (1)//NotCulled(ms_pPts+v1,ms_pPts+v2,ms_pPts+v3))
 			{
@@ -361,19 +359,18 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 		RMesh* pMesh,RZBuffer* pZB,RTexture* pTexColors,
 		int16_t sOffsetX/* = 0*/,		// In: 2D offset for pimDst and pZB.
 		int16_t sOffsetY/* = 0*/) 	// In: 2D offset for pimDst and pZB.
-	{
-	int32_t i;
+   {
 	int32_t v1,v2,v3;
-	uint16_t *psVertex = pMesh->m_pArray;
-	uint8_t *pColor = pTexColors->m_pIndices;
+   triangle_t* psVertex = pMesh->triangles;
+   uint8_t *pColor = pTexColors->indexes;
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pDst = pimDst->m_pData + (sDstX + sOffsetX) + lDstP * (sDstY + sOffsetY);
 
-	for (i=0;i < pMesh->m_sNum; i++,pColor++)
+   for (uint32_t i = 0; i < pMesh->triangles.count; ++i, ++pColor)
 		{
-		v1 = *psVertex++;
-		v2 = *psVertex++;
-		v3 = *psVertex++;
+     v1 = psVertex[i][0];
+     v2 = psVertex[i][1];
+     v3 = psVertex[i][2];
 
 		if (NotCulled(ms_pPts+v1,ms_pPts+v2,ms_pPts+v3))
 			{
@@ -395,9 +392,9 @@ void RPipeLine::BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius,
 	// THIS IS HARD WIRED TO WORK WITH OUR CURRENT STYLE OF
 	// PROJECTION:
 	RTransform tFull;
-	tFull.Make1();
-	tFull.Mul(m_tView.T,tObj.T); // hold off on screen -> get raw distance:
-	tFull.PreMulBy(m_tScreen.T);
+   tFull.makeIdentity();
+   tFull.Mul(m_tView.matdata,tObj.matdata); // hold off on screen -> get raw distance:
+   tFull.PreMulBy(m_tScreen.matdata);
 
 	// THIS IS IN UNSCALED OBJECT VIEW
 	double dModelRadius = std::sqrt(
@@ -406,7 +403,7 @@ void RPipeLine::BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius,
 		SQR(ptCenter.z - ptRadius.z) ); // Randy Units
 
 	// Convert from Model To Screen...
-	double dScreenRadius = dModelRadius * m_tScreen.T[0];
+   double dScreenRadius = dModelRadius * m_tScreen.matdata[0];
 
 	// Project the center onto the screen:
 

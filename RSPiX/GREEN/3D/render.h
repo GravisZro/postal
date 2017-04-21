@@ -27,8 +27,8 @@
 #include <BLUE/System.h>
 #include <GREEN/Blit/Blit.h> // for rspLine
 #include <ORANGE/color/colormatch.h>
-#include <ORANGE/QuickMath/VectorMath.h>
 #include <ORANGE/QuickMath/FixedPoint.h>
+#include <3dtypes.h>
 
 #include "zbuffer.h" // for rspLine
 
