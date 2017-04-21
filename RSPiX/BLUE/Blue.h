@@ -395,25 +395,6 @@ extern uint32_t MouseIndexToBitfield(int16_t index);
 // DISPLAY API
 ////////////////////////////////////////////////////////////////////////////////
 
-// The following macros are used to specify the video update method when performing
-// the video profile.  It is up to the user to voluntarily call the profile function
-// to determine the fastest update method and set it accordingly.  Otherwise, 
-// the default method will be determined by profiling fullscreen updates.
-#define RSP_MAC_VIDEO_COPYBITS	0		// Use the Mac OS copybits for drawing to screen.
-#define RSP_MAC_VIDEO_DIRECT		1		// Use RSPiX direct-to-screen routines.
-
-extern int32_t rspMacVideoProfile(			// Returns average time per update.
-	int16_t	sX,									// In:  X coord of rectangle region to profile
-	int16_t	sY,									// In:  Y coord of rectangle region to profile
-	int16_t	sWidth,								// In:  Width of the rectangle region
-	int16_t	sHeight,								// In:  Height of the rectangle region
-	int32_t	lTimeProfile,						// In:  Duration of time to do the update profile
-	int16_t	sMethod);							// In:  Method to perform the profile.
-
-extern void rspSetMacVideoUpdateOptions(
-	int16_t	sMethod,								// In:  Method to be used
-	int16_t sByteAlignment);					// In:  Byte alignment to be used
-
 extern void rspQueryVideoModeReset(void);
 
 extern int16_t rspQueryVideoMode(			// Returns 0 for each valid mode, then non-zero thereafter
