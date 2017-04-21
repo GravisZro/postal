@@ -546,20 +546,17 @@ inline void ListenForInput(	// Returns nothing.
 					case RInputEvent::Mouse:
 						// Switch on type (up or down) . . .
 						switch (pie->sEvent)
-							{
-							case RSP_MB0_PRESSED:
-							case RSP_MB1_PRESSED:
-							case RSP_MB2_PRESSED:
-							case 1025: // Yeah I dunno
-							case 1027:
+                     {
+                     case RSP_MB0_PRESSED:
+                     case RSP_MB1_PRESSED:
+                     case RSP_MB2_PRESSED:
 								// Stay in mode, just update status.
 								ms_sMouseButtons	|= pie->sButtons;
 								break;
 
-							case RSP_MB0_RELEASED:
-							case RSP_MB1_RELEASED:
-							case RSP_MB2_RELEASED:
-							case 1026: // Yeah I dunno
+                     case RSP_MB0_RELEASED:
+                     case RSP_MB1_RELEASED:
+                     case RSP_MB2_RELEASED:
 								// Done with mode.
 								ms_bListenForInput	= false;
 
@@ -743,10 +740,10 @@ extern int16_t EditInputSettings(void)	// Returns nothing.
 				break;
 			case RInputEvent::Mouse:
 				switch (ie.sEvent)
-					{
-					case RSP_MB0_PRESSED:
-					case RSP_MB1_PRESSED:
-					case RSP_MB2_PRESSED:
+               {
+               case RSP_MB0_PRESSED:
+               case RSP_MB1_PRESSED:
+               case RSP_MB2_PRESSED:
 						if (RGuiItem::ms_pguiFocus && ms_bListenForInput == false)
 							{
 							// Activate listen mode.
