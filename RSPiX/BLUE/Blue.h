@@ -138,17 +138,19 @@ extern int16_t rspAssert(	// Returns result.
 // Mouse API
 ////////////////////////////////////////////////////////////////////////////////
 
-// Macros for GetMouseEvent, GetLastMouseEvent.
-#define RSP_MB_NONE				0	// No mouse event
-#define RSP_MB0_RELEASED		1	// Mouse button 0 was released
-#define RSP_MB0_PRESSED			2	// Mouse button 0 was pressed
-#define RSP_MB0_DOUBLECLICK	3	// Mouse button 0 was double clicked
-#define RSP_MB1_RELEASED		4	// Defined for compile-campatibility with PC!
-#define RSP_MB1_PRESSED			5	// Defined for compile-campatibility with PC!
-#define RSP_MB1_DOUBLECLICK	6	// Defined for compile-campatibility with PC!
-#define RSP_MB2_RELEASED		7	// Defined for compile-campatibility with PC!
-#define RSP_MB2_PRESSED			8	// Defined for compile-campatibility with PC!
-#define RSP_MB2_DOUBLECLICK	9	// Defined for compile-campatibility with PC!
+#define RSP_BUTTON_MASK(x)    (8 << x)
+#define RSP_MB0_RELEASED		0x0010  // Mouse button 0 was released
+#define RSP_MB0_PRESSED			0x0011  // Mouse button 0 was pressed
+#define RSP_MB0_DOUBLECLICK	0x0012  // Mouse button 0 was double clicked
+#define RSP_MB1_RELEASED		0x0020  // Defined for compile-campatibility with PC!
+#define RSP_MB1_PRESSED			0x0021  // Defined for compile-campatibility with PC!
+#define RSP_MB1_DOUBLECLICK	0x0022  // Defined for compile-campatibility with PC!
+#define RSP_MB2_RELEASED		0x0040  // Defined for compile-campatibility with PC!
+#define RSP_MB2_PRESSED			0x0041  // Defined for compile-campatibility with PC!
+#define RSP_MB2_DOUBLECLICK	0x0042  // Defined for compile-campatibility with PC!
+
+extern void rspActivateMouse(bool enable = true);
+extern bool rspMouseGrabbed(void);
 
 extern void rspGetMouse(
 	int16_t* psX,				// X position returned here (unless nullptr)

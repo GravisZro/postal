@@ -54,6 +54,7 @@ SDL_Surface *sdlShadowSurface = nullptr;
 
 bool RspBlueReady = false;
 bool mouse_grabbed = false;
+bool mouse_enabled = false;
 static int16_t ms_sQuit = 0;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -95,6 +96,10 @@ int16_t rspInitBlue(void)
 #endif // defined(ALLOW_JOYSTICK)
 
     RspBlueReady = sResult == SUCCESS;
+
+    if(sResult == SUCCESS)
+      mouse_enabled = mouse_grabbed;
+
    return sResult;
 	}
 		

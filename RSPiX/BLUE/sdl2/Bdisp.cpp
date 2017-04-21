@@ -520,6 +520,12 @@ extern int16_t rspSetVideoMode(	// Returns 0 if successfull, non-zero otherwise
         //ASSERT(sWidth == 640);
         ASSERT(sHeight == 480);
 
+        if(sdlWindow)
+        {
+          TRACE("Nope, we're good.  No need to do something crazy.  Thank you, go away.\n");
+          return FAILURE;
+        }
+
         for (uint16_t i = 0; i < palette::size; i++)
             palette::buffer[i].alpha= 0xFF;
 

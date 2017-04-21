@@ -96,7 +96,7 @@ extern void Key_Event(SDL_Event *event)
         {
             if (event->key.keysym.mod & KMOD_CTRL) // ctrl-g
             {
-                const SDL_bool mode = SDL_GetWindowGrab(sdlWindow) ? SDL_FALSE : SDL_TRUE;
+                const SDL_bool mode = SDL_GetWindowGrab(sdlWindow);
                 //SDL_SetRelativeMouseMode(mode);
                 SDL_SetWindowGrab(sdlWindow, mode);
                 mouse_grabbed = (mode == SDL_TRUE);
@@ -118,9 +118,8 @@ extern void Key_Event(SDL_Event *event)
 
         if (ms_qkeEvents.IsFull() == FALSE)
 	    {
-        	// Create event.
-            static int16_t sEventIndex = 0;
-           RSP_SK_EVENT* pkeEvent = ms_akeEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
+         // Create event.
+           RSP_SK_EVENT* pkeEvent = ms_akeEvents;
     	    // Fill event.
     	    pkeEvent->lTime	= SDL_GetTicks();
         	pkeEvent->lKey = ((gkey) ? gkey : key);
