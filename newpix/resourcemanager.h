@@ -1,11 +1,10 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include <BLUE/System.h>
+#include <string>
+#include <memory>
 
 #include "sakarchive.h"
-#include "animatedresource.h"
-#include "resource.h"
 
 extern SAKArchive g_GameSAK;
 
