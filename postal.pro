@@ -6,6 +6,7 @@ DEFINES+="ALLOW_TWINSTICK"
 #DEFINES+="ALLOW_JOYSTICK"
 DEFINES+="DEBUG"
 DEFINES+="_DEBUG"
+DEFINES+="VERBOSE"
 #DEFINES+="RELEASE"
 #DEFINES+="FILE_VERBOSE"
 DEFINES+="HIGH_SCORE_DLG"
@@ -20,6 +21,7 @@ DEFINES+="MULTIPLAYER_REMOVED"
 
 INCLUDEPATH += RSPiX
 INCLUDEPATH += WishPiX
+INCLUDEPATH += newpix
 
 
 DISTFILES += \
@@ -76,7 +78,6 @@ HEADERS += \
     RSPiX/CYAN/Cyan.h \
     RSPiX/GREEN/3D/pipeline.h \
     RSPiX/GREEN/3D/render.h \
-    RSPiX/GREEN/3D/types3d.h \
     RSPiX/GREEN/3D/user3d.h \
     RSPiX/GREEN/3D/zbuffer.h \
     RSPiX/GREEN/Blit/_BlitInt.h \
@@ -111,7 +112,6 @@ HEADERS += \
     RSPiX/ORANGE/CDT/slist.h \
     RSPiX/ORANGE/CDT/smrtarry.h \
     RSPiX/ORANGE/CDT/stack.h \
-    RSPiX/ORANGE/Channel/channel.h \
     RSPiX/ORANGE/Chips/chip.h \
     RSPiX/ORANGE/color/colormatch.h \
     RSPiX/ORANGE/color/dithermatch.h \
@@ -271,13 +271,15 @@ HEADERS += \
     newpix/hashstring.h \
     newpix/filestream.h \
     newpix/sakarchive.h \
-    newpix/3dtypes.h
+    newpix/3dtypes.h \
+    newpix/animatedresource.h \
+    newpix/resource.h \
+    newpix/sharedarray.h
 
 SOURCES += \
     RSPiX/RSPiX.cpp \
     RSPiX/GREEN/3D/pipeline.cpp \
     RSPiX/GREEN/3D/render.cpp \
-    RSPiX/GREEN/3D/types3d.cpp \
     RSPiX/GREEN/3D/zbuffer.cpp \
     RSPiX/GREEN/Blit/AlphaBlit.cpp \
     RSPiX/GREEN/Blit/Blit.cpp \
@@ -306,7 +308,6 @@ SOURCES += \
     RSPiX/ORANGE/Attribute/attribute.cpp \
     RSPiX/ORANGE/CDT/List.cpp \
     RSPiX/ORANGE/CDT/Queue.cpp \
-    RSPiX/ORANGE/Channel/channel.cpp \
     RSPiX/ORANGE/Chips/chip.cpp \
     RSPiX/ORANGE/color/colormatch.cpp \
     RSPiX/ORANGE/color/dithermatch.cpp \
