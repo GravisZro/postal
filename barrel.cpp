@@ -391,7 +391,7 @@ int16_t CBarrel::Shutdown(void)							// Returns 0 if successfull, non-zero othe
 	// Call base class.
 	int16_t sResult = CThing3d::Shutdown();
 
-	m_trans.Make1();
+   m_trans.makeIdentity();
 
 	return sResult;
 }
