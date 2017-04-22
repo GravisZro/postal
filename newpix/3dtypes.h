@@ -1,5 +1,5 @@
-#ifndef _3DTYPES_H_
-#define _3DTYPES_H_
+#ifndef THREEDTYPES_H
+#define THREEDTYPES_H
 
 #include <BLUE/System.h>
 
@@ -205,4 +205,4 @@ struct RTransform : filedata_t
   void MakeRotFrom(RP3d point, RP3d up);
 };
 
-#endif // _3DTYPES_H_
+#endif // THREEDTYPES_H

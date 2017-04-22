@@ -1421,6 +1421,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 			// aren't already compressed.  If two such items are the same, then change
 			// the second item's pointer to point at the first item, then delete the
 			// second item and mark it as "compressed".
+#ifndef THREEDTYPES_H
          for (uint32_t i = 0; i < m_lNumItems; i++)
 				{
 				// Only if this isn't already compressed
@@ -1445,6 +1446,7 @@ class RChanCoreArrayOfPtrs: public RChanCore<datat>
 						}
 					}
 				}
+#endif
 			}
 
 
