@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-        AdditionalIncludeDirectories=".\sys\include;.\RSPiX"
+        AdditionalIncludeDirectories=".\sys\include;.\RSPiX;.\newpix"
         PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -409,7 +409,109 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
-			</File>
+      </File>
+      <File
+        RelativePath="newpix\sakarchive.cpp"
+        >
+        <FileConfiguration
+          Name="Release|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+        <FileConfiguration
+          Name="Debug|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="0"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+        <FileConfiguration
+          Name="Optimized Debug|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+      </File>
+      <File
+        RelativePath="newpix\resourcemanager.cpp"
+        >
+        <FileConfiguration
+          Name="Release|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+        <FileConfiguration
+          Name="Debug|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="0"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+        <FileConfiguration
+          Name="Optimized Debug|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+      </File>
+      <File
+        RelativePath="newpix\filestream.cpp"
+        >
+        <FileConfiguration
+          Name="Release|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+        <FileConfiguration
+          Name="Debug|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="0"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+        <FileConfiguration
+          Name="Optimized Debug|Win32"
+          >
+          <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2"
+            AdditionalIncludeDirectories=""
+            PreprocessorDefinitions=""
+          />
+        </FileConfiguration>
+      </File>
 		</Filter>
 		<Filter
 			Name="Header Files"
