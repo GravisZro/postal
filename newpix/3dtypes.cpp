@@ -301,10 +301,13 @@ inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col)
   matdata[rowcol(2, col)] = val.z;
 
 
-constexpr real_t identity_data[16] = { 1.0, 0.0, 0.0, 0.0,
-                                       0.0, 1.0, 0.0, 0.0,
-                                       0.0, 0.0, 1.0, 0.0,
-                                       0.0, 0.0, 0.0, 1.0 };
+#ifndef _MSC_VER
+constexpr
+#endif
+real_t identity_data[16] = { 1.0, 0.0, 0.0, 0.0,
+                             0.0, 1.0, 0.0, 0.0,
+                             0.0, 0.0, 1.0, 0.0,
+                             0.0, 0.0, 0.0, 1.0 };
 
 RTransform::RTransform(uint32_t sz)  // init to an identity transform
   : filedata_t(sz)
