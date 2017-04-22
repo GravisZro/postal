@@ -6,8 +6,9 @@
 #include <cstring>
 
 template<typename T>
-struct shared_arr : std::shared_ptr<T>
+class shared_arr : public std::shared_ptr<T>
 {
+public:
   uint32_t count;
 
   bool allocate(uint32_t cnt) // allocate cnt copies of T
