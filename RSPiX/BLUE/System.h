@@ -214,6 +214,7 @@ inline int _mkdir(const char *path, int) { return _mkdir(path); }
 # define strcasecmp   _stricmp
 # define NOTE(x)      __pragma(message("NOTE: " x))
 # define alignof(x)   __alignof(x) // C++11 patch
+#  define noexcept
 # if _MSC_VER < 1900
 #  define constexpr   inline
 #  define snprintf    _snprintf
