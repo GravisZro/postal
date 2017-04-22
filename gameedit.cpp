@@ -1631,17 +1631,17 @@ inline void SetPressedCall(	// Returns nothing.
 //
 ////////////////////////////////////////////////////////////////////////////////
 inline void SetMBValsAndCallback(		// Returns nothing.
-	RGuiItem*	pguiRoot,					// In:  Root item.
-	int32_t			lId,							// In:  ID of child to set user vals on.
-	uint32_t			u32UserInstance,			// In:  Value for m_ulUserInstance.
-	uint32_t			u32UserData,				// In:  Value for m_ulUserData.
-	int16_t			sState)						// In:  Initial MultiBtn state.
+   RGuiItem*  pguiRoot,					// In:  Root item.
+   uintptr_t  lId,							// In:  ID of child to set user vals on.
+   uintptr_t  uptrUserInstance,			// In:  Value for m_ulUserInstance.
+   uintptr_t  uptrUserData,				// In:  Value for m_ulUserData.
+   int16_t    sState)						// In:  Initial MultiBtn state.
 	{
 	RMultiBtn*	pmb	= (RMultiBtn*)pguiRoot->GetItemFromId(lId);
 	if (pmb)
 		{
-		pmb->m_ulUserInstance	= u32UserInstance;
-		pmb->m_ulUserData			= u32UserData;
+      pmb->m_ulUserInstance	= uptrUserInstance;
+      pmb->m_ulUserData			= uptrUserData;
 		pmb->m_bcUser				= AttribMaskBtnPressed;
 		pmb->m_sState				= sState;
 		// Reflect new state.
@@ -1895,10 +1895,10 @@ extern void GameEdit(
 			ms_pguiNavNets->SetVisible(ms_pguiNavNets->m_sVisible);
 
 			// ---------- Show Attribs --------
-         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_LAYERS, (uintptr_t)(&ms_u16LayerMask), REALM_ATTR_LAYER_MASK, 1);
-         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_HEIGHT, (uintptr_t)(&ms_u16TerrainMask), REALM_ATTR_HEIGHT_MASK, 1);
-         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_NOWALK, (uintptr_t)(&ms_u16TerrainMask), REALM_ATTR_NOT_WALKABLE, 1);
-         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_LIGHT, (uintptr_t)(&ms_u16TerrainMask), REALM_ATTR_LIGHT_BIT, 1);
+         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_LAYERS, uintptr_t(&ms_u16LayerMask), REALM_ATTR_LAYER_MASK, 1);
+         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_HEIGHT, uintptr_t(&ms_u16TerrainMask), REALM_ATTR_HEIGHT_MASK, 1);
+         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_NOWALK, uintptr_t(&ms_u16TerrainMask), REALM_ATTR_NOT_WALKABLE, 1);
+         SetMBValsAndCallback(ms_pguiShowAttribs, GUI_ID_ATTRIB_LIGHT, uintptr_t(&ms_u16TerrainMask), REALM_ATTR_LIGHT_BIT, 1);
 
 			ms_pguiShowAttribs->SetVisible(TRUE);
 
@@ -3788,7 +3788,7 @@ static int16_t LoadRealm(
 						rc.sH,							// Dimensions.
 						ThingHotCall,					// Callback.
 						TRUE,								// TRUE, if active.
-                  (uintptr_t)phood,						// User value (CThing*).
+                  uintptr_t(phood),						// User value (CThing*).
 						FRONTMOST_HOT_PRIORITY);	// New items towards front.
 					// If successful . . .
 					if (ms_photHood != nullptr)
@@ -3833,7 +3833,7 @@ static int16_t LoadRealm(
 									rc.sH,							// Dimensions.
 									ThingHotCall,					// Callback.
 									sActivateHot,					// TRUE, if initially active.
-                           (uintptr_t)pthing,					// User value (CThing*).
+                           uintptr_t(pthing),					// User value (CThing*).
 									FRONTMOST_HOT_PRIORITY);	// New items towards front.
 
 								// If successful . . .
@@ -4876,7 +4876,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 							rc.sH,							// Dimensions.
 							ThingHotCall,					// Callback.
 							sActivateHot,					// TRUE, if initially active.
-                     (uintptr_t)*ppthing,					// User value (CThing*).
+                     uintptr_t(*ppthing),					// User value (CThing*).
 							FRONTMOST_HOT_PRIORITY);	// New items towards front.
 
 						if (*pphot != nullptr)
@@ -5976,7 +5976,7 @@ static int16_t AddView(		// Returns 0 on success.
 			sprintf(szTitle, "Camera %d", ++sNum);
          RGuiItem*	pgui			= plb->AddString(szTitle);
          TRACE("SUSPICIOUS CODE!");
-         pgui->m_lId					= (intptr_t)pview;
+         pgui->m_lId					= uintptr_t(pview);
 			plb->AdjustContents();
 
 			pview->pgui->SetText("%s", szTitle);
@@ -7659,7 +7659,7 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 					{
                // Success.
               TRACE("SUSPICIOUS CODE!");
-               pguiThing->m_lId	= (intptr_t)pthing;
+               pguiThing->m_lId	= uintptr_t(pthing);
 					}
 				else
 					{
