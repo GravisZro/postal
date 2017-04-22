@@ -1,7 +1,7 @@
 #ifndef SAKARCHIVE_H
 #define SAKARCHIVE_H
 
-#if defined(TARGET)
+#if defined(TARGET) || defined(_MSC_VER)
 # include <BLUE/System.h>
 #else
 # include <cassert>
