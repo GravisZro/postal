@@ -115,13 +115,6 @@ find_bin ()  {
       paths=""
     fi
   done
-#  files=$(echo $files | sed -e "s/\([\S]*\)/X\1/" | sed -e "s/\([\S]*\)/X\1/")
-#  echo $files
-#    for $filename in
-#    do
-#    echo found \"$filename\"
-#    done
-#echo $(ls "/$1")
 }
 
 ################################################################################
@@ -666,9 +659,9 @@ if ! ${install}
 then
   echo -n "Build Postal? "
   read doinstall
-  case ${doinstall} in
-    [yY]);;
-    [yY][eE][sS]);;
+  case $(to_lower ${doinstall}) in
+    y|yes)
+    ;;
     *)
       echo "\nAborting installation\n"
       eval "sh ${0} --help"

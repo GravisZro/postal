@@ -184,7 +184,6 @@ SOURCES = \
 	RSPiX/GREEN/SndFx/SndFx.cpp \
 	RSPiX/GREEN/3D/pipeline.cpp \
 	RSPiX/GREEN/3D/render.cpp \
-	RSPiX/GREEN/3D/types3d.cpp \
 	RSPiX/GREEN/3D/zbuffer.cpp \
 	RSPiX/GREEN/Blit/AlphaBlit.cpp \
 	RSPiX/GREEN/Blit/Blit.cpp \
@@ -201,7 +200,6 @@ SOURCES = \
 	RSPiX/ORANGE/GameLib/AnimSprite.cpp \
 	RSPiX/ORANGE/Attribute/attribute.cpp \
 	RSPiX/ORANGE/GUI/btn.cpp \
-	RSPiX/ORANGE/Channel/channel.cpp \
 	RSPiX/ORANGE/color/colormatch.cpp \
 	RSPiX/ORANGE/DirtRect/DirtRect.cpp \
 	RSPiX/ORANGE/color/dithermatch.cpp \
@@ -237,14 +235,16 @@ SOURCES = \
 	WishPiX/Prefs/prefs.cpp \
 	WishPiX/ResourceManager/resmgr.cpp \
 	WishPiX/Spry/spry.cpp \
+	newpix/3dtypes.cpp \
+	newpix/filestream.cpp \
+	newpix/resourcemanager.cpp \
+	newpix/sakarchive.cpp \
 	$(shell echo $(BACKEND_SOURCES) | sed -e "s/\([A-Z]\+\)\/\(\S\+\)/RSPiX\/\1\/$(BACKEND)\/\2/g")
 
-OBJS0 := $(SOURCES:.s=.o)
-OBJS1 := $(OBJS0:.c=.o)
-OBJS2 := $(OBJS1:.cpp=.o)
-OBJS3 := $(OBJS2:.nasm=.o)
-OBJS4 := $(OBJS3:.s=.o)
-OBJS := $(foreach f,$(OBJS4),$(BUILD_PATH)/$(f))
+OBJS := $(SOURCES:.s=.o)
+OBJS := $(OBJS:.c=.o)
+OBJS := $(OBJS:.cpp=.o)
+OBJS := $(foreach f,$(OBJS),$(BUILD_PATH)/$(f))
 SOURCES := $(foreach f,$(SOURCES),$(SOURCE_PATH)/$(f))
 
 # !!! FIXME: Get -Wall in here, some day.
@@ -254,6 +254,7 @@ CFLAGS += -w -fno-builtin -fno-strict-aliasing -fno-operator-names -fno-rtti -ff
 CFLAGS += -I$(SOURCE_PATH)/sys/include
 CFLAGS += -I$(SOURCE_PATH)/RSPiX
 CFLAGS += -I$(SOURCE_PATH)/WishPiX
+CFLAGS += -I$(SOURCE_PATH)/newpix
 
 
 .PHONY: all OUTPUT_DIR
@@ -331,8 +332,6 @@ OUTPUT_DIR:
 	@echo -n "."
 	$(QUIET) mkdir -p $(BUILD_PATH)/RSPiX/ORANGE/GUI
 	@echo -n "."
-	$(QUIET) mkdir -p $(BUILD_PATH)/RSPiX/ORANGE/Channel
-	@echo -n "."
 	$(QUIET) mkdir -p $(BUILD_PATH)/RSPiX/ORANGE/color
 	@echo -n "."
 	$(QUIET) mkdir -p $(BUILD_PATH)/RSPiX/ORANGE/DirtRect
@@ -369,7 +368,7 @@ OUTPUT_DIR:
 	@echo -n "."
 	$(QUIET) mkdir -p $(BUILD_PATH)/WishPiX/Spry
 	@echo -n "."
-	$(QUIET) mkdir -p $(BUILD_PATH)/supplemental
+	$(QUIET) mkdir -p $(BUILD_PATH)/newpix
 	@echo -n "."
 	$(QUIET) mkdir -p $(BUILD_PATH)/libs
 	@echo " DONE."
