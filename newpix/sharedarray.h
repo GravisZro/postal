@@ -6,9 +6,8 @@
 #include <cstring>
 
 template<typename T>
-class shared_arr : public std::shared_ptr<T>
+struct shared_arr : std::shared_ptr<T>
 {
-public:
   uint32_t count;
 
   bool allocate(uint32_t cnt) // allocate cnt copies of T
@@ -36,8 +35,8 @@ public:
   operator T*(void) const
     { return std::shared_ptr<T>::get(); } // get pointer to all data
 
-  T& operator [](uint32_t num)
-    { ASSERT(num < count); return std::shared_ptr<T>::get()[num]; } // get data
+//  T& operator [](uint32_t num)
+//    { ASSERT(num < count); return std::shared_ptr<T>::get()[num]; } // get data
 
   T* operator +(uint32_t num) const
     { ASSERT(num < count); return std::shared_ptr<T>::get() + num; } // get pointer to data
