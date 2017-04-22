@@ -80,7 +80,7 @@ protected:
 };
 
 //=======================================================================================
-#if !defined(TARGET)
+#if !defined(TARGET) && !defined(_MSC_VER)
 #include <list>
 
 // Extended operations not required for the game

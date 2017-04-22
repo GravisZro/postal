@@ -65,9 +65,10 @@ SAKArchive::SAKArchive(const std::string& archivename)
 
 
 //=======================================================================================
-#if !defined(TARGET)
+#if !defined(TARGET) && !defined(_MSC_VER)
 
 #include <vector>
+#include <functional>
 
 #define FILE_COUNT_OFFSET  8
 
