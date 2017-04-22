@@ -73,16 +73,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Default constructor.
 ////////////////////////////////////////////////////////////////////////////////
-CAnim3D::CAnim3D()
-	{
-	m_psops			= nullptr;
-	m_pmeshes		= nullptr;
-	m_ptextures		= nullptr;
-	m_pbounds		= nullptr;
-	m_ptransRigid	= nullptr;
-	m_pevent			= nullptr;
-	m_ptransWeapon	= nullptr;
-	}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get the various components of this animation from the resource names
@@ -102,25 +93,25 @@ int16_t CAnim3D::Get(				// Returns 0 on success.
 	// NOTE:  If you add any new channel loads here, please make sure
 	// you maintain the order described above.
 	sComplainIndex	= 0;
-	sResult	=  rspGetResource(&g_resmgrGame, ppszFileNames[sComplainIndex], &m_psops);
+   sResult	=  rspGetResource(g_GameSAK, ppszFileNames[sComplainIndex], m_psops) ? SUCCESS : FAILURE;
    if (sResult == SUCCESS)
 		{
 		sComplainIndex	= 1;
-		sResult	= rspGetResource(&g_resmgrGame, ppszFileNames[sComplainIndex], &m_pmeshes);
+      sResult	= rspGetResource(g_GameSAK, ppszFileNames[sComplainIndex], m_pmeshes) ? SUCCESS : FAILURE;
       if (sResult == SUCCESS)
 			{
 			sComplainIndex	= 2;
-			sResult	= rspGetResource(&g_resmgrGame, ppszFileNames[sComplainIndex], &m_ptextures);
+         sResult	= rspGetResource(g_GameSAK, ppszFileNames[sComplainIndex], m_ptextures) ? SUCCESS : FAILURE;
          if (sResult == SUCCESS)
 				{
 				sComplainIndex	= 4;
-				sResult	= rspGetResource(&g_resmgrGame, ppszFileNames[sComplainIndex], &m_pbounds);
+            sResult	= rspGetResource(g_GameSAK, ppszFileNames[sComplainIndex], m_pbounds) ? SUCCESS : FAILURE;
             if (sResult == SUCCESS)
 					{
 					sComplainIndex	= 6;
 					if (ppszFileNames[sComplainIndex] != nullptr)
 						{
-						sResult	= rspGetResource(&g_resmgrGame, ppszFileNames[sComplainIndex], &m_ptransRigid);
+                  sResult	= rspGetResource(g_GameSAK, ppszFileNames[sComplainIndex], m_ptransRigid) ? SUCCESS : FAILURE;
 						}
 					}
 				}
@@ -187,19 +178,19 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 	int16_t sResult;
 	char	szResName[PATH_MAX];
 	sprintf(szResName, "%s.sop", pszBaseFileName);
-	sResult	=  rspGetResource(&g_resmgrGame, szResName, &m_psops);
+   sResult	=  rspGetResource(g_GameSAK, szResName, m_psops) ? SUCCESS : FAILURE;
    if (sResult == SUCCESS)
 		{
 		sprintf(szResName, "%s.mesh", pszBaseFileName);
-		sResult	= rspGetResource(&g_resmgrGame, szResName, &m_pmeshes);
+      sResult	= rspGetResource(g_GameSAK, szResName, m_pmeshes) ? SUCCESS : FAILURE;
       if (sResult == SUCCESS)
 			{
 			sprintf(szResName, "%s.tex", pszBaseFileName);
-			sResult	= rspGetResource(&g_resmgrGame, szResName, &m_ptextures);
+         sResult	= rspGetResource(g_GameSAK, szResName, m_ptextures) ? SUCCESS : FAILURE;
          if (sResult == SUCCESS)
 				{
 				sprintf(szResName, "%s.bounds", pszBaseFileName);
-				sResult	= rspGetResource(&g_resmgrGame, szResName, &m_pbounds);
+            sResult	= rspGetResource(g_GameSAK, szResName, m_pbounds) ? SUCCESS : FAILURE;
             if (sResult == SUCCESS)
 					{
 					if (pszRigidName != nullptr)
@@ -207,7 +198,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 						if (*pszRigidName != '\0')
 							{
 							sprintf(szResName, "%s_%s.trans", pszBaseFileName, pszRigidName);
-							sResult	= rspGetResource(&g_resmgrGame, szResName, &m_ptransRigid);
+                     sResult	= rspGetResource(g_GameSAK, szResName, m_ptransRigid) ? SUCCESS : FAILURE;
 							}
 						}
 
@@ -218,7 +209,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 							if (*pszEventName != '\0')
 								{
 								sprintf(szResName, "%s_%s.event", pszBaseFileName, pszEventName);
-								sResult	= rspGetResource(&g_resmgrGame, szResName, &m_pevent);
+                        sResult	= rspGetResource(g_GameSAK, szResName, m_pevent) ? SUCCESS : FAILURE;
 								}
 							}
 
@@ -229,7 +220,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 								if (*pszWeaponTransName != '\0')
 									{
 									sprintf(szResName, "%s_%s.trans", pszBaseFileName, pszWeaponTransName);
-									sResult	= rspGetResource(&g_resmgrGame, szResName, &m_ptransWeapon);
+                           sResult	= rspGetResource(g_GameSAK, szResName, m_ptransWeapon) ? SUCCESS : FAILURE;
 									}
 								}
 							}
@@ -241,7 +232,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 
 	// If successful . . .
    if (sResult == SUCCESS)
-		{
+      {
 		SetLooping(sLoopFlags);
 		}
 	else
@@ -302,11 +293,11 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 	int16_t sResult;
 	char	szResName[PATH_MAX];
 	sprintf(szResName, "%s.sop", szVerbedBaseName);
-	sResult	=  rspGetResource(&g_resmgrGame, szResName, &m_psops);
+   sResult	=  rspGetResource(g_GameSAK, szResName, m_psops) ? SUCCESS : FAILURE;
    if (sResult == SUCCESS)
 		{
 		sprintf(szResName, "%s.mesh", szVerbedBaseName);
-		sResult	= rspGetResource(&g_resmgrGame, szResName, &m_pmeshes);
+      sResult	= rspGetResource(g_GameSAK, szResName, m_pmeshes) ? SUCCESS : FAILURE;
       if (sResult == SUCCESS)
 			{
 			// If there's an associated texture scheme . . .
@@ -319,11 +310,11 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 				sprintf(szResName, "%s.tex", szVerbedBaseName);
 				}
 
-			sResult	= rspGetResource(&g_resmgrGame, szResName, &m_ptextures);
+         sResult	= rspGetResource(g_GameSAK, szResName, m_ptextures) ? SUCCESS : FAILURE;
          if (sResult == SUCCESS)
 				{
 				sprintf(szResName, "%s.bounds", szVerbedBaseName);
-				sResult	= rspGetResource(&g_resmgrGame, szResName, &m_pbounds);
+            sResult	= rspGetResource(g_GameSAK, szResName, m_pbounds) ? SUCCESS : FAILURE;
             if (sResult == SUCCESS)
 					{
 					if (pszRigidName != nullptr)
@@ -331,7 +322,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 						if (*pszRigidName != '\0')
 							{
 							sprintf(szResName, "%s_%s.trans", szVerbedBaseName, pszRigidName);
-							sResult	= rspGetResource(&g_resmgrGame, szResName, &m_ptransRigid);
+                     sResult	= rspGetResource(g_GameSAK, szResName, m_ptransRigid) ? SUCCESS : FAILURE;
 							}
 						}
 
@@ -342,7 +333,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 							if (*pszEventName != '\0')
 								{
 								sprintf(szResName, "%s_%s.event", szVerbedBaseName, pszEventName);
-								sResult	= rspGetResource(&g_resmgrGame, szResName, &m_pevent);
+                        sResult	= rspGetResource(g_GameSAK, szResName, m_pevent) ? SUCCESS : FAILURE;
 								}
 							}
 
@@ -353,7 +344,7 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 								if (*pszWeaponTransName != '\0')
 									{
 									sprintf(szResName, "%s_%s.trans", szVerbedBaseName, pszWeaponTransName);
-									sResult	= rspGetResource(&g_resmgrGame, szResName, &m_ptransWeapon);
+                           sResult	= rspGetResource(g_GameSAK, szResName, m_ptransWeapon) ? SUCCESS : FAILURE;
 									}
 								}
 							}
@@ -387,26 +378,26 @@ int16_t CAnim3D::Get(					// Returns 0 on success.
 ////////////////////////////////////////////////////////////////////////////////
 void CAnim3D::Release(void)	// Returns nothing.
 	{
-	if (m_psops != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_psops);
+   if (m_psops)
+      rspReleaseResource(m_psops);
 
-	if (m_pmeshes != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_pmeshes);
+   if (m_pmeshes)
+      rspReleaseResource(m_pmeshes);
 
-	if (m_ptextures != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_ptextures);
+   if (m_ptextures)
+      rspReleaseResource(m_ptextures);
 
-	if (m_pbounds != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_pbounds);
+   if (m_pbounds)
+      rspReleaseResource(m_pbounds);
 
-	if (m_ptransRigid != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_ptransRigid);
+   if (m_ptransRigid)
+      rspReleaseResource(m_ptransRigid);
 
-	if (m_pevent != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_pevent);
+   if (m_pevent)
+      rspReleaseResource(m_pevent);
 
 	if (m_ptransWeapon)
-		rspReleaseResource(&g_resmgrGame, &m_ptransWeapon);
+      rspReleaseResource(m_ptransWeapon);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,18 +407,21 @@ void CAnim3D::Release(void)	// Returns nothing.
 void CAnim3D::SetLooping(		// Returns nothing.
 	int16_t		sLoopFlags)			// In:  Looping flags to apply to all channels
 										// in this anim.
-	{
-	m_psops->SetLooping(sLoopFlags);
-	m_pmeshes->SetLooping(sLoopFlags);
-	m_ptextures->SetLooping(sLoopFlags);
-	m_pbounds->SetLooping(sLoopFlags);
-	if (m_ptransRigid != nullptr)
-		m_ptransRigid->SetLooping(sLoopFlags);
-	if (m_pevent != nullptr)
-		m_pevent->SetLooping(sLoopFlags);
-	if (m_ptransWeapon)
-		m_ptransWeapon->SetLooping(sLoopFlags);
-	}
+{
+  m_psops->loopFlags = AnimatedResource<RSop>::loop_t(sLoopFlags);
+  m_pmeshes->loopFlags = AnimatedResource<RMesh>::loop_t(sLoopFlags);
+  m_ptextures->loopFlags = AnimatedResource<RTexture>::loop_t(sLoopFlags);
+  m_pbounds->loopFlags = AnimatedResource<Raw<RP3d>>::loop_t(sLoopFlags);
+
+  if (m_ptransRigid)
+    m_ptransRigid->loopFlags = AnimatedResource<RTransform>::loop_t(sLoopFlags);
+
+  if (m_pevent)
+    m_pevent->loopFlags = AnimatedResource<Raw<uint8_t>>::loop_t(sLoopFlags);
+
+  if (m_ptransWeapon)
+    m_ptransWeapon->loopFlags = AnimatedResource<RTransform>::loop_t(sLoopFlags);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF
