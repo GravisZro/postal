@@ -112,9 +112,9 @@
 
 #define NUM_RES_NAMES	7
 
-#define EDIT_GUI_FILE	"res/editor/Item3d.gui"
+#define EDIT_GUI_FILE	"res/editor/item3d.gui"
 
-#define SHADOW_RES_NAME		"SmallShadow.img"
+#define SHADOW_RES_NAME		"smallshadow.img"
 
 #define LIST_BOX_ID				200
 #define RESNAME_EDIT_ID			100
@@ -133,11 +133,11 @@ int16_t CItem3d::ms_sFileCount;
 // Array of known animation base names.
 const char*	CItem3d::ms_apszKnownAnimBaseNames[CItem3d::NumTypes]	=
 	{
-	"None",				// None.
-	"Custom",			// Custom.
-	"3d/Trumpet",		// Trumpet.
-	"3d/Horn",			// Horn.
-	"3d/Sax",			// Sax.
+   "none",				// None.
+   "custom",			// Custom.
+   "3d/trumpet",		// Trumpet.
+   "3d/horn",			// Horn.
+   "3d/sax",			// Sax.
 	};
 
 // Array of known animation descriptions.
@@ -392,12 +392,12 @@ void CItem3d::Render(void)								// Returns nothing.
 	if (m_animChild.m_pmeshes && m_anim.m_ptransRigid)
 		{
 		// Update the child sprite.
-		m_spriteChild.m_pmesh	= m_animChild.m_pmeshes->GetAtTime(m_lAnimTime);    
-		m_spriteChild.m_psop		= m_animChild.m_psops->GetAtTime(m_lAnimTime);        
-		m_spriteChild.m_ptex		= m_animChild.m_ptextures->GetAtTime(m_lAnimTime);
-		m_spriteChild.m_psphere	= m_animChild.m_pbounds->GetAtTime(m_lAnimTime);   
+      m_spriteChild.m_pmesh	= &m_animChild.m_pmeshes->atTime(m_lAnimTime);
+      m_spriteChild.m_psop		= &m_animChild.m_psops->atTime(m_lAnimTime);
+      m_spriteChild.m_ptex		= &m_animChild.m_ptextures->atTime(m_lAnimTime);
+      m_spriteChild.m_psphere	= &m_animChild.m_pbounds->atTime(m_lAnimTime);
 		// Use parent's rigid body transform for transform.
-		m_spriteChild.m_ptrans	= m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime);
+      m_spriteChild.m_ptrans	= &m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 		}
 	}
 

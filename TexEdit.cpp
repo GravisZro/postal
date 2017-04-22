@@ -222,7 +222,7 @@ PointInsideTri(
   pt1.y=pt1A.y - pt2A.y;
   pt1.z=pt1A.z - pt2A.z;
 
-  rspCross(pt0, pt1, main_cross);
+  main_cross = pt0 * pt1;
 
 
   RP3d hit=hitpoint;
@@ -237,8 +237,8 @@ PointInsideTri(
   pt0.x=pt0A.x - pt2A.x;
   pt0.y=pt0A.y - pt2A.y;
   pt0.z=pt0A.z - pt2A.z;
-  rspSub(hitpoint, pt2A);
-  rspCross(pt0, hitpoint, result_cross); //check 0 to hitpoint
+  hitpoint -= pt2A;
+  result_cross = pt0 * hitpoint; //check 0 to hitpoint
 
   if(SameSigns_Vector(&result_cross, &main_cross))
   {
@@ -255,7 +255,7 @@ PointInsideTri(
     hitpoint.x=hit.x-pt0A.x;
     hitpoint.y=hit.y-pt0A.y;
     hitpoint.z=hit.z-pt0A.z;
-    rspCross(pt1, hitpoint, result_cross); //check 1 to hitpoint
+    result_cross = pt1 * hitpoint; //check 1 to hitpoint
 
     if(SameSigns_Vector(&result_cross, &main_cross))
     {
@@ -273,7 +273,7 @@ PointInsideTri(
       hitpoint.x=hit.x-pt1A.x;
       hitpoint.y=hit.y-pt1A.y;
       hitpoint.z=hit.z-pt1A.z;
-      rspCross(pt2, hitpoint, result_cross); //check 2 to hitpoint
+      result_cross = pt2 * hitpoint; //check 2 to hitpoint
 
       if(SameSigns_Vector(&result_cross, &main_cross))
       {
@@ -342,8 +342,8 @@ bool
 TrianglesIntersectLineSegment(
     RP3d &linept1,				// In: line segment point 1
     RP3d &linept2, 			// In: line segment point 2 closest to this point. this should be the first point.
-    uint16_t *ptri, 					// In: mesh
-    RP3d *soparr, 				// In: points for mesh
+    triangle_t* ptri, 					// In: mesh
+    RP3d* soparr, 				// In: points for mesh
     int16_t smeshNum,			// In: number of points in mesh
     RP3d &hitpoint,			// Out: point where line hit triangle
     int32_t &lHitTriIndex)		// Out: index of triangle it hit
@@ -366,9 +366,9 @@ TrianglesIntersectLineSegment(
   for(sJ=0; sJ<smeshNum; sJ++)
   {
     //assign points
-    pt0A=soparr[*ptri++];
-    pt1A=soparr[*ptri++];
-    pt2A=soparr[*ptri++];
+    pt0A=soparr[ptri[sJ][0]];
+    pt1A=soparr[ptri[sJ][1]];
+    pt2A=soparr[ptri[sJ][2]];
 
     //get the normals of triangle 1
     t_pt1A.x=pt1A.x-pt0A.x;
@@ -377,7 +377,7 @@ TrianglesIntersectLineSegment(
     t_pt2A.x=pt2A.x-pt0A.x;
     t_pt2A.y=pt2A.y-pt0A.y;
     t_pt2A.z=pt2A.z-pt0A.z;
-    rspCross(t_pt1A, t_pt2A, normalA);
+    normalA = t_pt1A * t_pt2A;
 
     //and the constant
     fBigA=(-normalA.x*pt0A.x - normalA.y*pt0A.y - normalA.z*pt0A.z);
@@ -385,14 +385,14 @@ TrianglesIntersectLineSegment(
     // Linesegment B intersects polygon A -------------------------------------------------------------------
     if(TriAIntersectsLineSegmentB(normalA, fBigA, pt0A, pt1A, pt2A, linept1, linept2, hitpoint))
     {
-      rspCopy(ptwork, linept2);
-      rspSub(ptwork, hitpoint);
+      ptwork = linept2;
+      ptwork -= hitpoint;
       sqrdist(ptwork, fdist);
       if(fdist < fclosest)
       {
         fclosest=fdist;
         lHitTriIndex=sJ;
-        rspCopy(ptclosest, hitpoint);
+        ptclosest = hitpoint;
         bhit=true;
       }
       //return true;
@@ -401,7 +401,7 @@ TrianglesIntersectLineSegment(
 
   if(bhit)
   {
-    rspCopy(hitpoint, ptclosest);
+    hitpoint = ptclosest;
   }
   return bhit;
 }
@@ -416,11 +416,11 @@ void Transform(RSop* psopSrc, RSop* psopDst, RPipeLine* ppipe, RTransform& tObj)
   RTransform tFull;
   // Use to stretch to z-buffer!
 
-  tFull.Make1();
-  tFull.Mul(ppipe->m_tView.T,tObj.T);
+  tFull.makeIdentity();
+  tFull.Mul(ppipe->m_tView.matdata,tObj.matdata);
   // If there were inhomogeneous transforms, you would need to
   // trasnform each pt by two transforms separately!
-  tFull.PreMulBy(ppipe->m_tScreen.T);
+  tFull.PreMulBy(ppipe->m_tScreen.matdata);
   // Add this in to get the model in the correctly offset spot.
   const int16_t sMisUnderstoodValueX	= -85;	// *** WTF is this not sOffsetX?  No time for that now.
   const int16_t sMisUnderstoodValueY	= -20;	// *** WTF is this not sOffsetY?  No time for that now.
@@ -437,15 +437,15 @@ void Transform(RSop* psopSrc, RSop* psopDst, RPipeLine* ppipe, RTransform& tObj)
     sOffY--;
   if (pau8KeyStatus[RSP_SK_DOWN] & 1)
     sOffY++;
-  tFull.Trans(sMisUnderstoodValueX + sOffX, sMisUnderstoodValueY + sOffY, 0);
+  tFull.Translate(sMisUnderstoodValueX + sOffX, sMisUnderstoodValueY + sOffY, 0);
 #else
-  tFull.Trans(sMisUnderstoodValueX, sMisUnderstoodValueY, 0);
+  tFull.Translate(sMisUnderstoodValueX, sMisUnderstoodValueY, 0);
 #endif
 
 
-  for (size_t i = 0; i < psopSrc->m_lNum; i++)
+  for (size_t i = 0; i < psopSrc->points.count; i++)
   {
-    tFull.TransformInto(psopSrc->m_pArray[i], psopDst->m_pArray[i]);
+    tFull.TransformInto(psopSrc->points[i], psopDst->points[i]);
   }
 }
 
@@ -522,7 +522,7 @@ ValidateTextures(
     RTexture*	ptex,	// In:  Texture to validate.
     int16_t			sNum)	// In:  Number of textures it should have.
 {
-  if (ptex->m_sNum < sNum)
+  if (ptex->count < sNum)
   {
     int16_t sResult = rspMsgBox(
                         RSP_MB_ICN_QUERY | RSP_MB_BUT_YESNO,
@@ -534,7 +534,7 @@ ValidateTextures(
     {
       case RSP_MB_RET_YES:
       {
-        int16_t	sOrigNum	= ptex->m_sNum;
+        int16_t	sOrigNum	= ptex->count;
 
         // Create temp space for the existing colors.
         uint8_t*	pau8	= new uint8_t[sOrigNum];
@@ -543,26 +543,26 @@ ValidateTextures(
         int16_t sColor;
         for (sColor = 0; sColor < sOrigNum; sColor++)
         {
-          pau8[sColor]	= ptex->m_pIndices[sColor];
+          pau8[sColor]	= ptex->indexes[sColor];
         }
 
         // Free the existing colors.
-        ptex->FreeIndices();
+        //ptex->FreeIndices();
 
         // Resize.
-        ptex->m_sNum	= sNum;
-        ptex->AllocIndices();
+        ptex->count = sNum;
+        //ptex->AllocIndices();
 
         // Copy the original colors back.
         for (sColor = 0; sColor < sOrigNum; sColor++)
         {
-          ptex->m_pIndices[sColor]	= pau8[sColor];
+          ptex->indexes[sColor]	= pau8[sColor];
         }
 
         // Fill the remaining colors as bright green.
         for ( ; sColor < sNum; sColor++)
         {
-          ptex->m_pIndices[sColor]	= 250;	// Part of static Postal palette.
+          ptex->indexes[sColor]	= 250;	// Part of static Postal palette.
         }
 
         delete pau8;
@@ -609,7 +609,7 @@ CTexEdit::CTexEdit(void)
   m_lTriIndex	= -1;
 
   m_ptexSrc		= nullptr;
-  m_ptexchanSrc	= nullptr;
+  //m_ptexchanSrc	= nullptr;
 
   m_bModified	= false;
 
@@ -687,10 +687,10 @@ CTexEdit::DoModal(
     // Even though there's many channels of many textures per person, they are all the
     // very same resource (on disk & in memory).
     m_ptexchanSrc	= panim->m_ptextures;
-    m_ptexSrc		= m_ptexchanSrc->GetAtTime(0);
+    m_ptexSrc		= &m_ptexchanSrc->atTime(0);
 
     // Validate texture thinger.
-    ValidateTextures(m_ptexSrc, panim->m_pmeshes->GetAtTime(0)->m_sNum);
+    ValidateTextures(m_ptexSrc, panim->m_pmeshes->atTime(0).triangles.count);
 
 
     // Duplicate into a care-free work area.
@@ -751,23 +751,24 @@ CTexEdit::DoModal(
       rspGetNextInputEvent(&ie);
 
       // Setup current 3D info ///////////////////////////////
-      sprite.m_pmesh			= panim->m_pmeshes->GetAtTime(lTime);
-      sprite.m_psop			= panim->m_psops->GetAtTime(lTime);
+      sprite.m_pmesh			= &panim->m_pmeshes->atTime(lTime);
+      sprite.m_psop			= &panim->m_psops->atTime(lTime);
       sprite.m_ptrans		= &trans;
       sprite.m_ptex			= &m_texWork;
-      sprite.m_psphere		= panim->m_pbounds->GetAtTime(lTime);
+      sprite.m_psphere		= &panim->m_pbounds->atTime(lTime);
       sprite.m_sBrightness	= m_sBrightness;
 
       // Transformation //////////////////////////////////////
-      trans.Make1();
+      trans.makeIdentity();
       ComposeTransform(trans);
 
       // View Space SOP //////////////////////////////////////
 
       // Create View Space SOP for checking mouse against triangles and
       // drawing feedback for such.
-      if (sopView.m_lNum != sprite.m_psop->m_lNum)
-        sopView.Alloc(sprite.m_psop->m_lNum);
+      if (sopView.points.count != sprite.m_psop->points.count)
+        sopView.points.allocate(sprite.m_psop->points.count);
+        //sopView.Alloc(sprite.m_psop->count);
 
       Transform(sprite.m_psop, &sopView, &m_scene.m_pipeline, trans);
 
@@ -820,8 +821,8 @@ CTexEdit::DoModal(
     gm.Unprepare();
 
     m_ptexSrc		= nullptr;
-    m_ptexchanSrc	= nullptr;
-    m_texWork.FreeIndices();
+    //m_ptexchanSrc	= nullptr;
+    //m_texWork.FreeIndices();
 
     delete m_pguiRoot;
     m_pguiRoot = nullptr;
@@ -855,12 +856,12 @@ CTexEdit::DoOutput(
 {
   UNUSED(trans);
   m_scene.Render3D(
-        pimDst,			// Destination image.
-        sOffsetX,		// Destination 2D x coord.
-        sOffsetY,		// Destination 2D y coord.
-        psprite,			// 3D sprite to render.
-        palphaLight,	// Light to render with.
-        &rcClip);		// Dst clip rect.
+        pimDst,       // Destination image.
+        sOffsetX,     // Destination 2D x coord.
+        sOffsetY,     // Destination 2D y coord.
+        psprite,      // 3D sprite to render.
+        palphaLight,  // Light to render with.
+        &rcClip);     // Dst clip rect.
 
 #if 0	// Draw wire frame.
   RMesh*	pmesh	= psprite->m_pmesh;
@@ -868,9 +869,9 @@ CTexEdit::DoOutput(
   uint16_t* pu16Vertex	= pmesh->m_pArray;
   while (sTris--)
   {
-    const RP3d&	v1	= psopView->m_pArray[*pu16Vertex++];
-    const RP3d&	v2	= psopView->m_pArray[*pu16Vertex++];
-    const RP3d&	v3	= psopView->m_pArray[*pu16Vertex++];
+    const RP3d& v1 = psopView->m_pArray[*pu16Vertex++];
+    const RP3d& v2 = psopView->m_pArray[*pu16Vertex++];
+    const RP3d& v3 = psopView->m_pArray[*pu16Vertex++];
     rspLine(255, pimDst, v1.x, v1.y, v2.x, v2.y, &rcClip);
     rspLine(255, pimDst, v2.x, v2.y, v3.x, v3.y, &rcClip);
     rspLine(255, pimDst, v3.x, v3.y, v1.x, v1.y, &rcClip);
@@ -882,16 +883,14 @@ CTexEdit::DoOutput(
   {
     if (m_lTriIndex >= 0)
     {
-      RMesh*	pmesh	= psprite->m_pmesh;
-      ASSERT(m_lTriIndex < pmesh->m_sNum);
+      RMesh* pmesh = psprite->m_pmesh;
+      ASSERT(uint32_t(m_lTriIndex) < pmesh->triangles.count);
 
-      if (m_lTriIndex < pmesh->m_sNum)
+      if (uint32_t(m_lTriIndex) < pmesh->triangles.count)
       {
-        int32_t	lVertexIndex	= m_lTriIndex * 3;
-
-        const RP3d&	v1	= psopView->m_pArray[pmesh->m_pArray[lVertexIndex++] ];
-        const RP3d&	v2	= psopView->m_pArray[pmesh->m_pArray[lVertexIndex++] ];
-        const RP3d&	v3	= psopView->m_pArray[pmesh->m_pArray[lVertexIndex++] ];
+        const RP3d& v1 = psopView->points[pmesh->triangles[m_lTriIndex][0]];
+        const RP3d& v2 = psopView->points[pmesh->triangles[m_lTriIndex][1]];
+        const RP3d& v3 = psopView->points[pmesh->triangles[m_lTriIndex][2]];
         rspLine(255, pimDst, v1.x, v1.y, v2.x, v2.y, &rcClip);
         rspLine(255, pimDst, v2.x, v2.y, v3.x, v3.y, &rcClip);
         rspLine(255, pimDst, v3.x, v3.y, v1.x, v1.y, &rcClip);
@@ -928,7 +927,7 @@ CTexEdit::ProcessManip(
     int16_t sDeltaX = sCursorX - m_sCursorResetX;
     int16_t sDeltaY = m_sCursorResetY - sCursorY;
 
-    static uint8_t*	pau8KeyStatus = rspGetKeyStatusArray();
+    static uint8_t* pau8KeyStatus = rspGetKeyStatusArray();
 
     if (pau8KeyStatus[RSP_SK_SHIFT] & 1)
       sDeltaY = 0;
@@ -989,9 +988,9 @@ CTexEdit::ProcessManip(
     bool bHit = TrianglesIntersectLineSegment(
                   linept1,								// In: line segment point 1
                   linept2, 							// In: line segment point 2 closest to this point. this should be the first point.
-                  psprite->m_pmesh->m_pArray,	// In: mesh
-                  psopView->m_pArray, 				// In: points for mesh
-                  psprite->m_pmesh->m_sNum,		// In: number of points in mesh
+                  psprite->m_pmesh->triangles,	// In: mesh
+                  psopView->points, 				// In: points for mesh
+                  psprite->m_pmesh->triangles.count,		// In: number of points in mesh
                   hitpoint,							// Out: point where line hit triangle
                   lTriIndex);							// Out: index of triangle it hit
 
@@ -1005,12 +1004,12 @@ CTexEdit::ProcessManip(
       {
         RTexture*	ptex	= psprite->m_ptex;
         // Get into texture and replace current triangle index with our current color.
-        if (ptex->m_pIndices)
+        if (ptex->indexes)
         {
-          ASSERT(m_lTriIndex < ptex->m_sNum);
+          ASSERT(m_lTriIndex < ptex->count);
 
           // Set new color for this texture.
-          ptex->m_pIndices[m_lTriIndex]	= m_u8Color;
+          ptex->indexes[m_lTriIndex]	= m_u8Color;
 
           // Note modification.
           m_bModified	= true;
@@ -1084,7 +1083,7 @@ CTexEdit::ProcessManip(
           break;
 
         case '\r':
-          m_transRot.Make1();
+          m_transRot.makeIdentity();
           break;
       }
     }
@@ -1141,10 +1140,10 @@ void
 CTexEdit::Save(void)
 {
   Apply();
-
+/*
   if (m_ptexchanSrc)
   {
-    if (rspEZSave(m_ptexchanSrc, m_strFileName) == SUCCESS)
+    if (rspEZSave(&m_ptexchanSrc, m_strFileName) == SUCCESS)
     {
       SetStatusText("Applied; Saved \"%s\".", (const char*)m_strFileName);
     }
@@ -1153,6 +1152,7 @@ CTexEdit::Save(void)
       SetStatusText("Applied; Failed to save \"%s\".", (const char*)m_strFileName);
     }
   }
+*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1284,7 +1284,7 @@ CTexEdit::ComposeTransform(
 {
   trans	= m_transRot;
   trans.Scale(m_fScale, m_fScale, m_fScale);
-  trans.Trans(m_fX, m_fY, 0.0f);
+  trans.Translate(m_fX, m_fY, 0.0f);
 }
 
 //------------------------------------------------------------------------------
@@ -1421,19 +1421,19 @@ CTexEdit::AdjustCall(RGuiItem* pgui)
 
 
   // Unmap colors from palette into full color values.
-  m_texWork.Unmap(
+  m_texWork.unmap(
         au8Red,
         au8Green,
         au8Blue,
         sizeof(uint8_t) );
 
   // Adjust colors.
-  m_texWork.Adjust(
+  m_texWork.adjust(
         fAdjust,
         lFreq);
 
   // Remap onto palette.
-  m_texWork.Remap(
+  m_texWork.remap(
         c_sPalStart,
         c_sPalNum,
         au8Red,
@@ -1442,7 +1442,7 @@ CTexEdit::AdjustCall(RGuiItem* pgui)
         sizeof(uint8_t) );
 
   // Get rid of full colors.
-  m_texWork.FreeColors();
+  //m_texWork.FreeColors();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1461,7 +1461,7 @@ CTexEdit::AnimCall(RGuiItem* pgui, RInputEvent* pie)
         // undergone lighting effects.  Get the color from the actual texture.
         if (m_lTriIndex)
         {
-          uint8_t	u8Color	= m_texWork.m_pIndices[m_lTriIndex];
+          uint8_t	u8Color	= m_texWork.indexes[m_lTriIndex];
           SetColor(u8Color);
         }
         break;

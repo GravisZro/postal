@@ -452,9 +452,9 @@ class CDude : public CCharacter
 			{
 			public:
 
-				ChanTransform*	m_ptransLeft;	// Rigid body transforms for left hand.
-				ChanTransform* m_ptransRight;	// Rigid body transforms for right hand.
-				ChanTransform* m_ptransBack;	// Rigid body transforms for his backpack.
+            ChanTransform	m_ptransLeft;	// Rigid body transforms for left hand.
+            ChanTransform m_ptransRight;	// Rigid body transforms for right hand.
+            ChanTransform m_ptransBack;	// Rigid body transforms for his backpack.
 
 				// Get the various components of this animation from the resource names
 				// specified in the provided array of pointers to strings.
@@ -530,7 +530,7 @@ class CDude : public CCharacter
 		CAnim3D			m_animBackpack;						// Backpack's anim.
 		CSprite3			m_spriteBackpack;						// Backpack's sprite.
 
-		ChanTexture*	m_aptextures[MaxTextures];	// Colors for all dude animations.
+      ChanTexture    m_aptextures[MaxTextures];	// Colors for all dude animations.
 
 		State	m_statePersistent;						// Last persistent state.  For example,
 																// StateBurning is persistent.  He may get

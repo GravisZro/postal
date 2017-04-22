@@ -497,11 +497,11 @@ void CCharacter::Update(void)										// Returns nothing.
 		CWeapon*	pweapon;
 		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
 			{
-			RTransform*	ptransWeapon	= m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime);
+         RTransform&	transWeapon	= m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 			// Position weapon.
 			PositionChild(
 				pweapon->GetSprite(),	// In:  Child sprite to position.
-				ptransWeapon,				// In:  Transform specifying position.
+            &transWeapon,				// In:  Transform specifying position.
 				&(pweapon->m_dX),			// Out: New position of child. 
 				&(pweapon->m_dY),			// Out: New position of child. 
 				&(pweapon->m_dZ) );		// Out: New position of child. 
@@ -636,7 +636,7 @@ bool CCharacter::WhileDying(void)	// Returns true until state is complete.
 
 	// When he finishes his current animation (assuming dying anim) then he is
 	// officially dead.
-	if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+   if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 		bStatePersists = false;
 
 	return bStatePersists;
@@ -654,7 +654,7 @@ bool CCharacter::WhileHoldingWeapon(	// Returns true when weapon is released.
 	{
 	bool	bReleased	= false;	// Assume not released.
 
-	uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+   uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 	// Check for show point in animation . . .
 	if (u8Event > 0)
 		{
@@ -1143,7 +1143,7 @@ CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 	// Get weapon's position relative to this character.
 	double dWeaponRelX, dWeaponRelY, dWeaponRelZ;
 	GetLinkPoint(
-		m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime),
+      &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),
 		&dWeaponRelX,
 		&dWeaponRelY,
 		&dWeaponRelZ);
@@ -1286,12 +1286,12 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 					// If this weapon is not hidden . . .
 					if (pweapon->m_eState != CWeapon::State_Hide)
 						{
-						RTransform*	ptransWeapon	= m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime);
+                  RTransform&	transWeapon = m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 
 						// Get the position to check for terrain obstacles.
 						// Remember this is an offset from our hotspot (origin).
 						double	dX, dY, dZ;
-						GetLinkPoint(ptransWeapon, &dX, &dY, &dZ);
+                  GetLinkPoint(&transWeapon, &dX, &dY, &dZ);
 
 						// Check position to make sure it's not inside terrain.
 						int16_t	sTerrainH	= m_pRealm->GetHeight(m_dX + dX, m_dZ + dZ);

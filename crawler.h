@@ -511,7 +511,7 @@ class CCrawler
 
 			return bCanWalk;
 			}
-
+#ifdef UNUSED_FUNCTIONS
 		////////////////////////////////////////////////////////////////////////////////
 		// Plot a point via the CScene.  
 		////////////////////////////////////////////////////////////////////////////////
@@ -544,7 +544,7 @@ class CCrawler
 				m_prealm->m_scene.UpdateSprite(psl2d);
 				}
 			}
-
+#endif
 	};
 
 

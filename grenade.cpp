@@ -576,10 +576,10 @@ void CGrenade::Render(void)
 	// Animate.
 	int32_t	lCurTime			= m_pRealm->m_time.GetGameTime();
 
-	m_sprite.m_pmesh		= (RMesh*)		m_anim.m_pmeshes->GetAtTime(		lCurTime % m_anim.m_pmeshes->TotalTime());
-	m_sprite.m_psop		= (RSop*)		m_anim.m_psops->GetAtTime(			lCurTime % m_anim.m_psops->TotalTime());
-	m_sprite.m_ptex		= (RTexture*)	m_anim.m_ptextures->GetAtTime(	lCurTime % m_anim.m_ptextures->TotalTime());
-	m_sprite.m_psphere	= (RP3d*)		m_anim.m_pbounds->GetAtTime(		lCurTime % m_anim.m_pbounds->TotalTime());
+   m_sprite.m_pmesh		= &m_anim.m_pmeshes  ->atTime(lCurTime % m_anim.m_pmeshes->totalTime);
+   m_sprite.m_psop		= &m_anim.m_psops    ->atTime(lCurTime % m_anim.m_psops->totalTime);
+   m_sprite.m_ptex		= &m_anim.m_ptextures->atTime(lCurTime % m_anim.m_ptextures->totalTime);
+   m_sprite.m_psphere	= &m_anim.m_pbounds  ->atTime(lCurTime % m_anim.m_pbounds->totalTime);
 
 	// This should eventually be channel driven too.
 	m_sprite.m_sRadius	= m_sCurRadius;
@@ -603,7 +603,7 @@ void CGrenade::Render(void)
 		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		// Adjust transformation based current rotations.
-		m_trans.Make1();
+		m_trans.makeIdentity();
 		m_trans.Ry(m_dAnimRotY);
 		m_trans.Rx(m_dAnimRotZ);
 

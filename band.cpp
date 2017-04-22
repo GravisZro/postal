@@ -1044,7 +1044,7 @@ void CBand::Render(void)
 		{
 			// Set transform from our rigid body transfanimation for the child
 			// sprite.
-			pitem->m_sprite.m_ptrans	= (RTransform*) m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime);
+         pitem->m_sprite.m_ptrans	= &m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 			// If the item is not our child . . .
 			if (pitem->m_sprite.m_psprParent != &m_sprite)
 				{
@@ -1174,7 +1174,7 @@ int16_t CBand::EditModify(void)
 							// Disable item.
 							DetachChild(
 								&m_idChildItem,
-								(RTransform*) m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime) );
+                        &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 							// Be gone.
 							delete pitem;
 							pitem	= nullptr;
@@ -1392,7 +1392,7 @@ void CBand::OnExplosionMsg(Explosion_Message* pMessage)
 		// Drop item, if we have one still.
 		CThing3d*	pthing3d	= DetachChild(
 			&m_idChildItem,
-			(RTransform*) m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime) );
+         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 		// If we got something back . . . 
 		if (pthing3d != nullptr)
 			{
@@ -1531,7 +1531,7 @@ void CBand::OnPanicMsg(Panic_Message* pMessage)
 	{
 		m_state = State_Panic;
 		m_panimCur = &m_animOnFire;
-		m_lAnimTime = GetRand() % m_panimCur->m_psops->TotalTime();
+      m_lAnimTime = GetRand() % m_panimCur->m_psops->totalTime;
 		// Pick a random bouy to run to
 		m_ucDestBouyID = SelectRandomBouy();
 		m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
@@ -1656,7 +1656,7 @@ void CBand::DropItem(void)	// Returns nothing.
 		// Drop it.
 		CThing3d*	pthing3d	= DetachChild(
 			&m_idChildItem,
-			(RTransform*) m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime) );
+         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 		// If we got something back . . . 
 		if (pthing3d != nullptr)
 			{

@@ -321,7 +321,7 @@ class CDoofus : public CCharacter
 		CAnim3D*			m_panimPrev;		// Previous state's animation
 
 		// Channel of execution points for 'writhing' anim/state.
-		ChanTransform*	m_ptransExecutionTarget;
+      ChanTransform	m_ptransExecutionTarget;
 
 
 		CSmash			m_smashDetect;		// Smash used to detect pylons - has large radius

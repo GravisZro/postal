@@ -358,7 +358,7 @@ class CScene
 			RRect*		prcDstClip);	// Dst clip rect.
 
 		// Setup render pipeline.  Use this function to setup or alter the pipeline.
-		// This function DOES a Make1() and then multiplies by the supplied transform,
+      // This function DOES a makeIdentity() and then multiplies by the supplied transform,
 		// if any.  Any transforms that need to be applied after this setup can be
 		// done following a call to this function.
 		// The only sux is you cannot insert yourself into the middle of this function.

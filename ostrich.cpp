@@ -905,7 +905,7 @@ void COstrich::OnPanicMsg(Panic_Message* pMessage)
 	{
 		m_state = State_Panic;
 		m_panimCur = &m_animRun;
-		m_lAnimTime = GetRandom() % m_panimCur->m_psops->TotalTime();
+		m_lAnimTime = GetRandom() % m_panimCur->m_psops->totalTime;
 	}
 }
 

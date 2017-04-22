@@ -341,7 +341,7 @@ int16_t CFlag::Shutdown(void)							// Returns 0 if successfull, non-zero otherw
 {
 	int16_t sResult = SUCCESS;
 
-	m_trans.Make1();
+   m_trans.makeIdentity();
 
 	return sResult;
 }

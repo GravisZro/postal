@@ -847,7 +847,7 @@ void CFireball::Render(void)
 	
 	CAlphaAnim* pAnim;
 
-	pAnim = (CAlphaAnim*) m_pAnimChannel->GetAtTime(m_lAnimTime % m_pAnimChannel->TotalTime());
+   pAnim = (CAlphaAnim*) m_pAnimChannel->GetAtTime(m_lAnimTime % m_pAnimChannel->TotalTime());
 
 	if (pAnim) // && m_sCurrentAlphaChannel >= 0)
 	{

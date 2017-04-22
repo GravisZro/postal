@@ -591,7 +591,7 @@ void CThing3d::Render(void)
 	if (m_u16IdParent == CIdBank::IdNil)
 		{
 		// Reset transform back to start to set absolute rather than cummulative rotation
-		m_trans.Make1();
+		m_trans.makeIdentity();
 
 		m_trans.Scale(m_dScaleX,m_dScaleY,m_dScaleZ);
 		m_trans.Ry(rspMod360(m_dRot) );
@@ -663,10 +663,10 @@ void CThing3d::Render(void)
 
 	ASSERT(m_panimCur != nullptr);
 
-	m_sprite.m_pmesh = (RMesh*) m_panimCur->m_pmeshes->GetAtTime(m_lAnimTime);
-	m_sprite.m_psop = (RSop*) m_panimCur->m_psops->GetAtTime(m_lAnimTime);
-	m_sprite.m_ptex = (RTexture*) m_panimCur->m_ptextures->GetAtTime(m_lAnimTime);
-	m_sprite.m_psphere = (RP3d*) m_panimCur->m_pbounds->GetAtTime(m_lAnimTime);
+   m_sprite.m_pmesh = &m_panimCur->m_pmeshes->atTime(m_lAnimTime);
+   m_sprite.m_psop = &m_panimCur->m_psops->atTime(m_lAnimTime);
+   m_sprite.m_ptex = & m_panimCur->m_ptextures->atTime(m_lAnimTime);
+   m_sprite.m_psphere = & m_panimCur->m_pbounds->atTime(m_lAnimTime);
 	}
 
 #if !defined(EDITOR_REMOVED)
@@ -739,7 +739,7 @@ void CThing3d::EditRect(RRect* pRect)
 			RP3d		apt3dDst[2];	// Dst for above in Postal coords.
 
 			RTransform	trans;
-			apt3dSrc[0]		= *((RP3d*) m_panimCur->m_pbounds->GetAtTime(0));
+         apt3dSrc[0]		= m_panimCur->m_pbounds->atTime(0);
 			
 			apt3dSrc[1].x	= apt3dSrc[0].x + apt3dSrc[0].w;
 			apt3dSrc[1].y	= apt3dSrc[0].y + apt3dSrc[0].w;
@@ -825,7 +825,7 @@ bool CThing3d::WhileShot(void)	// Returns true until state is complete
 	{
 	bool bStatePersists = true;
 
-	if (m_lAnimTime > m_panimCur->m_psops->TotalTime() || m_stockpile.m_sHitPoints <= 0)
+   if (m_lAnimTime > m_panimCur->m_psops->totalTime || m_stockpile.m_sHitPoints <= 0)
 		bStatePersists = false;
 
 	return bStatePersists;
@@ -864,7 +864,7 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 	{
 		dNewY = sHeight;
 		// Make sure its done with current animation also
-		if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+      if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 			bStatePersists = false;
 		
 		// No longer above the terrain.
@@ -1598,7 +1598,7 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 	// Set up translation based on the combined character and rigid body transforms.
 	RTransform transChildAbsolute;
 	// Apply child and parent to transChildAbs.
-	transChildAbsolute.Mul(m_sprite.m_ptrans->T, ptrans->T);
+   transChildAbsolute.Mul(m_sprite.m_ptrans->matdata, ptrans->matdata);
 	// Set up pt at origin for weapon.
 	RP3d pt3Src = {0, 0, 0, 1};
 	RP3d pt3Dst;

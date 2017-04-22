@@ -590,7 +590,7 @@ CDoofus::WeaponDetails	CDoofus::ms_awdWeapons[NumWeaponTypes]	=
 	//////// ShotGun
 	{	// pszName, pszResName, CThing ID
 		"ShotGun",
-		"3d/ShotGun",
+      "3d/shotgun",
 		CShotGunID,
 	},
 
@@ -604,7 +604,7 @@ CDoofus::WeaponDetails	CDoofus::ms_awdWeapons[NumWeaponTypes]	=
 	//////// Assault
 	{	// pszName, pszResName, CThing ID
 		"Assault",
-		"3d/SprayGun",
+      "3d/spraygun",
 		CAssaultWeaponID,
 	},
 
@@ -625,21 +625,21 @@ CDoofus::WeaponDetails	CDoofus::ms_awdWeapons[NumWeaponTypes]	=
 	//////// Uzi
 	{	// pszName, pszResName, CThing ID
 		"Uzi",
-		"3d/Uzi",
+      "3d/uzi",
 		CUziID,
 	},
 
 	//////// AutoRifle
 	{	// pszName, pszResName, CThing ID
 		"AutoRifle",
-		"3d/AutoRifle",
+      "3d/autorifle",
 		CAutoRifleID,
 	},
 
 	//////// SmallPistol
 	{	// pszName, pszResName, CThing ID
 		"SmallPistol",
-		"3d/Pistol",
+      "3d/pistol",
 		CSmallPistolID,
 	},
 
@@ -764,7 +764,7 @@ CDoofus::CDoofus(CRealm* pRealm, ClassIDType id)
 	m_lSampleTimeIsPlaying = 0;
 	m_bRecentlyStuck = false;
 	m_bCivilian = false;
-	m_ptransExecutionTarget	= nullptr;
+   //m_ptransExecutionTarget	= nullptr;
 	m_spriteWeapon.m_pthing	= this;
 	m_ucSpecialBouy0ID = 0;
 	m_ucSpecialBouy1ID = 0;
@@ -1096,7 +1096,7 @@ void CDoofus::Render(void)
 	if (m_panimCur->m_pevent)
 	{	
 		// Get current event.
-      uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+      uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 
 		// If gun not hidden by Randy . . .
 		if (u8Event < 10)
@@ -1124,11 +1124,11 @@ void CDoofus::Render(void)
 			// Show weapon sprite.
 			m_spriteWeapon.m_sInFlags	&= ~CSprite::InHidden;
 
-			m_spriteWeapon.m_pmesh		= panimWeapon->m_pmeshes->GetAtTime(m_lAnimTime);
-			m_spriteWeapon.m_psop		= panimWeapon->m_psops->GetAtTime(m_lAnimTime);
-			m_spriteWeapon.m_ptex		= panimWeapon->m_ptextures->GetAtTime(m_lAnimTime);
-			m_spriteWeapon.m_psphere	= panimWeapon->m_pbounds->GetAtTime(m_lAnimTime);
-			m_spriteWeapon.m_ptrans		= m_panimCur->m_ptransWeapon->GetAtTime(m_lAnimTime);
+         m_spriteWeapon.m_pmesh		= &panimWeapon->m_pmeshes->atTime(m_lAnimTime);
+         m_spriteWeapon.m_psop		= &panimWeapon->m_psops->atTime(m_lAnimTime);
+         m_spriteWeapon.m_ptex		= &panimWeapon->m_ptextures->atTime(m_lAnimTime);
+         m_spriteWeapon.m_psphere	= &panimWeapon->m_pbounds->atTime(m_lAnimTime);
+         m_spriteWeapon.m_ptrans		= &m_panimCur->m_ptransWeapon->atTime(m_lAnimTime);
 		}
 		else
 		{
@@ -1451,7 +1451,7 @@ bool CDoofus::TryClearShot(double dRot, int16_t sVariance)
 
 		double	dMuzzleX, dMuzzleY, dMuzzleZ;
 		GetLinkPoint(														// Returns nothing.
-			m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime),	// In:  Transform specifying point.
+         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
 			&dMuzzleX,														// Out: Point speicfied.
 			&dMuzzleY,														// Out: Point speicfied.
 			&dMuzzleZ);														// Out: Point speicfied.			// Update execution point via link point.
@@ -1630,7 +1630,7 @@ void CDoofus::Logic_Shot(void)
 	// Restore previous state & go back to what you were doing
 	{
 		// If your shot animation is over...
-		if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+      if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 		{
 			// Add this check for low health -> retreat
 			// if (m_stockpile.m_sHitPoints < DefHitPoints / 2)
@@ -1722,7 +1722,7 @@ void CDoofus::Logic_Die(void)
 	m_sLayerOverride	= CRealm::LayerSprite1; 
 
 	// When the die animation is finsihed, so are you.
-	if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+   if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 	{
 		if (m_stockpile.m_sHitPoints > 0)
 		{
@@ -1795,7 +1795,7 @@ void CDoofus::Logic_Writhing(void)
 	// Send to back.
 	m_sLayerOverride	= CRealm::LayerSprite1; 
 
-	if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+   if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 	{
 		if (--m_stockpile.m_sHitPoints <= 0)
 		{
@@ -1810,7 +1810,7 @@ void CDoofus::Logic_Writhing(void)
 		else
 		{
 			// Whoa!  MOD EQUALS is deep, man!
-			m_lAnimTime	%= m_panimCur->m_psops->TotalTime();
+         m_lAnimTime	%= m_panimCur->m_psops->totalTime;
 			// Now you can tune the amount of blood if it gets too thick.
 			if ((++m_usBloodCounter % 2) == 0)
 				MakeBloodPool();
@@ -2714,7 +2714,7 @@ void CDoofus::Logic_Shoot(void)
 		case CSmallPistolID:
 		{
 			// Get event.
-         uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+         uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 			// We don't care about show point for these non-object weapon types.
 			// If it's time to fire the weapon . . .
 			if (u8Event > 0 && lThisTime > m_lShootTimer)
@@ -2763,7 +2763,7 @@ void CDoofus::Logic_Shoot(void)
 	}
 
 	// See if we are at the end of the animation or we have no weapon . . .
-	if (m_lAnimTime > m_panimCur->m_psops->TotalTime() || m_eWeaponType == TotalIDs)
+   if (m_lAnimTime > m_panimCur->m_psops->totalTime || m_eWeaponType == TotalIDs)
 	{
 		m_state = m_eNextState;
 	}
@@ -3867,7 +3867,7 @@ void CDoofus::RunIdleAnimation(void)
 					// Start standing up to use the stand animation
 					{
 						// Start to stand up - run the animation backwards
-						m_lAnimTime = m_panimCur->m_psops->TotalTime();
+                  m_lAnimTime = m_panimCur->m_psops->totalTime;
 						m_bAnimUp = false;
 					}
 					else
@@ -3926,7 +3926,7 @@ void CDoofus::RunIdleAnimation(void)
 						case 2:	// Go to stand - use Crouch backwards to get up
 							m_panimCur = &m_animCrouch;
 							m_bAnimUp = false;
-							m_lAnimTime = m_panimCur->m_psops->TotalTime();
+                     m_lAnimTime = m_panimCur->m_psops->totalTime;
 							m_lIdleTimer = lThisTime + 3000 + GetRandom() % 2500;
 							break;
 					}					
@@ -3968,7 +3968,7 @@ void CDoofus::PositionSmash(void)
 			double	dVitalOrganY;
 			double	dVitalOrganZ;
 			GetLinkPoint(														// Returns nothing.
-				m_ptransExecutionTarget->GetAtTime(m_lAnimTime),	// In:  Transform specifying point.
+            &m_ptransExecutionTarget->atTime(m_lAnimTime),	// In:  Transform specifying point.
 				&dVitalOrganX,													// Out: Point speicfied.
 				&dVitalOrganY,													// Out: Point speicfied.
 				&dVitalOrganZ);												// Out: Point speicfied.			// Update execution point via link point.

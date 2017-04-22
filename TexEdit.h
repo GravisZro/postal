@@ -132,7 +132,7 @@ class CTexEdit
 		int32_t			m_lTriIndex;		// Index of tri selected or < 0, if none.
 		RTexture		m_texWork;			// Work texture.
 		RTexture*	m_ptexSrc;			// The real thing.
-		ChanTexture*	m_ptexchanSrc;	// Animation being edited.
+      ChanTexture m_ptexchanSrc;	// Animation being edited.
 		bool			m_bModified;		// true if texture has been modified since last
 												// synch (revert or apply).
 		RString		m_strFileName;		// Filename to save textures as.
@@ -282,7 +282,7 @@ class CTexEdit
 		ResetTransformation(void)
 			{
 			m_fScale = 0.5f;
-			m_transRot.Make1();
+			m_transRot.makeIdentity();
 			m_fX		= 0;	
 			m_fY		= 0;	
 			}

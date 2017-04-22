@@ -382,8 +382,8 @@ void CSentry::Render(void)
 	if (m_u16IdParent == CIdBank::IdNil)
 		{
 		// Reset transform back to start to set absolute rather than cummulative rotation
-		m_trans.Make1();
-//		m_transBase.Make1(); Not currently needed since the base does not change its transform.
+      m_trans.makeIdentity();
+//		m_transBase.makeIdentity(); Not currently needed since the base does not change its transform.
 
 		m_trans.Ry(rspMod360(m_dRot) );
 		m_trans.Rz(rspMod360(m_dRotZ) );
@@ -406,10 +406,10 @@ void CSentry::Render(void)
 
 	ASSERT(m_panimCurBase != nullptr);
 
-	m_spriteBase.m_pmesh = (RMesh*) m_panimCurBase->m_pmeshes->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_psop = (RSop*) m_panimCurBase->m_psops->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_ptex = (RTexture*) m_panimCurBase->m_ptextures->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_psphere = (RP3d*) m_panimCurBase->m_pbounds->GetAtTime(m_lAnimTime);
+   m_spriteBase.m_pmesh = &m_panimCurBase->m_pmeshes->atTime(m_lAnimTime);
+   m_spriteBase.m_psop = &m_panimCurBase->m_psops->atTime(m_lAnimTime);
+   m_spriteBase.m_ptex = & m_panimCurBase->m_ptextures->atTime(m_lAnimTime);
+   m_spriteBase.m_psphere = & m_panimCurBase->m_pbounds->atTime(m_lAnimTime);
 
 	CCharacter::Render();
 
@@ -454,11 +454,11 @@ int16_t CSentry::Init(void)
 	m_animShoot.m_pbounds->SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
 
 	// Set up the base sprite so we can get the position
-	m_spriteBase.m_pmesh = (RMesh*) m_panimCurBase->m_pmeshes->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_psop = (RSop*) m_panimCurBase->m_psops->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_ptex = (RTexture*) m_panimCurBase->m_ptextures->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_psphere = (RP3d*) m_panimCurBase->m_pbounds->GetAtTime(m_lAnimTime);
-	m_spriteBase.m_ptrans = (RTransform*) m_panimCurBase->m_ptransRigid->GetAtTime(m_lAnimTime);
+   m_spriteBase.m_pmesh = &m_panimCurBase->m_pmeshes->atTime(m_lAnimTime);
+   m_spriteBase.m_psop = &m_panimCurBase->m_psops->atTime(m_lAnimTime);
+   m_spriteBase.m_ptex = & m_panimCurBase->m_ptextures->atTime(m_lAnimTime);
+   m_spriteBase.m_psphere = & m_panimCurBase->m_pbounds->atTime(m_lAnimTime);
+   m_spriteBase.m_ptrans = & m_panimCurBase->m_ptransRigid->atTime(m_lAnimTime);
 
 	// Update base and turret position via m_dX, Y, & Z.
 	UpdatePosition();
@@ -491,10 +491,10 @@ void CSentry::UpdatePosition(void)
 		// Update its position.
 		// set up translation based on the combined last character and child transforms
 		RTransform transChildAbsolute;
-		RTransform*	ptransRigid	= m_panimCurBase->m_ptransRigid->GetAtTime(m_lAnimTime);
+      RTransform*	ptransRigid	= &m_panimCurBase->m_ptransRigid->atTime(m_lAnimTime);
 		
 		// Apply child and parent to transChildAbs
-		transChildAbsolute.Mul(m_trans.T, ptransRigid->T);
+      transChildAbsolute.Mul(m_trans.matdata, ptransRigid->matdata);
 		// Set up pt at origin for child.
 		RP3d pt3Src = {0, 0, 0, 1};
 		RP3d pt3Dst;
@@ -532,8 +532,8 @@ int16_t CSentry::Shutdown(void)							// Returns 0 if successfull, non-zero othe
 {
 	int16_t sResult = SUCCESS;
 
-	m_trans.Make1();
-	m_transBase.Make1();
+   m_trans.makeIdentity();
+   m_transBase.makeIdentity();
 
 	return sResult;
 }

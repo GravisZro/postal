@@ -1617,10 +1617,10 @@ int16_t CPerson::GetResources(void)						// Returns 0 if successfull, non-zero o
 	// Get execution target points -- NOT essential.
 	char	szExeTargetResName[PATH_MAX];
 	sprintf(szExeTargetResName, "%s_writhing_exe.trans", g_apersons[m_ePersonType].Anim.pszBaseName);
-	sLoadResult	= rspGetResource(&g_resmgrGame, szExeTargetResName, &m_ptransExecutionTarget);
+   sLoadResult	= rspGetResource(g_GameSAK, szExeTargetResName, m_ptransExecutionTarget) ? SUCCESS : FAILURE;
    if (sLoadResult == SUCCESS)
 		{
-		m_ptransExecutionTarget->SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+      m_ptransExecutionTarget->SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
 		}
 
 	// Get Logic Table
@@ -1660,7 +1660,7 @@ int16_t CPerson::FreeResources(void)						// Returns 0 if successfull, non-zero 
 
 	// If we have the execution target points . . .
 	if (m_ptransExecutionTarget)
-		rspReleaseResource(&g_resmgrGame, &m_ptransExecutionTarget);
+      rspReleaseResource(m_ptransExecutionTarget);
 
 	// Release base class resources.
 	CDoofus::ReleaseResources();

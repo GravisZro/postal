@@ -263,7 +263,7 @@ int16_t CBall::Shutdown(void)							// Returns 0 if successfull, non-zero otherw
 	{
 	int16_t sResult = SUCCESS;
 
-	m_trans.Make1();
+   m_trans.makeIdentity();
 	
 	return sResult;
 	}
@@ -385,10 +385,10 @@ void CBall::Render(void)
 
 	int32_t lTime	= m_pRealm->m_time.GetGameTime();
 
-	m_sprite.m_pmesh		= (RMesh*)m_anim.m_pmeshes->GetAtTime(lTime);
-	m_sprite.m_psop		= (RSop*)m_anim.m_psops->GetAtTime(lTime);
-	m_sprite.m_ptex		= (RTexture*)m_anim.m_ptextures->GetAtTime(lTime);
-	m_sprite.m_psphere	= (RP3d*)m_anim.m_pbounds->GetAtTime(lTime);
+   m_sprite.m_pmesh		= &m_anim.m_pmeshes->atTime(lTime);
+   m_sprite.m_psop		= &m_anim.m_psops->atTime(lTime);
+   m_sprite.m_ptex		= &m_anim.m_ptextures->atTime(lTime);
+   m_sprite.m_psphere	= &m_anim.m_pbounds->atTime(lTime);
 
 	m_sprite.m_ptrans	= &m_trans;
 

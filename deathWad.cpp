@@ -453,13 +453,13 @@ void CDeathWad::Render(void)
 {
 	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
 
-	m_sprite.m_pmesh = (RMesh*) m_anim.m_pmeshes->GetAtTime(lThisTime);
-	m_sprite.m_psop = (RSop*) m_anim.m_psops->GetAtTime(lThisTime);
-	m_sprite.m_ptex = (RTexture*) m_anim.m_ptextures->GetAtTime(lThisTime);
-	m_sprite.m_psphere = (RP3d*) m_anim.m_pbounds->GetAtTime(lThisTime);
+   m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
+   m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
+   m_sprite.m_ptex = &m_anim.m_ptextures->atTime(lThisTime);
+   m_sprite.m_psphere = &m_anim.m_pbounds->atTime(lThisTime);
 
 	// Reset rotation so it is not cumulative
-	m_trans.Make1();
+   m_trans.makeIdentity();
 
 	// Set its pointing direction
 	m_trans.Ry(rspMod360(m_dRot));

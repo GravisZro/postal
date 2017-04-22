@@ -669,7 +669,7 @@ CScene::Render3D(
 		// NOTE: This does NOT work for more than 1 level of child depth.
 		// To make that work, we must put a transform in the CSprite3.
 		// Apply child and parent to transChildAbs.
-		transChildAbs.Mul( ((CSprite3*)ps3Cur->m_psprParent)->m_ptrans->T, ps3Cur->m_ptrans->T);
+      transChildAbs.Mul( ((CSprite3*)ps3Cur->m_psprParent)->m_ptrans->matdata, ps3Cur->m_ptrans->matdata);
 
 		// Use transChildAbs.
 		ptransRender	= &transChildAbs;
@@ -989,6 +989,12 @@ if (g_bSceneDontBlit == false)
 			}
 		else
 			{
+        /*
+        ASSERT(m_pipeline.m_sCenX - sRadius >= -sRenderOffX);
+        ASSERT(m_pipeline.m_sCenX + sRadius < SCREEN_DIAMETER_FOR_3D - sRenderOffX);
+        ASSERT(m_pipeline.m_sCenY - sRadius >= -sRenderOffY);
+        ASSERT(m_pipeline.m_sCenY + sRadius < SCREEN_DIAMETER_FOR_3D - sRenderOffY);
+*/
 			char	szMsg[1024];
 			if (ps3Cur->m_pthing)
 				{
@@ -1526,8 +1532,8 @@ void CScene::Render(			// Returns nothing.
 					break;	// CSprite::Standard3d.
 
 				case CSprite::Line2d:
-					{
-		// ****TEMP****
+               {
+      // ****TEMP****
 		if (g_bSceneDontBlit == false)
 		{
 		// ****END TEMP****
@@ -1700,7 +1706,7 @@ void CScene::Render(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Setup render pipeline.  Use this function to setup or alter the pipeline.
-// This function DOES a Make1() and then multiplies by the supplied transform,
+// This function DOES a makeIdentity() and then multiplies by the supplied transform,
 // if any.  Any transforms that need to be applied after this setup can be
 // done following a call to this function.
 // The only sux is you cannot insert yourself into the middle of this function.
@@ -1739,16 +1745,16 @@ void CScene::SetupPipeline(						// Returns nothing.
 	/////////////////////////////////////////////////////////////////////////////
 
 	// Re-init (Renit) the pipeline.
-	m_pipeline.m_tView.Make1();	// Identity.
-	m_pipeline.m_tScreen.Make1();	// Identity.
-	m_transNoZView.Make1();			// Identity.
-	m_transNoZScreen.Make1();		// Identity.
+   m_pipeline.m_tView.makeIdentity();	// Identity.
+   m_pipeline.m_tScreen.makeIdentity();	// Identity.
+   m_transNoZView.makeIdentity();			// Identity.
+   m_transNoZScreen.makeIdentity();		// Identity.
 
 	// If there is a user transform . . .
 	if (ptrans != nullptr)
 		{
 		// Apply now. Ok. Close.
-		m_pipeline.m_tView.PreMulBy(ptrans->T);
+      m_pipeline.m_tView.PreMulBy(ptrans->matdata);
 		}
 
 	// If there is a conversion transform . . .
@@ -1758,7 +1764,7 @@ void CScene::SetupPipeline(						// Returns nothing.
 		}
 	else
 		{
-		m_transScene2Realm.Make1();
+      m_transScene2Realm.makeIdentity();
 		}
 
 	////////////////////////////////////////////////////////
@@ -1779,9 +1785,9 @@ void CScene::SetupPipeline(						// Returns nothing.
 	//	m_pipe.m_tView.Scale(1.0,-1.0,1.0); // DON'T DO!
 
 	// Just put the Randy origin in the center of the cube:
-	m_pipeline.m_tView.Trans(dModelRadius, dModelRadius, 0.0);
+   m_pipeline.m_tView.Translate(dModelRadius, dModelRadius, 0.0);
 	// Mimic this in transform that contains no Z scaling.
-	m_transNoZView.Trans(dModelRadius, dModelRadius, 0.0);
+   m_transNoZView.Translate(dModelRadius, dModelRadius, 0.0);
 
 	// Then, to project to the screen, need to FIRST scale it,
 	// THEN flip it about y=0, and FINALLY slide it back down sp
@@ -1806,9 +1812,9 @@ void CScene::SetupPipeline(						// Returns nothing.
 	// Mimic this in transform that contains no Z scaling.
 	m_transNoZScreen.Scale(1.0, -1.0, 1.0);
 
-	m_pipeline.m_tScreen.Trans(0.0,sScreenSize,0.0); // slide down the screen
+   m_pipeline.m_tScreen.Translate(0.0,sScreenSize,0.0); // slide down the screen
 	// Mimic this in transform that contains no Z scaling.
-	m_transNoZScreen.Trans(0.0,sScreenSize,0.0);
+   m_transNoZScreen.Translate(0.0,sScreenSize,0.0);
 
 	////////////////////////////////////////////////////////
 	// More transforms can be applied to either of the 
@@ -1839,15 +1845,15 @@ void CScene::TransformPts(	// Returns nothing.
 			{
 			// Create scene-user transform:
 			// Apply user to view.
-			transApplied.Mul(m_transNoZView.T, ptrans->T);
+         transApplied.Mul(m_transNoZView.matdata, ptrans->matdata);
 			// Apply user-view to screen (store in user-view).
-			transApplied.PreMulBy(m_transNoZScreen.T);
+         transApplied.PreMulBy(m_transNoZScreen.matdata);
 			}
 		else
 			{
 			// Create plain scene transform:
 			// Apply view to screen (store in scene transform).
-			transApplied.Mul(m_transNoZScreen.T, m_transNoZView.T);
+         transApplied.Mul(m_transNoZScreen.matdata, m_transNoZView.matdata);
 			}
 
 		// Translate points
@@ -1878,7 +1884,7 @@ void CScene::TransformPtsToRealm(	// Returns nothing.
 	if (ptrans != nullptr)
 		{
 		// Combine the caller's with the conversion.
-		trans.Mul(m_transScene2Realm.T, ptrans->T);
+      trans.Mul(m_transScene2Realm.T, ptrans->data);
 		// Use new transform.
 		ptrans	= &trans;
 		}

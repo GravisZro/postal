@@ -1542,40 +1542,40 @@ int16_t CDude::CDudeAnim3D::Get(	// Returns 0 on success.
    int16_t sResult;
 	char	szResName[PATH_MAX];
 	sprintf(szResName, "%s.sop", pszBaseFileName);
-   sResult	=  rspGetResource(&g_resmgrGame, szResName, &m_psops);
+   sResult	=  rspGetResource(g_GameSAK, szResName, m_psops) ? SUCCESS : FAILURE;
 	sprintf(szResName, "%s.mesh", pszBaseFileName);
-   sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_pmeshes);
+   sResult	|= rspGetResource(g_GameSAK, szResName, m_pmeshes) ? SUCCESS : FAILURE;
 	sprintf(szResName, "%s.bounds", pszBaseFileName);
-   sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_pbounds);
+   sResult	|= rspGetResource(g_GameSAK, szResName, m_pbounds) ? SUCCESS : FAILURE;
 	if (pszRigidName != nullptr)
 		{
 		sprintf(szResName, "%s_%s.trans", pszBaseFileName, pszRigidName);
-      sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_ptransRigid);
+      sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransRigid) ? SUCCESS : FAILURE;
 		}
 
 	if (pszEventName != nullptr)
 		{
 		sprintf(szResName, "%s_%s.event", pszBaseFileName, pszEventName);
-      sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_pevent);
+      sResult	|= rspGetResource(g_GameSAK, szResName, m_pevent) ? SUCCESS : FAILURE;
 		}
 
 	// We always load these transforms.
 	sprintf(szResName, "%s_" LEFT_HAND_RIGID_ANIM_NAME ".trans", pszBaseFileName);
-   sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_ptransLeft);
+   sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransLeft) ? SUCCESS : FAILURE;
 	sprintf(szResName, "%s_" RIGHT_HAND_RIGID_ANIM_NAME ".trans", pszBaseFileName);
-   sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_ptransRight);
+   sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransRight) ? SUCCESS : FAILURE;
 	sprintf(szResName, "%s_" BACK_RIGID_ANIM_NAME ".trans", pszBaseFileName);
-   sResult	|= rspGetResource(&g_resmgrGame, szResName, &m_ptransBack);
+   sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransBack) ? SUCCESS : FAILURE;
 
 	// If successful . . .
    if (sResult == SUCCESS)
-		{
-		m_psops->SetLooping(sLoopFlags);
+      {
+     m_psops->SetLooping(sLoopFlags);
 		m_pmeshes->SetLooping(sLoopFlags);
 		m_pbounds->SetLooping(sLoopFlags);
-		if (m_ptransRigid != nullptr)
+      if (m_ptransRigid)
 			m_ptransRigid->SetLooping(sLoopFlags);
-		if (m_pevent != nullptr)
+      if (m_pevent)
 			m_pevent->SetLooping(sLoopFlags);
 
 		m_ptransLeft->SetLooping(sLoopFlags);
@@ -1592,17 +1592,17 @@ int16_t CDude::CDudeAnim3D::Get(	// Returns 0 on success.
 // virtual										// Overridden here.
 void CDude::CDudeAnim3D::Release(void)	// Returns nothing.
 	{
-	rspReleaseResource(&g_resmgrGame, &m_psops);
-	rspReleaseResource(&g_resmgrGame, &m_pmeshes);
-	rspReleaseResource(&g_resmgrGame, &m_pbounds);
-	if (m_ptransRigid != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_ptransRigid);
-	if (m_pevent != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_pevent);
+   rspReleaseResource(m_psops);
+   rspReleaseResource(m_pmeshes);
+   rspReleaseResource(m_pbounds);
+   if (m_ptransRigid)
+      rspReleaseResource(m_ptransRigid);
+   if (m_pevent)
+      rspReleaseResource(m_pevent);
 
-	rspReleaseResource(&g_resmgrGame, &m_ptransLeft);
-	rspReleaseResource(&g_resmgrGame, &m_ptransRight);
-	rspReleaseResource(&g_resmgrGame, &m_ptransBack);
+   rspReleaseResource(m_ptransLeft);
+   rspReleaseResource(m_ptransRight);
+   rspReleaseResource(m_ptransBack);
 	}
 
 
@@ -2049,7 +2049,7 @@ void CDude::Update(void)
 						// Switch to idle.
 						m_panimCur			= &m_animIdle;
 						// Set next timeout.
-						m_lNextIdleTime	= m_animIdle.m_psops->TotalTime() * IDLE_ANIM_LOOPS;
+                  m_lNextIdleTime	= m_animIdle.m_psops->totalTime * IDLE_ANIM_LOOPS;
 						}
 					else
 						{
@@ -2069,7 +2069,7 @@ void CDude::Update(void)
 			case State_Throw:
 				{
 #if 1
-            uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+            uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 				// Check for release point in animation . . .
 				if (u8Event > 0)
 					{
@@ -2131,7 +2131,7 @@ void CDude::Update(void)
 				}
 			case State_ThrowFinish:
 				// Check for end of throw animation.
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// This will let us know to be done with throwing on the next Update.
 					SetState(State_ThrowDone);
@@ -2219,7 +2219,7 @@ void CDude::Update(void)
 				break;
 			case State_Shot:
 				// Check for end of damage animation . . .
-//				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+//				if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 				// Instead check for minimum duration since last shot time . . .
 				if (lThisTime > m_lLastShotTime + MIN_SHOT_DURATION)
 					{
@@ -2236,7 +2236,7 @@ void CDude::Update(void)
 				break;
 			case State_Suicide:
 				// Check for moment of firing weapon . . .
-            if (*m_panimCur->m_pevent->GetAtTime(m_lAnimTime) > 0
+            if (m_panimCur->m_pevent->atTime(m_lAnimTime) > 0
 					&& m_bBrainSplatted == false)		// ***FUDGE***
 					{
 					// Play shot fire.
@@ -2265,7 +2265,7 @@ void CDude::Update(void)
 				// Intentional fall through to State_Die.
 			case State_Die:
 				// Check for end of die animation . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Make sure we're dead for reals.  Do this before the SetState()
 					// so we doesn't end up dropping any health.
@@ -2278,7 +2278,7 @@ void CDude::Update(void)
 					}
 				else if (m_bGenericEvent1 == false)
 					{
-               uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+               uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 
 					if (u8Event > 1)	// ***FUDGE***
 						{
@@ -2310,7 +2310,7 @@ void CDude::Update(void)
 			case State_Launch:
 #if 0
 				{
-            uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+            uint8_t u8Event = *m_panimCur->m_pevent->atTime(m_lAnimTime);
 				// Check for launch point in animation . . .
 				if (u8Event > 0)
 					{
@@ -2353,7 +2353,7 @@ void CDude::Update(void)
 				break;
 			case State_LaunchFinish:
 				// Check for end of launch animation . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to State_LaunchDone which is purely transitional to State_Stand.
 					SetState(State_LaunchDone);
@@ -2361,7 +2361,7 @@ void CDude::Update(void)
 				break;
 			case State_GetUp:
 				// check for end of getup anim . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to last persistent state.  Usually stand.
 					SetState(State_Persistent);
@@ -2369,7 +2369,7 @@ void CDude::Update(void)
 				break;
 			case State_Rise:
 				// check for end of rise anim . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to last persistent state.  Usually stand.
 					SetState(State_Persistent);
@@ -2384,7 +2384,7 @@ void CDude::Update(void)
 					m_bJumpVerticalTrigger	= true;
 					}
 
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to fall state.
 					SetState(State_Fall);
@@ -2410,7 +2410,7 @@ void CDude::Update(void)
 				break;
 			case State_Execute:
 				// check for end of execute anim . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to last persistent state.  Usually stand.
 					SetState(State_Persistent);
@@ -2447,14 +2447,14 @@ void CDude::Update(void)
 			case State_PutDown:
 #if 0
 				// Check for end of anim . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to last persistent state.  Usually stand.
 					SetState(State_Persistent);
 					}
 				else 
 					{
-               uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+               uint8_t u8Event = *m_panimCur->m_pevent->atTime(m_lAnimTime);
 					// Check for show point in anim . . .
 					if (u8Event > 0)
 						{
@@ -2479,7 +2479,7 @@ void CDude::Update(void)
 				break;
 			case State_ObjectReleased:
 				// Check for end of anim . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// Go to last persistent state.  Usually stand.
 					SetState(State_Persistent);
@@ -2490,7 +2490,7 @@ void CDude::Update(void)
 				{
 				CPowerUp*	ppowerup;
 				// Check for end of anim . . .
-				if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+            if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// If we still have the picked up item . . .
                if (m_pRealm->m_idbank.GetThingByID((CThing**)&ppowerup, m_u16IdChild) == SUCCESS)
@@ -2534,7 +2534,7 @@ void CDude::Update(void)
 					// Position powerup.
 					PositionChild(
 						&(ppowerup->m_sprite),	// In:  Child sprite to detach.
-						(RTransform*) m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime),	// In:  Transform specifying position.
+                  &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying position.
 						&(ppowerup->m_dX),		// Out: New position of child. 
 						&(ppowerup->m_dY),		// Out: New position of child. 
 						&(ppowerup->m_dZ) );		// Out: New position of child. 
@@ -3495,7 +3495,7 @@ else
 void CDude::Render(void)
 	{
 	// Use user's chosen texture.
-	m_panimCur->m_ptextures	= m_aptextures[m_sTextureIndex];
+   m_panimCur->m_ptextures	= m_aptextures[m_sTextureIndex];
 
 	// Call base class.
 	CCharacter::Render();
@@ -3506,7 +3506,7 @@ void CDude::Render(void)
 		{
 		PositionChild(
 			pflag->GetSprite(),
-			((CDudeAnim3D*) m_panimCur)->m_ptransLeft->GetAtTime(m_lAnimTime),	// In:  Transform specifying position.
+         & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime),	// In:  Transform specifying position.
 			nullptr,
 			nullptr,
 			nullptr);
@@ -3542,11 +3542,11 @@ void CDude::Render(void)
 		// Show weapon sprite.
 		m_spriteWeapon.m_sInFlags	&= ~CSprite::InHidden;
 
-		m_spriteWeapon.m_pmesh		= panimWeapon->m_pmeshes->GetAtTime(m_lAnimTime);
-		m_spriteWeapon.m_psop		= panimWeapon->m_psops->GetAtTime(m_lAnimTime);
-		m_spriteWeapon.m_ptex		= panimWeapon->m_ptextures->GetAtTime(m_lAnimTime);
-		m_spriteWeapon.m_psphere	= panimWeapon->m_pbounds->GetAtTime(m_lAnimTime);
-		m_spriteWeapon.m_ptrans		= ((CDudeAnim3D*)m_panimCur)->m_ptransRight->GetAtTime(m_lAnimTime);
+      m_spriteWeapon.m_pmesh		= &panimWeapon->m_pmeshes->atTime(m_lAnimTime);
+      m_spriteWeapon.m_psop		= &panimWeapon->m_psops->atTime(m_lAnimTime);
+      m_spriteWeapon.m_ptex		= &panimWeapon->m_ptextures->atTime(m_lAnimTime);
+      m_spriteWeapon.m_psphere	= &panimWeapon->m_pbounds->atTime(m_lAnimTime);
+      m_spriteWeapon.m_ptrans		= &((CDudeAnim3D*)m_panimCur)->m_ptransRight->atTime(m_lAnimTime);
 		}
 	else
 		{
@@ -3561,11 +3561,11 @@ void CDude::Render(void)
 		m_spriteBackpack.m_sInFlags	&= ~CSprite::InHidden;
 
 		ASSERT(m_animBackpack.m_pmeshes);
-		m_spriteBackpack.m_pmesh	= m_animBackpack.m_pmeshes->GetAtTime(m_lAnimTime);                   
-		m_spriteBackpack.m_psop		= m_animBackpack.m_psops->GetAtTime(m_lAnimTime);                     
-		m_spriteBackpack.m_ptex		= m_animBackpack.m_ptextures->GetAtTime(m_lAnimTime);                 
-		m_spriteBackpack.m_psphere	= m_animBackpack.m_pbounds->GetAtTime(m_lAnimTime);                   
-		m_spriteBackpack.m_ptrans	= ((CDudeAnim3D*)m_panimCur)->m_ptransBack->GetAtTime(m_lAnimTime);
+      m_spriteBackpack.m_pmesh	= &m_animBackpack.m_pmeshes->atTime(m_lAnimTime);
+      m_spriteBackpack.m_psop		= &m_animBackpack.m_psops->atTime(m_lAnimTime);
+      m_spriteBackpack.m_ptex		= &m_animBackpack.m_ptextures->atTime(m_lAnimTime);
+      m_spriteBackpack.m_psphere	= &m_animBackpack.m_pbounds->atTime(m_lAnimTime);
+      m_spriteBackpack.m_ptrans	= &((CDudeAnim3D*)m_panimCur)->m_ptransBack->atTime(m_lAnimTime);
 		}
 	else
 		{
@@ -3781,7 +3781,7 @@ int16_t CDude::GetResources(void)						// Returns 0 if successfull, non-zero oth
 	for (i = 0; i < MaxTextures && sResult == SUCCESS; i++)
 		{
 		sprintf(szResName, "3d/main_color%d.tex", i);
-		sResult	|= rspGetResource(&g_resmgrGame, szResName, &(m_aptextures[i]) );
+      sResult	|= rspGetResource(g_GameSAK, szResName, m_aptextures[i]) ? SUCCESS : FAILURE;
 		}
 
 	// Get the different weapons this dude could use.
@@ -3833,7 +3833,7 @@ void CDude::FreeResources(void)
 	int16_t i;
 	for (i = 0; i < MaxTextures; i++)
 		{
-		rspReleaseResource(&g_resmgrGame, &(m_aptextures[i]) );
+      rspReleaseResource((m_aptextures[i]) );
 		}
 
 	// Release the different weapons this dude could use.
@@ -3849,7 +3849,7 @@ void CDude::FreeResources(void)
 	m_animBackpack.Release();
 
 	// Release the targeting image
-	rspReleaseResource(&g_resmgrGame, &(m_TargetSprite.m_pImage));
+   rspReleaseResource(&g_resmgrGame, &(m_TargetSprite.m_pImage));
 
 	}
 
@@ -3985,7 +3985,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					break;
 				default:
 					// Check for end of blown up state . . .
-					if (m_lAnimTime < m_panimCur->m_psops->TotalTime())
+               if (m_lAnimTime < m_panimCur->m_psops->totalTime)
 						{
 						bRealizeNewState	= false;
 						}
@@ -4032,7 +4032,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					break;
 				default:
 					// Check for end of get up state . . .
-					if (m_lAnimTime < m_panimCur->m_psops->TotalTime())
+               if (m_lAnimTime < m_panimCur->m_psops->totalTime)
 						{
 						bRealizeNewState	= false;
 						}
@@ -4390,15 +4390,15 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 						// If we duck at the same rate we rise, there's a relation
 						// between the times of the animations.
 						// If not past the end of the duck . . .
-						if (m_lAnimTime < m_animDuck.m_psops->TotalTime())
+                  if (m_lAnimTime < m_animDuck.m_psops->totalTime)
 							{
-							ASSERT(m_animDuck.m_psops->TotalTime() != 0);
+                     ASSERT(m_animDuck.m_psops->totalTime != 0);
 
 							// Get the ratio between the two animations total times.
-							float	fRatio	= (float)m_animRise.m_psops->TotalTime() 
-												/ (float)m_animDuck.m_psops->TotalTime();
+                     float	fRatio	= (float)m_animRise.m_psops->totalTime
+                                    / (float)m_animDuck.m_psops->totalTime;
 							// Invert the time in the new animations time base.
-							m_lAnimTime				= m_animRise.m_psops->TotalTime() - m_lAnimTime * fRatio;
+                     m_lAnimTime				= m_animRise.m_psops->totalTime - m_lAnimTime * fRatio;
 							}
 						else
 							{
@@ -4862,7 +4862,7 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 	{
 	double	dBrainX, dBrainY, dBrainZ;
 	GetLinkPoint(														// Returns nothing.
-		m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime),	// In:  Transform specifying point.
+      &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
 		&dBrainX,														// Out: Point specified.
 		&dBrainY,														// Out: Point specified.
 		&dBrainZ);														// Out: Point specified.
@@ -5181,7 +5181,7 @@ void CDude::OnPutMeDownMsg(		// Returns nothing
 		// Detatch child and update its position
 		CThing3d* pthing3d = DetachChild(
 			&(pputmedownmsg->u16FlagInstanceID),
-			((CDudeAnim3D*) m_panimCur)->m_ptransLeft->GetAtTime(m_lAnimTime) );
+         & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime) );
 		if (pthing3d)
 			{
 			pthing3d->m_dX		= m_dX;
@@ -5272,7 +5272,7 @@ bool CDude::WhileBlownUp(void)	// Returns true until state is complete.
 			}
 
 		// Make sure its done with current animation also
-		if (m_lAnimTime > m_panimCur->m_psops->TotalTime())
+      if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 			{
 			bStatePersists = false;
 			}
@@ -5289,7 +5289,7 @@ void CDude::OnExecute(void)		// Returns nothing.
 	// Update execution point via link point.
 	double	dMuzzleX, dMuzzleY, dMuzzleZ;
 	GetLinkPoint(														// Returns nothing.
-		m_panimCur->m_ptransRigid->GetAtTime(m_lAnimTime),	// In:  Transform specifying point.
+      &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
 		&dMuzzleX,														// Out: Point speicfied.
 		&dMuzzleY,														// Out: Point speicfied.
 		&dMuzzleZ);														// Out: Point speicfied.
@@ -5778,7 +5778,7 @@ void CDude::PlayStep(void)				// Returns nothing.
 	if (m_panimCur->m_pevent != nullptr)
 		{
 		// If the current event is different from the last . . .
-      uint8_t u8Event = *m_panimCur->m_pevent->GetAtTime(m_lAnimTime);
+      uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 		if (u8Event > 0 && u8Event != m_u8LastEvent)
 			{
 			PlaySample(g_smidStep, SampleMaster::Unspecified);
@@ -6156,7 +6156,7 @@ void CDude::DropAllFlags(	// Returns nothing.
 		// Detach the flag.
 		DetachChild(
 			&u16IdFlag,
-			((CDudeAnim3D*) m_panimCur)->m_ptransLeft->GetAtTime(m_lAnimTime) );
+         & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime) );
 
 		// Move it to our position rather than the transformed position b/c we
 		// don't know if that's a valid position but we do know that our position

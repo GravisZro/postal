@@ -458,9 +458,9 @@ const char* CRealm::ms_apszLayerNames[TotalLayers]	=
 // checkbox form).
 const char*	CRealm::ms_apsz2dResPaths[Num2dPaths]	=
 	{
-	"2d/Top/",
-	"2d/Side/",
-	"2d/SideBright/",
+   "2d/top/",
+   "2d/side/",
+   "2d/sidebright/",
 	};
 
 // Used for CRealm oriented drawing tasks.
@@ -1465,7 +1465,7 @@ void CRealm::Update(void)
 // Render the realm
 ////////////////////////////////////////////////////////////////////////////////
 void CRealm::Render(void)
-	{
+   {
 	// Entering update loop.
 	m_bUpdating	= true;
 
