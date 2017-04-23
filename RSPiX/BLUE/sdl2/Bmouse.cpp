@@ -111,9 +111,9 @@ extern void rspGetMouse(
 
   if (psButton != nullptr)
   {
-    *psButton  = buttons << 3;
-    *psButton |= MouseWheelState & 0x2000;
-    *psButton |= MouseWheelState & 0x4000;
+    *psButton  = RSP_BUTTON_MASK(buttons);
+    *psButton |= RSP_BUTTON_MASK(MouseWheelState & RSP_MWHEEL_UP);
+    *psButton |= RSP_BUTTON_MASK(MouseWheelState & RSP_MWHEEL_DOWN);
   }
 
   MouseWheelState = 0;
