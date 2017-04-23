@@ -130,16 +130,16 @@ extern void Mouse_Event(SDL_Event *event)
   mouse_event_t*	pme = ms_ameEvents;
   pme->lTime = SDL_GetTicks();
 #if SDL_MAJOR_VERSION > 2 || (SDL_MAJOR_VERSION == 2 && (SDL_MINOR_VERSION > 0 || SDL_PATCHLEVEL >= 2))
-  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? event->button.clicks : 0;  // click count (if clicking)
+  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? event->button.clicks : RSP_BUTTON_RELEASED;  // click count (if clicking)
 #else
-  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? 1 : 0; // no double click for you! (need to fix!)
+  pme->sType = event->type == SDL_MOUSEBUTTONDOWN ? RSP_BUTTON_PRESSED : RSP_BUTTON_RELEASED; // no double click for you! (need to fix!)
 #endif
 
   static int16_t buttonState = 0;
 
   bool bQueueMouseWheelRelease = false;
 
-  buttonState &= ~(0x2000 | 0x4000); // unset mousewheel
+  buttonState &= ~(RSP_MWHEEL_UP | RSP_MWHEEL_DOWN); // unset mousewheel
 
   switch (event->type)
   {
@@ -161,12 +161,13 @@ extern void Mouse_Event(SDL_Event *event)
     case SDL_MOUSEWHEEL:
     {
       if (event->wheel.y > 0)
-        MouseWheelState = 0x2000;
+        MouseWheelState = RSP_MWHEEL_UP;
       else if (event->wheel.y < 0)
-        MouseWheelState = 0x4000;
+        MouseWheelState = RSP_MWHEEL_DOWN;
       else
-        MouseWheelState = 0x0000;
+        MouseWheelState = 0;
 
+      pme->sType = MouseWheelState | RSP_BUTTON_PRESSED;
       buttonState |= MouseWheelState;
       pme->sButton = buttonState;
       bQueueMouseWheelRelease = true;
@@ -199,7 +200,7 @@ extern void Mouse_Event(SDL_Event *event)
   {
     mouse_event_t* newpme = ms_ameEvents;
     newpme->lTime = SDL_GetTicks();
-    newpme->sType = SDL_MOUSEBUTTONUP;
+    newpme->sType = MouseWheelState;
     newpme->sButton = MouseWheelState;
     ms_qmeEvents.EnQ(newpme);
   }

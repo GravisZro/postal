@@ -138,16 +138,27 @@ extern int16_t rspAssert(	// Returns result.
 // Mouse API
 ////////////////////////////////////////////////////////////////////////////////
 
-#define RSP_BUTTON_MASK(x)    (8 << x)
-#define RSP_MB0_RELEASED		0x0010  // Mouse button 0 was released
-#define RSP_MB0_PRESSED			0x0011  // Mouse button 0 was pressed
-#define RSP_MB0_DOUBLECLICK	0x0012  // Mouse button 0 was double clicked
-#define RSP_MB1_RELEASED		0x0020  // Defined for compile-campatibility with PC!
-#define RSP_MB1_PRESSED			0x0021  // Defined for compile-campatibility with PC!
-#define RSP_MB1_DOUBLECLICK	0x0022  // Defined for compile-campatibility with PC!
-#define RSP_MB2_RELEASED		0x0040  // Defined for compile-campatibility with PC!
-#define RSP_MB2_PRESSED			0x0041  // Defined for compile-campatibility with PC!
-#define RSP_MB2_DOUBLECLICK	0x0042  // Defined for compile-campatibility with PC!
+#define RSP_BUTTON_RELEASED     0x0000
+#define RSP_BUTTON_PRESSED      0x0001
+#define RSP_BUTTON_DOUBLECLICK  0x0002
+#define RSP_MOUSEBUTTON0        0x0010
+#define RSP_MOUSEBUTTON1        0x0020
+#define RSP_MOUSEBUTTON2        0x0040
+#define RSP_MWHEEL_UP           0x0080
+#define RSP_MWHEEL_DOWN         0x0100
+
+#define RSP_BUTTON_MASK(x)      (8 << x)
+
+#define RSP_MB0_RELEASED        (RSP_MOUSEBUTTON0 | RSP_BUTTON_RELEASED)
+#define RSP_MB0_PRESSED         (RSP_MOUSEBUTTON0 | RSP_BUTTON_PRESSED)
+#define RSP_MB0_DOUBLECLICK     (RSP_MOUSEBUTTON0 | RSP_BUTTON_DOUBLECLICK)
+#define RSP_MB1_RELEASED        (RSP_MOUSEBUTTON1 | RSP_BUTTON_RELEASED)
+#define RSP_MB1_PRESSED         (RSP_MOUSEBUTTON1 | RSP_BUTTON_PRESSED)
+#define RSP_MB1_DOUBLECLICK     (RSP_MOUSEBUTTON1 | RSP_BUTTON_DOUBLECLICK)
+#define RSP_MB2_RELEASED        (RSP_MOUSEBUTTON2 | RSP_BUTTON_RELEASED)
+#define RSP_MB2_PRESSED         (RSP_MOUSEBUTTON2 | RSP_BUTTON_PRESSED)
+#define RSP_MB2_DOUBLECLICK     (RSP_MOUSEBUTTON2 | RSP_BUTTON_DOUBLECLICK)
+
 
 extern void rspActivateMouse(bool enable = true);
 extern bool rspMouseGrabbed(void);

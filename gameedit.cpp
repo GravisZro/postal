@@ -1637,7 +1637,7 @@ inline void SetMBValsAndCallback(		// Returns nothing.
    uintptr_t  uptrUserData,				// In:  Value for m_ulUserData.
    int16_t    sState)						// In:  Initial MultiBtn state.
 	{
-	RMultiBtn*	pmb	= (RMultiBtn*)pguiRoot->GetItemFromId(lId);
+   RMultiBtn* pmb = static_cast<RMultiBtn*>(pguiRoot->GetItemFromId(lId));
 	if (pmb)
 		{
       pmb->m_ulUserInstance	= uptrUserInstance;
@@ -1797,7 +1797,7 @@ extern void GameEdit(
 			ms_pguiRealmBar->SetVisible(ms_pguiRealmBar->m_sVisible);
 
 			// Get object picker list box.
-			RListBox*	plbPicker	= (RListBox*)ms_pguiPickObj->GetItemFromId(GUI_ID_PICK_LIST);
+         RListBox* plbPicker = static_cast<RListBox*>(ms_pguiPickObj->GetItemFromId(GUI_ID_PICK_LIST));
 
 			ASSERT(plbPicker != nullptr);
 			ASSERT(plbPicker->m_type == RGuiItem::ListBox);
@@ -1839,7 +1839,7 @@ extern void GameEdit(
 			ms_pguiPickObj->SetVisible(ms_pguiPickObj->m_sVisible);
 
 			// Get layer tweaker list box.
-			ms_plbLayers	= (RListBox*)ms_pguiLayers->GetItemFromId(GUI_ID_LAYER_LIST);
+         ms_plbLayers	= static_cast<RListBox*>(ms_pguiLayers->GetItemFromId(GUI_ID_LAYER_LIST));
 
 			ASSERT(ms_plbLayers != nullptr);
 			ASSERT(ms_plbLayers->m_type == RGuiItem::ListBox);
@@ -1859,7 +1859,7 @@ extern void GameEdit(
 					pguiItem->m_lId		= GUI_ID_TOGGLE_LAYER;
 					// These are push buttons.
 					ASSERT(pguiItem->m_type == RGuiItem::PushBtn);
-					((RPushBtn*)pguiItem)->m_state	
+               static_cast<RPushBtn*>(pguiItem)->m_state
 						= (prealm->m_scene.m_pLayers[sLayer].m_bHidden == false) ? RPushBtn::On : RPushBtn::Off;
 					// Realize state.
 					pguiItem->Compose();
@@ -1964,6 +1964,7 @@ extern void GameEdit(
 			// Editor's main loop.
 			//////////////////////////////////////////////////////////////////////
 
+         rspActivateMouse(true);
 			bExit = false;
 			int16_t	sCursorX, sCursorY, sCursorZ;
 			while (!bExit)
@@ -1986,6 +1987,7 @@ extern void GameEdit(
 
 			// Done with the views.
 			RemoveViews();
+         rspActivateMouse(rspMouseGrabbed());
 
 			// Restore cursor show level.
 			rspSetMouseCursorShowLevel(sCursorShowLevel);
@@ -2816,12 +2818,12 @@ static bool DoInput(		// Returns true when done.
 					if (pguiSel != nullptr)
 						{
 						// Get layer to toggle.
-						CRealm::Layer	layer	= (CRealm::Layer)pguiSel->m_ulUserData;
+                  CRealm::Layer layer = CRealm::Layer(pguiSel->m_ulUserData);
 						// Should be push btn.
 						ASSERT(pguiSel->m_type == RGuiItem::PushBtn);
 						// Toggle.
 						prealm->m_scene.m_pLayers[layer].m_bHidden 
-							= (((RPushBtn*)pguiSel)->m_state == RPushBtn::On) ? false : true;
+                     = (static_cast<RPushBtn*>(pguiSel)->m_state == RPushBtn::On) ? false : true;
 						}
 					break;
 					}
@@ -2891,7 +2893,7 @@ static bool DoInput(		// Returns true when done.
 						sCursorZ);		// z
 
 					// Get object picker list box.
-					RListBox*	plbPicker	= (RListBox*)ms_pguiPickObj->GetItemFromId(GUI_ID_PICK_LIST);
+               RListBox* plbPicker = static_cast<RListBox*>(ms_pguiPickObj->GetItemFromId(GUI_ID_PICK_LIST));
 					if (plbPicker != nullptr)
 						{
 						RGuiItem*	pguiSel	= plbPicker->GetSel();
@@ -3576,8 +3578,8 @@ static int16_t NewRealm(
 			if (sResult == SUCCESS)
 				{
 				// Store ptr to GameEdit thing.
-				ms_pgething	= (CGameEditThing*)pthing;
-				ms_pgething->m_plbNavNetList = (RListBox*) ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST);
+            ms_pgething	= static_cast<CGameEditThing*>(pthing);
+            ms_pgething->m_plbNavNetList = static_cast<RListBox*>(ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST));
 
 				sResult	= CreateNewThing(prealm, CThing::CNavigationNetID, 150, 0, 50, &pthing, &ms_photSel);
 				if (sResult == SUCCESS)
@@ -3595,7 +3597,7 @@ static int16_t NewRealm(
 					sResult = CreateNewThing(prealm, CThing::CTriggerID, 0, 0, 0, &pthing, &photdummy);
 					if (sResult == SUCCESS) 
 						{
-						prealm -> m_pTriggerMap = ((CTrigger*)pthing)->m_pmgi;
+                  prealm->m_pTriggerMap = static_cast<CTrigger*>(pthing)->m_pmgi;
 						}
 					}
 				else
@@ -3763,10 +3765,10 @@ static int16_t LoadRealm(
 
 				// Store ptr to GameEdit thing.
 				CListNode<CThing>* pEditorList = prealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
-				CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
+            CGameEditThing* peditor = static_cast<CGameEditThing*>(pEditorList->m_powner);
 				if (peditor)
 					{
-					peditor->m_plbNavNetList = (RListBox*) ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST);
+               peditor->m_plbNavNetList = static_cast<RListBox*>(ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST));
 					}
 
 				///////////////////////////////////////////////////////////////////
@@ -3777,7 +3779,7 @@ static int16_t LoadRealm(
 					{
 					RRect		rc;
 					// Get first and only Hood iterator.
-					CHood* phood = (CHood*) prealm->m_aclassHeads[CThing::CHoodID].m_pnNext->m_powner;
+               CHood* phood = static_cast<CHood*>(prealm->m_aclassHeads[CThing::CHoodID].m_pnNext->m_powner);
 					// Get rectangle.
 					phood->EditRect(&rc);
 					// Create and setup RHot for hood.
@@ -3819,7 +3821,7 @@ static int16_t LoadRealm(
 										break;
 
 									case CThing::CNavigationNetID:
-										((CNavigationNet*) pthing)->EditPostLoad();
+                              static_cast<CNavigationNet*>(pthing)->EditPostLoad();
 										break;
 									}
 
@@ -4248,7 +4250,7 @@ static void PlayRealm(
 						uint16_t u16IdDude = CIdBank::IdNil;
 						while (pNext->m_powner != nullptr)
 						{
-							CDude*	pdude = (CDude*) pNext->m_powner;
+                     CDude* pdude = static_cast<CDude*>(pNext->m_powner);
 							// if this is the local dude...
 							if (pdude->m_sDudeNum == 0)
 							{
@@ -4267,7 +4269,7 @@ static void PlayRealm(
 							CDude*	pdude	= nullptr;
 							CWarp*	pwarp	= nullptr;
 							// If there's a specific warp desired . . .
-                     if (prealm->m_idbank.GetThingByID( (CThing**)&pwarp, idSpecificWarp) == SUCCESS)
+                     if (prealm->m_idbank.GetThingByID( reinterpret_cast<CThing**>(&pwarp), idSpecificWarp) == SUCCESS)
 								{
 								// Use the specific warp to create the dude . . .
 								if (pwarp->WarpIn(		// Returns 0 on success.                                 
@@ -4314,7 +4316,7 @@ static void PlayRealm(
 							}
 
 						CDude*	pdudeLocal	= nullptr;
-                  if (prealm->m_idbank.GetThingByID((CThing**)&pdudeLocal, u16IdDude) == SUCCESS)
+                  if (prealm->m_idbank.GetThingByID(reinterpret_cast<CThing**>(&pdudeLocal), u16IdDude) == SUCCESS)
 							{
 							pdudeLocal->m_sTextureIndex = MAX((int16_t)0, MIN((int16_t)(CDude::MaxTextures - 1), (int16_t)g_GameSettings.m_sPlayerColorIndex));
 
@@ -4570,7 +4572,7 @@ static void PlayRealm(
 								{
 								CDude*	pdudeLocal;
 								// If there's a local dude . . .
-                        if (prealm->m_idbank.GetThingByID((CThing**)&pdudeLocal, u16IdDude) == SUCCESS)
+                        if (prealm->m_idbank.GetThingByID(reinterpret_cast<CThing**>(&pdudeLocal), u16IdDude) == SUCCESS)
 									{
 									// If dead . . .
 									if (pdudeLocal->m_state == CCharacter::State_Dead)
@@ -4648,7 +4650,7 @@ static void PlayRealm(
 							// If there is a local dude . . .
 							CDude*	pdudeLocal	= nullptr;
 							// If there's a local dude, get him.
-							prealm->m_idbank.GetThingByID((CThing**)&pdudeLocal, u16IdDude);
+                     prealm->m_idbank.GetThingByID(reinterpret_cast<CThing**>(&pdudeLocal), u16IdDude);
 
 							// Only do scrollbars if not tracking . . .
 							if (bTracking == false)
@@ -5186,7 +5188,7 @@ static int16_t SizeUpdate(		// Returns 0 on success.
 	// Get the hood . . .
 	CHood*	phood = nullptr;
 	if (prealm->m_asClassNumThings[CThing::CHoodID] > 0)
-		phood = (CHood*) prealm->m_aclassHeads[CThing::CHoodID].GetNext();
+      phood = static_cast<CHood*>(prealm->m_aclassHeads[CThing::CHoodID].GetNext());
 	else
 		{
 		TRACE("SizeUpdate(): No hood.\n");
@@ -5334,7 +5336,7 @@ static CGameEditThing* GetEditorThing(	// Returns ptr to editor thing for
 
 	if (prealm->m_asClassNumThings[CThing::CGameEditThingID] > 0)
 	{
-		pgething = (CGameEditThing*) prealm->m_aclassHeads[CThing::CGameEditThingID].GetNext();
+      pgething = static_cast<CGameEditThing*>(prealm->m_aclassHeads[CThing::CGameEditThingID].GetNext());
 	}
 	else
 	{
@@ -5370,7 +5372,7 @@ static void ListItemPressedCall(	// Returns nothing.
 		// Default logic.
 		GuiPressedCall(pgui);
 		// Select item.
-		RListBox*	plb	= (RListBox*)pgui->m_ulUserInstance;
+      RListBox* plb = reinterpret_cast<RListBox*>(pgui->m_ulUserInstance);
 		if (plb != nullptr)
 			{
 			// Set new item as selection.
@@ -5394,16 +5396,16 @@ void NavNetListPressedCall(	// Returns nothing
 	// Default logic
 //	GuiPressedCall(pgui);
 	// Select item
-	RGuiItem* pitem = (RGuiItem*) pgui->GetParent();
-	RListBox* plb = (RListBox*) pitem->GetParent();
+   RGuiItem* pitem = pgui->GetParent();
+   RListBox* plb = static_cast<RListBox*>(pitem->GetParent());
 	if (plb != nullptr)
 		{
 		// Set selection
 		plb->SetSel(pgui);
 		// Set as default Nav Net
-		((CNavigationNet*) pgui->m_ulUserInstance)->SetAsDefault();
+      reinterpret_cast<CNavigationNet*>(pgui->m_ulUserInstance)->SetAsDefault();
 		// Make the net lines redraw
-		UpdateNetLines((CNavigationNet*) pgui->m_ulUserInstance);
+      UpdateNetLines(reinterpret_cast<CNavigationNet*>(pgui->m_ulUserInstance));
 		}
 	else
 		{
@@ -5464,7 +5466,7 @@ static void ThingHotCall(	// Returns nothing.
 									// Out: Depends on callbacks.  Generally,
 									// pie->sUsed = TRUE, if used.
 	{
-	CThing*	pthing	= (CThing*)phot->m_ulUser;
+   CThing* pthing = reinterpret_cast<CThing*>(phot->m_ulUser);
 	ASSERT(pthing != nullptr);
 
 	// If not used . . .
@@ -5561,14 +5563,14 @@ static void ThingHotCall(	// Returns nothing.
 					if ((m_pBouyLink0 == nullptr && m_pBouyLink1 == nullptr) ||
 						 (m_pBouyLink0 != nullptr && m_pBouyLink1 != nullptr))
 					{
-						m_pBouyLink0 = (CBouy*) ms_pthingSel;
+                  m_pBouyLink0 = static_cast<CBouy*>(ms_pthingSel);
 						m_pBouyLink1 = nullptr;
 							
 					}
 					// This is the ending bouy
 					else if (m_pBouyLink0 != nullptr && m_pBouyLink1 == nullptr)
 					{
-						m_pBouyLink1 = (CBouy*) ms_pthingSel;					
+                  m_pBouyLink1 = static_cast<CBouy*>(ms_pthingSel);
 						m_pBouyLink0->AddLink(m_pBouyLink1);
 						m_pBouyLink1->AddLink(m_pBouyLink0);
 						AddNewLine(m_pBouyLink0->GetX(),
@@ -5966,7 +5968,7 @@ static int16_t AddView(		// Returns 0 on success.
 	{
 	static int16_t	sNum	= 0;
    int16_t sResult = SUCCESS;	// Assume success.
-	RListBox*	plb	= (RListBox*)ms_pguiCameras->GetItemFromId(GUI_ID_CAMERA_LIST);
+   RListBox* plb = static_cast<RListBox*>(ms_pguiCameras->GetItemFromId(GUI_ID_CAMERA_LIST));
 	if (plb != nullptr)
 		{
 		View*	pview;
@@ -5975,7 +5977,6 @@ static int16_t AddView(		// Returns 0 on success.
 			char	szTitle[256];
 			sprintf(szTitle, "Camera %d", ++sNum);
          RGuiItem*	pgui			= plb->AddString(szTitle);
-         TRACE("SUSPICIOUS CODE!");
          pgui->m_lId					= uintptr_t(pview);
 			plb->AdjustContents();
 
@@ -6002,7 +6003,7 @@ static void RemoveView(		// Returns nothing.
 	View*	pview)				// In: View to remove or nullptr to remove currently
 									// selected view.
 	{
-	RListBox*	plb	= (RListBox*)ms_pguiCameras->GetItemFromId(GUI_ID_CAMERA_LIST);
+   RListBox* plb = static_cast<RListBox*>(ms_pguiCameras->GetItemFromId(GUI_ID_CAMERA_LIST));
 	if (plb != nullptr)
 		{
 		RGuiItem*	pguiRemove;
@@ -6062,8 +6063,8 @@ static int16_t CreateView(					// Returns 0 on success.
 			pview->pgui->GetClient(nullptr, nullptr, &(pview->sViewW), &(pview->sViewH) );
 
 			// Get the scrollbars.
-			pview->psbVert	= (RScrollBar*)pview->pgui->GetItemFromId(3);
-			pview->psbHorz	= (RScrollBar*)pview->pgui->GetItemFromId(4);
+         pview->psbVert	= static_cast<RScrollBar*>(pview->pgui->GetItemFromId(3));
+         pview->psbHorz	= static_cast<RScrollBar*>(pview->pgui->GetItemFromId(4));
 			// Adjust dimensions to make scrollbars visible.
 			if (pview->psbVert != nullptr)
 				{
@@ -6545,7 +6546,7 @@ static int16_t CreateTriggerRegions(	// Returns 0 on success.
 		sResult = CreateNewThing(prealm, CThing::CTriggerID, 0, 0, 0, &pThing, &photdummy);
 		if (sResult == SUCCESS) 
 			{
-			prealm -> m_pTriggerMap = ((CTrigger*)pThing)->m_pmgi;
+         prealm->m_pTriggerMap = static_cast<CTrigger*>(pThing)->m_pmgi;
 			}
 		else
 			{
@@ -6646,7 +6647,7 @@ static void EditPylonTriggerRegion(	// Returns nothing.
 		{
 		ASSERT(pthingPylon->GetClassID() == CThing::CPylonID);
 
-		CPylon*	pylon	= (CPylon*)pthingPylon;
+      CPylon* pylon = static_cast<CPylon*>(pthingPylon);
 
 		// If the region did not previously exist . . .
 		if (ms_argns[pylon->m_ucID].pimRgn == nullptr)
@@ -6761,20 +6762,20 @@ static void DelThing(	// Returns nothing.
 
 			case CThing::CPylonID:
 				// Destroy its associated trigger region.
-				ms_argns[((CPylon*)pthingDel)->m_ucID].Destroy();
+            ms_argns[static_cast<CPylon*>(pthingDel)->m_ucID].Destroy();
 				break;
 
 			case CThing::CBouyID:
 				// If it is a Bouy, unlink the bouy from the network and
 				// update the network.
-				((CBouy*) ms_pthingSel)->Unlink();
+            static_cast<CBouy*>(ms_pthingSel)->Unlink();
 				pNavNet = prealm->GetCurrentNavNet();
-				pNavNet->RemoveBouy(((CBouy*) ms_pthingSel)->m_ucID);
+            pNavNet->RemoveBouy(static_cast<CBouy*>(ms_pthingSel)->m_ucID);
 				pNavNet->UpdateRoutingTables();
 				// If you deleted one that the connection line was being
 				// drawn to, then clear the connection line.
-				if ((CBouy*) ms_pthingSel == m_pBouyLink0 ||
-					 (CBouy*) ms_pthingSel == m_pBouyLink1)
+            if (ms_pthingSel == m_pBouyLink0 ||
+                ms_pthingSel == m_pBouyLink1)
 					m_pBouyLink0 = m_pBouyLink1 = nullptr;
 				// If the network lines are being shown, update them, otherwise
 				// they will get updated when view lines is turned on.
@@ -6790,12 +6791,12 @@ static void DelThing(	// Returns nothing.
 				if (prealm->m_asClassNumThings[CThing::CNavigationNetID] > 1)
 				{
 					// Remove the Net from the list box
-					RListBox* plbRemove = (RListBox*) ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST);
+               RListBox* plbRemove = static_cast<RListBox*>(ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST));
 					plbRemove->RemoveItem(plbRemove->GetItemFromId(ms_pthingSel->GetInstanceID()));
 					plbRemove->Compose();
 
 					// Delete the network and select a new current Net if this was the one.
-					((CNavigationNet*) ms_pthingSel)->DeleteNetwork();
+               static_cast<CNavigationNet*>(ms_pthingSel)->DeleteNetwork();
 					if (ms_pthingSel == prealm->GetCurrentNavNet())
 					{
 						CListNode<CThing>* pNext = prealm->m_aclassHeads[CThing::CNavigationNetID].m_pnNext;
@@ -6803,12 +6804,12 @@ static void DelThing(	// Returns nothing.
 						CNavigationNet* pNet = nullptr;
 						while (bSearching && pNext->m_powner != nullptr)
 						{
-							pNet = (CNavigationNet*) pNext->m_powner;
+                     pNet = static_cast<CNavigationNet*>(pNext->m_powner);
 							if (ms_pthingSel != pNet)
 							{
 								pNet->SetAsDefault();
 								bSearching = false;
-								RListBox* plb = (RListBox*) ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST);
+                        RListBox* plb = static_cast<RListBox*>(ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST));
 								plb->SetSel(plb->GetItemFromId(pNet->GetInstanceID()));											
 								UpdateNetLines(pNet);
 							}
@@ -6816,7 +6817,7 @@ static void DelThing(	// Returns nothing.
 						}									
 					}
 					if (ms_bDrawNetwork)
-						UpdateNetLines((CNavigationNet*) ms_pthingSel);
+                  UpdateNetLines(static_cast<CNavigationNet*>(ms_pthingSel));
 				}
 				else
 				{
@@ -7247,10 +7248,10 @@ static void AttribMaskBtnPressed(	// Returns nothing.
 	{
 	ASSERT(pgui_pmb->m_type == RGuiItem::MultiBtn);
 
-	RMultiBtn*	pmb	= (RMultiBtn*)pgui_pmb;
+   RMultiBtn* pmb = static_cast<RMultiBtn*>(pgui_pmb);
 
 	// Get mask to affect.
-   uint16_t*	pu16AttribMask	= reinterpret_cast<uint16_t*>(pmb->m_ulUserInstance);
+   uint16_t* pu16AttribMask = reinterpret_cast<uint16_t*>(pmb->m_ulUserInstance);
 
 	// Add or subtract mask dependent on state.
 	switch (pmb->m_sState)
@@ -7258,10 +7259,10 @@ static void AttribMaskBtnPressed(	// Returns nothing.
 		case 0:	// Pressing.
 			break;
 		case 1:	// Off.
-			*pu16AttribMask	&= ~pmb->m_ulUserData;
+         *pu16AttribMask &= ~uint16_t(pmb->m_ulUserData);
 			break;
 		case 2:	// On.
-			*pu16AttribMask	|= pmb->m_ulUserData;
+         *pu16AttribMask |=  uint16_t(pmb->m_ulUserData);
 			break;
 		}
 
@@ -7617,7 +7618,7 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 	if (pguiRoot)
 		{
 		// Get list box . . .
-		RListBox*	plb	= (RListBox*)pguiRoot->GetItemFromId(GUI_ID_REALM_STATISTICS);
+      RListBox*	plb	= static_cast<RListBox*>(pguiRoot->GetItemFromId(GUI_ID_REALM_STATISTICS));
 		if (plb)
 			{
 			ASSERT(plb->m_type == RGuiItem::ListBox);
@@ -7658,7 +7659,6 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 				if (pguiThing)
 					{
                // Success.
-              TRACE("SUSPICIOUS CODE!");
                pguiThing->m_lId	= uintptr_t(pthing);
 					}
 				else
