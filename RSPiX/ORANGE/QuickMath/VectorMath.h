@@ -97,9 +97,9 @@ typedef union
 	int16_t Save(RFile* pfile)
 		{ return pfile->Write(v, 4) != 4; }
 
-	} RP3d; // This is a 3d point.
+	} Vector3D; // This is a 3d point.
 
-inline int operator==(const RP3d& lhs, const RP3d& rhs)
+inline int operator==(const Vector3D& lhs, const Vector3D& rhs)
 	{
 	if (lhs.v == rhs.v)
       return TRUE;
@@ -108,7 +108,7 @@ inline int operator==(const RP3d& lhs, const RP3d& rhs)
 
 
 // divides out the w component: (makes homogeneous)
-inline void rspMakeHom(RP3d& p)
+inline void rspMakeHom(Vector3D& p)
 	{
 #ifdef _DEBUG
 	if (p.w == 0.0)
@@ -127,7 +127,7 @@ inline void rspMakeHom(RP3d& p)
 
 // Can be useful:
 // adjusts the length of a vector, ignoring w component
-inline void rspMakeUnit(RP3d& p)
+inline void rspMakeUnit(Vector3D& p)
 	{
    real_t l = std::sqrt(SQR(p.x)+SQR(p.y)+SQR(p.z));
 #ifdef _DEBUG
@@ -143,13 +143,13 @@ inline void rspMakeUnit(RP3d& p)
 	}
 
 // returns a dot b
-inline real_t rspDot(RP3d& a,RP3d& b)
+inline real_t rspDot(Vector3D& a,Vector3D& b)
 	{
 	return a.x*b.x + a.y*b.y + a.z*b.z;
 	}
 
 // a = b, does NOT deal with w!
-inline void rspCopy(RP3d& a,RP3d& b)
+inline void rspCopy(Vector3D& a,Vector3D& b)
 	{
 	a.x = b.x;
 	a.y = b.y;
@@ -157,7 +157,7 @@ inline void rspCopy(RP3d& a,RP3d& b)
 	}
 
 // c = a x b
-inline void rspCross(RP3d& a,RP3d& b,RP3d& c)
+inline void rspCross(Vector3D& a,Vector3D& b,Vector3D& c)
 	{
 	c.x = a.y * b.z - a.z * b.y;
 	c.z = a.x * b.y - a.y * b.x;
@@ -165,7 +165,7 @@ inline void rspCross(RP3d& a,RP3d& b,RP3d& c)
 	}
 
 // a -= b;
-inline void rspSub(RP3d& a,RP3d& b)
+inline void rspSub(Vector3D& a,Vector3D& b)
 	{
 	a.x -= b.x;
 	a.y -= b.y;
@@ -173,7 +173,7 @@ inline void rspSub(RP3d& a,RP3d& b)
 	}
 
 // a += b;
-inline void rspAdd(RP3d& a,RP3d& b)
+inline void rspAdd(Vector3D& a,Vector3D& b)
 	{
 	a.x += b.x;
 	a.y += b.y;
@@ -181,7 +181,7 @@ inline void rspAdd(RP3d& a,RP3d& b)
 	}
 
 // a += s;
-inline void rspScale(RP3d& a,real_t s)
+inline void rspScale(Vector3D& a,real_t s)
 	{
 	a.x *= s;
 	a.y *= s;
@@ -288,9 +288,9 @@ public:
 
 	// Transform an actual point ( overwrites old point )
 	// Doex a premultiply!
-	void Transform(RP3d &p)
+	void Transform(Vector3D &p)
 		{
-      RP3d temp = { 0.0, 0.0, 0.0, 1.0 }; // asume 3 row form!
+      Vector3D temp = { 0.0, 0.0, 0.0, 1.0 }; // asume 3 row form!
       real_t *pT = T,*pV;
 		int16_t i,j;
 
@@ -304,7 +304,7 @@ public:
 
 	// Transform an actual point, and places the answer into a different pt
 	// Doex a premultiply!
-	void TransformInto(RP3d& vSrc, RP3d& vDst)
+	void TransformInto(Vector3D& vSrc, Vector3D& vDst)
 		{
       vDst.v[0] = vDst.v[1] = vDst.v[2] = 0.0;
       vDst.v[3] = 1.0;
@@ -384,7 +384,7 @@ public:
 	// Use rspSub to create w vertices (w,h,d)
 	// x1 BECOMES x2.  Note that w1 must NOT have any 0's.
 	//
-	void MakeBoxXF(RP3d &x1,RP3d &w1,RP3d &x2,RP3d &w2)
+	void MakeBoxXF(Vector3D &x1,Vector3D &w1,Vector3D &x2,Vector3D &w2)
 		{
 		// NOT OF MAXIMUM SPEED!
 		Make1();
@@ -395,9 +395,9 @@ public:
 
 	// This is NOT hyper fast, and the result IS a rotation matrix
 	// For now, point is it's x-axis and up i s it's y-axis.
-	void MakeRotTo(RP3d point,RP3d up)
+	void MakeRotTo(Vector3D point,Vector3D up)
 		{
-		RP3d third;
+		Vector3D third;
 
 		rspMakeUnit(point);
 		rspMakeUnit(up);
@@ -420,9 +420,9 @@ public:
 
 	// This is NOT hyper fast, and the result IS a rotation matrix
 	// For now, point is it's x-axis and up i s it's y-axis.
-	void MakeRotFrom(RP3d point,RP3d up)
+	void MakeRotFrom(Vector3D point,Vector3D up)
 		{
-		RP3d third;
+		Vector3D third;
 
 		rspMakeUnit(point);
 		rspMakeUnit(up);

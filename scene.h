@@ -376,8 +376,8 @@ class CScene
 		void TransformPts(		// Returns nothing.
 			RTransform*	ptrans,	// In:  Transformation to apply to CScene's before
 										// transforming pts.
-			RP3d*		p3dPtsSrc,	// In:  Ptr to group of pts to transform from.
-			RP3d*		p3dPtsDst,	// Out: Ptr to group of pts to transform into.
+			Vector3D*		p3dPtsSrc,	// In:  Ptr to group of pts to transform from.
+			Vector3D*		p3dPtsDst,	// Out: Ptr to group of pts to transform into.
 			int16_t		sNum);		// In:  The number of pts in p3dPtsSrc to transform.
 
 		// Transform the given points through the CScene's pipeline with the
@@ -385,8 +385,8 @@ class CScene
 		void TransformPtsToRealm(	// Returns nothing.
 			RTransform*	ptrans,		// In:  Transformation to apply to CScene's before
 											// transforming pts.
-			RP3d*		p3dPtsSrc,		// In:  Ptr to group of pts to transform from.
-			RP3d*		p3dPtsDst,		// Out: Ptr to group of pts to transform into.
+			Vector3D*		p3dPtsSrc,		// In:  Ptr to group of pts to transform from.
+			Vector3D*		p3dPtsDst,		// Out: Ptr to group of pts to transform into.
 			int16_t		sNum);			// In:  The number of pts in p3dPtsSrc to transform.
 
 		// Render a 3D sprite tree into the specified image.

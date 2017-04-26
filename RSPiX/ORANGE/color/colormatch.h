@@ -24,15 +24,15 @@ class RFile;
 class RImage;
 //==================================
 
-extern uint8_t rspMatchColorRGB(int32_t r,
-                                int32_t g,
-                                int32_t b,
-                                int16_t sStart,
-                                int16_t sNum,
-                                channel_t* pr,
-                                channel_t* pg,
-                                channel_t* pb,
-                                int32_t linc);
+extern channel_t rspMatchColorRGB(channel_t red,
+                                  channel_t green,
+                                  channel_t blue,
+                                  uint16_t sStart,
+                                  uint16_t sNum,
+                                  channel_t* pred,
+                                  channel_t* pgreen,
+                                  channel_t* pblue,
+                                  std::ptrdiff_t linc);
 
 // designed for 2 dimenional input. For example, fog = source color +
 // eye distance = dst color.
@@ -60,7 +60,7 @@ public:
                                channel_t* pr,
                                channel_t* pg,
                                channel_t* pb,
-                               int32_t linc = 4,
+                               std::ptrdiff_t linc = 4,
                                int16_t sPalStart=0,
                                int16_t sPalLen = palette::size,
                                int16_t sAlphaDepth = palette::size);
@@ -132,7 +132,7 @@ public:
   // It is selected at a higher level by the dimming parameter
   // Sadly, this is a 64K hit, but I don't see a way around it.
   
-  static channel_t ms_aucLiveDimming[UINT16_MAX + 1]; // must be initialized!
+  static channel_t ms_aucLiveDimming[UINT16_MAX]; // must be initialized!
   static int16_t ms_sIsInitialized;
   
   // This stores the alpha levels so m_pGeneralAlpha can be

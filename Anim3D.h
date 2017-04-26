@@ -48,8 +48,8 @@
 typedef std::shared_ptr<AnimatedResource<RSop>> ChanForm;            // Channel of SOPs.
 typedef std::shared_ptr<AnimatedResource<RMesh>> ChanMesh;           // Channel of meshes.
 typedef std::shared_ptr<AnimatedResource<RTexture>> ChanTexture;     // Channel of textures.
-typedef std::shared_ptr<AnimatedResource<Raw<RP3d>>> ChanHot;        // Channel of hotspots.
-typedef std::shared_ptr<AnimatedResource<Raw<RP3d>>> ChanBounds;     // Channel of bounding cylinders for collision.
+typedef std::shared_ptr<AnimatedResource<Raw<Vector3D>>> ChanHot;        // Channel of hotspots.
+typedef std::shared_ptr<AnimatedResource<Raw<Vector3D>>> ChanBounds;     // Channel of bounding cylinders for collision.
 typedef std::shared_ptr<AnimatedResource<Raw<real_t>>> ChanFloor;    // Channel of floor circles for attribute map..?
 typedef std::shared_ptr<AnimatedResource<RTransform>> ChanTransform; // Channel of transforms.
 typedef std::shared_ptr<AnimatedResource<Raw<uint8_t>>> ChanEvent;   // Channel of event states.

@@ -139,8 +139,8 @@ SetPushBtnState(
 ////////////////////////////////////////////////////////////////////////////////
 bool					// Returns true if x, y, and z of v1 and v2 are the same (respective 3) signs.
 SameSigns_Vector(
-    RP3d *v1, 	// In: vector 1
-    RP3d *v2)	// In: vector 1
+    Vector3D *v1, 	// In: vector 1
+    Vector3D *v2)	// In: vector 1
 {
   //this is a slooow check!, check the sign bit, or something
   if(((int)v1->x >= 0 && (int)v2->x >= 0) || ((int)v1->x < 0 && (int)v2->x < 0))
@@ -163,9 +163,9 @@ SameSigns_Vector(
 ////////////////////////////////////////////////////////////////////////////////
 bool				// Returns: true of t valid, false otherwise
 GetIntersectSubT(
-    RP3d &pt0, // In: line segment point 0
-    RP3d &ptSub, // In: line segment point 1
-    RP3d &ptCoeff,
+    Vector3D &pt0, // In: line segment point 0
+    Vector3D &ptSub, // In: line segment point 1
+    Vector3D &ptCoeff,
     //double a, double b, double c, double D,
     // In: coefficients
     float fD,
@@ -190,10 +190,10 @@ GetIntersectSubT(
 ////////////////////////////////////////////////////////////////////////////////
 bool					// Return true if the given point is inside the given triangle
 PointInsideTri(
-    RP3d& pt0A, 	// In: point 1 of triangle
-    RP3d& pt1A, 	// In: point 2 of triangle
-    RP3d& pt2A, 	// In: point 3 of triangle
-    RP3d& hitpoint)	// In: point to check inside triangle
+    Vector3D& pt0A, 	// In: point 1 of triangle
+    Vector3D& pt1A, 	// In: point 2 of triangle
+    Vector3D& pt2A, 	// In: point 3 of triangle
+    Vector3D& hitpoint)	// In: point to check inside triangle
 {
   /*
    if(cheapequalsRP3d(pt0A, hitpoint)
@@ -203,9 +203,9 @@ PointInsideTri(
    */
 
 
-  RP3d pt0, pt1, pt2;//pt0=pt0A, pt1=pt1A, pt2=pt2A;
-  RP3d main_cross;
-  RP3d result_cross;
+  Vector3D pt0, pt1, pt2;//pt0=pt0A, pt1=pt1A, pt2=pt2A;
+  Vector3D main_cross;
+  Vector3D result_cross;
 
   //if(cheapequalsRP3d(pt0, hitpoint) || cheapequalsRP3d(pt1, hitpoint)
   //	|| cheapequalsRP3d(pt2, hitpoint))
@@ -222,10 +222,10 @@ PointInsideTri(
   pt1.y=pt1A.y - pt2A.y;
   pt1.z=pt1A.z - pt2A.z;
 
-  main_cross = pt0 * pt1;
+  main_cross = pt0.cross(pt1);
 
 
-  RP3d hit=hitpoint;
+  Vector3D hit=hitpoint;
 
 
   //pt2A is the origin
@@ -238,7 +238,7 @@ PointInsideTri(
   pt0.y=pt0A.y - pt2A.y;
   pt0.z=pt0A.z - pt2A.z;
   hitpoint -= pt2A;
-  result_cross = pt0 * hitpoint; //check 0 to hitpoint
+  result_cross = pt0.cross(hitpoint); //check 0 to hitpoint
 
   if(SameSigns_Vector(&result_cross, &main_cross))
   {
@@ -255,7 +255,7 @@ PointInsideTri(
     hitpoint.x=hit.x-pt0A.x;
     hitpoint.y=hit.y-pt0A.y;
     hitpoint.z=hit.z-pt0A.z;
-    result_cross = pt1 * hitpoint; //check 1 to hitpoint
+    result_cross = pt1.cross(hitpoint); //check 1 to hitpoint
 
     if(SameSigns_Vector(&result_cross, &main_cross))
     {
@@ -273,7 +273,7 @@ PointInsideTri(
       hitpoint.x=hit.x-pt1A.x;
       hitpoint.y=hit.y-pt1A.y;
       hitpoint.z=hit.z-pt1A.z;
-      result_cross = pt2 * hitpoint; //check 2 to hitpoint
+      result_cross = pt2.cross(hitpoint); //check 2 to hitpoint
 
       if(SameSigns_Vector(&result_cross, &main_cross))
       {
@@ -291,18 +291,18 @@ PointInsideTri(
 ////////////////////////////////////////////////////////////////////////////////
 bool							// Returns true if the two shapes intersect.
 TriAIntersectsLineSegmentB(
-    RP3d & normalA,		// In: normal vector of triangle A
+    Vector3D & normalA,		// In: normal vector of triangle A
     float fBigA,				// In: constant from parametric equation of A
-    RP3d & pt0A,			// In: three points of triangle A
-    RP3d & pt1A,
-    RP3d & pt2A,
-    RP3d & pt0B,			// In: two points of line segment B
-    RP3d & pt1B,
-    RP3d & hitpoint)		// Out: Exact point where line hits triangle
+    Vector3D & pt0A,			// In: three points of triangle A
+    Vector3D & pt1A,
+    Vector3D & pt2A,
+    Vector3D & pt0B,			// In: two points of line segment B
+    Vector3D & pt1B,
+    Vector3D & hitpoint)		// Out: Exact point where line hits triangle
 {
   float intersect_t;
   // point 0--1
-  RP3d ptSub;
+  Vector3D ptSub;
   ptSub.x=pt1B.x-pt0B.x;
   ptSub.y=pt1B.y-pt0B.y;
   ptSub.z=pt1B.z-pt0B.z;
@@ -327,12 +327,12 @@ TriAIntersectsLineSegmentB(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool shorterdist(RP3d &pt1, RP3d &pt2)
+bool shorterdist(Vector3D &pt1, Vector3D &pt2)
 // true if pt1 is shorter dist than pt2
 {
   return ((pt1.x*pt1.x + pt1.y*pt1.y + pt1.z*pt1.z) < (pt2.x*pt2.x + pt2.y*pt2.y + pt2.z*pt2.z));
 }
-void sqrdist(RP3d &pt1, float &fdist)
+void sqrdist(Vector3D &pt1, float &fdist)
 // returns sqrd dist of point
 {
   fdist=(pt1.x*pt1.x + pt1.y*pt1.y + pt1.z*pt1.z);
@@ -340,22 +340,22 @@ void sqrdist(RP3d &pt1, float &fdist)
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TrianglesIntersectLineSegment(
-    RP3d &linept1,				// In: line segment point 1
-    RP3d &linept2, 			// In: line segment point 2 closest to this point. this should be the first point.
+    Vector3D &linept1,				// In: line segment point 1
+    Vector3D &linept2, 			// In: line segment point 2 closest to this point. this should be the first point.
     triangle_t* ptri, 					// In: mesh
-    RP3d* soparr, 				// In: points for mesh
+    Vector3D* soparr, 				// In: points for mesh
     int16_t smeshNum,			// In: number of points in mesh
-    RP3d &hitpoint,			// Out: point where line hit triangle
+    Vector3D &hitpoint,			// Out: point where line hit triangle
     int32_t &lHitTriIndex)		// Out: index of triangle it hit
 
 {
   lHitTriIndex=-1;
   int16_t sJ=0;
-  RP3d normalA;
-  RP3d pt0A, pt1A, pt2A;
-  RP3d t_pt1A, t_pt2A;
+  Vector3D normalA;
+  Vector3D pt0A, pt1A, pt2A;
+  Vector3D t_pt1A, t_pt2A;
   float fBigA=-1;
-  RP3d ptclosest, ptwork;
+  Vector3D ptclosest, ptwork;
   float fclosest=(float)INT_MAX, fdist;
   bool bhit=false;
 
@@ -377,7 +377,7 @@ TrianglesIntersectLineSegment(
     t_pt2A.x=pt2A.x-pt0A.x;
     t_pt2A.y=pt2A.y-pt0A.y;
     t_pt2A.z=pt2A.z-pt0A.z;
-    normalA = t_pt1A * t_pt2A;
+    normalA = t_pt1A.cross(t_pt2A);
 
     //and the constant
     fBigA=(-normalA.x*pt0A.x - normalA.y*pt0A.y - normalA.z*pt0A.z);
@@ -413,6 +413,7 @@ TrianglesIntersectLineSegment(
 ////////////////////////////////////////////////////////////////////////////////
 void Transform(RSop* psopSrc, RSop* psopDst, RPipeLine* ppipe, RTransform& tObj)
 {
+#if 0
   RTransform tFull;
   // Use to stretch to z-buffer!
 
@@ -443,10 +444,11 @@ void Transform(RSop* psopSrc, RSop* psopDst, RPipeLine* ppipe, RTransform& tObj)
 #endif
 
 
-  for (size_t i = 0; i < psopSrc->points.count; i++)
+  for (size_t i = 0; i < psopSrc->points.size(); i++)
   {
     tFull.TransformInto(psopSrc->points[i], psopDst->points[i]);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -522,7 +524,7 @@ ValidateTextures(
     RTexture*	ptex,	// In:  Texture to validate.
     int16_t			sNum)	// In:  Number of textures it should have.
 {
-  if (ptex->count < sNum)
+  if (ptex->size() < sNum)
   {
     int16_t sResult = rspMsgBox(
                         RSP_MB_ICN_QUERY | RSP_MB_BUT_YESNO,
@@ -534,7 +536,7 @@ ValidateTextures(
     {
       case RSP_MB_RET_YES:
       {
-        int16_t	sOrigNum	= ptex->count;
+        int16_t	sOrigNum	= ptex->size();
 
         // Create temp space for the existing colors.
         uint8_t*	pau8	= new uint8_t[sOrigNum];
@@ -543,26 +545,26 @@ ValidateTextures(
         int16_t sColor;
         for (sColor = 0; sColor < sOrigNum; sColor++)
         {
-          pau8[sColor]	= ptex->indexes[sColor];
+          pau8[sColor] = ptex->getIndex(sColor);//->indexes[sColor];
         }
 
         // Free the existing colors.
         //ptex->FreeIndices();
 
         // Resize.
-        ptex->count = sNum;
+        ptex->setSize(sNum);
         //ptex->AllocIndices();
 
         // Copy the original colors back.
         for (sColor = 0; sColor < sOrigNum; sColor++)
         {
-          ptex->indexes[sColor]	= pau8[sColor];
+          ptex->setIndex(sColor, pau8[sColor]);
         }
 
         // Fill the remaining colors as bright green.
         for ( ; sColor < sNum; sColor++)
         {
-          ptex->indexes[sColor]	= 250;	// Part of static Postal palette.
+          ptex->setIndex(sColor, 250); // Part of static Postal palette.
         }
 
         delete pau8;
@@ -638,6 +640,7 @@ CTexEdit::DoModal(
     RAlpha* pltSpot,			// In:  Spot light.
     const RString& strFile)	// In:  Filename to save modified texture as.
 {
+#if 0
   m_pguiRoot = RGuiItem::LoadInstantiate(FullPathVD(c_strGuiFile) );
   if (m_pguiRoot)
   {
@@ -690,7 +693,7 @@ CTexEdit::DoModal(
     m_ptexSrc		= &m_ptexchanSrc->atTime(0);
 
     // Validate texture thinger.
-    ValidateTextures(m_ptexSrc, panim->m_pmeshes->atTime(0).triangles.count);
+    ValidateTextures(m_ptexSrc, panim->m_pmeshes->atTime(0).triangles.size());
 
 
     // Duplicate into a care-free work area.
@@ -766,9 +769,9 @@ CTexEdit::DoModal(
 
       // Create View Space SOP for checking mouse against triangles and
       // drawing feedback for such.
-      if (sopView.points.count != sprite.m_psop->points.count)
-        sopView.points.allocate(sprite.m_psop->points.count);
-        //sopView.Alloc(sprite.m_psop->count);
+      if (sopView.points.size() != sprite.m_psop->points.size())
+        sopView.points.allocate(sprite.m_psop->points.size());
+        //sopView.Alloc(sprite.m_psop->size());
 
       Transform(sprite.m_psop, &sopView, &m_scene.m_pipeline, trans);
 
@@ -838,6 +841,7 @@ CTexEdit::DoModal(
           g_pszFileOpenError_s,
           FullPathVD(c_strGuiFile) );
   }
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -854,6 +858,7 @@ CTexEdit::DoOutput(
     int16_t sOffsetY,		// In:  Y offset.
     RRect& rcClip)			// In:  Dst clip rect.
 {
+#if 0
   UNUSED(trans);
   m_scene.Render3D(
         pimDst,       // Destination image.
@@ -884,19 +889,20 @@ CTexEdit::DoOutput(
     if (m_lTriIndex >= 0)
     {
       RMesh* pmesh = psprite->m_pmesh;
-      ASSERT(uint32_t(m_lTriIndex) < pmesh->triangles.count);
+      ASSERT(uint32_t(m_lTriIndex) < pmesh->triangles.size());
 
-      if (uint32_t(m_lTriIndex) < pmesh->triangles.count)
+      if (uint32_t(m_lTriIndex) < pmesh->triangles.size())
       {
-        const RP3d& v1 = psopView->points[pmesh->triangles[m_lTriIndex][0]];
-        const RP3d& v2 = psopView->points[pmesh->triangles[m_lTriIndex][1]];
-        const RP3d& v3 = psopView->points[pmesh->triangles[m_lTriIndex][2]];
+        const Vector3D& v1 = psopView->points[pmesh->triangles[m_lTriIndex][0]];
+        const Vector3D& v2 = psopView->points[pmesh->triangles[m_lTriIndex][1]];
+        const Vector3D& v3 = psopView->points[pmesh->triangles[m_lTriIndex][2]];
         rspLine(255, pimDst, v1.x, v1.y, v2.x, v2.y, &rcClip);
         rspLine(255, pimDst, v2.x, v2.y, v3.x, v3.y, &rcClip);
         rspLine(255, pimDst, v3.x, v3.y, v1.x, v1.y, &rcClip);
       }
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -909,6 +915,7 @@ CTexEdit::ProcessManip(
     CSprite3* psprite,	// In:  3D data to process.
     RSop* psopView)		// In:  View space SOP.
 {
+#if 0
   // Transformation Manipulation Processing /////////////////
   if (bButtonDown && m_manip != Paint)
   {
@@ -970,8 +977,8 @@ CTexEdit::ProcessManip(
   // Paint Processing /////////////////////////////////
   if (m_manip == Paint)
   {
-    RP3d	hitpoint;
-    RP3d	linept1, linept2;
+    Vector3D	hitpoint;
+    Vector3D	linept1, linept2;
 
     int16_t sMouseX, sMouseY;
     rspGetMouse(&sMouseX, &sMouseY, nullptr);
@@ -990,7 +997,7 @@ CTexEdit::ProcessManip(
                   linept2, 							// In: line segment point 2 closest to this point. this should be the first point.
                   psprite->m_pmesh->triangles,	// In: mesh
                   psopView->points, 				// In: points for mesh
-                  psprite->m_pmesh->triangles.count,		// In: number of points in mesh
+                  psprite->m_pmesh->triangles.size(),		// In: number of points in mesh
                   hitpoint,							// Out: point where line hit triangle
                   lTriIndex);							// Out: index of triangle it hit
 
@@ -1004,12 +1011,12 @@ CTexEdit::ProcessManip(
       {
         RTexture*	ptex	= psprite->m_ptex;
         // Get into texture and replace current triangle index with our current color.
-        if (ptex->indexes)
+        if (ptex->size())
         {
-          ASSERT(m_lTriIndex < ptex->count);
+          ASSERT(m_lTriIndex < ptex->size());
 
           // Set new color for this texture.
-          ptex->indexes[m_lTriIndex]	= m_u8Color;
+          ptex->setIndex(m_lTriIndex, m_u8Color);
 
           // Note modification.
           m_bModified	= true;
@@ -1093,6 +1100,7 @@ CTexEdit::ProcessManip(
   {
     m_bQuit	= true;
   }
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1461,8 +1469,7 @@ CTexEdit::AnimCall(RGuiItem* pgui, RInputEvent* pie)
         // undergone lighting effects.  Get the color from the actual texture.
         if (m_lTriIndex)
         {
-          uint8_t	u8Color	= m_texWork.indexes[m_lTriIndex];
-          SetColor(u8Color);
+          SetColor(m_texWork.getIndex(m_lTriIndex));
         }
         break;
     }

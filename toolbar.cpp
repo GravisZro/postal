@@ -99,17 +99,15 @@ extern int wideScreenWidth;
 
 extern RFont g_fontBig;	// I hope this one is OK....
 
-typedef	struct { uint8_t r; uint8_t g; uint8_t b; } MatchColor;
-
-MatchColor gmcSmallFont     = { 0xFF, 0xFF, 0x00 }; // yellow
-MatchColor gmcLargeFont     = { 0xFF, 0xFF, 0x00 }; // yellow
-MatchColor gmcWarningFont   = { 0xFF, 0x00, 0x00 }; // red
-MatchColor gmcAmmoGoneFont  = { 0x60, 0x00, 0x00 }; // dark red
-MatchColor gmcAttentionFont = { 0xFF, 0xFF, 0x80 }; // saturated yellow
+RPixel24 gmcSmallFont     = { 0xFF, 0xFF, 0x00 }; // yellow
+RPixel24 gmcLargeFont     = { 0xFF, 0xFF, 0x00 }; // yellow
+RPixel24 gmcWarningFont   = { 0xFF, 0x00, 0x00 }; // red
+RPixel24 gmcAmmoGoneFont  = { 0x60, 0x00, 0x00 }; // dark red
+RPixel24 gmcAttentionFont = { 0xFF, 0xFF, 0x80 }; // saturated yellow
 
 //------------------ Top Bar:
-MatchColor gmcSolidScore    = { 0x28, 0x22, 0x0D }; // saturated yellow
-MatchColor gmcShadowScore   = { 0x8A, 0x7B, 0x41 }; // saturated yellow
+RPixel24 gmcSolidScore    = { 0x28, 0x22, 0x0D }; // saturated yellow
+RPixel24 gmcShadowScore   = { 0x8A, 0x7B, 0x41 }; // saturated yellow
 //MatchColor gmcShadowScore = { 0x77, 0x66, 0x3C }; // saturated yellow
 //MatchColor gmcSolidScore  = { 0x00, 0x00, 0xFF }; // saturated yellow
 //MatchColor gmcShadowScore = { 0xFF, 0x00, 0x00 }; // saturated yellow
@@ -279,44 +277,44 @@ public:
 		{
 		// Use the current hood palette to color match the text indicies
 		ms_sSmallFontColor = rspMatchColorRGB(
-		gmcSmallFont.r,gmcSmallFont.g,gmcSmallFont.b,10,236,
+      gmcSmallFont.red, gmcSmallFont.green, gmcSmallFont.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);
 
 		ms_sLargeFontColor = rspMatchColorRGB(
-		gmcLargeFont.r,gmcLargeFont.g,gmcLargeFont.b,10,236,
+      gmcLargeFont.red, gmcLargeFont.green, gmcLargeFont.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);
 
 		ms_sWarningColor = rspMatchColorRGB(
-		gmcWarningFont.r,gmcWarningFont.g,gmcWarningFont.b,10,236,
+      gmcWarningFont.red, gmcWarningFont.green, gmcWarningFont.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);
 
 		ms_sAmmoGoneColor = rspMatchColorRGB(
-		gmcAmmoGoneFont.r,gmcAmmoGoneFont.g,gmcAmmoGoneFont.b,10,236,
+      gmcAmmoGoneFont.red, gmcAmmoGoneFont.green, gmcAmmoGoneFont.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);
 
 		ms_sAttentionColor = rspMatchColorRGB(
-		gmcAttentionFont.r,gmcAttentionFont.g,gmcAttentionFont.b,10,236,
+      gmcAttentionFont.red, gmcAttentionFont.green, gmcAttentionFont.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);
 
 		//----------------------------- Match Top bar stuff:
 		gsStatusFontForeIndex = rspMatchColorRGB(
-		gmcSolidScore.r,gmcSolidScore.g,gmcSolidScore.b,10,236,
+      gmcSolidScore.red, gmcSolidScore.green, gmcSolidScore.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);
 
 		gsStatusFontShadowIndex = rspMatchColorRGB(
-		gmcShadowScore.r,gmcShadowScore.g,gmcShadowScore.b,10,236,
+      gmcShadowScore.red, gmcShadowScore.green, gmcShadowScore.blue, 10,236,
 		pHood->m_pimBackground->m_pPalette->Red(),
 		pHood->m_pimBackground->m_pPalette->Green(),
 		pHood->m_pimBackground->m_pPalette->Blue(),4);

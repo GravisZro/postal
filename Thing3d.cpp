@@ -734,9 +734,9 @@ void CThing3d::EditRect(RRect* pRect)
 		if (m_panimCur->m_psops)
 			{
 			// Get current sphere.
-			RP3d		apt3dSrc[2];	// Center and point on outside of
+         Vector3D		apt3dSrc[2];	// Center and point on outside of
 											// bounding sphere in "Randy" coords.
-			RP3d		apt3dDst[2];	// Dst for above in Postal coords.
+         Vector3D		apt3dDst[2];	// Dst for above in Postal coords.
 
 			RTransform	trans;
          apt3dSrc[0]		= m_panimCur->m_pbounds->atTime(0);
@@ -1600,8 +1600,8 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 	// Apply child and parent to transChildAbs.
    transChildAbsolute.Mul(m_sprite.m_ptrans->matdata, ptrans->matdata);
 	// Set up pt at origin for weapon.
-	RP3d pt3Src = {0, 0, 0, 1};
-	RP3d pt3Dst;
+   Vector3D pt3Src = {0, 0, 0, 1};
+   Vector3D pt3Dst;
 	// Get last transition position by mapping origin.
 	m_pRealm->m_scene.TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 

@@ -1148,7 +1148,7 @@ CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 		&dWeaponRelY,
 		&dWeaponRelZ);
 
-	RP3d	pt3WeaponRel	= { static_cast<float>(dWeaponRelX), static_cast<float>(dWeaponRelY), static_cast<float>(dWeaponRelZ), 1 };
+   Vector3D	pt3WeaponRel	= { static_cast<float>(dWeaponRelX), static_cast<float>(dWeaponRelY), static_cast<float>(dWeaponRelZ), 1 };
 
 	switch (m_eWeaponType)
 	{
@@ -1332,7 +1332,7 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 // Fire some bullets.
 ////////////////////////////////////////////////////////////////////////////////
 bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
-	RP3d*				ppt3d,					// In:  Launch pt in Postal units.
+   Vector3D*				ppt3d,					// In:  Launch pt in Postal units.
 	int16_t				sNumShots,				// In:  Number of shots to fire.
 	int16_t				sRange,					// In:  Bullet range.
 	SampleMasterID	smidAmmo,				// In:  Ammo noise.

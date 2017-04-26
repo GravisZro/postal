@@ -633,7 +633,7 @@ CScene::Render3D(
 
 	int16_t		sCurX;
 	int16_t		sCurY;
-	RP3d		pt3dSrcCenter, pt3dSrcRadius;		// Center and point on outside of bounding
+	Vector3D		pt3dSrcCenter, pt3dSrcRadius;		// Center and point on outside of bounding
 															// sphere in "Randy" coords.
 	int16_t		sClipLeft;			// Amount clipped off left edge of dest region.
 	int16_t		sClipTop;			// Amount clipped off top edge of dest region.
@@ -1830,8 +1830,8 @@ void CScene::SetupPipeline(						// Returns nothing.
 void CScene::TransformPts(	// Returns nothing.
 	RTransform*	ptrans,		// In:  Transformation to apply to CScene's before
 									// transforming pts.
-	RP3d*		p3dPtsSrc,		// In:  Ptr to group of pts to transform from.
-	RP3d*		p3dPtsDst,		// Out: Ptr to group of pts to transform into.
+	Vector3D*		p3dPtsSrc,		// In:  Ptr to group of pts to transform from.
+	Vector3D*		p3dPtsDst,		// Out: Ptr to group of pts to transform into.
 	int16_t		sNum)				// In:  The number of pts in p3dPtsSrc to transform.
 	{
 	// Let's try to be nice and let the user call us all the time.
@@ -1874,8 +1874,8 @@ void CScene::TransformPts(	// Returns nothing.
 void CScene::TransformPtsToRealm(	// Returns nothing.
 	RTransform*	ptrans,		// In:  Transformation to apply to CScene's before
 									// transforming pts.
-	RP3d*		p3dPtsSrc,		// In:  Ptr to group of pts to transform from.
-	RP3d*		p3dPtsDst,		// Out: Ptr to group of pts to transform into.
+	Vector3D*		p3dPtsSrc,		// In:  Ptr to group of pts to transform from.
+	Vector3D*		p3dPtsDst,		// Out: Ptr to group of pts to transform into.
 	int16_t		sNum)				// In:  The number of pts in p3dPtsSrc to transform.
 	{
 #if 0	// This doesn't work.

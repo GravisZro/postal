@@ -496,8 +496,8 @@ void CSentry::UpdatePosition(void)
 		// Apply child and parent to transChildAbs
       transChildAbsolute.Mul(m_trans.matdata, ptransRigid->matdata);
 		// Set up pt at origin for child.
-		RP3d pt3Src = {0, 0, 0, 1};
-		RP3d pt3Dst;
+		Vector3D pt3Src = {0, 0, 0, 1};
+		Vector3D pt3Dst;
 		// Get last transition position by mapping origin.
 		m_pRealm->m_scene.TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 		// Set child position to character's position offset by rigid body's realm offset.

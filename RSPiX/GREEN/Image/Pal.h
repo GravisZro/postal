@@ -188,11 +188,11 @@ class RPal
       // perfect, but it's better than having everyone implimenting some
       // version of these functions when they need to access the palette, in
       // which case they are already making assumptions about its format.
-      uint8_t* Red(
+      channel_t* Red(
          palindex_t sStart = 0)							// In:  Starting palette entry
          {
          // Calculate pointer to specified entry
-         uint8_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
+         channel_t* pucDst = m_pData + ((sStart - m_sStartIndex) * m_sPalEntrySize);
 
          // If it's a supported palette type, return the pointer.  Otherwise, return nullptr.
          if (m_type == PDIB)	// BGR888+reserved

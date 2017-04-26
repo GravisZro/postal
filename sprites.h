@@ -371,7 +371,7 @@ class CSprite3 : public CSprite
 		RSop*			m_psop;		// Sea Of Points.
 		RTransform*	m_ptrans;	// Transform.
 		RTexture*	m_ptex;		// Texture.
-		RP3d*			m_psphere;	// Bounding sphere def.
+		Vector3D*			m_psphere;	// Bounding sphere def.
 
 		int16_t			m_sRadius;	// Radius for collision (with buildings for 
 										// X Ray).  Autoset by Render3D().

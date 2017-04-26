@@ -402,7 +402,7 @@ class CCharacter : public CThing3d
 
 		// Fire a bullet.
 		bool FireBullets(							// Returns true, if we hit someone/thing.
-			RP3d*				ppt3d,				// In:  Launch pt in Postal units.
+			Vector3D*				ppt3d,				// In:  Launch pt in Postal units.
 			int16_t				sNumShots,			// In:  Number of shots to fire.
 			int16_t				sRange,				// In:  Bullet range.
 			SampleMasterID	smidAmmo,			// In:  Ammo noise.

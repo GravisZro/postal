@@ -411,7 +411,7 @@ void CAnim3D::SetLooping(		// Returns nothing.
   m_psops->loopFlags = AnimatedResource<RSop>::loop_t(sLoopFlags);
   m_pmeshes->loopFlags = AnimatedResource<RMesh>::loop_t(sLoopFlags);
   m_ptextures->loopFlags = AnimatedResource<RTexture>::loop_t(sLoopFlags);
-  m_pbounds->loopFlags = AnimatedResource<Raw<RP3d>>::loop_t(sLoopFlags);
+  m_pbounds->loopFlags = AnimatedResource<Raw<Vector3D>>::loop_t(sLoopFlags);
 
   if (m_ptransRigid)
     m_ptransRigid->loopFlags = AnimatedResource<RTransform>::loop_t(sLoopFlags);

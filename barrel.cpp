@@ -722,8 +722,8 @@ void CBarrel::OnExplosionMsg(Explosion_Message* pMessage)
 		// For this animation, we need to know where the bottom of the barrel
 		// is (since it's not at the origin).
 		// ***FUDGE***
-		RP3d	pt3dSrc	= { 0.0F, 2.0F, 0.0F, 1.0F } ;	// In:  RANDY UNITS!!!
-		RP3d	pt3dDst;	// Out: Postal units.
+		Vector3D	pt3dSrc	= { 0.0F, 2.0F, 0.0F, 1.0F } ;	// In:  RANDY UNITS!!!
+		Vector3D	pt3dDst;	// Out: Postal units.
 
 		m_pRealm->m_scene.TransformPtsToRealm(&m_trans, &pt3dSrc, &pt3dDst, 1 );
 

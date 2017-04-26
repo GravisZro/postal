@@ -1841,7 +1841,7 @@ extern void GameEdit(
 			// Get layer tweaker list box.
          ms_plbLayers	= static_cast<RListBox*>(ms_pguiLayers->GetItemFromId(GUI_ID_LAYER_LIST));
 
-			ASSERT(ms_plbLayers != nullptr);
+         ASSERT(ms_plbLayers != nullptr);
 			ASSERT(ms_plbLayers->m_type == RGuiItem::ListBox);
 
 			// Add available layers to listbox.
@@ -5032,6 +5032,7 @@ static int16_t SetDisplayArea(	// Returns 0 on success.
 	int16_t	sDisplayH)				// New height of display area.
 	{
    int16_t	sError = SUCCESS;
+   return sError;
 	int16_t	sDeviceW, sDeviceH;
 	int16_t	sDeviceScaling	= FALSE;
 	// Get device size/mode for this display size.

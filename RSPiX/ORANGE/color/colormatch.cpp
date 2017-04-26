@@ -29,51 +29,54 @@
 
 //short RAlpha::ms_SetPalette(RImage* pimImage);
 int16_t RAlpha::ms_IsPaletteSet = FALSE;
-uint8_t RAlpha::ms_red  [palette::size] = { 0 };
-uint8_t RAlpha::ms_green[palette::size] = { 0 };
-uint8_t RAlpha::ms_blue [palette::size] = { 0 };
+channel_t RAlpha::ms_red  [palette::size] = { 0 };
+channel_t RAlpha::ms_green[palette::size] = { 0 };
+channel_t RAlpha::ms_blue [palette::size] = { 0 };
 
-uint8_t RAlpha::ms_r[palette::size] = { 0 };
-uint8_t RAlpha::ms_g[palette::size] = { 0 };
-uint8_t RAlpha::ms_b[palette::size] = { 0 };
-uint8_t RAlpha::ms_a[palette::size] = { 0 };
-uint8_t RAlpha::ms_f[palette::size] = { 0 };
+channel_t RAlpha::ms_r[palette::size] = { 0 };
+channel_t RAlpha::ms_g[palette::size] = { 0 };
+channel_t RAlpha::ms_b[palette::size] = { 0 };
+channel_t RAlpha::ms_a[palette::size] = { 0 };
+channel_t RAlpha::ms_f[palette::size] = { 0 };
 
 int16_t RMultiAlpha::ms_sIsInitialized = FALSE;
-uint8_t RMultiAlpha::ms_aucLiveDimming[65536];
+channel_t RMultiAlpha::ms_aucLiveDimming[UINT16_MAX];
 
-uint8_t rspMatchColorRGB(int32_t r,
-                         int32_t g,
-                         int32_t b,
-                         int16_t sStart,
-                         int16_t sNum,
-                         channel_t* pr,
-                         channel_t* pg,
-                         channel_t* pb,
-                         int32_t linc)
+channel_t rspMatchColorRGB(channel_t red,
+                           channel_t green,
+                           channel_t blue,
+                           uint16_t sStart,
+                           uint16_t sNum,
+                           channel_t* pred,
+                           channel_t* pgreen,
+                           channel_t* pblue,
+                           std::ptrdiff_t linc)
 	{
-	int32_t lMatch = 0,i;
-	int32_t lMax =  int32_t(16777217),lDist;
-	int32_t lOffset = linc * sStart; // array offset
+   int16_t lMatch = 0;
+   int32_t lMax = 0x01000000;
+   int32_t lDist;
+   std::ptrdiff_t lOffset = linc * sStart; // array offset
 
-	pr += lOffset;
-	pg += lOffset;
-	pb += lOffset;
+   pred += lOffset;
+   pgreen += lOffset;
+   pblue += lOffset;
 	
-	for (i=0;i<sNum;i++)
+   for(uint16_t i = 0; i < sNum; ++i)
 		{
-		lDist = SQR(int32_t(*pr)-r)+SQR(int32_t(*pg)-g)+SQR(int32_t(*pb)-b);
-		pr += linc;
-		pg += linc;
-		pb += linc;
-		if (lDist < lMax)
+      lDist = SQR(int16_t(*pred  )-red  ) +
+              SQR(int16_t(*pgreen)-green) +
+              SQR(int16_t(*pblue )-blue );
+      pred += linc;
+      pgreen += linc;
+      pblue += linc;
+      if (lDist <= lMax)
 			{
 			lMax = lDist;
 			lMatch = i;
 			}
 		}
 
-	return (uint8_t)(lMatch + sStart);
+   return channel_t(lMatch + sStart);
 	}
 
 
@@ -458,7 +461,7 @@ int16_t RAlpha::CreateAlphaRGB(double dOpacity,int16_t sPalStart, int16_t sPalLe
 			g.val = uint16_t( ms_green[s] * lSrc + ms_green[d] * lDst);
          b.val = uint16_t( ms_blue [s] * lSrc + ms_blue [d] * lDst);
 
-			m_pAlphas[s][d] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
+         m_pAlphas[s][d] = rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
 			}
 		}
@@ -472,7 +475,7 @@ int16_t RAlpha::CreateLightEffectRGB(channel_t* pa,
                                      channel_t* pr,
                                      channel_t* pg,
                                      channel_t* pb,
-                                     int32_t linc,
+                                     std::ptrdiff_t linc,
                                      int16_t sPalStart,
                                      int16_t sPalLen,
                                      int16_t sAlphaDepth)
@@ -505,7 +508,7 @@ int16_t RAlpha::CreateLightEffectRGB(channel_t* pa,
 			g.val = uint16_t( ms_green[s] * lSrc + pg[f] * lFog);
          b.val = uint16_t( ms_blue [s] * lSrc + pb[f] * lFog);
 
-			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
+         m_pAlphas[s][f] = rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
 			}
 		}
@@ -539,7 +542,7 @@ int16_t RAlpha::CreateLightEffectRGB(int16_t sPalStart, int16_t sPalLen)
 			g.val = uint16_t( ms_green[s] * lSrc + ms_g[f] * lFog);
          b.val = uint16_t( ms_blue [s] * lSrc + ms_b[f] * lFog);
 
-			m_pAlphas[s][f] = (uint8_t)rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
+         m_pAlphas[s][f] = rspMatchColorRGB(r.mod,g.mod,b.mod,sPalStart,sPalLen,
 					ms_red,ms_green,ms_blue,1);					
 			}
 		}
@@ -561,7 +564,7 @@ RMultiAlpha::RMultiAlpha(void)
 		{
 		// FILL THE TABLE!
 		int32_t lSrcVal,lDimVal,lCurValue,lNumerator;
-		uint8_t*	pCur = ms_aucLiveDimming;
+      channel_t* pCur = ms_aucLiveDimming;
 		// This is DimVal major!
 
       for (lDimVal = 0; lDimVal < 256; lDimVal++)
@@ -579,7 +582,7 @@ RMultiAlpha::RMultiAlpha(void)
 					lCurValue++;
 					}
 
-				*pCur = uint8_t(lCurValue);
+            *pCur = channel_t(lCurValue);
 				}
 			}
 		
