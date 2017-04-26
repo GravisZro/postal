@@ -40,7 +40,7 @@
 // triangle color!
 //
 extern	void	DrawTri_ZColorFog(uint8_t* pDst,int32_t lDstP,
-			RP3d* p1,RP3d* p2,RP3d* p3,
+			Vector3D* p1,Vector3D* p2,Vector3D* p3,
 			RZBuffer* pZB,uint8_t* pFog, 
 			int16_t sOffsetX = 0,		// In: 2D offset for pZB.
 			int16_t sOffsetY = 0); 	// In: 2D offset for pZB.
@@ -48,10 +48,10 @@ extern	void	DrawTri_ZColorFog(uint8_t* pDst,int32_t lDstP,
 //================================================== 
 // For debugging:
 extern	void	DrawTri_wire(RImage* pimDst,int16_t sX,int16_t sY,
-			RP3d* p1,RP3d* p2,RP3d* p3,uint8_t ucColor); 
+			Vector3D* p1,Vector3D* p2,Vector3D* p3,uint8_t ucColor); 
 
 extern	void	DrawTri_ZColor(uint8_t* pDst,int32_t lDstP,
-			RP3d* p1,RP3d* p2,RP3d* p3,
+			Vector3D* p1,Vector3D* p2,Vector3D* p3,
 			RZBuffer* pZB,uint8_t pFlatColor,
 			int16_t sOffsetX = 0,		// In: 2D offset for pZB.
 			int16_t sOffsetY = 0); 	// In: 2D offset for pZB.
@@ -62,7 +62,7 @@ extern	void	DrawTri_ZColor(uint8_t* pDst,int32_t lDstP,
 // There is NO Z_BUFFER here!  It is JUST a polygon drawer
 //
 extern	void	DrawTri(uint8_t* pDstOffset,int32_t lDstP,
-			RP3d* p1,RP3d* p2,RP3d* p3,
+			Vector3D* p1,Vector3D* p2,Vector3D* p3,
 			uint8_t ucFlatColor);
 
 //================================================== 

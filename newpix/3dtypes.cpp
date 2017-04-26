@@ -4,84 +4,15 @@
 #include <ORANGE/QuickMath/QuickMath.h>
 
 #include <cstring>
-#include <cmath>
 
-
-RP3d::RP3d(real_t _x,
-           real_t _y,
-           real_t _z,
-           real_t _w)
-  : x(_x), y(_y), z(_z), w(_w) { }
-
-const RP3d& RP3d::operator =(const RP3d& other)
+void RTexture::setSize(uint16_t cnt)
 {
-  x = other.x;
-  y = other.y;
-  z = other.z;
-  return other;
+  m_count = cnt;
+  if(indexes.size())
+    indexes.setSize(cnt);
+  if(colors.size())
+    colors.setSize(cnt);
 }
-
-RP3d RP3d::operator *(const RP3d& other) const
-{
-  return RP3d(y * other.z - z * other.y,
-              z * other.x - x * other.z,
-              x * other.y - y * other.x);
-}
-
-real_t RP3d::dot(const RP3d& other) const
-{
-  return x * other.x +
-      y * other.y +
-      z * other.z +
-      w * other.w;
-}
-
-RP3d& RP3d::operator -=(const RP3d& other)
-{
-  x -= other.x;
-  y -= other.y;
-  z -= other.z;
-  return *this;
-}
-
-RP3d& RP3d::operator +=(const RP3d& other)
-{
-  x += other.x;
-  y += other.y;
-  z += other.z;
-  return *this;
-}
-
-RP3d& RP3d::scale(real_t s)
-{
-  x *= s;
-  y *= s;
-  z *= s;
-  return *this;
-}
-
-RP3d& RP3d::makeHomogeneous(void) // factor out the w component
-{
-  ASSERT(w != 0.0);
-  x /= w;
-  y /= w;
-  z /= w;
-  w = 1.0;
-  return *this;
-}
-
-// adjusts the length of a vector, ignoring w component
-RP3d& RP3d::makeUnit(void)
-{
-  real_t l = std::sqrt(SQR(x)+SQR(y)+SQR(z));
-  ASSERT(l != 0.0);
-  x /= l;
-  y /= l;
-  z /= l;
-  return *this;
-}
-
-//==============================================================================
 
 void RTexture::load(void)
 {
@@ -93,24 +24,24 @@ void RTexture::load(void)
   };
 
   dataptr8 = data;
-  count = *dataptr16++;
-  flags = static_cast<flags_t>(*dataptr16++);
+  m_count = *dataptr16++;
+  m_flags = static_cast<flags_t>(*dataptr16++);
 
-  if(flags & flags_t::indexarr)
+  if(m_flags & flags_t::indexarr)
   {
     indexes = const_cast<uint8_t*>(dataptr8);
-    indexes.count = count;
-    dataptr8 += count;
+    indexes.setSize(m_count);
+    dataptr8 += m_count;
   }
-  if(flags & flags_t::colorarr)
+  if(m_flags & flags_t::colorarr)
   {
     colors = const_cast<RPixel32*>(dataptrP32);
-    colors.count = count;
-    dataptrP32 += count;
+    colors.setSize(m_count);
+    dataptrP32 += m_count;
   }
 
-  data.count = dataptr8 - data;
-  loaded = true;
+  data.setSize(dataptr8 - data);
+  setLoaded();
 }
 
 bool RTexture::operator ==(const RTexture& other) const
@@ -134,16 +65,16 @@ void RTexture::remap(
   ASSERT(colors != nullptr);
 
   if (indexes == nullptr)
-    indexes.allocate(count);
+    indexes.allocate(m_count);
 
-  for (uint32_t i = 0; i < count; i++)
+  for (uint32_t i = 0; i < m_count; i++)
   {
     indexes[i] = rspMatchColorRGB(
-                    int32_t(colors[i].red),
-                    int32_t(colors[i].green),
-                    int32_t(colors[i].blue),
-                    sStartIndex,sNumIndex,
-                    pr,pg,pb,linc);
+                     colors[i].red,
+                     colors[i].green,
+                     colors[i].blue,
+                     sStartIndex,sNumIndex,
+                     pr,pg,pb,linc);
   }
 }
 
@@ -162,11 +93,11 @@ void RTexture::unmap(
   ASSERT(indexes != nullptr);
 
   if (colors == nullptr)
-    colors.allocate(count);
+    colors.allocate(m_count);
 
   uint8_t*  pu8    = indexes;
   RPixel32* ppix   = colors;
-  int16_t   sCount = count;
+  int16_t   sCount = m_count;
   while (sCount--)
   {
     ppix->red   = pr[*pu8];
@@ -193,7 +124,7 @@ void RTexture::adjust(
   ASSERT(fAdjustment >= 0.0f);
 
   RPixel32* ppix = colors;
-  int16_t	sCount = colors.count / lInc;
+  int16_t	sCount = colors.size() / lInc;
   while (sCount--)
   {
     ppix->red   = clampColorChannel(ppix->red   * fAdjustment);
@@ -215,12 +146,12 @@ void RMesh::load(void)
   };
 
   dataptr8 = data;
-  triangles.count = *dataptr16++;
+  triangles.setSize(*dataptr16++);
   triangles = const_cast<triangle_t*>(dataptrTri);
-  dataptrTri += triangles.count;
+  dataptrTri += triangles.size();
 
-  data.count = dataptr8 - data;
-  loaded = true;
+  data.setSize(dataptr8 - data);
+  setLoaded();
 }
 
 bool RMesh::operator ==(const RMesh& other) const
@@ -236,16 +167,16 @@ void RSop::load(void)
   {
     const uint8_t*  dataptr8;
     const uint32_t* dataptr32;
-    const RP3d*     dataptr3d;
+    const Vector3D*     dataptr3d;
   };
 
   dataptr8 = data;
-  points.count = *dataptr32++;
-  points = const_cast<RP3d*>(dataptr3d);
-  dataptr3d += points.count;
+  points.setSize(*dataptr32++);
+  points = const_cast<Vector3D*>(dataptr3d);
+  dataptr3d += points.size();
 
-  data.count = dataptr8 - data;
-  loaded = true;
+  data.setSize(dataptr8 - data);
+  setLoaded();
 }
 
 bool RSop::operator ==(const RSop& other) const
@@ -293,7 +224,7 @@ inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col)
   op(__VA_ARGS__, 2, 3)
 
 #define setRow(row, val) \
-  reinterpret_cast<RP3d*>(matdata.get())[row] = val;
+  reinterpret_cast<Vector3D*>(matdata.get())[row] = val;
 
 #define setColumn(col, val) \
   matdata[rowcol(0, col)] = val.x; \
@@ -319,21 +250,21 @@ RTransform::RTransform(uint32_t sz)  // init to an identity transform
 
 void RTransform::load(void)
 {
-  data.count = 16 * sizeof(real_t);
+  data.setSize(16 * sizeof(real_t));
   matdata = reinterpret_cast<real_t*>(data.get());
-  matdata.count = 16;
-  loaded = true;
+  matdata.setSize(16);
+  setLoaded();
 }
 
 void RTransform::makeIdentity(void) // identity matrix
 {
-  ASSERT(matdata.count >= 16);
+  ASSERT(matdata.size() >= 16);
   std::memcpy(matdata, identity_data, sizeof(real_t) * 16);
 }
 
 void RTransform::makeNull(void) // null matrix
 {
-  ASSERT(matdata.count >= 16);
+  ASSERT(matdata.size() >= 16);
   std::memset(matdata, 0, sizeof(real_t) * 15);
   matdata[15] = 1;
 }
@@ -365,12 +296,12 @@ void RTransform::Translate(real_t x, real_t y, real_t z)
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
-void RTransform::MakeRotTo(RP3d point, RP3d up)
+void RTransform::MakeRotTo(Vector3D point, Vector3D up)
 {
   point.makeUnit();
   up.makeUnit();
   makeNull();
-  RP3d tmp = up * point;
+  Vector3D tmp = up.cross(point);
   setColumn(0, point);
   setColumn(1, up);
   setColumn(2, tmp);
@@ -378,21 +309,21 @@ void RTransform::MakeRotTo(RP3d point, RP3d up)
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
-void RTransform::MakeRotFrom(RP3d point, RP3d up)
+void RTransform::MakeRotFrom(Vector3D point, Vector3D up)
 {
   point.makeUnit();
   up.makeUnit();
   makeNull();
   setRow(0, point);
   setRow(1, up);
-  setRow(2, point * up);
+  setRow(2, point.cross(up));
 }
 
 // Transform an actual point ( overwrites old point )
-void RTransform::Transform(RP3d& p) const
+void RTransform::Transform(Vector3D& p) const
 {
-  RP3d* d = reinterpret_cast<RP3d*>(matdata.get());
-  RP3d temp;
+  Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
+  Vector3D temp;
   temp.x = p.dot(d[0]);
   temp.y = p.dot(d[1]);
   temp.z = p.dot(d[2]);
@@ -401,9 +332,9 @@ void RTransform::Transform(RP3d& p) const
 }
 
 // Transform an actual point, and places the answer into a different pt
-void RTransform::TransformInto(const RP3d& src, RP3d& dest) const
+void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const
 {
-  RP3d* d = reinterpret_cast<RP3d*>(matdata.get());
+  Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
   dest.x = src.dot(d[0]);
   dest.y = src.dot(d[1]);
   dest.z = src.dot(d[2]);
@@ -457,7 +388,7 @@ void RTransform::Ry(int16_t sDeg) // CCW!
 // Use rspSub to create w vertices (w,h,d)
 // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
 //
-void RTransform::MakeBoxXF(RP3d& x1, RP3d& w1, RP3d& x2, RP3d& w2)
+void RTransform::MakeBoxXF(Vector3D& x1, Vector3D& w1, Vector3D& x2, Vector3D& w2)
 {
   // NOT OF MAXIMUM SPEED!
   makeIdentity();

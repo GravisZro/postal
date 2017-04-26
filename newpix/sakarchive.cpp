@@ -3,10 +3,10 @@
 #include <list>
 
 template<> filestream& filestream::operator >> (filedata_t& fdata) // read filedata_t data
-  { return read(fdata.data.get(), fdata.data.count); }
+  { return read(fdata.data.get(), fdata.data.size()); }
 
 template<> filestream& filestream::operator << (const filedata_t& fdata) // write filedata_t data
-  { return write(fdata.data.get(), fdata.data.count); }
+  { return write(fdata.data.get(), fdata.data.size()); }
 
 
 template<typename A, typename B>

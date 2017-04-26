@@ -148,19 +148,19 @@ struct AnimatedResource : filedata_t
       case type_t::stillframe:
       {
         T& d = datapointers.front();
-        d.data = const_cast<uint8_t*>(dataptr8);
-        d.data.count = data.count - (dataptr8 - data); // size is the rest of the file
+        d.setData(const_cast<uint8_t*>(dataptr8),   // use this data
+                  data.size() - (dataptr8 - data)); // size is the rest of the file
         d.load();
-        dataptr8 += d.data.count;
+        dataptr8 += d.dataSize();
         break;
       }
 
       case type_t::animation:
         for(T& d : datapointers)
         {
-          d.data = const_cast<uint8_t*>(dataptr8);
+          d.setData(const_cast<uint8_t*>(dataptr8), 0);
           d.load();
-          dataptr8 += d.data.count;
+          dataptr8 += d.dataSize();
         }
         break;
 
@@ -170,9 +170,9 @@ struct AnimatedResource : filedata_t
           if(*dataptr32 == UINT32_MAX)
           {
             dataptr32++;
-            d.data = const_cast<uint8_t*>(dataptr8);
+            d.setData(const_cast<uint8_t*>(dataptr8), 0);
             d.load();
-            dataptr8 += d.data.count;
+            dataptr8 += d.dataSize();
           }
           else
             d = datapointers[*dataptr32++];

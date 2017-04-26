@@ -55,7 +55,7 @@ public:
 	void Destroy(); // will NOT kill transform scratch space
 	void Init();
 	//-------------------------------------
-	int16_t NotCulled(RP3d *p1,RP3d *p2,RP3d *p3);
+	int16_t NotCulled(Vector3D *p1,Vector3D *p2,Vector3D *p3);
 	void Transform(RSop* pPts,RTransform& tObj);
 	void TransformShadow(RSop* pPts,RTransform& tObj,
 		int16_t sHeight = 0,int16_t *psOffX = nullptr,int16_t *psOffY = nullptr);
@@ -96,10 +96,10 @@ public:
 	void ClearShadowBuffer();
 
 	// Project a point onto a screen.
-	void PointToScreen(RTransform& tObj,RP3d& v3d,int16_t &sDstX,int16_t &sDstY)
+	void PointToScreen(RTransform& tObj,Vector3D& v3d,int16_t &sDstX,int16_t &sDstY)
 		{
 		RTransform tFull;
-		RP3d ptDst;
+		Vector3D ptDst;
 
       tFull.makeIdentity();
       tFull.Mul(m_tView.matdata,tObj.matdata);
@@ -113,7 +113,7 @@ public:
 	// THIS WILL CHANGE WITH TIME:
 	// Currently the bounding sphere is described by two points:
 	//
-	void BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius, 
+	void BoundingSphereToScreen(Vector3D& ptCenter, Vector3D& ptRadius, 
 		RTransform& tObj);
 
 	//-------------------------------------
@@ -149,7 +149,7 @@ public:
 
 	// Transformation buffer:
    static uint32_t ms_lNumPts;
-	static RP3d* ms_pPts;
+	static Vector3D* ms_pPts;
    static uint32_t	ms_lNumPipes; // used to free ms_pPts
 	};
 

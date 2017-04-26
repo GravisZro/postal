@@ -5,6 +5,7 @@
 
 #include "sakarchive.h"
 
+#include <cmath>
 
 // helper types
 typedef float real_t;
@@ -29,53 +30,129 @@ struct Raw : filedata_t // special type to wrap types that do not inherit fileda
   {
     union
     {
-      const uint8_t*  dataptr8;
-      const T*        dataptrT;
+      const uint8_t* dataptr8;
+      const T*       dataptrT;
     };
 
     dataptr8 = data;
     raw = const_cast<T*>(dataptrT);
     ++dataptrT;
-    data.count = dataptr8 - data;
-    loaded = true;
+    data.setSize(dataptr8 - data);
+    setLoaded();
   }
 
   T* raw;
 };
 
-struct RP3d
+struct Vector3D
 {
   real_t x;
   real_t y;
   real_t z;
   real_t w;
 
-  RP3d(real_t _x = 0.0,
-       real_t _y = 0.0,
-       real_t _z = 0.0,
-       real_t _w = 1.0);
+  inline Vector3D(real_t _x = 0.0,
+              real_t _y = 0.0,
+              real_t _z = 0.0,
+              real_t _w = 1.0)
+    : x(_x), y(_y), z(_z), w(_w) { }
 
-  const RP3d& operator =(const RP3d& other);
+  inline Vector3D& operator =(const Vector3D& other)
+  {
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    return *this;
+  }
 
-  RP3d  operator  *(const RP3d& other) const;
-  RP3d& operator -=(const RP3d& other);
-  RP3d& operator +=(const RP3d& other);
+  inline real_t dot(const Vector3D& other) const
+  {
+    return x * other.x +
+           y * other.y +
+           z * other.z +
+           w * other.w;
+  }
 
-  real_t dot(const RP3d& other) const;
+  inline Vector3D cross(const Vector3D& other) const
+  {
+    return Vector3D(y * other.z - z * other.y,
+                    z * other.x - x * other.z,
+                    x * other.y - y * other.x);
+  }
 
-  RP3d& scale(real_t s);
+  inline Vector3D operator +(const Vector3D& other) const
+  {
+    return Vector3D(x + other.x,
+                    y + other.y,
+                    z + other.z);
+  }
 
-  RP3d& makeHomogeneous(void); // factor out the w component
+  inline Vector3D operator -(const Vector3D& other) const
+  {
+    return Vector3D(x - other.x,
+                    y - other.y,
+                    z - other.z);
+  }
 
-  // adjusts the length of a vector, ignoring w component
-  RP3d& makeUnit(void);
+  inline Vector3D operator *(real_t scale) const
+  {
+    return Vector3D(x * scale,
+                    y * scale,
+                    z * scale);
+  }
+
+  inline Vector3D operator /(real_t inverse_scale) const
+  {
+    ASSERT(inverse_scale != 0.0);
+    return Vector3D(x / inverse_scale,
+                    y / inverse_scale,
+                    z / inverse_scale);
+  }
+
+  inline Vector3D& operator +=(const Vector3D& other)
+    { return *this = operator +(other); }
+
+  inline Vector3D& operator -=(const Vector3D& other)
+    { return *this = operator -(other); }
+
+  inline Vector3D& operator *=(real_t scale)
+    { return *this = operator *(scale); }
+
+  inline Vector3D& operator /=(real_t inverse_scale)
+    { return *this = operator /(inverse_scale); }
+
+  inline real_t magnatude(void) const
+  {
+    return std::sqrt(SQR(x) +
+                     SQR(y) +
+                     SQR(z));
+  }
+
+  inline Vector3D parallel(const Vector3D& other) const
+    { return other * (dot(other) / SQR(other.magnatude())); }
+
+  inline Vector3D perpendicular(const Vector3D& other) const
+    { return *this - parallel(other); }
+
+  inline Vector3D& makeHomogeneous(void) // factor out the w component
+  {
+    operator /=(w);
+    w = 1.0;
+    return *this;
+  }
+
+  // scale down the vector to have a magnatude of 1.0
+  inline Vector3D& makeUnit(void)
+    { return operator /=(magnatude()); }
 };
 
-static_assert(sizeof(RP3d) == sizeof(real_t) * 4, "bad size!");
+static_assert(sizeof(Vector3D) == sizeof(real_t) * 4, "bad size!");
 
 
-struct RTexture : filedata_t
+class RTexture : public filedata_t
 {
+  friend class RPipeLine; // allow encapsulation to be violated for speed
+private:
   enum flags_t : uint16_t
   {
     none     = 0x0000,
@@ -83,13 +160,21 @@ struct RTexture : filedata_t
     colorarr = 0x0002,
   };
 
-  flags_t   flags;    // option flags
-  uint16_t  count;    // size of array(s)
+  flags_t  m_flags;    // option flags
+  uint16_t m_count;    // size of array(s)
   shared_arr<uint8_t>  indexes; // Array of indices
-  shared_arr<RPixel32> colors; // Array of colors
+  shared_arr<RPixel32> colors; // Array of colors (unused by Postal)
 
+public:
   RTexture(uint32_t sz = 0)
-    : filedata_t(sz), flags(flags_t::none) { }
+    : filedata_t(sz), m_flags(flags_t::none) { }
+
+  void setSize(uint16_t cnt);
+  uint16_t size(void) const { return m_count; }
+
+  uint8_t getIndex(uint32_t idx) const { return indexes[idx]; }
+  void setIndex(uint32_t idx, uint8_t val) { indexes[idx] = val; }
+
 
   void load(void);
 
@@ -126,10 +211,13 @@ struct RTexture : filedata_t
      uint32_t lInc);				// In:  Number of colors to skip.
 };
 
-struct RMesh : filedata_t
+class RMesh : public filedata_t
 {
+  friend class RPipeLine; // allow encapsulation to be violated for speed
+private:
   shared_arr<triangle_t> triangles; // Array of triangles
 
+public:
   RMesh(uint32_t sz = 0) : filedata_t(sz) { }
 
   void load(void);
@@ -137,10 +225,13 @@ struct RMesh : filedata_t
   bool operator ==(const RMesh& other) const;
 };
 
-struct RSop : filedata_t
+class RSop : public filedata_t
 {
-  shared_arr<RP3d> points;  // Array of points
+  friend class RPipeLine; // allow encapsulation to be violated for speed
+private:
+  shared_arr<Vector3D> points;  // Array of points
 
+public:
   RSop(uint32_t sz = 0) : filedata_t(sz) { }
 
   void load(void);
@@ -178,10 +269,10 @@ struct RTransform : filedata_t
 
 
   // Transform an actual point ( overwrites old point )
-  void Transform(RP3d& p) const;
+  void Transform(Vector3D& p) const;
 
   // Transform an actual point, and places the answer into a different pt
-  void TransformInto(const RP3d& src, RP3d& dest) const;
+  void TransformInto(const Vector3D& src, Vector3D& dest) const;
 
   void Rz(int16_t sDeg); // CCW!
 
@@ -194,15 +285,15 @@ struct RTransform : filedata_t
   // Use rspSub to create w vertices (w,h,d)
   // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
   //
-  void MakeBoxXF(RP3d& x1, RP3d& w1, RP3d& x2, RP3d& w2);
+  void MakeBoxXF(Vector3D& x1, Vector3D& w1, Vector3D& x2, Vector3D& w2);
 
   // This is NOT hyper fast, and the result IS a rotation matrix
   // For now, point is it's x-axis and up i s it's y-axis.
-  void MakeRotTo(RP3d point, RP3d up);
+  void MakeRotTo(Vector3D point, Vector3D up);
 
   // This is NOT hyper fast, and the result IS a rotation matrix
   // For now, point is it's x-axis and up i s it's y-axis.
-  void MakeRotFrom(RP3d point, RP3d up);
+  void MakeRotFrom(Vector3D point, Vector3D up);
 };
 
 #endif // THREEDTYPES_H

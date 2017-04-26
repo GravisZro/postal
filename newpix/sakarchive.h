@@ -18,14 +18,30 @@
 
 
 // abstract struct
-struct filedata_t
+class filedata_t
 {
-  bool loaded;
+  friend class filestream; // allow encapsulation to be violated for speed
+private:
+  bool m_loaded;
+
+protected:
   shared_arr<uint8_t> data;
 
+public:
   filedata_t(uint32_t sz = 0) // number of bytes to allocate (0 by default)
-    : loaded(false)
+    : m_loaded(false)
   { data.allocate(sz); } // doesn't allocate data if sz = 0
+
+  bool isLoaded(void) const { return m_loaded; }
+  void setLoaded(void) { m_loaded = true; }
+
+  void setData(uint8_t* ndata, uint32_t sz)
+  {
+    data = ndata;
+    data.setSize(sz);
+  }
+
+  uint32_t dataSize(void) const { return data.size(); }
 
   virtual void load (void) = 0;
 };

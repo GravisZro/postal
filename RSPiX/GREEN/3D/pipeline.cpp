@@ -34,7 +34,7 @@
 uint32_t RPipeLine::ms_lNumPts = 0;
 uint32_t	RPipeLine::ms_lNumPipes = 0;
 
-RP3d*  RPipeLine::ms_pPts = nullptr;
+Vector3D*  RPipeLine::ms_pPts = nullptr;
 
 RPipeLine::RPipeLine()
 	{
@@ -90,7 +90,7 @@ int16_t RPipeLine::Create(size_t lNum,int16_t sW)
 
 	if (ms_pPts == nullptr)
 		{
-      ms_pPts = new RP3d[lNum];
+      ms_pPts = new Vector3D[lNum];
 		}
 
 	return SUCCESS;
@@ -183,7 +183,7 @@ void RPipeLine::Transform(RSop* pPts,RTransform& tObj)
 	// trasnform each pt by two transforms separately!
    tFull.PreMulBy(m_tScreen.matdata);
 
-   for (size_t i = 0; i < pPts->points.count; i++)
+   for (size_t i = 0; i < pPts->points.size(); i++)
 		{
       tFull.TransformInto(pPts->points[i],ms_pPts[i]);
 		// Note that you can now use RP3d directly with the renderers! 
@@ -210,7 +210,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 	if (psOffX || psOffY) // calculate shadow offset
 		{
 		// (1) convert to 3d shadow point:
-		RP3d	pOffset = {0.0,static_cast<float>(sHeight),0.0,};
+      Vector3D	pOffset = {0.0,static_cast<float>(sHeight),0.0,};
 #ifdef UNUSED_VARIABLES
       double dOffX = sHeight * m_tShadow.data[rowcol(0, 1)];
 		double dOffY = 0.0;
@@ -220,7 +220,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 		m_tShadow.Transform(pOffset);
 		m_tView.Transform(pOffset);
 		// Undo randy slide:
-      RP3d pTemp = {m_tView.matdata[rowcol(0, 3)],m_tView.matdata[rowcol(1, 3)],
+      Vector3D pTemp = {m_tView.matdata[rowcol(0, 3)],m_tView.matdata[rowcol(1, 3)],
          m_tView.matdata[rowcol(2, 3)]};
 
       pOffset -= pTemp;
@@ -241,7 +241,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 	// This is hard coded to the postal coordinate system
    tFull.Translate(0.0,m_pimShadowBuf->m_sHeight-m_tScreen.matdata[rowcol(1, 3)],0.0);
 
-   for (size_t i = 0; i < pPts->points.count; i++)
+   for (size_t i = 0; i < pPts->points.size(); i++)
 		{
       tFull.TransformInto(pPts->points[i],ms_pPts[i]);
 		// Note that you can now use RP3d directly with the renderers! 
@@ -251,7 +251,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 
 // returns 0 if pts are ClockWise! (Hidden)
 // (to be used AFTER the view or screen transformation)
-int16_t RPipeLine::NotCulled(RP3d *p1,RP3d *p2,RP3d *p3)
+int16_t RPipeLine::NotCulled(Vector3D *p1,Vector3D *p2,Vector3D *p3)
 	{
    real_t ax,ay,bx,by;
 	ax = p2->x - p1->x;
@@ -274,7 +274,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
    triangle_t* psVertex = pMesh->triangles;
 	int32_t lNumHidden = 0;
 
-   for (uint32_t i = 0; i < pMesh->triangles.count; ++i)
+   for (uint32_t i = 0; i < pMesh->triangles.size(); ++i)
 		{
       v1 = psVertex[i][0];
       v2 = psVertex[i][1];
@@ -302,7 +302,7 @@ void RPipeLine::RenderShadow(RImage* pimDst,RMesh* pMesh,uint8_t ucColor)
 	int32_t v1,v2,v3;
    triangle_t* psVertex = pMesh->triangles;
 
-   for (uint32_t i = 0; i < pMesh->triangles.count; ++i)
+   for (uint32_t i = 0; i < pMesh->triangles.size(); ++i)
 		{
      v1 = psVertex[i][0];
      v2 = psVertex[i][1];
@@ -333,7 +333,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pDst = pimDst->m_pData + (sDstX + sOffsetX) + lDstP * (sDstY + sOffsetY);
 
-   for (uint32_t i = 0; i < pMesh->triangles.count; ++i, ++pColor)
+   for (uint32_t i = 0; i < pMesh->triangles.size(); ++i, ++pColor)
 		{
      v1 = psVertex[i][0];
      v2 = psVertex[i][1];
@@ -366,7 +366,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pDst = pimDst->m_pData + (sDstX + sOffsetX) + lDstP * (sDstY + sOffsetY);
 
-   for (uint32_t i = 0; i < pMesh->triangles.count; ++i, ++pColor)
+   for (uint32_t i = 0; i < pMesh->triangles.size(); ++i, ++pColor)
 		{
      v1 = psVertex[i][0];
      v2 = psVertex[i][1];
@@ -386,7 +386,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 
 // THIS IS HACKED!  WILL NOT WORK WITH DISTORTED GUYS!
 //
-void RPipeLine::BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius, 
+void RPipeLine::BoundingSphereToScreen(Vector3D& ptCenter, Vector3D& ptRadius,
 		RTransform& tObj)
 	{
 	// THIS IS HARD WIRED TO WORK WITH OUR CURRENT STYLE OF
@@ -407,7 +407,7 @@ void RPipeLine::BoundingSphereToScreen(RP3d& ptCenter, RP3d& ptRadius,
 
 	// Project the center onto the screen:
 
-	RP3d ptCen/*,ptEnd*/;
+   Vector3D ptCen/*,ptEnd*/;
 	tFull.TransformInto(ptCenter,ptCen); // z is now distorted
 
 	// store in pieline variables...(ALL OF THEM)
