@@ -29,7 +29,7 @@
 
 
 
-struct RSP_MOUSE_EVENT
+struct mouse_event_t
 {
   int16_t sX;
   int16_t sY;
@@ -43,11 +43,11 @@ struct RSP_MOUSE_EVENT
 #define SET(ptr, val)        if((ptr) != nullptr) { *(ptr) = (val); }
 #define INC_N_WRAP(i, max)    (i = (i + 1) % max)
 
-static RSP_MOUSE_EVENT    ms_ameEvents[MAX_EVENTS];
+static mouse_event_t    ms_ameEvents[MAX_EVENTS];
 
-static RQueue<RSP_MOUSE_EVENT, MAX_EVENTS>    ms_qmeEvents;
+static RQueue<mouse_event_t, MAX_EVENTS>    ms_qmeEvents;
 
-extern bool mouse_grabbed;
+extern bool mouse_enabled;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Module specific (static) globals.
@@ -74,7 +74,7 @@ extern void rspGetMouse(
     int16_t* psButton)                  // Current button status is returned here (unless nullptr)
 {
 
-  if (!mouse_grabbed)
+  if (!mouse_enabled)
   {
     SET(psX, 0);
     SET(psY, 0);
@@ -105,14 +105,12 @@ extern void rspGetMouse(
 /*
 extern void Mouse_Event(SDL_Event *event)
 {
-  static int16_t    sEventIndex    = 0;
-
   if (!mouse_grabbed)
     return;  // drop mouse events if input isn't grabbed.
 
-  // Get next event.  We do not "new" a RSP_MOUSE_EVENT here to avoid
+  // Get next event.  We do not "new" a mouse_event_t here to avoid
   // memory fragmentation.
-  RSP_MOUSE_EVENT* pme = ms_ameEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
+  mouse_event_t* pme = ms_ameEvents;
   pme->lTime = SDL_GetTicks();
   pme->sType = event->type;
 
@@ -172,7 +170,7 @@ extern void Mouse_Event(SDL_Event *event)
   // Add "dummy" mouse wheel button release event.
   if (bQueueMouseWheelRelease)
   {
-    RSP_MOUSE_EVENT* newpme = ms_ameEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
+    mouse_event_t* newpme = ms_ameEvents;
     newpme->lTime = SDL_GetTicks();
     newpme->sType = SDL_MOUSEBUTTONUP;
     newpme->sButton = MouseWheelState;
@@ -190,7 +188,7 @@ extern void rspSetMouse(
     int16_t sX,                         // New x position.
     int16_t sY)                         // New y position.
 {
-  if (!mouse_grabbed)
+  if (!mouse_enabled)
     return;  // drop mouse events if input isn't grabbed.
 }
 
@@ -209,7 +207,7 @@ extern int16_t rspGetLastMouseEvent(    // Returns 0 if no event was available, 
 {
   int16_t sResult    = TRUE;    // Assume success.
 
-  RSP_MOUSE_EVENT* peEvent;
+  mouse_event_t* peEvent;
   int16_t sNumEvents = ms_qmeEvents.NumItems();
 
   // Are there any events?
@@ -257,7 +255,7 @@ extern int16_t rspGetMouseEvent(        // Returns 0 if no event was available, 
 {
   int16_t sResult    = TRUE;    // Assume success.
 
-  RSP_MOUSE_EVENT* peEvent = ms_qmeEvents.DeQ();
+  mouse_event_t* peEvent = ms_qmeEvents.DeQ();
   if (peEvent != nullptr)
   {
     SET(psX,            peEvent->sX);

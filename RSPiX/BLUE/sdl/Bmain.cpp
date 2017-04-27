@@ -59,7 +59,7 @@ namespace SDL
 //SDL_Surface *sdlShadowSurface = nullptr;
 
 bool RspBlueReady = false;
-bool mouse_grabbed = false;
+bool mouse_enabled = false;
 static int16_t ms_sQuit = 0;
 
 //////////////////////////////////////////////////////////////////////////////

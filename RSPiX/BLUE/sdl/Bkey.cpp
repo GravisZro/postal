@@ -68,7 +68,7 @@ static RSP_SK_EVENT    ms_akeEvents[MAX_EVENTS];
 // Queue of keyboard events.
 static RQueue<RSP_SK_EVENT, MAX_EVENTS>    ms_qkeEvents;
 
-extern bool mouse_grabbed;
+extern bool mouse_enabled;
 
 //////////////////////////////////////////////////////////////////////////////
 // Extern functions.
@@ -121,8 +121,7 @@ extern void Key_Event(SDL_Event *event)
     if (ms_qkeEvents.IsFull() == FALSE)
     {
       // Create event.
-      static int16_t sEventIndex = 0;
-      RSP_SK_EVENT* pkeEvent = ms_akeEvents + INC_N_WRAP(sEventIndex, MAX_EVENTS);
+      RSP_SK_EVENT* pkeEvent = ms_akeEvents;
       // Fill event.
       pkeEvent->lTime    = SDL_GetTicks();
       pkeEvent->lKey = ((gkey) ? gkey : key);

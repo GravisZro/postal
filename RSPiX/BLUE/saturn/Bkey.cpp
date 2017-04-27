@@ -61,7 +61,7 @@ static RSP_SK_EVENT    ms_akeEvents[MAX_EVENTS];
 // Queue of keyboard events.
 static RQueue<RSP_SK_EVENT, MAX_EVENTS>    ms_qkeEvents;
 
-extern bool mouse_grabbed;
+extern bool mouse_enabled;
 
 //////////////////////////////////////////////////////////////////////////////
 // Extern functions.

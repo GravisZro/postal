@@ -67,7 +67,7 @@ static channel_t   au8MapBlue[palette::size];       // Map of blue  intensities 
 static palindex_t   asPalEntryLocks[palette::size];  // TRUE, if an indexed entry is locked.  FALSE, if not.
                                         // Implemented as shorts in case we ever do levels of locking.
 
-extern bool mouse_grabbed;
+extern bool mouse_enabled;
 
 //////////////////////////////////////////////////////////////////////////////
 // Module specific macros.
@@ -619,7 +619,7 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
     return FAILURE;
   }
 
-  mouse_grabbed = !rspCommandLine("nomousegrab");
+  mouse_enabled = !rspCommandLine("nomousegrab");
 
   uint32_t flags = 0;
   if (!rspCommandLine("windowed"))
@@ -656,7 +656,7 @@ extern int16_t rspSetVideoMode(         // Returns 0 if successfull, non-zero ot
   TRACE("SDL Window initialized at %ix%i", mode->current_w, mode->current_h);
 
   SDL_ShowCursor(0);
-  if(mouse_grabbed)
+  if(mouse_enabled)
     SDL_WM_GrabInput(SDL_GRAB_ON);
 
   return SUCCESS;
