@@ -668,8 +668,8 @@ CScene::Render3D(
 		{
 		// NOTE: This does NOT work for more than 1 level of child depth.
 		// To make that work, we must put a transform in the CSprite3.
-		// Apply child and parent to transChildAbs.
-      transChildAbs.Mul( ((CSprite3*)ps3Cur->m_psprParent)->m_ptrans->matdata, ps3Cur->m_ptrans->matdata);
+      // Apply child and parent to transChildAbs.
+      transChildAbs.Mul( *((CSprite3*)ps3Cur->m_psprParent)->m_ptrans, *ps3Cur->m_ptrans);
 
 		// Use transChildAbs.
 		ptransRender	= &transChildAbs;
@@ -1753,8 +1753,8 @@ void CScene::SetupPipeline(						// Returns nothing.
 	// If there is a user transform . . .
 	if (ptrans != nullptr)
 		{
-		// Apply now. Ok. Close.
-      m_pipeline.m_tView.PreMulBy(ptrans->matdata);
+      // Apply now. Ok. Close.
+      m_pipeline.m_tView.PreMulBy(*ptrans);
 		}
 
 	// If there is a conversion transform . . .
@@ -1842,18 +1842,18 @@ void CScene::TransformPts(	// Returns nothing.
 
 		// If there is a user transformation . . .
 		if (ptrans != nullptr)
-			{
+         {
 			// Create scene-user transform:
-			// Apply user to view.
-         transApplied.Mul(m_transNoZView.matdata, ptrans->matdata);
+         // Apply user to view.
+         transApplied.Mul(m_transNoZView, *ptrans);
 			// Apply user-view to screen (store in user-view).
-         transApplied.PreMulBy(m_transNoZScreen.matdata);
+         transApplied.PreMulBy(m_transNoZScreen);
 			}
 		else
-			{
+         {
 			// Create plain scene transform:
 			// Apply view to screen (store in scene transform).
-         transApplied.Mul(m_transNoZScreen.matdata, m_transNoZView.matdata);
+         transApplied.Mul(m_transNoZScreen, m_transNoZView);
 			}
 
 		// Translate points

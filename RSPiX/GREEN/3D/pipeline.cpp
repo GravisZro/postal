@@ -178,10 +178,10 @@ void RPipeLine::Transform(RSop* pPts,RTransform& tObj)
    // Use to stretch to z-buffer!
 
    tFull.makeIdentity();
-   tFull.Mul(m_tView.matdata,tObj.matdata);
+   tFull.Mul(m_tView, tObj);
 	// If there were inhomogeneous transforms, you would need to 
 	// trasnform each pt by two transforms separately!
-   tFull.PreMulBy(m_tScreen.matdata);
+   tFull.PreMulBy(m_tScreen);
 
    for (size_t i = 0; i < pPts->points.size(); i++)
 		{
@@ -201,9 +201,9 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 
    tFull.makeIdentity();
 	// 1) Create Shadow
-   tFull.Mul(m_tShadow.matdata,tObj.matdata);
+   tFull.Mul(m_tShadow, tObj);
 	// 2) Add in normal view
-   tFull.PreMulBy(m_tView.matdata);
+   tFull.PreMulBy(m_tView);
 	// If there were inhomogeneous transforms, you would need to 
 	// trasnform each pt by two transforms separately!
 
@@ -234,7 +234,7 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 		}
 
 	// 3) Project to the "screen"
-   tFull.PreMulBy(m_tScreen.matdata);
+   tFull.PreMulBy(m_tScreen);
 
 	// 4) Adjust the screen transform to keep scaling and mirroring
 	// from normal screen transform, but adjust size for shadow buffer
@@ -393,8 +393,8 @@ void RPipeLine::BoundingSphereToScreen(Vector3D& ptCenter, Vector3D& ptRadius,
 	// PROJECTION:
 	RTransform tFull;
    tFull.makeIdentity();
-   tFull.Mul(m_tView.matdata,tObj.matdata); // hold off on screen -> get raw distance:
-   tFull.PreMulBy(m_tScreen.matdata);
+   tFull.Mul(m_tView, tObj); // hold off on screen -> get raw distance:
+   tFull.PreMulBy(m_tScreen);
 
 	// THIS IS IN UNSCALED OBJECT VIEW
 	double dModelRadius = std::sqrt(

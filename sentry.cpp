@@ -492,9 +492,9 @@ void CSentry::UpdatePosition(void)
 		// set up translation based on the combined last character and child transforms
 		RTransform transChildAbsolute;
       RTransform*	ptransRigid	= &m_panimCurBase->m_ptransRigid->atTime(m_lAnimTime);
-		
+
 		// Apply child and parent to transChildAbs
-      transChildAbsolute.Mul(m_trans.matdata, ptransRigid->matdata);
+      transChildAbsolute.Mul(m_trans, *ptransRigid);
 		// Set up pt at origin for child.
 		Vector3D pt3Src = {0, 0, 0, 1};
 		Vector3D pt3Dst;

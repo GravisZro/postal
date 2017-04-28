@@ -756,7 +756,7 @@ class CThing3d : public CThing
 																	// ear to determine the volume.
 			SampleMaster::SoundInstance*	psi = nullptr,	// Out: Handle for adjusting sound volume
          milliseconds_t* plSampleDuration = nullptr,				// Out: Sample duration in ms, if not nullptr.
-         milliseconds_t lLoopStartTime = UINT32_MAX,						// In:  Where to loop back to in milliseconds.
+         milliseconds_t lLoopStartTime = -1,						// In:  Where to loop back to in milliseconds.
 																	//	-1 indicates no looping (unless m_sLoop is
 																	// explicitly set).
          milliseconds_t lLoopEndTime = 0,							// In:  Where to loop back from in milliseconds.

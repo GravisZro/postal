@@ -5,7 +5,7 @@
 
 #include <cstring>
 
-void RTexture::setSize(uint16_t cnt)
+void RTexture::setSize(uint16_t cnt) noexcept
 {
   m_count = cnt;
   if(indexes.size())
@@ -14,7 +14,7 @@ void RTexture::setSize(uint16_t cnt)
     colors.setSize(cnt);
 }
 
-void RTexture::load(void)
+void RTexture::load(void) noexcept
 {
   union
   {
@@ -44,7 +44,7 @@ void RTexture::load(void)
   setLoaded();
 }
 
-bool RTexture::operator ==(const RTexture& other) const
+bool RTexture::operator ==(const RTexture& other) const noexcept
 {
   return indexes == other.indexes &&
          colors == other.colors;
@@ -60,7 +60,7 @@ void RTexture::remap(
     channel_t* pr,
     channel_t* pg,
     channel_t* pb,
-    uint32_t linc)
+    uint32_t linc) noexcept
 {
   ASSERT(colors != nullptr);
 
@@ -87,7 +87,7 @@ void RTexture::unmap(
     channel_t* pr,
     channel_t* pg,
     channel_t* pb,
-    uint32_t lInc)
+    uint32_t lInc) noexcept
 {
   UNUSED(lInc);
   ASSERT(indexes != nullptr);
@@ -118,7 +118,7 @@ constexpr channel_t clampColorChannel(float fColor)
 ////////////////////////////////////////////////////////////////////////////////
 void RTexture::adjust(
    float fAdjustment,	// In:  Adjustment factor (1.0 == same, < 1 == dimmer, > 1 == brighter).
-   uint32_t lInc)				// In:  Number of colors to skip.
+   uint32_t lInc) noexcept				// In:  Number of colors to skip.
 {
   ASSERT(colors);
   ASSERT(fAdjustment >= 0.0f);
@@ -136,7 +136,7 @@ void RTexture::adjust(
 
 //==============================================================================
 
-void RMesh::load(void)
+void RMesh::load(void) noexcept
 {
   union
   {
@@ -154,14 +154,14 @@ void RMesh::load(void)
   setLoaded();
 }
 
-bool RMesh::operator ==(const RMesh& other) const
+bool RMesh::operator ==(const RMesh& other) const noexcept
 {
   return triangles == other.triangles;
 }
 
 //==============================================================================
 
-void RSop::load(void)
+void RSop::load(void) noexcept
 {
   union
   {
@@ -179,14 +179,14 @@ void RSop::load(void)
   setLoaded();
 }
 
-bool RSop::operator ==(const RSop& other) const
+bool RSop::operator ==(const RSop& other) const noexcept
 {
   return points == other.points;
 }
 
 //==============================================================================
 
-inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, uint8_t row, uint8_t col)
+inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, uint8_t row, uint8_t col) noexcept
 {
   matOut[rowcol(row, col)] =
       matA[rowcol(row, 0)] * matB[rowcol(0, col)] +
@@ -195,7 +195,7 @@ inline void MatrixMultiply(real_t* matOut, real_t* matA, real_t* matB, uint8_t r
       matA[rowcol(row, 3)] * matB[rowcol(3, col)];
 }
 
-inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col)
+inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col) noexcept
 {
   mat[rowcol(0, col)] *= x;
   mat[rowcol(1, col)] *= y;
@@ -240,7 +240,7 @@ real_t identity_data[16] = { 1.0, 0.0, 0.0, 0.0,
                              0.0, 0.0, 1.0, 0.0,
                              0.0, 0.0, 0.0, 1.0 };
 
-RTransform::RTransform(uint32_t sz)  // init to an identity transform
+RTransform::RTransform(uint32_t sz) noexcept  // init to an identity transform
   : filedata_t(sz)
 {
   if(!data)
@@ -248,7 +248,7 @@ RTransform::RTransform(uint32_t sz)  // init to an identity transform
   makeIdentity();
 }
 
-void RTransform::load(void)
+void RTransform::load(void) noexcept
 {
   data.setSize(16 * sizeof(real_t));
   matdata = reinterpret_cast<real_t*>(data.get());
@@ -256,13 +256,13 @@ void RTransform::load(void)
   setLoaded();
 }
 
-void RTransform::makeIdentity(void) // identity matrix
+void RTransform::makeIdentity(void) noexcept // identity matrix
 {
   ASSERT(matdata.size() >= 16);
   std::memcpy(matdata, identity_data, sizeof(real_t) * 16);
 }
 
-void RTransform::makeNull(void) // null matrix
+void RTransform::makeNull(void) noexcept // null matrix
 {
   ASSERT(matdata.size() >= 16);
   std::memset(matdata, 0, sizeof(real_t) * 15);
@@ -270,24 +270,24 @@ void RTransform::makeNull(void) // null matrix
 }
 
 // A Partial transform, assuming R3 = {0,0,0,1};
-void RTransform::PreMulBy(real_t* M)
+void RTransform::PreMulBy(const RTransform& M) noexcept
 {
-  ExecOp3x4(MatrixMultiply, matdata, M, matdata);
+  ExecOp3x4(MatrixMultiply, matdata, M.matdata, matdata);
 }
 
 // Oversets the current data with the result!
-void RTransform::Mul(real_t* A, real_t* B) // 4x4 transforms:
+void RTransform::Mul(const RTransform& A, const RTransform& B) noexcept // 4x4 transforms:
 {
-  ExecOp3x4(MatrixMultiply, matdata, A, B);
+  ExecOp3x4(MatrixMultiply, matdata, A.matdata, B.matdata);
 }
 
-void RTransform::Scale(real_t x,real_t y, real_t z)
+void RTransform::Scale(real_t x,real_t y, real_t z) noexcept
 {
   ExecOp4(MatrixScale, matdata, x, y, z);
 }
 
 // Assumes R3 = {0,0,0,1}
-void RTransform::Translate(real_t x, real_t y, real_t z)
+void RTransform::Translate(real_t x, real_t y, real_t z) noexcept
 {
   matdata[rowcol(0, 3)] += x;
   matdata[rowcol(1, 3)] += y;
@@ -296,7 +296,7 @@ void RTransform::Translate(real_t x, real_t y, real_t z)
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
-void RTransform::MakeRotTo(Vector3D point, Vector3D up)
+void RTransform::MakeRotTo(Vector3D point, Vector3D up) noexcept
 {
   point.makeUnit();
   up.makeUnit();
@@ -309,7 +309,7 @@ void RTransform::MakeRotTo(Vector3D point, Vector3D up)
 
 // This is NOT hyper fast, and the result IS a rotation matrix
 // For now, point is it's x-axis and up i s it's y-axis.
-void RTransform::MakeRotFrom(Vector3D point, Vector3D up)
+void RTransform::MakeRotFrom(Vector3D point, Vector3D up) noexcept
 {
   point.makeUnit();
   up.makeUnit();
@@ -320,7 +320,7 @@ void RTransform::MakeRotFrom(Vector3D point, Vector3D up)
 }
 
 // Transform an actual point ( overwrites old point )
-void RTransform::Transform(Vector3D& p) const
+void RTransform::Transform(Vector3D& p) const noexcept
 {
   Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
   Vector3D temp;
@@ -332,7 +332,7 @@ void RTransform::Transform(Vector3D& p) const
 }
 
 // Transform an actual point, and places the answer into a different pt
-void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const
+void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const noexcept
 {
   Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
   dest.x = src.dot(d[0]);
@@ -341,7 +341,7 @@ void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const
   dest.w = 1.0;
 }
 
-void RTransform::Rz(int16_t sDeg) // CCW!
+void RTransform::Rz(int16_t sDeg) noexcept // CCW!
 {
   register real_t S = rspfSin(sDeg);
   register real_t C = rspfCos(sDeg);
@@ -355,7 +355,7 @@ void RTransform::Rz(int16_t sDeg) // CCW!
   }
 }
 
-void RTransform::Rx(int16_t sDeg) // CCW!
+void RTransform::Rx(int16_t sDeg) noexcept // CCW!
 {
   register real_t S = rspfSin(sDeg);
   register real_t C = rspfCos(sDeg);
@@ -369,7 +369,7 @@ void RTransform::Rx(int16_t sDeg) // CCW!
   }
 }
 
-void RTransform::Ry(int16_t sDeg) // CCW!
+void RTransform::Ry(int16_t sDeg) noexcept // CCW!
 {
   register real_t S = rspfSin(sDeg);
   register real_t C = rspfCos(sDeg);
@@ -388,7 +388,7 @@ void RTransform::Ry(int16_t sDeg) // CCW!
 // Use rspSub to create w vertices (w,h,d)
 // x1 BECOMES x2.  Note that w1 must NOT have any 0's.
 //
-void RTransform::MakeBoxXF(Vector3D& x1, Vector3D& w1, Vector3D& x2, Vector3D& w2)
+void RTransform::MakeBoxXF(Vector3D& x1, Vector3D& w1, Vector3D& x2, Vector3D& w2) noexcept
 {
   // NOT OF MAXIMUM SPEED!
   makeIdentity();

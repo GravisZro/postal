@@ -303,10 +303,10 @@ int16_t RSnd::Play(						// Returns 0 on success.
 	int32_t lPlayBufSize,				// In:  Size of play buffer in bytes.
    uint8_t	ucMainVolume,         // In:  Primary Volume (0 - 255)
    uint8_t ucVolume2,           // In:  Secondary Volume (0 - 255)
-   int32_t lLoopStartTime,      // In:  Where to loop back to in milliseconds.
+   milliseconds_t lLoopStartTime,      // In:  Where to loop back to in milliseconds.
 											//	-1 indicates no looping (unless m_sLoop is
 											// explicitly set).
-   int32_t lLoopEndTime)          // In:  Where to loop back from in milliseconds.
+   milliseconds_t lLoopEndTime)          // In:  Where to loop back from in milliseconds.
 											// In:  If less than 1, the end + lLoopEndTime is used.
 	{
    int16_t sResult = SUCCESS; // Assume success.
@@ -334,7 +334,7 @@ int16_t RSnd::Play(						// Returns 0 on success.
 				{
 				// Success.  Set state to starting.
 				m_sState				= Starting;
-				if (lLoopStartTime > -1)
+            if (lLoopStartTime >= 0)
 					{
 					// Set looping parameters.
 					m_sLoop				= TRUE;

@@ -1597,8 +1597,8 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 	{
 	// Set up translation based on the combined character and rigid body transforms.
 	RTransform transChildAbsolute;
-	// Apply child and parent to transChildAbs.
-   transChildAbsolute.Mul(m_sprite.m_ptrans->matdata, ptrans->matdata);
+   // Apply child and parent to transChildAbs.
+   transChildAbsolute.Mul(*m_sprite.m_ptrans, *ptrans);
 	// Set up pt at origin for weapon.
    Vector3D pt3Src = {0, 0, 0, 1};
    Vector3D pt3Dst;

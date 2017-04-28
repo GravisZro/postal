@@ -87,7 +87,7 @@ public:
 	void GetScreenXF(RTransform& tDst)
 		{
       tDst.makeIdentity();
-      tDst.Mul(m_tScreen.matdata,m_tView.matdata);
+      tDst.Mul(m_tScreen,m_tView);
 		}
 
 	// Strictly for convenience:
@@ -102,8 +102,8 @@ public:
 		Vector3D ptDst;
 
       tFull.makeIdentity();
-      tFull.Mul(m_tView.matdata,tObj.matdata);
-      tFull.PreMulBy(m_tScreen.matdata);
+      tFull.Mul(m_tView,tObj);
+      tFull.PreMulBy(m_tScreen);
 
 		tFull.TransformInto(v3d,ptDst);
 		sDstX = int16_t(ptDst.x);
