@@ -37,23 +37,15 @@ uint32_t	RPipeLine::ms_lNumPipes = 0;
 Vector3D*  RPipeLine::ms_pPts = nullptr;
 
 RPipeLine::RPipeLine()
-	{
-	ms_lNumPipes++; // Track for deletion purposes!
-	Init();
-	}
+{
+  ms_lNumPipes++; // Track for deletion purposes!
 
-void RPipeLine::Init()
-	{
-	m_pimClipBuf = nullptr;
-	m_pimShadowBuf = nullptr;
-	m_pZB = nullptr;
-	m_sUseBoundingRect = FALSE;
-	m_dShadowScale = 1.0;
-
-   m_tScreen.makeIdentity();
-   m_tView.makeIdentity();
-   m_tShadow.makeIdentity();
-	}
+  m_pimClipBuf = nullptr;
+  m_pimShadowBuf = nullptr;
+  m_pZB = nullptr;
+  m_sUseBoundingRect = FALSE;
+  m_dShadowScale = 1.0;
+}
 
 // assume the clip rect is identical situation to zBUF:
 //
@@ -177,7 +169,6 @@ void RPipeLine::Transform(RSop* pPts,RTransform& tObj)
    RTransform tFull;
    // Use to stretch to z-buffer!
 
-   tFull.makeIdentity();
    tFull.Mul(m_tView, tObj);
 	// If there were inhomogeneous transforms, you would need to 
 	// trasnform each pt by two transforms separately!
@@ -199,7 +190,6 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
    RTransform tFull;
 	// Use to stretch to z-buffer!
 
-   tFull.makeIdentity();
 	// 1) Create Shadow
    tFull.Mul(m_tShadow, tObj);
 	// 2) Add in normal view
@@ -391,31 +381,21 @@ void RPipeLine::BoundingSphereToScreen(Vector3D& ptCenter, Vector3D& ptRadius,
 	{
 	// THIS IS HARD WIRED TO WORK WITH OUR CURRENT STYLE OF
 	// PROJECTION:
-	RTransform tFull;
-   tFull.makeIdentity();
+   RTransform tFull;
    tFull.Mul(m_tView, tObj); // hold off on screen -> get raw distance:
    tFull.PreMulBy(m_tScreen);
 
-	// THIS IS IN UNSCALED OBJECT VIEW
-	double dModelRadius = std::sqrt(
-		SQR(ptCenter.x - ptRadius.x) + 
-		SQR(ptCenter.y - ptRadius.y) + 
-		SQR(ptCenter.z - ptRadius.z) ); // Randy Units
-
-	// Convert from Model To Screen...
-   double dScreenRadius = dModelRadius * m_tScreen.matdata[0];
-
 	// Project the center onto the screen:
 
-   Vector3D ptCen/*,ptEnd*/;
-	tFull.TransformInto(ptCenter,ptCen); // z is now distorted
+   Vector3D ptCen;
+   tFull.TransformInto(ptCenter, ptCen); // z is now distorted
 
 	// store in pieline variables...(ALL OF THEM)
 	m_sCenX = int16_t(ptCen.x);
 	m_sCenY = int16_t(ptCen.y);
 	m_sCenZ = int16_t(ptCen.z / 256.0); // Scale Z's by 256 for lighting later
 
-	int16_t	sScreenRadius = int16_t(dScreenRadius+1);
+   int16_t sScreenRadius = int16_t((ptCenter - ptRadius).magnatude() * m_tScreen.matdata[0]) + 1;
 	
 	m_sX = m_sCenX - sScreenRadius;
 	m_sY = m_sCenY - sScreenRadius;

@@ -53,7 +53,7 @@ public:
    int16_t Create(size_t lScratchSpace=0,int16_t sZBufWidth=0);
 	int16_t CreateShadow(int16_t sAngleY,double dTanDeclension,int16_t sBufSize = -1);
 	void Destroy(); // will NOT kill transform scratch space
-	void Init();
+
 	//-------------------------------------
 	int16_t NotCulled(Vector3D *p1,Vector3D *p2,Vector3D *p3);
 	void Transform(RSop* pPts,RTransform& tObj);
