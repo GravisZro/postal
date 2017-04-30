@@ -713,11 +713,10 @@ CScene::Render3D(
 
 	// Get current sphere.
 	pt3dSrcCenter	= *(ps3Cur->m_psphere);
-	pt3dSrcRadius.x	= pt3dSrcCenter.x + pt3dSrcCenter.w;
-	pt3dSrcRadius.y	= pt3dSrcCenter.y + pt3dSrcCenter.w;
-	pt3dSrcRadius.z	= pt3dSrcCenter.z + pt3dSrcCenter.w;
-	pt3dSrcRadius.w	= 1;
-	pt3dSrcCenter.w	= 1;
+   pt3dSrcRadius = pt3dSrcCenter + pt3dSrcCenter.w();
+
+   pt3dSrcRadius.setW(1.0);
+   pt3dSrcCenter.setW(1.0);
 
 	// Let the pipeline know of the bounding sphere.
 	m_pipeline.BoundingSphereToScreen(pt3dSrcCenter, pt3dSrcRadius, *ptransRender);
@@ -1902,8 +1901,8 @@ void CScene::TransformPtsToRealm(	// Returns nothing.
 	int16_t	i;
 	for (i = 0; i < sNum; i++)
 		{
-		p3dPtsDst->x		-= SCREEN_DIAMETER_FOR_3D / 2;
-		p3dPtsDst->y		= -(p3dPtsDst->y - SCREEN_DIAMETER_FOR_3D / 2);
+      p3dPtsDst->setX(p3dPtsDst->x() - (SCREEN_DIAMETER_FOR_3D / 2));
+      p3dPtsDst->setY(-(p3dPtsDst->y() - SCREEN_DIAMETER_FOR_3D / 2));
 		// No Z mapping.
 //		p3dPtsDst->z		= p3dPtsDst->z;
 

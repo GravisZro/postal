@@ -740,25 +740,19 @@ void CThing3d::EditRect(RRect* pRect)
 
 			RTransform	trans;
          apt3dSrc[0]		= m_panimCur->m_pbounds->atTime(0);
-			
-			apt3dSrc[1].x	= apt3dSrc[0].x + apt3dSrc[0].w;
-			apt3dSrc[1].y	= apt3dSrc[0].y + apt3dSrc[0].w;
-			apt3dSrc[1].z	= apt3dSrc[0].z + apt3dSrc[0].w;
 
-			apt3dSrc[0].w	= 1;
-			apt3dSrc[1].w	= 1;
+         apt3dSrc[1] = apt3dSrc[0] - apt3dSrc[0].w();
+
+         apt3dSrc[0].setW(1.0);
+         apt3dSrc[1].setW(1.0);
 
 			m_pRealm->m_scene.TransformPtsToRealm(&trans, apt3dSrc, apt3dDst, 2);
-         m_sprite.m_sRadius	= std::sqrt(ABS2(
-				apt3dDst[1].x - apt3dDst[0].x, 
-				apt3dDst[1].y - apt3dDst[0].y, 
-				apt3dDst[1].z - apt3dDst[0].z 
-				) );
+         m_sprite.m_sRadius = (apt3dDst[1] - apt3dDst[0]).magnatude();
 
 			Map3Dto2D(
-				m_dX + apt3dDst[0].x, 
-				m_dY + apt3dDst[0].y, 
-				m_dZ + apt3dDst[0].z, 
+				m_dX + apt3dDst[0].x(), 
+				m_dY + apt3dDst[0].y(), 
+				m_dZ + apt3dDst[0].z(), 
 				&(pRect->sX), &(pRect->sY) );
 			}
 		}
@@ -1606,9 +1600,9 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 	m_pRealm->m_scene.TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 
 	// Output link point.
-	*pdX	= pt3Dst.x;
-	*pdY	= pt3Dst.y;
-	*pdZ	= pt3Dst.z;
+	*pdX	= pt3Dst.x();
+	*pdY	= pt3Dst.y();
+	*pdZ	= pt3Dst.z();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

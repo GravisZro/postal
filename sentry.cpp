@@ -501,9 +501,9 @@ void CSentry::UpdatePosition(void)
 		// Get last transition position by mapping origin.
 		m_pRealm->m_scene.TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 		// Set child position to character's position offset by rigid body's realm offset.
-		m_dX = m_dXBase + pt3Dst.x;
-		m_dY = m_dYBase + pt3Dst.y;
-		m_dZ = m_dZBase + pt3Dst.z;
+		m_dX = m_dXBase + pt3Dst.x();
+		m_dY = m_dYBase + pt3Dst.y();
+      m_dZ = m_dZBase + pt3Dst.z();
 		}
 	}
 

@@ -17,88 +17,138 @@ constexpr uint32_t rowcol(R row, C col) { return (row * 4) + col; }
 
 
 // Vector3D is to be treated as a primary type and thus has no encapsulation
-struct Vector3D
+class Vector3D
 {
-  real_t x;
-  real_t y;
-  real_t z;
-  real_t w;
+  friend class RPipeLine; // allow encapsulation to be violated for speed
+  friend class RTransform;
+private:
+  real_t m_x;
+  real_t m_y;
+  real_t m_z;
+  real_t m_w;
 
+public:
   inline Vector3D(real_t _x = 0.0,
                   real_t _y = 0.0,
                   real_t _z = 0.0,
                   real_t _w = 1.0) noexcept
-    : x(_x), y(_y), z(_z), w(_w) { }
+    : m_x(_x), m_y(_y), m_z(_z), m_w(_w) { }
+
+  inline real_t x(void) const { return m_x; }
+  inline real_t y(void) const { return m_y; }
+  inline real_t z(void) const { return m_z; }
+  inline real_t w(void) const { return m_w; }
+
+  inline void setX(real_t _x) { m_x = _x; }
+  inline void setY(real_t _y) { m_y = _y; }
+  inline void setZ(real_t _z) { m_z = _z; }
+  inline void setW(real_t _w) { m_w = _w; }
 
   inline Vector3D& operator =(const Vector3D& other) noexcept
   {
-    x = other.x;
-    y = other.y;
-    z = other.z;
+    m_x = other.m_x;
+    m_y = other.m_y;
+    m_z = other.m_z;
     return *this;
   }
 
   inline real_t dot(const Vector3D& other) const noexcept
   {
-    return x * other.x +
-           y * other.y +
-           z * other.z +
-           w * other.w;
+    return m_x * other.m_x +
+           m_y * other.m_y +
+           m_z * other.m_z +
+           m_w * other.m_w;
   }
 
   inline Vector3D cross(const Vector3D& other) const noexcept
   {
-    return Vector3D(y * other.z - z * other.y,
-                    z * other.x - x * other.z,
-                    x * other.y - y * other.x);
+    return Vector3D(m_y * other.m_z - m_z * other.m_y,
+                    m_z * other.m_x - m_x * other.m_z,
+                    m_x * other.m_y - m_y * other.m_x);
   }
 
   inline Vector3D operator +(const Vector3D& other) const noexcept
   {
-    return Vector3D(x + other.x,
-                    y + other.y,
-                    z + other.z);
+    return Vector3D(m_x + other.m_x,
+                    m_y + other.m_y,
+                    m_z + other.m_z);
+  }
+
+  inline Vector3D operator +(real_t scalar) const noexcept
+  {
+    return Vector3D(m_x + scalar,
+                    m_y + scalar,
+                    m_z + scalar);
   }
 
   inline Vector3D operator -(const Vector3D& other) const noexcept
   {
-    return Vector3D(x - other.x,
-                    y - other.y,
-                    z - other.z);
+    return Vector3D(m_x - other.m_x,
+                    m_y - other.m_y,
+                    m_z - other.m_z);
   }
 
-  inline Vector3D operator *(real_t scale) const noexcept
+
+  inline Vector3D operator -(real_t scalar) const noexcept
   {
-    return Vector3D(x * scale,
-                    y * scale,
-                    z * scale);
+    return Vector3D(m_x - scalar,
+                    m_y - scalar,
+                    m_z - scalar);
   }
 
-  inline Vector3D operator /(real_t inverse_scale) const noexcept
+  inline Vector3D operator *(real_t scalar) const noexcept
   {
-    ASSERT(inverse_scale != 0.0);
-    return Vector3D(x / inverse_scale,
-                    y / inverse_scale,
-                    z / inverse_scale);
+    return Vector3D(m_x * scalar,
+                    m_y * scalar,
+                    m_z * scalar);
+  }
+
+  inline Vector3D operator /(real_t scalar) const noexcept
+  {
+    ASSERT(scalar != 0.0);
+    return Vector3D(m_x / scalar,
+                    m_y / scalar,
+                    m_z / scalar);
   }
 
   inline Vector3D& operator +=(const Vector3D& other) noexcept
-    { return *this = operator +(other); }
+  {
+    m_x += other.m_x;
+    m_y += other.m_y;
+    m_z += other.m_z;
+    return *this;
+  }
 
   inline Vector3D& operator -=(const Vector3D& other) noexcept
-    { return *this = operator -(other); }
+  {
+    m_x -= other.m_x;
+    m_y -= other.m_y;
+    m_z -= other.m_z;
+    return *this;
+  }
 
-  inline Vector3D& operator *=(real_t scale) noexcept
-    { return *this = operator *(scale); }
+  inline Vector3D& operator *=(real_t scalar) noexcept
+  {
+    m_x *= scalar;
+    m_y *= scalar;
+    m_z *= scalar;
+    return *this;
+  }
 
-  inline Vector3D& operator /=(real_t inverse_scale) noexcept
-    { return *this = operator /(inverse_scale); }
+  inline Vector3D& operator /=(real_t scalar) noexcept
+  {
+    ASSERT(scalar != 0.0);
+    m_x /= scalar;
+    m_y /= scalar;
+    m_z /= scalar;
+    return *this;
+  }
 
   inline real_t magnatude(void) const noexcept
   {
-    return std::sqrt(SQR(x) +
-                     SQR(y) +
-                     SQR(z));
+    return std::sqrt(SQR(m_x) +
+                     SQR(m_y) +
+                     SQR(m_z));
   }
 
   inline Vector3D parallel(const Vector3D& other) const noexcept
@@ -109,8 +159,8 @@ struct Vector3D
 
   inline Vector3D& makeHomogeneous(void) noexcept // factor out the w component
   {
-    operator /=(w);
-    w = 1.0;
+    operator /=(m_w);
+    m_w = 1.0;
     return *this;
   }
 

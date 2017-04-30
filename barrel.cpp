@@ -727,7 +727,7 @@ void CBarrel::OnExplosionMsg(Explosion_Message* pMessage)
 
 		m_pRealm->m_scene.TransformPtsToRealm(&m_trans, &pt3dSrc, &pt3dDst, 1 );
 
-		m_dY	+=	pt3dDst.y;
+      m_dY	+=	pt3dDst.y();
 	}
 }
 

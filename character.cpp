@@ -1205,9 +1205,9 @@ CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 			if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
 				{
 				// Set weapon position to character's position offset by rigid body's realm offset.
-				pweapon->m_dX = m_dX + pt3WeaponRel.x;
-				pweapon->m_dY = m_dY + pt3WeaponRel.y;
-				pweapon->m_dZ = m_dZ + pt3WeaponRel.z;
+				pweapon->m_dX = m_dX + pt3WeaponRel.x();
+				pweapon->m_dY = m_dY + pt3WeaponRel.y();
+				pweapon->m_dZ = m_dZ + pt3WeaponRel.z();
 				// I guess we usually want to launch in the direction we are _currently_ facing and
 				// not the direction we were in when we prepared the weapon.
 				pweapon->m_dRot	= m_dRot;
@@ -1370,9 +1370,9 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 		bool bResult = m_bullets.FireDeluxe(
 			sFireAngle,				// In:  Angle of launch in degrees (on X/Z plane).
 			GetRandSway(FIRE_ANGLE_Z_SWAY, m_pRealm->m_phood->m_dScale3d),				// In:  Angle of launch in degrees (on X/Y plane).
-			m_dX + ppt3d->x,		// In:  Launch position.
-			m_dY + ppt3d->y,		// In:  Launch position.
-			m_dZ + ppt3d->z,		// In:  Launch position.
+			m_dX + ppt3d->x(),		// In:  Launch position.
+			m_dY + ppt3d->y(),		// In:  Launch position.
+			m_dZ + ppt3d->z(),		// In:  Launch position.
 			sRange,					// In:  Maximum distance.
 			m_pRealm,				// In:  Realm in which to fire.
 			bitsInclude,			// In:  Mask of CSmash masks that this bullet can hit.
@@ -1484,9 +1484,9 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 	if (Construct(CChunkID, m_pRealm, (CThing**)&pchunk) == SUCCESS)
 		{
 		pchunk->Setup(
-			m_dX + ppt3d->x,			// Source position.
-			m_dY + ppt3d->y,			// Source position.
-			m_dZ + ppt3d->z,			// Source position.
+			m_dX + ppt3d->x(),			// Source position.
+			m_dY + ppt3d->y(),			// Source position.
+			m_dZ + ppt3d->z(),			// Source position.
 			m_dRot + 90,				// Angle of velocity.
 			0,								// Angle sway.
 			30,							// Velocity (X/Z plane).

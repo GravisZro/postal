@@ -143,11 +143,11 @@ SameSigns_Vector(
     Vector3D *v2)	// In: vector 1
 {
   //this is a slooow check!, check the sign bit, or something
-  if(((int)v1->x >= 0 && (int)v2->x >= 0) || ((int)v1->x < 0 && (int)v2->x < 0))
+  if(((int)v1->x() >= 0 && (int)v2->x() >= 0) || ((int)v1->x() < 0 && (int)v2->x() < 0))
   {
-    if(((int)v1->y >= 0 && (int)v2->y >= 0) || ((int)v1->y < 0 && (int)v2->y < 0))
+    if(((int)v1->y() >= 0 && (int)v2->y() >= 0) || ((int)v1->y() < 0 && (int)v2->y() < 0))
     {
-      if(((int)v1->z >= 0 && (int)v2->z >= 0) || ((int)v1->z < 0 && (int)v2->z < 0))
+      if(((int)v1->z() >= 0 && (int)v2->z() >= 0) || ((int)v1->z() < 0 && (int)v2->z() < 0))
         return true;
     }
   }
@@ -171,10 +171,10 @@ GetIntersectSubT(
     float fD,
     float &t)  // In: return t
 {
-  float fdenom=ptCoeff.x*(ptSub.x) + ptCoeff.y*(ptSub.y) + ptCoeff.z*(ptSub.z);
+  float fdenom=ptCoeff.x()*(ptSub.x()) + ptCoeff.y()*(ptSub.y()) + ptCoeff.z()*(ptSub.z());
   if(fdenom!=0)
   {
-    t= (ptCoeff.x*pt0.x + ptCoeff.y*pt0.y + ptCoeff.z*pt0.z + fD)/fdenom;
+    t= (ptCoeff.x()*pt0.x() + ptCoeff.y()*pt0.y() + ptCoeff.z()*pt0.z() + fD)/fdenom;
     t*=-1;
     return true;
   }
@@ -214,14 +214,17 @@ PointInsideTri(
 
   //rspSub(pt0, pt2);
   //rspSub(pt1, pt2);
-  pt0.x=pt0A.x - pt2A.x;
-  pt0.y=pt0A.y - pt2A.y;
-  pt0.z=pt0A.z - pt2A.z;
+  pt0 = pt0A - pt2A;
+  pt1 = pt1A - pt2A;
+  /*
+  pt0.x()=pt0A.x() - pt2A.x();
+  pt0.y()=pt0A.y() - pt2A.y();
+  pt0.z()=pt0A.z() - pt2A.z();
 
-  pt1.x=pt1A.x - pt2A.x;
-  pt1.y=pt1A.y - pt2A.y;
-  pt1.z=pt1A.z - pt2A.z;
-
+  pt1.x()=pt1A.x() - pt2A.x();
+  pt1.y()=pt1A.y() - pt2A.y();
+  pt1.z()=pt1A.z() - pt2A.z();
+*/
   main_cross = pt0.cross(pt1);
 
 
@@ -234,9 +237,11 @@ PointInsideTri(
   //rspSub(hitpoint, pt2);
   //rspCross(pt0, hitpoint, result_cross); //check 0 to hitpoint
 
-  pt0.x=pt0A.x - pt2A.x;
-  pt0.y=pt0A.y - pt2A.y;
-  pt0.z=pt0A.z - pt2A.z;
+
+  pt0 = pt0A - pt2A;
+//  pt0.x()=pt0A.x() - pt2A.x();
+//  pt0.y()=pt0A.y() - pt2A.y();
+//  pt0.z()=pt0A.z() - pt2A.z();
   hitpoint -= pt2A;
   result_cross = pt0.cross(hitpoint); //check 0 to hitpoint
 
@@ -249,12 +254,16 @@ PointInsideTri(
     //rspSub(hitpoint, pt0);
 
     //pt0 is the origin
-    pt1.x=pt1A.x-pt0A.x;
-    pt1.y=pt1A.y-pt0A.y;
-    pt1.z=pt1A.z-pt0A.z;
-    hitpoint.x=hit.x-pt0A.x;
-    hitpoint.y=hit.y-pt0A.y;
-    hitpoint.z=hit.z-pt0A.z;
+    pt1 = pt1A - pt0A;
+    hitpoint = hit - pt0A;
+/*
+    pt1.x()=pt1A.x()-pt0A.x();
+    pt1.y()=pt1A.y()-pt0A.y();
+    pt1.z()=pt1A.z()-pt0A.z();
+    hitpoint.x()=hit.x()-pt0A.x();
+    hitpoint.y()=hit.y()-pt0A.y();
+    hitpoint.z()=hit.z()-pt0A.z();
+*/
     result_cross = pt1.cross(hitpoint); //check 1 to hitpoint
 
     if(SameSigns_Vector(&result_cross, &main_cross))
@@ -267,12 +276,16 @@ PointInsideTri(
       //rspCross(pt2, hitpoint, result_cross); //check 2 to hitpoint
 
       //pt1 is the origin
-      pt2.x=pt2A.x-pt1A.x;
-      pt2.y=pt2A.y-pt1A.y;
-      pt2.z=pt2A.z-pt1A.z;
-      hitpoint.x=hit.x-pt1A.x;
-      hitpoint.y=hit.y-pt1A.y;
-      hitpoint.z=hit.z-pt1A.z;
+      pt2 = pt2A - pt1A;
+      hitpoint = hit - pt1A;
+      /*
+      pt2.x()=pt2A.x()-pt1A.x();
+      pt2.y()=pt2A.y()-pt1A.y();
+      pt2.z()=pt2A.z()-pt1A.z();
+      hitpoint.x()=hit.x()-pt1A.x();
+      hitpoint.y()=hit.y()-pt1A.y();
+      hitpoint.z()=hit.z()-pt1A.z();
+      */
       result_cross = pt2.cross(hitpoint); //check 2 to hitpoint
 
       if(SameSigns_Vector(&result_cross, &main_cross))
@@ -303,9 +316,12 @@ TriAIntersectsLineSegmentB(
   float intersect_t;
   // point 0--1
   Vector3D ptSub;
-  ptSub.x=pt1B.x-pt0B.x;
-  ptSub.y=pt1B.y-pt0B.y;
-  ptSub.z=pt1B.z-pt0B.z;
+  ptSub = pt1B - pt0B;
+  /*
+  ptSub.x()=pt1B.x()-pt0B.x();
+  ptSub.y()=pt1B.y()-pt0B.y();
+  ptSub.z()=pt1B.z()-pt0B.z();
+  */
 
   if(GetIntersectSubT(pt0B, ptSub, normalA, fBigA, intersect_t))
   {
@@ -313,9 +329,11 @@ TriAIntersectsLineSegmentB(
        intersect_t<=1)
     {
       //GetIntersectPointSub(pt0B, ptSub, intersect_t, hitpoint);
-      hitpoint.x=pt0B.x+ptSub.x*intersect_t;
-      hitpoint.y=pt0B.y+ptSub.y*intersect_t;
-      hitpoint.z=pt0B.z+ptSub.z*intersect_t;
+      hitpoint = (pt0B + ptSub) * intersect_t;
+
+      //hitpoint.x()=pt0B.x()+ptSub.x()*intersect_t;
+      //hitpoint.y()=pt0B.y()+ptSub.y()*intersect_t;
+      //hitpoint.z()=pt0B.z()+ptSub.z()*intersect_t;
 
       if(PointInsideTri(pt0A, pt1A, pt2A, hitpoint))
         return true;
@@ -330,12 +348,12 @@ TriAIntersectsLineSegmentB(
 bool shorterdist(Vector3D &pt1, Vector3D &pt2)
 // true if pt1 is shorter dist than pt2
 {
-  return ((pt1.x*pt1.x + pt1.y*pt1.y + pt1.z*pt1.z) < (pt2.x*pt2.x + pt2.y*pt2.y + pt2.z*pt2.z));
+  return ((pt1.x()*pt1.x() + pt1.y()*pt1.y() + pt1.z()*pt1.z()) < (pt2.x()*pt2.x() + pt2.y()*pt2.y() + pt2.z()*pt2.z()));
 }
 void sqrdist(Vector3D &pt1, float &fdist)
 // returns sqrd dist of point
 {
-  fdist=(pt1.x*pt1.x + pt1.y*pt1.y + pt1.z*pt1.z);
+  fdist=(pt1.x()*pt1.x() + pt1.y()*pt1.y() + pt1.z()*pt1.z());
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool
@@ -359,9 +377,11 @@ TrianglesIntersectLineSegment(
   float fclosest=(float)INT_MAX, fdist;
   bool bhit=false;
 
-  hitpoint.x=hitpoint.y=hitpoint.z=0;
-  hitpoint.w=1;
-  normalA.w=1;
+  hitpoint.setX(0.0);
+  hitpoint.setY(0.0);
+  hitpoint.setZ(0.0);
+  hitpoint.setW(1.0);
+  normalA.setW(1.0);
 
   for(sJ=0; sJ<smeshNum; sJ++)
   {
@@ -371,16 +391,20 @@ TrianglesIntersectLineSegment(
     pt2A=soparr[ptri[sJ][2]];
 
     //get the normals of triangle 1
-    t_pt1A.x=pt1A.x-pt0A.x;
-    t_pt1A.y=pt1A.y-pt0A.y;
-    t_pt1A.z=pt1A.z-pt0A.z;
-    t_pt2A.x=pt2A.x-pt0A.x;
-    t_pt2A.y=pt2A.y-pt0A.y;
-    t_pt2A.z=pt2A.z-pt0A.z;
+    t_pt1A = pt1A - pt0A;
+    t_pt2A = pt2A - pt0A;
+    /*
+    t_pt1A.x()=pt1A.x()-pt0A.x();
+    t_pt1A.y()=pt1A.y()-pt0A.y();
+    t_pt1A.z()=pt1A.z()-pt0A.z();    
+    t_pt2A.x()=pt2A.x()-pt0A.x();
+    t_pt2A.y()=pt2A.y()-pt0A.y();
+    t_pt2A.z()=pt2A.z()-pt0A.z();
+    */
     normalA = t_pt1A.cross(t_pt2A);
 
     //and the constant
-    fBigA=(-normalA.x*pt0A.x - normalA.y*pt0A.y - normalA.z*pt0A.z);
+    fBigA=(-normalA.x()*pt0A.x() - normalA.y()*pt0A.y() - normalA.z()*pt0A.z());
 
     // Linesegment B intersects polygon A -------------------------------------------------------------------
     if(TriAIntersectsLineSegmentB(normalA, fBigA, pt0A, pt1A, pt2A, linept1, linept2, hitpoint))

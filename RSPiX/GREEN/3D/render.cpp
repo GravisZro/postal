@@ -16,7 +16,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
 #include "render.h"
-
+#if 1
 typedef struct 
 	{ RFixedS32 x; RFixedS32 y; RFixedS32 z;} RRenderPt32; // For internal use
 
@@ -44,15 +44,15 @@ void	DrawTri_ZColorFog(uint8_t* pDstOffset,int32_t lDstP,
 	RRenderPt32 *pv2 = &pt2;
 	RRenderPt32 *pv3 = &pt3;
 	// Cast from real_t to short in fp32 format:
-	pt1.x.mod = int16_t(p1->x);
-	pt1.y.mod = int16_t(p1->y);
-	pt1.z.mod = int16_t(p1->z);
-	pt2.x.mod = int16_t(p2->x);
-	pt2.y.mod = int16_t(p2->y);
-	pt2.z.mod = int16_t(p2->z);
-	pt3.x.mod = int16_t(p3->x);
-	pt3.y.mod = int16_t(p3->y);
-	pt3.z.mod = int16_t(p3->z);
+   pt1.x.mod = int16_t(p1->x());
+   pt1.y.mod = int16_t(p1->y());
+   pt1.z.mod = int16_t(p1->z());
+   pt2.x.mod = int16_t(p2->x());
+   pt2.y.mod = int16_t(p2->y());
+   pt2.z.mod = int16_t(p2->z());
+   pt3.x.mod = int16_t(p3->x());
+   pt3.y.mod = int16_t(p3->y());
+   pt3.z.mod = int16_t(p3->z());
 	pt1.x.frac = 
 	pt2.x.frac = 
 	pt3.x.frac = uint16_t(32768); // offset each by 1/2
@@ -455,14 +455,14 @@ void	DrawTri_wire(RImage* pimDst,int16_t sX,int16_t sY,
 			Vector3D* p1,Vector3D* p2,Vector3D* p3,uint8_t ucColor)
 	{
 	rspLine(ucColor,pimDst,
-		sX+int16_t(p1->x),sY+int16_t(p1->y),
-		sX+int16_t(p2->x),sY+int16_t(p2->y));
+      sX+int16_t(p1->x()),sY+int16_t(p1->y()),
+      sX+int16_t(p2->x()),sY+int16_t(p2->y()));
 	rspLine(ucColor,pimDst,
-		sX+int16_t(p1->x),sY+int16_t(p1->y),
-		sX+int16_t(p3->x),sY+int16_t(p3->y));
+      sX+int16_t(p1->x()),sY+int16_t(p1->y()),
+      sX+int16_t(p3->x()),sY+int16_t(p3->y()));
 	rspLine(ucColor,pimDst,
-		sX+int16_t(p3->x),sY+int16_t(p3->y),
-		sX+int16_t(p2->x),sY+int16_t(p2->y));
+      sX+int16_t(p3->x()),sY+int16_t(p3->y()),
+      sX+int16_t(p2->x()),sY+int16_t(p2->y()));
 	}
 
 //================================================== 
@@ -488,15 +488,15 @@ void	DrawTri_ZColor(uint8_t* pDstOffset,int32_t lDstP,
 	RRenderPt32 *pv2 = &pt2;
 	RRenderPt32 *pv3 = &pt3;
 	// Cast from real_t to short in fp32 format:
-	pt1.x.mod = int16_t(p1->x);
-	pt1.y.mod = int16_t(p1->y);
-	pt1.z.mod = int16_t(p1->z);
-	pt2.x.mod = int16_t(p2->x);
-	pt2.y.mod = int16_t(p2->y);
-	pt2.z.mod = int16_t(p2->z);
-	pt3.x.mod = int16_t(p3->x);
-	pt3.y.mod = int16_t(p3->y);
-	pt3.z.mod = int16_t(p3->z);
+   pt1.x.mod = int16_t(p1->x());
+   pt1.y.mod = int16_t(p1->y());
+   pt1.z.mod = int16_t(p1->z());
+   pt2.x.mod = int16_t(p2->x());
+   pt2.y.mod = int16_t(p2->y());
+   pt2.z.mod = int16_t(p2->z());
+   pt3.x.mod = int16_t(p3->x());
+   pt3.y.mod = int16_t(p3->y());
+   pt3.z.mod = int16_t(p3->z());
 	pt1.x.frac = 
 	pt2.x.frac = 
 	pt3.x.frac = uint16_t(32768); // offset each by 1/2
@@ -828,12 +828,12 @@ void	DrawTri(uint8_t* pDstOffset,int32_t lDstP,
 	RRenderPt32 *pv2 = &pt2;
 	RRenderPt32 *pv3 = &pt3;
 	// Cast from real_t to short in fp32 format:
-	pt1.x.mod = int16_t(p1->x);
-	pt1.y.mod = int16_t(p1->y);
-	pt2.x.mod = int16_t(p2->x);
-	pt2.y.mod = int16_t(p2->y);
-	pt3.x.mod = int16_t(p3->x);
-	pt3.y.mod = int16_t(p3->y);
+   pt1.x.mod = int16_t(p1->x());
+   pt1.y.mod = int16_t(p1->y());
+   pt2.x.mod = int16_t(p2->x());
+   pt2.y.mod = int16_t(p2->y());
+   pt3.x.mod = int16_t(p3->x());
+   pt3.y.mod = int16_t(p3->y());
 	pt1.x.frac = 
 	pt2.x.frac = 
 	pt3.x.frac = uint16_t(32768); // offset each by 1/2
@@ -1043,3 +1043,4 @@ void	DrawTri(uint8_t* pDstOffset,int32_t lDstP,
 			}
 		}
 	}
+#endif

@@ -106,8 +106,8 @@ public:
       tFull.PreMulBy(m_tScreen);
 
 		tFull.TransformInto(v3d,ptDst);
-		sDstX = int16_t(ptDst.x);
-		sDstY = int16_t(ptDst.y);
+      sDstX = int16_t(ptDst.m_x);
+      sDstY = int16_t(ptDst.m_y);
 		}
 	
 	// THIS WILL CHANGE WITH TIME:
