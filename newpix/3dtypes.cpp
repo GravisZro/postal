@@ -227,9 +227,9 @@ inline void MatrixScale(real_t* mat, real_t x, real_t y, real_t z, uint8_t col) 
   reinterpret_cast<Vector3D*>(matdata.get())[row] = val;
 
 #define setColumn(col, val) \
-  matdata[rowcol(0, col)] = val.m_x; \
-  matdata[rowcol(1, col)] = val.m_y; \
-  matdata[rowcol(2, col)] = val.m_z;
+  matdata[rowcol(0, col)] = val.x(); \
+  matdata[rowcol(1, col)] = val.y(); \
+  matdata[rowcol(2, col)] = val.z();
 
 
 #ifndef _MSC_VER
@@ -323,22 +323,16 @@ void RTransform::MakeRotFrom(Vector3D point, Vector3D up) noexcept
 void RTransform::Transform(Vector3D& p) const noexcept
 {
   Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
-  Vector3D temp;
-  temp.m_x = p.dot(d[0]);
-  temp.m_y = p.dot(d[1]);
-  temp.m_z = p.dot(d[2]);
-  p = temp;
-  p.m_w = 1.0;
+  p = Vector3D(p.dot(d[0]), p.dot(d[1]), p.dot(d[2]));
+  p.setW(1.0);
 }
 
 // Transform an actual point, and places the answer into a different pt
 void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const noexcept
 {
   Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
-  dest.m_x = src.dot(d[0]);
-  dest.m_y = src.dot(d[1]);
-  dest.m_z = src.dot(d[2]);
-  dest.m_w = 1.0;
+  dest = Vector3D(src.dot(d[0]), src.dot(d[1]), src.dot(d[2]));
+  dest.setW(1.0);
 }
 
 void RTransform::Rz(int16_t sDeg) noexcept // CCW!
@@ -392,7 +386,7 @@ void RTransform::MakeBoxXF(Vector3D& x1, Vector3D& w1, Vector3D& x2, Vector3D& w
 {
   // NOT OF MAXIMUM SPEED!
   makeIdentity();
-  Translate(-x1.m_x, -x1.m_y, -x1.m_z);
-  Scale(w2.m_x/w1.m_x, w2.m_y/w1.m_y, w2.m_z/w1.m_z);
-  Translate(x2.m_x, x2.m_y, x2.m_z);
+  Translate(-x1.x(), -x1.y(), -x1.z());
+  Scale(w2.x()/w1.x(), w2.y()/w1.y(), w2.z()/w1.z());
+  Translate(x2.x(), x2.y(), x2.z());
 }

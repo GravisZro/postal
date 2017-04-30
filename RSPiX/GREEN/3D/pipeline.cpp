@@ -215,12 +215,12 @@ void RPipeLine::TransformShadow(RSop* pPts,RTransform& tObj,
 
       pOffset -= pTemp;
 		// Just use screen for scale:
-      pOffset.m_x *= m_tScreen.matdata[rowcol(0, 0)];
-      pOffset.m_y *= m_tScreen.matdata[rowcol(1, 1)];
+      pOffset.setX(pOffset.x() * m_tScreen.matdata[rowcol(0, 0)]);
+      pOffset.setY(pOffset.y() * m_tScreen.matdata[rowcol(1, 1)]);
 
 		// store result
-      *psOffX = int16_t (pOffset.m_x);
-      *psOffY = int16_t (pOffset.m_y);
+      *psOffX = int16_t (pOffset.x());
+      *psOffY = int16_t (pOffset.y());
 		}
 
 	// 3) Project to the "screen"
@@ -391,9 +391,9 @@ void RPipeLine::BoundingSphereToScreen(Vector3D& ptCenter, Vector3D& ptRadius,
    tFull.TransformInto(ptCenter, ptCen); // z is now distorted
 
 	// store in pieline variables...(ALL OF THEM)
-   m_sCenX = int16_t(ptCen.m_x);
-   m_sCenY = int16_t(ptCen.m_y);
-   m_sCenZ = int16_t(ptCen.m_z / 256.0); // Scale Z's by 256 for lighting later
+   m_sCenX = int16_t(ptCen.x());
+   m_sCenY = int16_t(ptCen.y());
+   m_sCenZ = int16_t(ptCen.z() / 256.0); // Scale Z's by 256 for lighting later
 
    int16_t sScreenRadius = int16_t((ptCenter - ptRadius).magnatude() * m_tScreen.matdata[0]) + 1;
 	

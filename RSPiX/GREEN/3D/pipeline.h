@@ -106,8 +106,8 @@ public:
       tFull.PreMulBy(m_tScreen);
 
 		tFull.TransformInto(v3d,ptDst);
-      sDstX = int16_t(ptDst.m_x);
-      sDstY = int16_t(ptDst.m_y);
+      sDstX = int16_t(ptDst.x());
+      sDstY = int16_t(ptDst.y());
 		}
 	
 	// THIS WILL CHANGE WITH TIME:
@@ -131,14 +131,14 @@ public:
 	// store a transformed bounding rect for object being rendered:
 	// These are screend coordinates relative to the center of
 	// the zbuf square / clipping square
-	int16_t	m_sX; // far cube point
-	int16_t m_sY;
+   int16_t m_sX; // far cube point
+   int16_t m_sY;
 	int16_t m_sZ;
 	int16_t m_sW;
 	int16_t m_sH;
 	int16_t m_sD;
 
-	int16_t	m_sCenX; // for convenience - the cube center
+   int16_t m_sCenX; // for convenience - the cube center
 	int16_t m_sCenY; // in 3d screen coordinates
 	int16_t m_sCenZ;
 	// TRUE of FALSE
