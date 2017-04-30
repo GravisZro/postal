@@ -331,7 +331,9 @@ void RTransform::Transform(Vector3D& p) const noexcept
 void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const noexcept
 {
   Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
-  dest = Vector3D(src.dot(d[0]), src.dot(d[1]), src.dot(d[2]));
+  dest.setX(src.dot(d[0]));
+  dest.setY(src.dot(d[1]));
+  dest.setY(src.dot(d[2]));
   dest.setW(1.0);
 }
 

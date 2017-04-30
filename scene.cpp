@@ -712,7 +712,7 @@ CScene::Render3D(
 	// Setup src pts.
 
 	// Get current sphere.
-	pt3dSrcCenter	= *(ps3Cur->m_psphere);
+   pt3dSrcCenter = *(ps3Cur->m_psphere);
    pt3dSrcRadius = pt3dSrcCenter + pt3dSrcCenter.w();
 
    pt3dSrcRadius.setW(1.0);
