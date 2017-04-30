@@ -16,7 +16,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
 #include "render.h"
-#if 1
+
 typedef struct 
 	{ RFixedS32 x; RFixedS32 y; RFixedS32 z;} RRenderPt32; // For internal use
 
@@ -1043,4 +1043,3 @@ void	DrawTri(uint8_t* pDstOffset,int32_t lDstP,
 			}
 		}
 	}
-#endif
