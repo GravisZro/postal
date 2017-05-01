@@ -333,7 +333,7 @@ void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const noexce
   Vector3D* d = reinterpret_cast<Vector3D*>(matdata.get());
   dest.setX(src.dot(d[0]));
   dest.setY(src.dot(d[1]));
-  dest.setY(src.dot(d[2]));
+  dest.setZ(src.dot(d[2]));
   dest.setW(1.0);
 }
 
