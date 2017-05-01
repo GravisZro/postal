@@ -17,8 +17,12 @@
 //
 #include "render.h"
 
-typedef struct 
-	{ RFixedS32 x; RFixedS32 y; RFixedS32 z;} RRenderPt32; // For internal use
+struct RRenderPt32 // For internal use
+{
+  RFixedS32 x;
+  RFixedS32 y;
+  RFixedS32 z;
+};
 
 
 // Fog should be offset such that the first index occurs
@@ -26,1020 +30,1057 @@ typedef struct
 // rendered.
 // sX and sY are additional offsets into pimDst
 //
-void	DrawTri_ZColorFog(uint8_t* pDstOffset,int32_t lDstP,
-			Vector3D* p1,Vector3D* p2,Vector3D* p3,
-			RZBuffer* pZB,uint8_t* pFog,
-			int16_t sOffsetX/* = 0*/,		// In: 2D offset for pZB.
-			int16_t sOffsetY/* = 0*/) 	// In: 2D offset for pZB.
-	{
-//////////////////////////////////////////////////////////////////
-// ****************************************************************
-//======================  INITIAL SET UP  ========================
-// ****************************************************************
-//////////////////////////////////////////////////////////////////
+void DrawTri_ZColorFog(uint8_t* pDstOffset,
+                       int32_t lDstP,
+                       Vector3D* p1,
+                       Vector3D* p2,
+                       Vector3D* p3,
+                       RZBuffer* pZB,
+                       uint8_t* pFog,
+                       int16_t sOffsetX/* = 0*/, // In: 2D offset for pZB.
+                       int16_t sOffsetY/* = 0*/) // In: 2D offset for pZB.
+{
+  //////////////////////////////////////////////////////////////////
+  // ****************************************************************
+  //======================  INITIAL SET UP  ========================
+  // ****************************************************************
+  //////////////////////////////////////////////////////////////////
 
-	// copy the 3d points into screen coordinates:
-	RRenderPt32 pt1,pt2,pt3;
-	RRenderPt32 *pv1 = &pt1;
-	RRenderPt32 *pv2 = &pt2;
-	RRenderPt32 *pv3 = &pt3;
-	// Cast from real_t to short in fp32 format:
-   pt1.x.mod = int16_t(p1->x());
-   pt1.y.mod = int16_t(p1->y());
-   pt1.z.mod = int16_t(p1->z());
-   pt2.x.mod = int16_t(p2->x());
-   pt2.y.mod = int16_t(p2->y());
-   pt2.z.mod = int16_t(p2->z());
-   pt3.x.mod = int16_t(p3->x());
-   pt3.y.mod = int16_t(p3->y());
-   pt3.z.mod = int16_t(p3->z());
-	pt1.x.frac = 
-	pt2.x.frac = 
-	pt3.x.frac = uint16_t(32768); // offset each by 1/2
+  // copy the 3d points into screen coordinates:
+  RRenderPt32 pt1,pt2,pt3;
+  RRenderPt32 *pv1 = &pt1;
+  RRenderPt32 *pv2 = &pt2;
+  RRenderPt32 *pv3 = &pt3;
+  // Cast from real_t to short in fp32 format:
+  pt1.x.mod = int16_t(p1->x());
+  pt1.y.mod = int16_t(p1->y());
+  pt1.z.mod = int16_t(p1->z());
+  pt2.x.mod = int16_t(p2->x());
+  pt2.y.mod = int16_t(p2->y());
+  pt2.z.mod = int16_t(p2->z());
+  pt3.x.mod = int16_t(p3->x());
+  pt3.y.mod = int16_t(p3->y());
+  pt3.z.mod = int16_t(p3->z());
+  pt1.x.frac =
+  pt2.x.frac =
+  pt3.x.frac = uint16_t(32768); // offset each by 1/2
 
-	/*
-	// Catch the special case of a single pixel
-	// This is really only useful for POSTAL TM, where polygons are tiny:
-	if (pt1.x.mod == pt2.x.mod)	// hierarchal check to save time:
-		{
-		if ( (pt1.y.mod == pt2.y.mod)	// WE'VE GOT A SINGLE SCREEN POINT!
-			 && (pt1.x.mod == pt3.x.mod)
-			 && (pt1.y.mod == pt3.y.mod) )
+  /*
+   // Catch the special case of a single pixel
+   // This is really only useful for POSTAL TM, where polygons are tiny:
+   if (pt1.x.mod == pt2.x.mod) // hierarchal check to save time:
+      {
+      if ( (pt1.y.mod == pt2.y.mod) // WE'VE GOT A SINGLE SCREEN POINT!
+          && (pt1.x.mod == pt3.x.mod)
+          && (pt1.y.mod == pt3.y.mod) )
 
-			{
-			// Try to best mimick normal behavior by using highest Z;
-			// THIS will not exactly mimick the non-point cloud base,
-			// but SHOULD work appropriately:
+         {
+         // Try to best mimick normal behavior by using highest Z;
+         // THIS will not exactly mimick the non-point cloud base,
+         // but SHOULD work appropriately:
 
-			if (pt2.z.mod > pt1.z.mod) pt1.z.mod = pt2.z.mod;
-			if (pt3.z.mod > pt1.z.mod) pt1.z.mod = pt3.z.mod;
+         if (pt2.z.mod > pt1.z.mod) pt1.z.mod = pt2.z.mod;
+         if (pt3.z.mod > pt1.z.mod) pt1.z.mod = pt3.z.mod;
 
-			// ***** PLOT THE SINGLE POINT!
-			short* pBufZ = pZB -> GetZPtr
-				(pt1.x.mod + sOffsetX, pt1.y.mod + sOffsetY);
+         // ***** PLOT THE SINGLE POINT!
+         short* pBufZ = pZB->GetZPtr
+            (pt1.x.mod + sOffsetX, pt1.y.mod + sOffsetY);
 
-			if (pt1.z.mod > *pBufZ)
-				{
-				uint8_t* pDst = pDstOffset + lDstP * pt1.y.mod + pt1.x.mod; 
-				*pDst = pFog[pt1.z.upper]; // can't forget to set the z-buffer!
-				*pBufZ = pt1.z.mod;			
-				}
+         if (pt1.z.mod > *pBufZ)
+            {
+            uint8_t* pDst = pDstOffset + lDstP * pt1.y.mod + pt1.x.mod;
+            *pDst = pFog[pt1.z.upper]; // can't forget to set the z-buffer!
+            *pBufZ = pt1.z.mod;
+            }
 
-			return;	// DONE THE FAST WAY!
-			}
-		}
-		*/
+         return; // DONE THE FAST WAY!
+         }
+      }
+      */
 
-	// Let's assess general categories:
-	// Single points:
-	/*
-	short sAbort = TRUE;
-	if (pt1.x.mod == pt2.x.mod)
-		{
-		if ( (pt1.y.mod == pt2.y.mod)	// WE'VE GOT A SINGLE SCREEN POINT!
-			 && (pt1.x.mod == pt3.x.mod)
-			 && (pt1.y.mod == pt3.y.mod) )
-			{
-			// single point
-			sAbort = FALSE;
-			}
-		}
+  // Let's assess general categories:
+  // Single points:
+  /*
+   short sAbort = TRUE;
+   if (pt1.x.mod == pt2.x.mod)
+      {
+      if ( (pt1.y.mod == pt2.y.mod) // WE'VE GOT A SINGLE SCREEN POINT!
+          && (pt1.x.mod == pt3.x.mod)
+          && (pt1.y.mod == pt3.y.mod) )
+         {
+         // single point
+         sAbort = FALSE;
+         }
+      }
 
-	// Vertical strips:
-	if ( (pt1.x.mod == pt2.x.mod)
-		&& (pt1.x.mod == pt3.x.mod) )
-		{
-		// Vstrip:
-		sAbort = FALSE;
-		}
+   // Vertical strips:
+   if ( (pt1.x.mod == pt2.x.mod)
+      && (pt1.x.mod == pt3.x.mod) )
+      {
+      // Vstrip:
+      sAbort = FALSE;
+      }
 
-	// Horizontal strips:
-	if ( (pt1.y.mod == pt2.y.mod)
-		&& (pt1.y.mod == pt3.y.mod) )
-		{
-		// Hstrip:
-		sAbort = FALSE;
-		}
+   // Horizontal strips:
+   if ( (pt1.y.mod == pt2.y.mod)
+      && (pt1.y.mod == pt3.y.mod) )
+      {
+      // Hstrip:
+      sAbort = FALSE;
+      }
 
-	if (sAbort == TRUE) return; // isolate the effect!
-	*/
+   if (sAbort == TRUE) return; // isolate the effect!
+   */
 
-	// Now let's try simply not drawing horiz or verical strips at all:
-	// Vertical strips:
-	/*
-	if ( (pt1.x.mod == pt2.x.mod)
-		&& (pt1.x.mod == pt3.x.mod) )
-		{
-		// Vstrip or point:
-		return;
-		}
+  // Now let's try simply not drawing horiz or verical strips at all:
+  // Vertical strips:
+  /*
+   if ( (pt1.x.mod == pt2.x.mod)
+      && (pt1.x.mod == pt3.x.mod) )
+      {
+      // Vstrip or point:
+      return;
+      }
 
-	// Horizontal strips:
-	if ( (pt1.y.mod == pt2.y.mod)
-		&& (pt1.y.mod == pt3.y.mod) )
-		{
-		// Hstrip:
-		return;
-		}
-		*/
-	
-	// sort the triangles and choose which mirror case to render.
+   // Horizontal strips:
+   if ( (pt1.y.mod == pt2.y.mod)
+      && (pt1.y.mod == pt3.y.mod) )
+      {
+      // Hstrip:
+      return;
+      }
+      */
 
-	// Sort points lowest to highest by y-value:
-	if (pv1->y.mod > pv2->y.mod) SWAP(pv1,pv2);
-	if (pv1->y.mod > pv3->y.mod) SWAP(pv1,pv3);
-	if (pv2->y.mod > pv3->y.mod) SWAP(pv2,pv3);
+  // sort the triangles and choose which mirror case to render.
 
-	// Get point 2 and 3's position relative to point 1:
-	// Use 16 bit accuracy in y, 32-bit in x...
-	int16_t y1 = pv1->y.mod;
+  // Sort points lowest to highest by y-value:
+  if (pv1->y.mod > pv2->y.mod)
+    SWAP(pv1, pv2);
 
-	int16_t	y2 = pv2->y.mod - y1;
-	int16_t	y3 = pv3->y.mod - y1;
-	int16_t ybot = y3 - y2; // lower half delta
+  if (pv1->y.mod > pv3->y.mod)
+    SWAP(pv1, pv3);
 
-	if (y2 + y3 == 0) return; // don;t bother drawing horiz line
+  if (pv2->y.mod > pv3->y.mod)
+    SWAP(pv2, pv3);
 
-	// get relative floating point x coordinates: (32-bit differences)
-	int32_t fx1 = pv1->x.val;
-	int32_t fz1 = pv1->z.val;
+  // Get point 2 and 3's position relative to point 1:
+  // Use 16 bit accuracy in y, 32-bit in x...
+  int16_t y1 = pv1->y.mod;
 
-	int32_t fx2 = pv2->x.val - fx1;
-	int32_t fx3 = pv3->x.val - fx1;
-	int32_t fz2 = pv2->z.val - fz1;
-	int32_t fz3 = pv3->z.val - fz1;
+  int16_t y2 = pv2->y.mod - y1;
+  int16_t y3 = pv3->y.mod - y1;
+  int16_t ybot = y3 - y2; // lower half delta
 
-	// calculate the top two edge slopes with 32-bit accuracy:
-	int32_t fx2inc,fz2inc;
-	if (y2) 
-		{
-		fx2inc = fx2 / y2; // stuck with division using fx32!
-		fz2inc = fz2 / y2; // stuck with division using fx32!
-		/* CANDIDATE FOR ONE_OVER!
-		fx2inc = uint32_t(fx2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
-		fz2inc = uint32_t(fz2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
-		*/
-		}
+  if (y2 + y3 == 0)
+    return; // don't bother drawing horiz line
 
-	int32_t fx3inc = fx3 / y3; // stuck with division using fx32!
-	int32_t fz3inc = fz3 / y3; // stuck with division using fx32!
+  // get relative floating point x coordinates: (32-bit differences)
+  int32_t fx1 = pv1->x.val;
+  int32_t fz1 = pv1->z.val;
 
-	// Set the two absolute edge positions
-	RFixedS32 x2,x3,z2,z3; 
-	x2.val = x3.val = pv1->x.frac;	// preserve floating point x!
-	z2.val = z3.val = pv1->z.frac; // preserve floating point z!
+  int32_t fx2 = pv2->x.val - fx1;
+  int32_t fx3 = pv3->x.val - fx1;
+  int32_t fz2 = pv2->z.val - fz1;
+  int32_t fz3 = pv3->z.val - fz1;
 
-	int16_t sBaseZ = pv1->z.mod; 
-	//TRACE("SBASE Zpt = %hd\n",pv1->z.mod);
+  // calculate the top two edge slopes with 32-bit accuracy:
+  int32_t fx2inc,fz2inc;
+  if (y2)
+  {
+    fx2inc = fx2 / y2; // stuck with division using fx32!
+    fz2inc = fz2 / y2; // stuck with division using fx32!
+    // CANDIDATE FOR ONE_OVER!
+    //fx2inc = uint32_t(fx2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
+    //fz2inc = uint32_t(fz2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
+  }
+
+  int32_t fx3inc = fx3 / y3; // stuck with division using fx32!
+  int32_t fz3inc = fz3 / y3; // stuck with division using fx32!
+
+  // Set the two absolute edge positions
+  RFixedS32 x2,x3,z2,z3;
+  x2.val = x3.val = pv1->x.frac; // preserve floating point x!
+  z2.val = z3.val = pv1->z.frac; // preserve floating point z!
+
+  int16_t sBaseZ = pv1->z.mod;
+  //TRACE("SBASE Zpt = %hd\n",pv1->z.mod);
 
 
-	int32_t lP = lDstP;
-	// add in extra piece uv rounding!
-	uint8_t* pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x2.mod; 
-	int16_t* pBufZ = pZB -> GetZPtr(pv1->x.mod + x2.mod + sOffsetX, pv1->y.mod + sOffsetY);
-	int32_t lZP = pZB->m_lP; // in words!!!
+  int32_t lP = lDstP;
+  // add in extra piece uv rounding!
+  uint8_t* pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x2.mod;
+  int16_t* pBufZ = pZB->GetZPtr(pv1->x.mod + x2.mod + sOffsetX, pv1->y.mod + sOffsetY);
+  int32_t lZP = pZB->m_lP; // in words!!!
 
-	// Draw the upper triangle! (Assuming fx2inc < fx3inc.....)
-	int16_t x,y;
-	RFixedS32	fz,fzinc; // for tracing across each scan line:
-	int16_t xdel;
+  // Draw the upper triangle! (Assuming fx2inc < fx3inc.....)
+  int16_t x,y;
+  RFixedS32 fz,fzinc; // for tracing across each scan line:
+  int16_t xdel;
 
-//////////////////////////////////////////////////////////////////
-// ****************************************************************
-//======================  CHOOSE II CASES  =======================
-// ****************************************************************
-//////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  // ****************************************************************
+  //======================  CHOOSE II CASES  =======================
+  // ****************************************************************
+  //////////////////////////////////////////////////////////////////
 
-	// ****************************************************************
-	//======================  FLAT TOP TRIANGLE  =====================
-	// ****************************************************************
-	// Don't worry about the wasted calculations above!
-	// (I STILL THINK YOU CAN STREAMLINE THIS AND INTEGRATE IT INTO
-	// THE OTHER CASE -> THERE IS NO CALL FOR THIS!)
+  // ****************************************************************
+  //======================  FLAT TOP TRIANGLE  =====================
+  // ****************************************************************
+  // Don't worry about the wasted calculations above!
+  // (I STILL THINK YOU CAN STREAMLINE THIS AND INTEGRATE IT INTO
+  // THE OTHER CASE -> THERE IS NO CALL FOR THIS!)
 
-	if (y2 == 0) // p1.y == p2.y
-		{
-		int32_t fx1inc,fz1inc;
-		RFixedS32 x1,z1; // Absolute positions
+  if (y2 == 0) // p1.y == p2.y
+  {
+    int32_t fx1inc,fz1inc;
+    RFixedS32 x1,z1; // Absolute positions
 
-		// Let point I be to the LEFT of point II:
-		if (pv2->x.val < pv1->x.val) SWAP(pv1,pv2);
-		// again, set initial points relative to p1(0,0):
-		fx1 = pv1->x.val;
-		fz1 = pv1->z.val;
+    // Let point I be to the LEFT of point II:
+    if (pv2->x.val < pv1->x.val)
+      SWAP(pv1, pv2);
 
-		fx2 = pv2->x.val - fx1;
-		fx3 = pv3->x.val - fx1;
-		fz2 = pv2->z.val - fz1;
-		fz3 = pv3->z.val - fz1;
-		sBaseZ = pv1->z.mod;
+    // again, set initial points relative to p1(0,0):
+    fx1 = pv1->x.val;
+    fz1 = pv1->z.val;
 
-		// This time, we want the end slopes:
-		// *******   CANDIDATE FOR ONE_OVER!
-		fx1inc = fx3 / y3; // from pt 1 to pt 3
-		fz1inc = fz3 / y3;
-		fx2inc = (fx3 - fx2) / y3; // from pt 2 to pt 3
-		fz2inc = (fz3 - fz2) / y3; // from pt 2 to pt 3
+    fx2 = pv2->x.val - fx1;
+    fx3 = pv3->x.val - fx1;
+    fz2 = pv2->z.val - fz1;
+    fz3 = pv3->z.val - fz1;
+    sBaseZ = pv1->z.mod;
 
-		x1.val = pv1->x.frac; // preserve floating point x!
-		x2.val = fx2;
-		z1.val = pv1->z.frac; // preserve floating point x!
-		z2.val = fz2;			// preserve floating point z!
+    // This time, we want the end slopes:
+    // *******   CANDIDATE FOR ONE_OVER!
+    fx1inc = fx3 / y3; // from pt 1 to pt 3
+    fz1inc = fz3 / y3;
+    fx2inc = (fx3 - fx2) / y3; // from pt 2 to pt 3
+    fz2inc = (fz3 - fz2) / y3; // from pt 2 to pt 3
 
-		pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x1.mod; // add in extra piece uv rounding!
-		pBufZ = pZB -> GetZPtr(pv1->x.mod + x1.mod + sOffsetX, pv1->y.mod + sOffsetY);
+    x1.val = pv1->x.frac; // preserve floating point x!
+    x2.val = fx2;
+    z1.val = pv1->z.frac; // preserve floating point x!
+    z2.val = fz2;   // preserve floating point z!
 
-		for (y = y3;y;y--)
-			{
-			pDst += lP;
-			pBufZ += lZP;
-			x2.val += fx2inc;
-			x1.val += fx1inc;
-			z2.val += fz2inc;
-			z1.val += fz1inc;
+    pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x1.mod; // add in extra piece uv rounding!
+    pBufZ = pZB->GetZPtr(pv1->x.mod + x1.mod + sOffsetX, pv1->y.mod + sOffsetY);
 
-			// Now we scan z across (slow for now)
-			fz.val = z1.val;
-			fz.mod += sBaseZ; // ****** advance the z-value.
-			xdel = x2.mod - x1.mod;
-			//if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
-			// ***************8 flipped the inc value:!
-			if (xdel) fzinc.val = int32_t(z2.mod - z1.mod) * RInitNum::OneOver[xdel];
-			//if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
+    for (y = y3; y; --y)
+    {
+      pDst += lP;
+      pBufZ += lZP;
+      x2.val += fx2inc;
+      x1.val += fx1inc;
+      z2.val += fz2inc;
+      z1.val += fz1inc;
 
-			// Assume 2 to 3:
-			for (x = x1.mod; x<= x2.mod;x++)
-				{
-				if (fz.mod > *(pBufZ+x) )
-					{
-					*(pDst+x) = pFog[fz.upper];// pFog[fz.upper];	// offset for fog
-					*(pBufZ+x) = fz.mod;				// set Z-buffer!
-					}
-				fz.val += fzinc.val;
-				}
-			}
+      // Now we scan z across (slow for now)
+      fz.val = z1.val;
+      fz.mod += sBaseZ; // ****** advance the z-value.
+      xdel = x2.mod - x1.mod;
+      //if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
+      // ***************8 flipped the inc value:!
+      if (xdel)
+        fzinc.val = int32_t(z2.mod - z1.mod) * RInitNum::OneOver[xdel];
+      //if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
 
-		return;
-		}
-	// ****************************************************************
-	//======================  NORMAL TRIANGLE  =======================
-	// ****************************************************************
-	if (fx2inc <= fx3inc)
-		{
-		//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
-		for (y = y2;y;y--)
-			{
-			pDst += lP;
-			pBufZ += lZP;
-			x2.val += fx2inc;
-			x3.val += fx3inc;
-			z2.val += fz2inc;
-			z3.val += fz3inc;
-			//TRACE("SBASE Z = %hd\n",sBaseZ);
+      // Assume 2 to 3:
+      for (x = x1.mod; x<= x2.mod; ++x)
+      {
+        if (fz.mod > pBufZ[x] )
+        {
+          pDst[x] = pFog[fz.upper];// pFog[fz.upper]; // offset for fog
+          pBufZ[x] = fz.mod;    // set Z-buffer!
+        }
+        fz.val += fzinc.val;
+      }
+    }
 
-			// Assume 2 to 3:
-			// Now we scan z across (slow for now)
-			fz.val = z2.val;
-			fz.mod += sBaseZ; // This is for coloring but it effects true z as well!
-			xdel = x3.mod - x2.mod;
-			//if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
-			if (xdel) fzinc.val = uint32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
-			//if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
-			// Assume 2 to 3:
-			for (x = x2.mod; x<= x3.mod;x++)
-				{
-				if (fz.mod > *(pBufZ+x) )
-					{
-					*(pDst+x) = pFog[fz.upper];// pFog[fz.upper];
-					*(pBufZ+x) = fz.mod;// set Z-buffer!
-					}
-				fz.val += fzinc.val;
-				}
-			}
+    return;
+  }
+  // ****************************************************************
+  //======================  NORMAL TRIANGLE  =======================
+  // ****************************************************************
+  if (fx2inc <= fx3inc)
+  {
+    //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
+    for (y = y2; y; --y)
+    {
+      pDst += lP;
+      pBufZ += lZP;
+      x2.val += fx2inc;
+      x3.val += fx3inc;
+      z2.val += fz2inc;
+      z3.val += fz3inc;
+      //TRACE("SBASE Z = %hd\n",sBaseZ);
 
-		//===================================================================
-		// Draw the lower triangle if applicatable:
-		//===================================================================
+      // Assume 2 to 3:
+      // Now we scan z across (slow for now)
+      fz.val = z2.val;
+      fz.mod += sBaseZ; // This is for coloring but it effects true z as well!
+      xdel = x3.mod - x2.mod;
+      //if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
+      if (xdel)
+        fzinc.val = uint32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
+      //if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
+      // Assume 2 to 3:
+      for (x = x2.mod; x<= x3.mod; ++x)
+      {
+        if (fz.mod > pBufZ[x] )
+        {
+          pDst[x] = pFog[fz.upper];// pFog[fz.upper];
+          pBufZ[x] = fz.mod;// set Z-buffer!
+        }
+        fz.val += fzinc.val;
+      }
+    }
 
-		if (ybot)
-			{
-			// new x2 slope:
-			fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
-			fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
-			/*
-			fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			*/
-			//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
+    //===================================================================
+    // Draw the lower triangle if applicatable:
+    //===================================================================
 
-			for (y = ybot;y;y--)
-				{
-				pDst += lP;
-				pBufZ += lZP;
-				x2.val += fx2inc;
-				x3.val += fx3inc;
-				z2.val += fz2inc;
-				z3.val += fz3inc;
+    if (ybot)
+    {
+      // new x2 slope:
+      fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
+      fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
+      //fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
 
-				// Now we scan z across (slow for now)
-				fz.val = z2.val;
-				fz.mod += sBaseZ;
-				xdel = x3.mod - x2.mod;
-				//if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
-				if (xdel) fzinc.val = int32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
-				//if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
+      for (y = ybot; y; --y)
+      {
+        pDst += lP;
+        pBufZ += lZP;
+        x2.val += fx2inc;
+        x3.val += fx3inc;
+        z2.val += fz2inc;
+        z3.val += fz3inc;
 
-				// Assume 2 to 3:
-				for (x = x2.mod; x<= x3.mod;x++)
-					{
-					if (fz.mod > *(pBufZ+x) )
-						{
-						*(pDst+x) = pFog[fz.upper];// pFog[fz.upper];
-						*(pBufZ+x) = fz.mod;// set Z-buffer!
-						}
-					fz.val += fzinc.val;
-					}
-				}
-			}
-		}
+        // Now we scan z across (slow for now)
+        fz.val = z2.val;
+        fz.mod += sBaseZ;
+        xdel = x3.mod - x2.mod;
+        //if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
+        if (xdel)
+          fzinc.val = int32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
+        //if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
 
-	else // flip the x drawing order:
+        // Assume 2 to 3:
+        for (x = x2.mod; x<= x3.mod; ++x)
+        {
+          if (fz.mod > pBufZ[x] )
+          {
+            pDst[x] = pFog[fz.upper];// pFog[fz.upper];
+            pBufZ[x] = fz.mod;// set Z-buffer!
+          }
+          fz.val += fzinc.val;
+        }
+      }
+    }
+  }
 
-		//===================================================================
-		//============== DRAW MIRRORED VERION OF STANDARD TRIANGLE! =========
-		//===================================================================
+  else // flip the x drawing order:
 
-		{
+    //===================================================================
+    //============== DRAW MIRRORED VERION OF STANDARD TRIANGLE! =========
+    //===================================================================
+  {
+    //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
+    for (y = y2; y; --y)
+    {
+      pDst += lP;
+      pBufZ += lZP;
+      x2.val += fx2inc;
+      x3.val += fx3inc;
+      z2.val += fz2inc;
+      z3.val += fz3inc;
+      // Assume 2 to 3:
+      // Now we scan z across (slow for now)
+      fz.val = z3.val;
+      fz.mod += sBaseZ;
 
-		//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
-		for (y = y2;y;y--)
-			{
-			pDst += lP;
-			pBufZ += lZP;
-			x2.val += fx2inc;
-			x3.val += fx3inc;
-			z2.val += fz2inc;
-			z3.val += fz3inc;
-			// Assume 2 to 3:
-			// Now we scan z across (slow for now)
-			fz.val = z3.val;
-			fz.mod += sBaseZ;
+      xdel = x2.mod - x3.mod; //+ x to z
+      //if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
+      if (xdel)
+        fzinc.val = int32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
+      //if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
 
-			xdel = x2.mod - x3.mod; //+ x to z
-			//if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
-			if (xdel) fzinc.val = int32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
-			//if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
+      // Assume 2 to 3:
+      for (x = x3.mod; x<= x2.mod; ++x)
+      {
+        if (fz.mod > pBufZ[x] )
+        {
+          pDst[x] = pFog[fz.upper];// pFog[fz.upper];
+          pBufZ[x] = fz.mod;// set Z-buffer!
+        }
+        fz.val += fzinc.val;
+      }
+    }
 
-			// Assume 2 to 3:
-			for (x = x3.mod; x<= x2.mod;x++)
-				{
-				if (fz.mod > *(pBufZ+x) )
-					{
-					*(pDst+x) = pFog[fz.upper];// pFog[fz.upper];
-					*(pBufZ+x) = fz.mod;// set Z-buffer!
-					}
-				fz.val += fzinc.val;
-				}
-			}
+    //===================================================================
+    // Draw the lower triangle if applicatable:
+    //===================================================================
 
-		//===================================================================
-		// Draw the lower triangle if applicatable:
-		//===================================================================
+    if (ybot)
+    {
+      // new x2 slope:
+      fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
+      fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
+      //fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
 
-		if (ybot)
-			{
-			// new x2 slope:
-			fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
-			fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
-			/*
-			fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			*/
-			//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
+      for (y = ybot; y; --y)
+      {
+        pDst += lP;
+        pBufZ += lZP;
+        x2.val += fx2inc;
+        x3.val += fx3inc;
+        z2.val += fz2inc;
+        z3.val += fz3inc;
 
-			for (y = ybot;y;y--)
-				{
-				pDst += lP;
-				pBufZ += lZP;
-				x2.val += fx2inc;
-				x3.val += fx3inc;
-				z2.val += fz2inc;
-				z3.val += fz3inc;
-
-				// Now we scan z across (slow for now)
-				fz.val = z3.val;
-				fz.mod += sBaseZ;
-				xdel = x2.mod - x3.mod;
-				//if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
-				if (xdel) fzinc.val = uint32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
-				// Full accuracy fxMul!
-				//if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
-				// Assume 2 to 3:
-				for (x = x3.mod; x<= x2.mod;x++)
-					{
-					if (fz.mod > *(pBufZ+x) )
-						{
-						*(pDst+x) = pFog[fz.upper];// pFog[fz.upper];
-						*(pBufZ+x) = fz.mod;// set Z-buffer!
-						}
-					fz.val += fzinc.val;
-					}
-				}
-			}
-		}
-	}
+        // Now we scan z across (slow for now)
+        fz.val = z3.val;
+        fz.mod += sBaseZ;
+        xdel = x2.mod - x3.mod;
+        //if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
+        if (xdel)
+          fzinc.val = uint32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
+        // Full accuracy fxMul!
+        //if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
+        // Assume 2 to 3:
+        for (x = x3.mod; x<= x2.mod; ++x)
+        {
+          if (fz.mod > pBufZ[x] )
+          {
+            pDst[x] = pFog[fz.upper];// pFog[fz.upper];
+            pBufZ[x] = fz.mod;// set Z-buffer!
+          }
+          fz.val += fzinc.val;
+        }
+      }
+    }
+  }
+}
 
 //================================================== 
 // For debugging:
-void	DrawTri_wire(RImage* pimDst,int16_t sX,int16_t sY,
-			Vector3D* p1,Vector3D* p2,Vector3D* p3,uint8_t ucColor)
-	{
-	rspLine(ucColor,pimDst,
-      sX+int16_t(p1->x()),sY+int16_t(p1->y()),
-      sX+int16_t(p2->x()),sY+int16_t(p2->y()));
-	rspLine(ucColor,pimDst,
-      sX+int16_t(p1->x()),sY+int16_t(p1->y()),
-      sX+int16_t(p3->x()),sY+int16_t(p3->y()));
-	rspLine(ucColor,pimDst,
-      sX+int16_t(p3->x()),sY+int16_t(p3->y()),
-      sX+int16_t(p2->x()),sY+int16_t(p2->y()));
-	}
+void DrawTri_wire(RImage* pimDst,
+                  int16_t sX,
+                  int16_t sY,
+                  Vector3D* p1,
+                  Vector3D* p2,
+                  Vector3D* p3,
+                  uint8_t ucColor)
+{
+  rspLine(ucColor, pimDst,
+          sX + int16_t(p1->x()), sY + int16_t(p1->y()),
+          sX + int16_t(p2->x()), sY + int16_t(p2->y()));
+  rspLine(ucColor, pimDst,
+          sX + int16_t(p1->x()), sY + int16_t(p1->y()),
+          sX + int16_t(p3->x()), sY + int16_t(p3->y()));
+  rspLine(ucColor, pimDst,
+          sX + int16_t(p3->x()), sY + int16_t(p3->y()),
+          sX + int16_t(p2->x()), sY + int16_t(p2->y()));
+}
 
 //================================================== 
 // For debugging:
 // FLAT SHADED!
 // sX and sY are additional offsets into pimDst
 //
-void	DrawTri_ZColor(uint8_t* pDstOffset,int32_t lDstP,
-			Vector3D* p1,Vector3D* p2,Vector3D* p3,
-			RZBuffer* pZB,uint8_t ucFlatColor,
-			int16_t sOffsetX/* = 0*/,		// In: 2D offset for pZB.
-			int16_t sOffsetY/* = 0*/) 	// In: 2D offset for pZB.
-	{
-//////////////////////////////////////////////////////////////////
-// ****************************************************************
-//======================  INITIAL SET UP  ========================
-// ****************************************************************
-//////////////////////////////////////////////////////////////////
+void DrawTri_ZColor(uint8_t* pDstOffset,
+                     int32_t lDstP,
+                     Vector3D* p1,
+                     Vector3D* p2,
+                     Vector3D* p3,
+                     RZBuffer* pZB,
+                     uint8_t ucFlatColor,
+                     int16_t sOffsetX/* = 0*/,  // In: 2D offset for pZB.
+                     int16_t sOffsetY/* = 0*/)  // In: 2D offset for pZB.
+{
+  //////////////////////////////////////////////////////////////////
+  // ****************************************************************
+  //======================  INITIAL SET UP  ========================
+  // ****************************************************************
+  //////////////////////////////////////////////////////////////////
 
-	// copy the 3d points into screen coordinates:
-	RRenderPt32 pt1,pt2,pt3;
-	RRenderPt32 *pv1 = &pt1;
-	RRenderPt32 *pv2 = &pt2;
-	RRenderPt32 *pv3 = &pt3;
-	// Cast from real_t to short in fp32 format:
-   pt1.x.mod = int16_t(p1->x());
-   pt1.y.mod = int16_t(p1->y());
-   pt1.z.mod = int16_t(p1->z());
-   pt2.x.mod = int16_t(p2->x());
-   pt2.y.mod = int16_t(p2->y());
-   pt2.z.mod = int16_t(p2->z());
-   pt3.x.mod = int16_t(p3->x());
-   pt3.y.mod = int16_t(p3->y());
-   pt3.z.mod = int16_t(p3->z());
-	pt1.x.frac = 
-	pt2.x.frac = 
-	pt3.x.frac = uint16_t(32768); // offset each by 1/2
-	
-	// sort the triangles and choose which mirror case to render.
+  // copy the 3d points into screen coordinates:
+  RRenderPt32 pt1,pt2,pt3;
+  RRenderPt32 *pv1 = &pt1;
+  RRenderPt32 *pv2 = &pt2;
+  RRenderPt32 *pv3 = &pt3;
+  // Cast from real_t to short in fp32 format:
+  pt1.x.mod = int16_t(p1->x());
+  pt1.y.mod = int16_t(p1->y());
+  pt1.z.mod = int16_t(p1->z());
+  pt2.x.mod = int16_t(p2->x());
+  pt2.y.mod = int16_t(p2->y());
+  pt2.z.mod = int16_t(p2->z());
+  pt3.x.mod = int16_t(p3->x());
+  pt3.y.mod = int16_t(p3->y());
+  pt3.z.mod = int16_t(p3->z());
+  pt1.x.frac =
+  pt2.x.frac =
+  pt3.x.frac = uint16_t(32768); // offset each by 1/2
 
-	// Sort points lowest to highest by y-value:
-	if (pv1->y.mod > pv2->y.mod) SWAP(pv1,pv2);
-	if (pv1->y.mod > pv3->y.mod) SWAP(pv1,pv3);
-	if (pv2->y.mod > pv3->y.mod) SWAP(pv2,pv3);
+  // sort the triangles and choose which mirror case to render.
 
-	// Get point 2 and 3's position relative to point 1:
-	// Use 16 bit accuracy in y, 32-bit in x...
-	int16_t y1 = pv1->y.mod;
+  // Sort points lowest to highest by y-value:
+  if (pv1->y.mod > pv2->y.mod)
+    SWAP(pv1, pv2);
 
-	int16_t	y2 = pv2->y.mod - y1;
-	int16_t	y3 = pv3->y.mod - y1;
-	int16_t ybot = y3 - y2; // lower half delta
+  if (pv1->y.mod > pv3->y.mod)
+    SWAP(pv1, pv3);
 
-	if (y2 + y3 == 0) return; // don;t bother drawing horiz line
+  if (pv2->y.mod > pv3->y.mod)
+    SWAP(pv2, pv3);
 
-	// get relative floating point x coordinates: (32-bit differences)
-	int32_t fx1 = pv1->x.val;
-	int32_t fz1 = pv1->z.val;
+  // Get point 2 and 3's position relative to point 1:
+  // Use 16 bit accuracy in y, 32-bit in x...
+  int16_t y1 = pv1->y.mod;
+  int16_t y2 = pv2->y.mod - y1;
+  int16_t y3 = pv3->y.mod - y1;
+  int16_t ybot = y3 - y2; // lower half delta
 
-	int32_t fx2 = pv2->x.val - fx1;
-	int32_t fx3 = pv3->x.val - fx1;
-	int32_t fz2 = pv2->z.val - fz1;
-	int32_t fz3 = pv3->z.val - fz1;
+  if (y2 + y3 == 0)
+    return; // don't bother drawing horiz line
 
-	// calculate the top two edge slopes with 32-bit accuracy:
-	int32_t fx2inc,fz2inc;
-	if (y2) 
-		{
-		fx2inc = fx2 / y2; // stuck with division using fx32!
-		fz2inc = fz2 / y2; // stuck with division using fx32!
-		/* CANDIDATE FOR ONE_OVER!
-		fx2inc = uint32_t(fx2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
-		fz2inc = uint32_t(fz2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
-		*/
-		}
+  // get relative floating point x coordinates: (32-bit differences)
+  int32_t fx1 = pv1->x.val;
+  int32_t fz1 = pv1->z.val;
+  int32_t fx2 = pv2->x.val - fx1;
+  int32_t fx3 = pv3->x.val - fx1;
+  int32_t fz2 = pv2->z.val - fz1;
+  int32_t fz3 = pv3->z.val - fz1;
 
-	int32_t fx3inc = fx3 / y3; // stuck with division using fx32!
-	int32_t fz3inc = fz3 / y3; // stuck with division using fx32!
+  // calculate the top two edge slopes with 32-bit accuracy:
+  int32_t fx2inc,fz2inc;
+  if (y2)
+  {
+    fx2inc = fx2 / y2; // stuck with division using fx32!
+    fz2inc = fz2 / y2; // stuck with division using fx32!
+    // CANDIDATE FOR ONE_OVER!
+    //fx2inc = uint32_t(fx2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
+    //fz2inc = uint32_t(fz2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
+  }
 
-	// Set the two absolute edge positions
-	RFixedS32 x2,x3,z2,z3; 
-	x2.val = x3.val = pv1->x.frac;	// preserve floating point x!
-	z2.val = z3.val = pv1->z.frac; // preserve floating point z!
+  int32_t fx3inc = fx3 / y3; // stuck with division using fx32!
+  int32_t fz3inc = fz3 / y3; // stuck with division using fx32!
 
-	int16_t sBaseZ = pv1->z.mod; 
-	//TRACE("SBASE Zpt = %hd\n",pv1->z.mod);
+  // Set the two absolute edge positions
+  RFixedS32 x2,x3,z2,z3;
+  x2.val = x3.val = pv1->x.frac; // preserve floating point x!
+  z2.val = z3.val = pv1->z.frac; // preserve floating point z!
+
+  int16_t sBaseZ = pv1->z.mod;
+  //TRACE("SBASE Zpt = %hd\n",pv1->z.mod);
 
 
-	int32_t lP = lDstP;
-	// add in extra piece uv rounding!
-	uint8_t* pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x2.mod; 
-	int16_t* pBufZ = pZB -> GetZPtr(pv1->x.mod + x2.mod + sOffsetX, pv1->y.mod + sOffsetY);
-	int32_t lZP = pZB->m_lP; // in words!!!
+  int32_t lP = lDstP;
+  // add in extra piece uv rounding!
+  uint8_t* pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x2.mod;
+  int16_t* pBufZ = pZB->GetZPtr(pv1->x.mod + x2.mod + sOffsetX, pv1->y.mod + sOffsetY);
+  int32_t lZP = pZB->m_lP; // in words!!!
 
-	// Draw the upper triangle! (Assuming fx2inc < fx3inc.....)
-	int16_t x,y;
-	RFixedS32	fz,fzinc; // for tracing across each scan line:
-	int16_t xdel;
+  // Draw the upper triangle! (Assuming fx2inc < fx3inc.....)
+  int16_t x,y;
+  RFixedS32 fz,fzinc; // for tracing across each scan line:
+  int16_t xdel;
 
-//////////////////////////////////////////////////////////////////
-// ****************************************************************
-//======================  CHOOSE II CASES  =======================
-// ****************************************************************
-//////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  // ****************************************************************
+  //======================  CHOOSE II CASES  =======================
+  // ****************************************************************
+  //////////////////////////////////////////////////////////////////
 
-	// ****************************************************************
-	//======================  FLAT TOP TRIANGLE  =====================
-	// ****************************************************************
-	// Don't worry about the wasted calculations above!
-	// (I STILL THINK YOU CAN STREAMLINE THIS AND INTEGRATE IT INTO
-	// THE OTHER CASE -> THERE IS NO CALL FOR THIS!)
+  // ****************************************************************
+  //======================  FLAT TOP TRIANGLE  =====================
+  // ****************************************************************
+  // Don't worry about the wasted calculations above!
+  // (I STILL THINK YOU CAN STREAMLINE THIS AND INTEGRATE IT INTO
+  // THE OTHER CASE -> THERE IS NO CALL FOR THIS!)
 
-	if (y2 == 0) // p1.y == p2.y
-		{
-		int32_t fx1inc,fz1inc;
-		RFixedS32 x1,z1; // Absolute positions
+  if (y2 == 0) // p1.y == p2.y
+  {
+    int32_t fx1inc,fz1inc;
+    RFixedS32 x1,z1; // Absolute positions
 
-		// Let point I be to the LEFT of point II:
-		if (pv2->x.val < pv1->x.val) SWAP(pv1,pv2);
-		// again, set initial points relative to p1(0,0):
-		fx1 = pv1->x.val;
-		fz1 = pv1->z.val;
+    // Let point I be to the LEFT of point II:
+    if (pv2->x.val < pv1->x.val)
+      SWAP(pv1, pv2);
 
-		fx2 = pv2->x.val - fx1;
-		fx3 = pv3->x.val - fx1;
-		fz2 = pv2->z.val - fz1;
-		fz3 = pv3->z.val - fz1;
-		sBaseZ = pv1->z.mod;
+    // again, set initial points relative to p1(0,0):
+    fx1 = pv1->x.val;
+    fz1 = pv1->z.val;
 
-		// This time, we want the end slopes:
-		// *******   CANDIDATE FOR ONE_OVER!
-		fx1inc = fx3 / y3; // from pt 1 to pt 3
-		fz1inc = fz3 / y3;
-		fx2inc = (fx3 - fx2) / y3; // from pt 2 to pt 3
-		fz2inc = (fz3 - fz2) / y3; // from pt 2 to pt 3
+    fx2 = pv2->x.val - fx1;
+    fx3 = pv3->x.val - fx1;
+    fz2 = pv2->z.val - fz1;
+    fz3 = pv3->z.val - fz1;
+    sBaseZ = pv1->z.mod;
 
-		x1.val = pv1->x.frac; // preserve floating point x!
-		x2.val = fx2;
-		z1.val = pv1->z.frac; // preserve floating point x!
-		z2.val = fz2;			// preserve floating point z!
+    // This time, we want the end slopes:
+    // *******   CANDIDATE FOR ONE_OVER!
+    fx1inc = fx3 / y3; // from pt 1 to pt 3
+    fz1inc = fz3 / y3;
+    fx2inc = (fx3 - fx2) / y3; // from pt 2 to pt 3
+    fz2inc = (fz3 - fz2) / y3; // from pt 2 to pt 3
 
-		pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x1.mod; // add in extra piece uv rounding!
-		pBufZ = pZB -> GetZPtr(pv1->x.mod + x1.mod + sOffsetX, pv1->y.mod + sOffsetY);
+    x1.val = pv1->x.frac; // preserve floating point x!
+    x2.val = fx2;
+    z1.val = pv1->z.frac; // preserve floating point x!
+    z2.val = fz2;   // preserve floating point z!
 
-		for (y = y3;y;y--)
-			{
-			pDst += lP;
-			pBufZ += lZP;
-			x2.val += fx2inc;
-			x1.val += fx1inc;
-			z2.val += fz2inc;
-			z1.val += fz1inc;
+    pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x1.mod; // add in extra piece uv rounding!
+    pBufZ = pZB->GetZPtr(pv1->x.mod + x1.mod + sOffsetX, pv1->y.mod + sOffsetY);
 
-			// Now we scan z across (slow for now)
-			fz.val = z1.val;
-			fz.mod += sBaseZ; // ****** advance the z-value.
-			xdel = x2.mod - x1.mod;
-			//if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
-			// ***************8 flipped the inc value:!
-			if (xdel) fzinc.val = int32_t(z2.mod - z1.mod) * RInitNum::OneOver[xdel];
-			//if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
+    for (y = y3; y; --y)
+    {
+      pDst += lP;
+      pBufZ += lZP;
+      x2.val += fx2inc;
+      x1.val += fx1inc;
+      z2.val += fz2inc;
+      z1.val += fz1inc;
 
-			// Assume 2 to 3:
-			for (x = x1.mod; x<= x2.mod;x++)
-				{
-				if (fz.mod > *(pBufZ+x) )
-					{
-					*(pDst+x) = ucFlatColor;// pFog[fz.upper];	// offset for fog
-					*(pBufZ+x) = fz.mod;				// set Z-buffer!
-					}
-				fz.val += fzinc.val;
-				}
-			}
+      // Now we scan z across (slow for now)
+      fz.val = z1.val;
+      fz.mod += sBaseZ; // ****** advance the z-value.
+      xdel = x2.mod - x1.mod;
+      //if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
+      // ***************8 flipped the inc value:!
+      if (xdel)
+        fzinc.val = int32_t(z2.mod - z1.mod) * RInitNum::OneOver[xdel];
+      //if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
 
-		return;
-		}
-	// ****************************************************************
-	//======================  NORMAL TRIANGLE  =======================
-	// ****************************************************************
-	if (fx2inc <= fx3inc)
-		{
-		//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
-		for (y = y2;y;y--)
-			{
-			pDst += lP;
-			pBufZ += lZP;
-			x2.val += fx2inc;
-			x3.val += fx3inc;
-			z2.val += fz2inc;
-			z3.val += fz3inc;
-			//TRACE("SBASE Z = %hd\n",sBaseZ);
+      // Assume 2 to 3:
+      for (x = x1.mod; x<= x2.mod; ++x)
+      {
+        if (fz.mod > pBufZ[x] )
+        {
+          pDst[x] = ucFlatColor;// pFog[fz.upper]; // offset for fog
+          pBufZ[x] = fz.mod;    // set Z-buffer!
+        }
+        fz.val += fzinc.val;
+      }
+    }
 
-			// Assume 2 to 3:
-			// Now we scan z across (slow for now)
-			fz.val = z2.val;
-			fz.mod += sBaseZ; // This is for coloring but it effects true z as well!
-			xdel = x3.mod - x2.mod;
-			//if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
-			if (xdel) fzinc.val = uint32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
-			//if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
-			// Assume 2 to 3:
-			for (x = x2.mod; x<= x3.mod;x++)
-				{
-				if (fz.mod > *(pBufZ+x) )
-					{
-					*(pDst+x) = ucFlatColor;// pFog[fz.upper];
-					*(pBufZ+x) = fz.mod;// set Z-buffer!
-					}
-				fz.val += fzinc.val;
-				}
-			}
+    return;
+  }
+  // ****************************************************************
+  //======================  NORMAL TRIANGLE  =======================
+  // ****************************************************************
+  if (fx2inc <= fx3inc)
+  {
+    //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
+    for (y = y2; y; --y)
+    {
+      pDst += lP;
+      pBufZ += lZP;
+      x2.val += fx2inc;
+      x3.val += fx3inc;
+      z2.val += fz2inc;
+      z3.val += fz3inc;
+      //TRACE("SBASE Z = %hd\n",sBaseZ);
 
-		//===================================================================
-		// Draw the lower triangle if applicatable:
-		//===================================================================
+      // Assume 2 to 3:
+      // Now we scan z across (slow for now)
+      fz.val = z2.val;
+      fz.mod += sBaseZ; // This is for coloring but it effects true z as well!
+      xdel = x3.mod - x2.mod;
+      //if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
+      if (xdel)
+        fzinc.val = uint32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
+      //if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
+      // Assume 2 to 3:
+      for (x = x2.mod; x<= x3.mod; ++x)
+      {
+        if (fz.mod > pBufZ[x] )
+        {
+          pDst[x] = ucFlatColor;// pFog[fz.upper];
+          pBufZ[x] = fz.mod;// set Z-buffer!
+        }
+        fz.val += fzinc.val;
+      }
+    }
 
-		if (ybot)
-			{
-			// new x2 slope:
-			fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
-			fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
-			/*
-			fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			*/
-			//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
+    //===================================================================
+    // Draw the lower triangle if applicatable:
+    //===================================================================
 
-			for (y = ybot;y;y--)
-				{
-				pDst += lP;
-				pBufZ += lZP;
-				x2.val += fx2inc;
-				x3.val += fx3inc;
-				z2.val += fz2inc;
-				z3.val += fz3inc;
+    if (ybot)
+    {
+      // new x2 slope:
+      fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
+      fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
+      //fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
 
-				// Now we scan z across (slow for now)
-				fz.val = z2.val;
-				fz.mod += sBaseZ;
-				xdel = x3.mod - x2.mod;
-				//if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
-				if (xdel) fzinc.val = int32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
-				//if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
+      for (y = ybot; y; --y)
+      {
+        pDst += lP;
+        pBufZ += lZP;
+        x2.val += fx2inc;
+        x3.val += fx3inc;
+        z2.val += fz2inc;
+        z3.val += fz3inc;
 
-				// Assume 2 to 3:
-				for (x = x2.mod; x<= x3.mod;x++)
-					{
-					if (fz.mod > *(pBufZ+x) )
-						{
-						*(pDst+x) = ucFlatColor;// pFog[fz.upper];
-						*(pBufZ+x) = fz.mod;// set Z-buffer!
-						}
-					fz.val += fzinc.val;
-					}
-				}
-			}
-		}
+        // Now we scan z across (slow for now)
+        fz.val = z2.val;
+        fz.mod += sBaseZ;
+        xdel = x3.mod - x2.mod;
+        //if (hzdel) hzinc.val = (z3.val - z2.val) / hzdel;
+        if (xdel)
+          fzinc.val = int32_t(z3.mod - z2.mod) * RInitNum::OneOver[xdel];
+        //if (hzdel) Mul(hzinc,z3.val - z2.val,CInitNum::OneOver[hzdel]);
 
-	else // flip the x drawing order:
+        // Assume 2 to 3:
+        for (x = x2.mod; x<= x3.mod; ++x)
+        {
+          if (fz.mod > pBufZ[x] )
+          {
+            pDst[x] = ucFlatColor;// pFog[fz.upper];
+            pBufZ[x] = fz.mod;// set Z-buffer!
+          }
+          fz.val += fzinc.val;
+        }
+      }
+    }
+  }
 
-		//===================================================================
-		//============== DRAW MIRRORED VERION OF STANDARD TRIANGLE! =========
-		//===================================================================
+  else // flip the x drawing order:
 
-		{
+    //===================================================================
+    //============== DRAW MIRRORED VERION OF STANDARD TRIANGLE! =========
+    //===================================================================
+  {
 
-		//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
-		for (y = y2;y;y--)
-			{
-			pDst += lP;
-			pBufZ += lZP;
-			x2.val += fx2inc;
-			x3.val += fx3inc;
-			z2.val += fz2inc;
-			z3.val += fz3inc;
-			// Assume 2 to 3:
-			// Now we scan z across (slow for now)
-			fz.val = z3.val;
-			fz.mod += sBaseZ;
+    //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
+    for (y = y2; y; --y)
+    {
+      pDst += lP;
+      pBufZ += lZP;
+      x2.val += fx2inc;
+      x3.val += fx3inc;
+      z2.val += fz2inc;
+      z3.val += fz3inc;
+      // Assume 2 to 3:
+      // Now we scan z across (slow for now)
+      fz.val = z3.val;
+      fz.mod += sBaseZ;
 
-			xdel = x2.mod - x3.mod; //+ x to z
-			//if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
-			if (xdel) fzinc.val = int32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
-			//if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
+      xdel = x2.mod - x3.mod; //+ x to z
+      //if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
+      if (xdel)
+        fzinc.val = int32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
+      //if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
 
-			// Assume 2 to 3:
-			for (x = x3.mod; x<= x2.mod;x++)
-				{
-				if (fz.mod > *(pBufZ+x) )
-					{
-					*(pDst+x) = ucFlatColor;// pFog[fz.upper];
-					*(pBufZ+x) = fz.mod;// set Z-buffer!
-					}
-				fz.val += fzinc.val;
-				}
-			}
+      // Assume 2 to 3:
+      for (x = x3.mod; x<= x2.mod; ++x)
+      {
+        if (fz.mod > pBufZ[x] )
+        {
+          pDst[x] = ucFlatColor;// pFog[fz.upper];
+          pBufZ[x] = fz.mod;// set Z-buffer!
+        }
+        fz.val += fzinc.val;
+      }
+    }
 
-		//===================================================================
-		// Draw the lower triangle if applicatable:
-		//===================================================================
+    //===================================================================
+    // Draw the lower triangle if applicatable:
+    //===================================================================
 
-		if (ybot)
-			{
-			// new x2 slope:
-			fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
-			fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
-			/*
-			fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			*/
-			//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
+    if (ybot)
+    {
+      // new x2 slope:
+      fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
+      fz2inc = (fz3 - fz2) / ybot;  // stuck with division using fx32!
+      //fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+      //fz2inc = uint32_t(fz3.mod-fz2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
 
-			for (y = ybot;y;y--)
-				{
-				pDst += lP;
-				pBufZ += lZP;
-				x2.val += fx2inc;
-				x3.val += fx3inc;
-				z2.val += fz2inc;
-				z3.val += fz3inc;
+      //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
 
-				// Now we scan z across (slow for now)
-				fz.val = z3.val;
-				fz.mod += sBaseZ;
-				xdel = x2.mod - x3.mod;
-				//if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
-				if (xdel) fzinc.val = uint32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
-				// Full accuracy fxMul!
-				//if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
-				// Assume 2 to 3:
-				for (x = x3.mod; x<= x2.mod;x++)
-					{
-					if (fz.mod > *(pBufZ+x) )
-						{
-						*(pDst+x) = ucFlatColor;// pFog[fz.upper];
-						*(pBufZ+x) = fz.mod;// set Z-buffer!
-						}
-					fz.val += fzinc.val;
-					}
-				}
-			}
-		}
-	}
+      for (y = ybot; y; --y)
+      {
+        pDst += lP;
+        pBufZ += lZP;
+        x2.val += fx2inc;
+        x3.val += fx3inc;
+        z2.val += fz2inc;
+        z3.val += fz3inc;
+
+        // Now we scan z across (slow for now)
+        fz.val = z3.val;
+        fz.mod += sBaseZ;
+        xdel = x2.mod - x3.mod;
+        //if (hzdel) hzinc.val = (z2.val - z3.val) / hzdel;
+        if (xdel)
+          fzinc.val = uint32_t(z2.mod - z3.mod) * RInitNum::OneOver[xdel];
+        // Full accuracy fxMul!
+        //if (hzdel) Mul(hzinc,z2.val - z3.val,CInitNum::OneOver[hzdel]);
+        // Assume 2 to 3:
+        for (x = x3.mod; x<= x2.mod; ++x)
+        {
+          if (fz.mod > pBufZ[x] )
+          {
+            pDst[x] = ucFlatColor;// pFog[fz.upper];
+            pBufZ[x] = fz.mod;// set Z-buffer!
+          }
+          fz.val += fzinc.val;
+        }
+      }
+    }
+  }
+}
 
 //================================================== 
 // FLAT SHADED!
 // sX and sY are additional offsets into pimDst
 // There is NO Z_BUFFER here!  It is JUST a polygon drawer
 //
-void	DrawTri(uint8_t* pDstOffset,int32_t lDstP,
-			Vector3D* p1,Vector3D* p2,Vector3D* p3,
-			uint8_t ucFlatColor)
-	{
-//////////////////////////////////////////////////////////////////
-// ****************************************************************
-//======================  INITIAL SET UP  ========================
-// ****************************************************************
-//////////////////////////////////////////////////////////////////
+void DrawTri(uint8_t* pDstOffset,
+             int32_t lDstP,
+             Vector3D* p1,
+             Vector3D* p2,
+             Vector3D* p3,
+             uint8_t ucFlatColor)
+{
+  //////////////////////////////////////////////////////////////////
+  // ****************************************************************
+  //======================  INITIAL SET UP  ========================
+  // ****************************************************************
+  //////////////////////////////////////////////////////////////////
 
-	// copy the 3d points into screen coordinates:
-	RRenderPt32 pt1,pt2,pt3;
-	RRenderPt32 *pv1 = &pt1;
-	RRenderPt32 *pv2 = &pt2;
-	RRenderPt32 *pv3 = &pt3;
-	// Cast from real_t to short in fp32 format:
-   pt1.x.mod = int16_t(p1->x());
-   pt1.y.mod = int16_t(p1->y());
-   pt2.x.mod = int16_t(p2->x());
-   pt2.y.mod = int16_t(p2->y());
-   pt3.x.mod = int16_t(p3->x());
-   pt3.y.mod = int16_t(p3->y());
-	pt1.x.frac = 
-	pt2.x.frac = 
-	pt3.x.frac = uint16_t(32768); // offset each by 1/2
-	
-	// sort the triangles and choose which mirror case to render.
+  // copy the 3d points into screen coordinates:
+  RRenderPt32 pt1,pt2,pt3;
+  RRenderPt32 *pv1 = &pt1;
+  RRenderPt32 *pv2 = &pt2;
+  RRenderPt32 *pv3 = &pt3;
+  // Cast from real_t to short in fp32 format:
+  pt1.x.mod = int16_t(p1->x());
+  pt1.y.mod = int16_t(p1->y());
+  pt2.x.mod = int16_t(p2->x());
+  pt2.y.mod = int16_t(p2->y());
+  pt3.x.mod = int16_t(p3->x());
+  pt3.y.mod = int16_t(p3->y());
+  pt1.x.frac =
+  pt2.x.frac =
+  pt3.x.frac = uint16_t(32768); // offset each by 1/2
 
-	// Sort points lowest to highest by y-value:
-	if (pv1->y.mod > pv2->y.mod) SWAP(pv1,pv2);
-	if (pv1->y.mod > pv3->y.mod) SWAP(pv1,pv3);
-	if (pv2->y.mod > pv3->y.mod) SWAP(pv2,pv3);
+  // sort the triangles and choose which mirror case to render.
 
-	// Get point 2 and 3's position relative to point 1:
-	// Use 16 bit accuracy in y, 32-bit in x...
-	int16_t y1 = pv1->y.mod;
+  // Sort points lowest to highest by y-value:
+  if (pv1->y.mod > pv2->y.mod)
+    SWAP(pv1, pv2);
 
-	int16_t	y2 = pv2->y.mod - y1;
-	int16_t	y3 = pv3->y.mod - y1;
-	int16_t ybot = y3 - y2; // lower half delta
+  if (pv1->y.mod > pv3->y.mod)
+    SWAP(pv1, pv3);
 
-	if (y2 + y3 == 0) return; // don;t bother drawing horiz line
+  if (pv2->y.mod > pv3->y.mod)
+    SWAP(pv2, pv3);
 
-	// get relative floating point x coordinates: (32-bit differences)
-	int32_t fx1 = pv1->x.val;
+  // Get point 2 and 3's position relative to point 1:
+  // Use 16 bit accuracy in y, 32-bit in x...
+  int16_t y1 = pv1->y.mod;
 
-	int32_t fx2 = pv2->x.val - fx1;
-	int32_t fx3 = pv3->x.val - fx1;
+  int16_t y2 = pv2->y.mod - y1;
+  int16_t y3 = pv3->y.mod - y1;
+  int16_t ybot = y3 - y2; // lower half delta
 
-	// calculate the top two edge slopes with 32-bit accuracy:
-	int32_t fx2inc;
-	if (y2) 
-		{
-		fx2inc = fx2 / y2; // stuck with division using fx32!
-		/* CANDIDATE FOR ONE_OVER!
-		fx2inc = uint32_t(fx2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
-		*/
-		}
+  if (y2 + y3 == 0)
+    return; // don't bother drawing horiz line
 
-	int32_t fx3inc = fx3 / y3; // stuck with division using fx32!
+  // get relative floating point x coordinates: (32-bit differences)
+  int32_t fx1 = pv1->x.val;
 
-	// Set the two absolute edge positions
-	RFixedS32 x2,x3; 
-	x2.val = x3.val = pv1->x.frac;	// preserve floating point x!
+  int32_t fx2 = pv2->x.val - fx1;
+  int32_t fx3 = pv3->x.val - fx1;
 
-	int32_t lP = lDstP;
-	// add in extra piece uv rounding!
-	uint8_t* pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x2.mod; 
+  // calculate the top two edge slopes with 32-bit accuracy:
+  int32_t fx2inc;
+  if (y2)
+  {
+    fx2inc = fx2 / y2; // stuck with division using fx32!
+    // CANDIDATE FOR ONE_OVER!
+    //fx2inc = uint32_t(fx2.mod) * CInitNum::OneOver[y2]; // stuck with division using fx32!
+  }
 
-	// Draw the upper triangle! (Assuming fx2inc < fx3inc.....)
-	int16_t x,y;
+  int32_t fx3inc = fx3 / y3; // stuck with division using fx32!
+
+  // Set the two absolute edge positions
+  RFixedS32 x2,x3;
+  x2.val = x3.val = pv1->x.frac; // preserve floating point x!
+
+  int32_t lP = lDstP;
+  // add in extra piece uv rounding!
+  uint8_t* pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x2.mod;
+
+  // Draw the upper triangle! (Assuming fx2inc < fx3inc.....)
+  int16_t x,y;
 #ifdef UNUSED_VARIABLES
-	int16_t xdel;
+  int16_t xdel;
 #endif
 
-//////////////////////////////////////////////////////////////////
-// ****************************************************************
-//======================  CHOOSE II CASES  =======================
-// ****************************************************************
-//////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  // ****************************************************************
+  //======================  CHOOSE II CASES  =======================
+  // ****************************************************************
+  //////////////////////////////////////////////////////////////////
 
-	// ****************************************************************
-	//======================  FLAT TOP TRIANGLE  =====================
-	// ****************************************************************
-	// Don't worry about the wasted calculations above!
-	// (I STILL THINK YOU CAN STREAMLINE THIS AND INTEGRATE IT INTO
-	// THE OTHER CASE -> THERE IS NO CALL FOR THIS!)
+  // ****************************************************************
+  //======================  FLAT TOP TRIANGLE  =====================
+  // ****************************************************************
+  // Don't worry about the wasted calculations above!
+  // (I STILL THINK YOU CAN STREAMLINE THIS AND INTEGRATE IT INTO
+  // THE OTHER CASE -> THERE IS NO CALL FOR THIS!)
 
-	if (y2 == 0) // p1.y == p2.y
-		{
-		int32_t fx1inc;
-		RFixedS32 x1; // Absolute positions
+  if (y2 == 0) // p1.y == p2.y
+  {
+    int32_t fx1inc;
+    RFixedS32 x1; // Absolute positions
 
-		// Let point I be to the LEFT of point II:
-		if (pv2->x.val < pv1->x.val) SWAP(pv1,pv2);
-		// again, set initial points relative to p1(0,0):
-		fx1 = pv1->x.val;
+    // Let point I be to the LEFT of point II:
+    if (pv2->x.val < pv1->x.val)
+      SWAP(pv1, pv2);
 
-		fx2 = pv2->x.val - fx1;
-		fx3 = pv3->x.val - fx1;
+    // again, set initial points relative to p1(0,0):
+    fx1 = pv1->x.val;
 
-		// This time, we want the end slopes:
-		// *******   CANDIDATE FOR ONE_OVER!
-		fx1inc = fx3 / y3; // from pt 1 to pt 3
-		fx2inc = (fx3 - fx2) / y3; // from pt 2 to pt 3
+    fx2 = pv2->x.val - fx1;
+    fx3 = pv3->x.val - fx1;
 
-		x1.val = pv1->x.frac; // preserve floating point x!
-		x2.val = fx2;
+    // This time, we want the end slopes:
+    // *******   CANDIDATE FOR ONE_OVER!
+    fx1inc = fx3 / y3; // from pt 1 to pt 3
+    fx2inc = (fx3 - fx2) / y3; // from pt 2 to pt 3
 
-		pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x1.mod; // add in extra piece uv rounding!
+    x1.val = pv1->x.frac; // preserve floating point x!
+    x2.val = fx2;
 
-		for (y = y3;y;y--)
-			{
-			pDst += lP;
-			x2.val += fx2inc;
-			x1.val += fx1inc;
+    pDst = pDstOffset + lP * pv1->y.mod + pv1->x.mod + x1.mod; // add in extra piece uv rounding!
 
-#ifdef UNUSED_VARIABLES
-			xdel = x2.mod - x1.mod;
-         // *************** flipped the inc value:!
-#endif
-
-			// Assume 2 to 3:
-			for (x = x1.mod; x<= x2.mod;x++) *(pDst+x) = ucFlatColor;
-			}
-
-		return;
-		}
-	// ****************************************************************
-	//======================  NORMAL TRIANGLE  =======================
-	// ****************************************************************
-	if (fx2inc <= fx3inc)
-		{
-		//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
-		for (y = y2;y;y--)
-			{
-			pDst += lP;
-			x2.val += fx2inc;
-			x3.val += fx3inc;
+    for (y = y3; y; --y)
+    {
+      pDst += lP;
+      x2.val += fx2inc;
+      x1.val += fx1inc;
 
 #ifdef UNUSED_VARIABLES
-         // Assume 2 to 3:
-			xdel = x3.mod - x2.mod;
+      xdel = x2.mod - x1.mod;
+      // *************** flipped the inc value:!
 #endif
 
-         // Assume 2 to 3:
-			for (x = x2.mod; x<= x3.mod;x++) *(pDst+x) = ucFlatColor;
-			}
+      // Assume 2 to 3:
+      for (x = x1.mod; x<= x2.mod; ++x)
+        pDst[x] = ucFlatColor;
+    }
 
-		//===================================================================
-		// Draw the lower triangle if applicatable:
-		//===================================================================
-
-		if (ybot)
-			{
-			// new x2 slope:
-			fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
-			/*
-			fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			*/
-			//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
-
-			for (y = ybot;y;y--)
-				{
-				pDst += lP;
-				x2.val += fx2inc;
-				x3.val += fx3inc;
+    return;
+  }
+  // ****************************************************************
+  //======================  NORMAL TRIANGLE  =======================
+  // ****************************************************************
+  if (fx2inc <= fx3inc)
+  {
+    //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
+    for (y = y2; y; --y)
+    {
+      pDst += lP;
+      x2.val += fx2inc;
+      x3.val += fx3inc;
 
 #ifdef UNUSED_VARIABLES
-            xdel = x3.mod - x2.mod;
+      // Assume 2 to 3:
+      xdel = x3.mod - x2.mod;
 #endif
 
-				// Assume 2 to 3:
-				for (x = x2.mod; x<= x3.mod;x++) *(pDst+x) = ucFlatColor;
-				}
-			}
-		}
+      // Assume 2 to 3:
+      for (x = x2.mod; x<= x3.mod; ++x)
+        pDst[x] = ucFlatColor;
+    }
 
-	else // flip the x drawing order:
+    //===================================================================
+    // Draw the lower triangle if applicatable:
+    //===================================================================
 
-		//===================================================================
-		//============== DRAW MIRRORED VERION OF STANDARD TRIANGLE! =========
-		//===================================================================
+    if (ybot)
+    {
+      // new x2 slope:
+      fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
+      //fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
 
-		{
+      //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
 
-		//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
-		for (y = y2;y;y--)
-			{
-			pDst += lP;
-			x2.val += fx2inc;
-			x3.val += fx3inc;
-			// Assume 2 to 3:
+      for (y = ybot; y; --y)
+      {
+        pDst += lP;
+        x2.val += fx2inc;
+        x3.val += fx3inc;
 
 #ifdef UNUSED_VARIABLES
-         xdel = x2.mod - x3.mod; //+ x to z
+        xdel = x3.mod - x2.mod;
 #endif
 
-			// Assume 2 to 3:
-			for (x = x3.mod; x<= x2.mod;x++) *(pDst+x) = ucFlatColor;
-			}
+        // Assume 2 to 3:
+        for (x = x2.mod; x<= x3.mod; ++x)
+          pDst[x] = ucFlatColor;
+      }
+    }
+  }
 
-		//===================================================================
-		// Draw the lower triangle if applicatable:
-		//===================================================================
+  else // flip the x drawing order:
 
-		if (ybot)
-			{
-			// new x2 slope:
-			fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
-			/*
-			fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
-			*/
-			//_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
+    //===================================================================
+    //============== DRAW MIRRORED VERION OF STANDARD TRIANGLE! =========
+    //===================================================================
+  {
 
-			for (y = ybot;y;y--)
-				{
-				pDst += lP;
-				x2.val += fx2inc;
-				x3.val += fx3inc;
+    //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,y2,ucColor);
+    for (y = y2; y; --y)
+    {
+      pDst += lP;
+      x2.val += fx2inc;
+      x3.val += fx3inc;
+      // Assume 2 to 3:
 
 #ifdef UNUSED_VARIABLES
-				xdel = x2.mod - x3.mod;
+      xdel = x2.mod - x3.mod; //+ x to z
 #endif
-				// Full accuracy fxMul!
-				// Assume 2 to 3:
-				for (x = x3.mod; x<= x2.mod;x++) *(pDst+x) = ucFlatColor;
-				}
-			}
-		}
-	}
+
+      // Assume 2 to 3:
+      for (x = x3.mod; x<= x2.mod; ++x)
+        pDst[x] = ucFlatColor;
+    }
+
+    //===================================================================
+    // Draw the lower triangle if applicatable:
+    //===================================================================
+
+    if (ybot)
+    {
+      // new x2 slope:
+      fx2inc = (fx3 - fx2) / ybot;  // stuck with division using fx32!
+      //fx2inc = uint32_t(fx3.mod-fx2.mod) * CInitNum::OneOver[yc]; // stuck with division using fx32!
+
+      //_DrawTri(pDst,lP,x2,x3,fx2inc,fx3inc,yc,ucColor);
+
+      for (y = ybot; y; --y)
+      {
+        pDst += lP;
+        x2.val += fx2inc;
+        x3.val += fx3inc;
+
+#ifdef UNUSED_VARIABLES
+        xdel = x2.mod - x3.mod;
+#endif
+        // Full accuracy fxMul!
+        // Assume 2 to 3:
+        for (x = x3.mod; x<= x2.mod; ++x)
+          pDst[x] = ucFlatColor;
+      }
+    }
+  }
+}
