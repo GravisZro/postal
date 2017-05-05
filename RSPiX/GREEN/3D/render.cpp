@@ -24,6 +24,7 @@ struct RRenderPt32 // For internal use
   RFixedS32 z;
 };
 
+#define UINT16_HALF ((UINT16_MAX + 1) >> 1)
 
 // Fog should be offset such that the first index occurs
 // at the minimum z-point of the full3d object being
@@ -63,7 +64,7 @@ void DrawTri_ZColorFog(uint8_t* pDstOffset,
   pt3.z.mod = int16_t(p3->z());
   pt1.x.frac =
   pt2.x.frac =
-  pt3.x.frac = uint16_t(32768); // offset each by 1/2
+  pt3.x.frac = UINT16_HALF; // offset each by 1/2
 
   /*
    // Catch the special case of a single pixel
@@ -166,7 +167,6 @@ void DrawTri_ZColorFog(uint8_t* pDstOffset,
   // Get point 2 and 3's position relative to point 1:
   // Use 16 bit accuracy in y, 32-bit in x...
   int16_t y1 = pv1->y.mod;
-
   int16_t y2 = pv2->y.mod - y1;
   int16_t y3 = pv3->y.mod - y1;
   int16_t ybot = y3 - y2; // lower half delta
@@ -177,7 +177,6 @@ void DrawTri_ZColorFog(uint8_t* pDstOffset,
   // get relative floating point x coordinates: (32-bit differences)
   int32_t fx1 = pv1->x.val;
   int32_t fz1 = pv1->z.val;
-
   int32_t fx2 = pv2->x.val - fx1;
   int32_t fx3 = pv3->x.val - fx1;
   int32_t fz2 = pv2->z.val - fz1;
@@ -522,7 +521,7 @@ void DrawTri_ZColor(uint8_t* pDstOffset,
   pt3.z.mod = int16_t(p3->z());
   pt1.x.frac =
   pt2.x.frac =
-  pt3.x.frac = uint16_t(32768); // offset each by 1/2
+  pt3.x.frac = UINT16_HALF; // offset each by 1/2
 
   // sort the triangles and choose which mirror case to render.
 
@@ -868,7 +867,7 @@ void DrawTri(uint8_t* pDstOffset,
   pt3.y.mod = int16_t(p3->y());
   pt1.x.frac =
   pt2.x.frac =
-  pt3.x.frac = uint16_t(32768); // offset each by 1/2
+  pt3.x.frac = UINT16_HALF; // offset each by 1/2
 
   // sort the triangles and choose which mirror case to render.
 
