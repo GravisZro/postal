@@ -23,11 +23,13 @@ template<typename S>
 constexpr bool operator == (S a, consts b)
   { return a == S(b); }
 
-SAKArchive::SAKArchive(const std::string& archivename)
-  : m_file(archivename)
+SAKArchive::SAKArchive(const std::string& archivename, std::ios::openmode mode)
+//  : m_file(archivename, mode)
 {
   uint32_t magic_number, version;
   uint16_t file_count;
+
+  m_file.open(archivename, mode);
 
   ASSERT(m_file.is_open()); // if the file exists, it will be open, so it must be.
 

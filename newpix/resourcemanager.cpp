@@ -3,7 +3,7 @@
 //#include <cctype>
 //#include <algorithm>
 
-SAKArchive g_GameSAK("res/game/game.sak");
+SAKArchive g_GameSAK("res/game/game.sak", std::ios::in | std::ios::binary);
 
 /*
 template<typename T>

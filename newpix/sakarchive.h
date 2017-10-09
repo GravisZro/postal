@@ -55,7 +55,7 @@ class SAKArchive // "Swiss Army Knife" Archive
 {
 public:
   // You MUST provide a valid filename of the SAK archive to open
-  SAKArchive(const std::string& archivename);
+  SAKArchive(const std::string& archivename, std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary);
 
   // Test if a file exists.  Other operations assume the file exists.
   bool fileExists(const std::string& filename) const { return m_lookup.find(filename) != m_lookup.end(); }
