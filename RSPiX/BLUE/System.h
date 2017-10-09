@@ -250,7 +250,7 @@ inline int mkdir(const char *path, int) { return mkdir(path); }
 # if !defined(__GNUC__) || __GNUC_PREREQ(4,4)
 #  define NOTE(x) DO_PRAGMA(message("NOTE: " x))
 # else
-#  define NOTE(x) DO_PRAGMA(warning("NOTE: " x)
+#  define NOTE(x) DO_PRAGMA(warning("NOTE: " x))
 # endif
 #endif
 
@@ -360,7 +360,7 @@ struct RPixel24
   channel_t green;
   channel_t blue;
 
-  constexpr bool operator==(const RPixel24& other)
+  constexpr bool operator==(const RPixel24& other) const
   {
     return blue  == other.blue  &&
            green == other.green &&
@@ -376,7 +376,7 @@ struct RPixel32
   channel_t green;
   channel_t blue;
 
-  constexpr bool operator==(const RPixel32& other)
+  constexpr bool operator==(const RPixel32& other) const
   {
     return blue  == other.blue  &&
            green == other.green &&
@@ -400,7 +400,7 @@ constexpr T MAX(T a,T b) { return (a > b) ? a : b; }
 
 #undef SWAP // Swaps two identical typed variables
 template <class T>
-constexpr void SWAP(T &a,T &b) { T temp = a; a = b; b = temp; }
+inline void SWAP(T &a,T &b) { T temp = a; a = b; b = temp; }
 
 #undef SQR // squares a number
 template <class T>
