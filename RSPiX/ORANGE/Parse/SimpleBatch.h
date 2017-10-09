@@ -103,8 +103,9 @@ public:
 		m_cStringContext = cString;
 		m_cComment = cComment;
 
-      if (pszSpecialCharacters) std::strcpy(m_pszSpecialCharacters,pszSpecialCharacters);
-      if (m_pszSeparators) std::strcpy(m_pszSeparators,pszSeparators);
+      if (pszSpecialCharacters)
+        std::strcpy(m_pszSpecialCharacters,pszSpecialCharacters);
+      std::strcpy(m_pszSeparators,pszSeparators);
 		}
 
 	RBatch() // default, no file
