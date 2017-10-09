@@ -9,7 +9,17 @@
 
 // helper types
 typedef float real_t;
-typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
+//typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
+
+struct triangle_t
+{
+  uint16_t x;
+  uint16_t y;
+  uint16_t z;
+
+  template<typename T>
+  inline uint16_t& operator [](T index) { return *(reinterpret_cast<uint16_t*>(this) + index); }
+}; // a triangle is 3 index values for RSop data
 
 // helper constant expressions
 template<typename R, typename C>
