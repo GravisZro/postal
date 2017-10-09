@@ -2758,7 +2758,8 @@ static int16_t OpenSaks(void)
 		}
 
 	// Set the appropriate quality.
-	g_GameSettings.m_eCurSoundQuality	= (SampleMaster::SoundQuality)( ( (lSamplesPerSec / 11025) - 1) * 2 + ( (lDevBitsPerSample / 8) - 1) );
+
+   g_GameSettings.m_eCurSoundQuality = (SampleMaster::SoundQuality)((lSamplesPerSec / 11025) * 2 + (lDevBitsPerSample / 8));
 
 	// Set volumes based on quality's category adjustor.
 	int16_t	i;
