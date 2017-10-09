@@ -59,6 +59,16 @@ static int16_t ms_sCursorShowLevel = 0;
 ///////////////////////////////////////////////////////////////////////////////
 static int MouseWheelState = 0;
 
+extern void rspActivateMouse(bool enable)
+{
+}
+
+
+extern bool rspMouseGrabbed(void)
+{
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Puts the coordinates of the mouse position in your shorts.
@@ -341,6 +351,7 @@ int16_t rspGetMouseCursorShowLevel(void)// Returns current mouse cursor show lev
 // Positive indicates cursor is shown.
 // Non-positive indicates cursor is hidden.
 {
+  return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
