@@ -369,8 +369,8 @@ RAlpha::RAlpha()
 
 void RAlpha::Erase()
 	{
-	if (m_pAlphas)
-		{
+//	if (m_pAlphas)
+//		{
       for (int16_t i = 0; i < 256; ++i)
 			{
 			if (m_pAlphas[i]) 
@@ -380,7 +380,7 @@ void RAlpha::Erase()
 				}
 			}
 		//free(m_pAlphas);
-		}
+//		}
 	}
 
 RAlpha::~RAlpha()
