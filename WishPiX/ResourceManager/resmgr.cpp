@@ -286,7 +286,7 @@ int16_t RResMgr::Get(                       // Returns 0 on success.
       m_accessList.push_back(strFilename);
 #ifdef _DEBUG
       if (m_bTraceUncachedLoads)
-        TRACE("RResMgr::Get - Loading uncached resource %s\n", strFilename);
+        TRACE("RResMgr::Get - Loading uncached resource %s\n", strFilename.c_str());
 #endif //_DEBUG
     }
     else
