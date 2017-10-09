@@ -1145,7 +1145,7 @@ int16_t CPerson::EditModify(void)
 			pmbtnShowState->Compose();
 
 			// Set current logic file.
-         peditLogicFile->SetText("%s", m_rstrLogicFile);
+         peditLogicFile->SetText("%s", m_rstrLogicFile.Data());
 			// Reflect changes.
 			peditLogicFile->Compose();
 
