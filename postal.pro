@@ -442,10 +442,7 @@ SOURCES += \
     newpix/filestream.cpp \
     newpix/3dtypes.cpp
 
-CONFIG += sdl2
-
-dos:QMAKE_CXXFLAGS+= -std=gnu++11
-else:QMAKE_CXXFLAGS+= -std=c++11
+!dos:CONFIG += sdl2
 
 
 new_config {
@@ -459,6 +456,7 @@ SOURCES += \
 }
 
 sdl {
+QMAKE_CXXFLAGS+= -std=c++11
 LIBS += -L/usr/lib/x86_64-linux-gnu -lSDL
 SOURCES += \
     RSPiX/CYAN/sdl/uColors.cpp \
@@ -475,6 +473,7 @@ SOURCES += \
 }
 
 sdl2 {
+QMAKE_CXXFLAGS+= -std=c++11
 LIBS += -lSDL2
 SOURCES += \
     RSPiX/CYAN/sdl2/uColors.cpp \
@@ -491,8 +490,8 @@ SOURCES += \
 }
 
 dos {
-
-DEFINES += __DJGPP__
+QMAKE_CXXFLAGS+= -std=gnu++11
+DEFINES += RSP_DEBUG_OUT_FILE
 
 HEADERS += \
     RSPiX/BLUE/dos/platform.h \
@@ -531,6 +530,7 @@ SOURCES += \
 }
 
 dreamcast {
+QMAKE_CXXFLAGS+= -std=c++11
 SOURCES += \
     RSPiX/CYAN/dreamcast/uColors.cpp \
     RSPiX/CYAN/dreamcast/uDialog.cpp \
@@ -546,6 +546,7 @@ SOURCES += \
 }
 
 saturn {
+QMAKE_CXXFLAGS+= -std=c++11
 SOURCES += \
     RSPiX/CYAN/saturn/uColors.cpp \
     RSPiX/CYAN/saturn/uDialog.cpp \
