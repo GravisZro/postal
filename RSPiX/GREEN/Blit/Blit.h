@@ -191,7 +191,7 @@ extern	int16_t	rspBlitA(RImage* pimSrc,RImage* pimDst,int16_t sX,int16_t sY,
 //#define rspPlot(color,pimDst,sX,sY) do { const RRect rspPlotTempRect(0,0,pimDst->m_sWidth,pimDst->m_sHeight); rspClipPlot(color,pimDst,sX,sY,&rspPlotTempRect); } while (0)
 
 template <class PIXSIZE>
-constexpr void rspPlot(PIXSIZE color, RImage* pimDst, int16_t sX, int16_t sY)
+inline void rspPlot(PIXSIZE color, RImage* pimDst, int16_t sX, int16_t sY)
 {
   const RRect rspPlotTempRect(0,0,pimDst->m_sWidth,pimDst->m_sHeight);
   rspClipPlot(color,pimDst,sX,sY,&rspPlotTempRect);
