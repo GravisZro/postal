@@ -566,13 +566,12 @@ template <class T> class RBList
 		// Find the node with the value LISTDATA.
 		PNODE Find(LISTDATA ldFind)
 			{
-			PNODE pn, pnTemp;
+         PNODE pn;
 	
 			// Start at head.
 			pn = m_pnHead;
 			while (pn && pn->ldData != ldFind)
-				{
-				pnTemp = pn;
+            {
 				pn = pn->pNext;
 				}                             
 
