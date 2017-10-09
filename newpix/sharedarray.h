@@ -6,6 +6,9 @@
 #include <cstring>
 
 template<typename T>
+static void faux_deleter(T const*) { }
+
+template<typename T>
 class shared_arr : public std::shared_ptr<T>
 {
 private:
@@ -33,7 +36,7 @@ public:
 
   T* operator =(T* ptr) // use external pointer data
   {
-    std::shared_ptr<T>::operator =(std::shared_ptr<T>(ptr, [](T const*) { })); // use pointer but do not deallocate
+    std::shared_ptr<T>::operator =(std::shared_ptr<T>(ptr, faux_deleter<T>)); // use pointer but do not deallocate
     return ptr;
   }
 
