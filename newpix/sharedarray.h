@@ -5,6 +5,10 @@
 #include <memory>
 #include <cstring>
 
+#ifndef SUCCESS
+#define SUCCESS 0
+#endif
+
 template<typename T>
 static void faux_deleter(T const*) { }
 

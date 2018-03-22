@@ -8,6 +8,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+class anyfile : public filedata_t
+{
+public:
+  using filedata_t::filedata_t;
+  using filedata_t::data;
+  void load (void){}
+};
+
 bool path_exists(const char* path)
 {
   static struct stat state;
@@ -90,7 +98,7 @@ int main(int argc, char **argv)
     case 'l':
     {
       int maxw = 0;
-      for(std::string& filename : archive->listFiles())
+      for(const std::string& filename : archive->listFiles())
         if(filename.size() > maxw)
           maxw = filename.size();
 
@@ -101,7 +109,7 @@ int main(int argc, char **argv)
 
       std::cout << std::setw(maxw + 20) << std::setfill('-') << "-" << std::endl;
 
-      for(std::string& filename : archive->listFiles())
+      for(const std::string& filename : archive->listFiles())
         std::cout << std::setw(8)    << std::setfill('0') << std::hex << std::right << archive->fileOffset(filename) << "  "
                   << std::setw(maxw) << std::setfill('.') << std::left << filename
                   << std::setw(10)   << std::setfill('.') << std::dec << std::right << archive->fileSize(filename)
@@ -120,14 +128,14 @@ int main(int argc, char **argv)
           std::cout << "archive does not contain a file named: " << argfilename << std::endl;
       }
 
-      for(std::string& filename : list)
+      for(const std::string& filename : list)
       {
         std::cout << "Extracting: " << filename << std::endl;
         if(!mkdir_p(filename.c_str(), S_IRWXU))
         {
           file.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-          auto subfile = archive->getFile(filename);
-          file.write(subfile->dataptr, subfile->size);
+          std::shared_ptr<anyfile> subfile = archive->getFile<anyfile>(filename);
+          file.write<uint8_t>(subfile->data, subfile->dataSize());
           file.close();
         }
       }

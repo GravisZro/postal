@@ -9,7 +9,7 @@ struct Resource : shared_arr<T>
   T& operator ->(void) const noexcept
   {
     ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
-    return *std::shared_ptr<T>::get()->dataptr;
+    return *std::shared_ptr<T>::get()->data;
   }
 
   std::shared_ptr<filedata_t>& operator =(std::shared_ptr<filedata_t>& other) noexcept
