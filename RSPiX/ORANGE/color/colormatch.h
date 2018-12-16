@@ -19,6 +19,7 @@
 #define COLOR_MATCH_H
 //==================================
 #include <BLUE/System.h>
+#include <newpix/paltypes.h>
 
 class RFile;
 class RImage;

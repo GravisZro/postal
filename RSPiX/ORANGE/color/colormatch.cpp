@@ -81,7 +81,7 @@ channel_t rspMatchColorRGB(channel_t red,
 
 
 // Currently, I am using an image as the file format for a palette.
-// This uses the rsp system standard type RPixel32, which is endian swapped on the PC.
+// This uses the rsp system standard type pixel32_t, which is endian swapped on the PC.
 // It counts on RSP SetPalette to go through a gamma correction table on the PC.
 // Higher level functions can do actual image conversions.
 

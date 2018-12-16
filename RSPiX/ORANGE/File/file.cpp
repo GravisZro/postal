@@ -1172,11 +1172,11 @@ int32_t RFile::Read(int16_t* ps16Data, size_t lNum /*= 1L*/)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Reads lNum RPixel24 values from currently open file.
-// Returns number of RPixel24 values successfully read.
+// Reads lNum pixel24_t values from currently open file.
+// Returns number of pixel24_t values successfully read.
 //
 //////////////////////////////////////////////////////////////////////////////
-int32_t RFile::Read(RPixel24* ppix24, size_t lNum /*= 1L*/)
+int32_t RFile::Read(pixel24_t* ppix24, size_t lNum /*= 1L*/)
 	{
 	int32_t	lRes	= 0L;	// Assume success.
 
@@ -1707,11 +1707,11 @@ int32_t RFile::Write(const int16_t* ps16Data, size_t lNum /*= 1L*/)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Writes lNum RPixel24 values to currently open file.
-// Returns number of RPixel24 values successfully written.
+// Writes lNum pixel24_t values to currently open file.
+// Returns number of pixel24_t values successfully written.
 //
 //////////////////////////////////////////////////////////////////////////////
-int32_t RFile::Write(const RPixel24* ppix24, size_t lNum /*= 1L*/)
+int32_t RFile::Write(const pixel24_t* ppix24, size_t lNum /*= 1L*/)
 	{
 	int32_t	lRes	= 0;	// Assume success.
 
@@ -2147,13 +2147,13 @@ int32_t RFile::Read16(	// Returns number of 16 bit items read.
 //
 //////////////////////////////////////////////////////////////////////////////
 int32_t RFile::Read24(	// Returns number of 24 bit items read.
-	RPixel24* ppix24,	// In:  24 bit data to read (swapping, if necessary).
+   pixel24_t* ppix24,	// In:  24 bit data to read (swapping, if necessary).
    size_t lNum)			// In:  Number of 24 bit items to read.
 	{
 	int32_t	lRes	= 0;
 
 	// Read data.
-	lRes = Read((void*)ppix24, lNum * sizeof(RPixel24)) / sizeof(RPixel24);
+   lRes = Read((void*)ppix24, lNum * sizeof(pixel24_t)) / sizeof(pixel24_t);
 
 	// If m_endian is consistent with this platform . . .
 	if (ENDIAN_CONSISTENT)
@@ -2165,7 +2165,7 @@ int32_t RFile::Read24(	// Returns number of 24 bit items read.
 		// Convert.
       uint8_t		u8_0;
       uint8_t*	pu8	= (uint8_t*)ppix24;
-		for (int32_t l = 0L; l < lRes; l++, pu8 += sizeof(RPixel24))
+      for (int32_t l = 0L; l < lRes; l++, pu8 += sizeof(pixel24_t))
 			{
 			// Store end.
 			u8_0			= *(pu8 + 2);
@@ -2350,7 +2350,7 @@ int32_t RFile::Write16(	// Returns number of 16 bit items written.
 //
 //////////////////////////////////////////////////////////////////////////////
 int32_t RFile::Write24(	// Returns number of 24 bit items written.
-	const RPixel24*	ppix24,		// In:  24 bit data to write (swapping, if necessary).
+   const pixel24_t*	ppix24,		// In:  24 bit data to write (swapping, if necessary).
    size_t lNum)				// In:  Number of 24 bit items to write.
 	{
 	int32_t	lRes	= 0;
@@ -2359,7 +2359,7 @@ int32_t RFile::Write24(	// Returns number of 24 bit items written.
 	if (ENDIAN_CONSISTENT)
 		{
 		// Write data.
-		lRes = Write((void*)ppix24, lNum * sizeof(RPixel24)) / sizeof(RPixel24);
+      lRes = Write((void*)ppix24, lNum * sizeof(pixel24_t)) / sizeof(pixel24_t);
 		}
 	else
 		{
@@ -2378,13 +2378,13 @@ int32_t RFile::Write24(	// Returns number of 24 bit items written.
 													// iteration.
       int32_t	lWritten	= 0;					// Number of items written on current
 													// iteration.
-		for (lSrc = 0L; lSrc < lNum && lWritten >= 0L; lRes += lWritten / sizeof(RPixel24))
+      for (lSrc = 0L; lSrc < lNum && lWritten >= 0L; lRes += lWritten / sizeof(pixel24_t))
 			{
 			pu8Dst	= ms_au8SwapBuf;
 			for (
 				lDst = 0L; 
 				lSrc < lNum && lDst < sizeof(ms_au8SwapBuf); 
-				lDst += sizeof(RPixel24), lSrc++, pu8Src += sizeof(RPixel24), pu8Dst += sizeof(RPixel24) )
+            lDst += sizeof(pixel24_t), lSrc++, pu8Src += sizeof(pixel24_t), pu8Dst += sizeof(pixel24_t) )
 				{
 				*(pu8Dst	+ 2)	= *(pu8Src + 0);
 				*(pu8Dst + 1)	= *(pu8Src + 1);

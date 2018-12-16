@@ -49,7 +49,7 @@
 //							for details).  Consequently, I had to add an overload
 //							for char* that was being caught by the void* version
 //							before.
-//							Also, added Read and Writes for RPixel32.
+//							Also, added Read and Writes for pixel32_t.
 //
 //		02/10/97	JMI	Added rspAnyLoad() and rspAnySave().  There are two types
 //							of implementations for these functions.  One is the 
@@ -84,6 +84,7 @@
 #include <cstdio>
 
 #include <BLUE/System.h>
+#include <newpix/paltypes.h>
 
 #ifdef ALLOW_RFILE_REOPEN
 # include <ORANGE/CDT/List.h>
@@ -306,9 +307,9 @@ class RFile
       // Returns number of int16_t values successfully read.
       int32_t Read(int16_t* ps16Data, size_t lNum = 1);
 
-		// Reads lNum RPixel24 values from currently open file.
-		// Returns number of RPixel24 values successfully read.
-      int32_t Read(RPixel24* ppix24, size_t lNum = 1);
+      // Reads lNum pixel24_t values from currently open file.
+      // Returns number of pixel24_t values successfully read.
+      int32_t Read(pixel24_t* ppix24, size_t lNum = 1);
 
       // Reads lNum uint32_t values from currently open file.
       // Returns number of uint32_t values successfully read.
@@ -318,9 +319,9 @@ class RFile
       // Returns number of int32_t values successfully read.
       int32_t Read(int32_t* ps32Data, size_t lNum = 1);
 
-		// Reads lNum RPixel32 values from currently open file.
-		// Returns number of RPixel32 values successfully read.
-      int32_t Read(RPixel32* ppix32Data, size_t lNum = 1)
+      // Reads lNum pixel32_t values from currently open file.
+      // Returns number of pixel32_t values successfully read.
+      int32_t Read(pixel32_t* ppix32Data, size_t lNum = 1)
          { return Read((uint32_t*)ppix32Data, lNum); }
 
       // Reads lNum uint64_t values from currently open file.
@@ -385,9 +386,9 @@ class RFile
       // Returns number of int16_t values successfully written.
       int32_t Write(const int16_t* ps16Data, size_t lNum = 1);
 
-		// Writes lNum RPixel24 values to currently open file.
-		// Returns number of RPixel24 values successfully written.
-      int32_t Write(const RPixel24* ppix24, size_t lNum = 1);
+      // Writes lNum pixel24_t values to currently open file.
+      // Returns number of pixel24_t values successfully written.
+      int32_t Write(const pixel24_t* ppix24, size_t lNum = 1);
 
       // Writes lNum uint32_t values to currently open file.
       // Returns number of uint32_t values successfully written.
@@ -397,9 +398,9 @@ class RFile
       // Returns number of int32_t values successfully written.
       int32_t Write(const int32_t* ps32Data, size_t lNum = 1);
 
-		// Writes lNum RPixel32 values to currently open file.
-		// Returns number of RPixel32 values successfully written.
-      int32_t Write(const RPixel32* ppix32Data, size_t lNum = 1)
+      // Writes lNum pixel32_t values to currently open file.
+      // Returns number of pixel32_t values successfully written.
+      int32_t Write(const pixel32_t* ppix32Data, size_t lNum = 1)
          { return Write((uint32_t*)ppix32Data, lNum); }
 
       // Writes lNum uint64_t values to currently open file.
@@ -451,8 +452,8 @@ class RFile
       int32_t Write(int16_t s16Val)
 			{ return Write(&s16Val); }
 
-		// Writes one RPixel24.
-		int32_t Write(RPixel24 pix24Val)
+      // Writes one pixel24_t.
+      int32_t Write(pixel24_t pix24Val)
 			{ return Write(&pix24Val); }
 
       // Writes one uint32_t.
@@ -463,8 +464,8 @@ class RFile
       int32_t Write(int32_t s32Val)
 			{ return Write(&s32Val); }
 
-		// Writes one RPixel32.
-		int32_t Write(RPixel32 pix32Val)
+      // Writes one pixel32_t.
+      int32_t Write(pixel32_t pix32Val)
 			{ return Write(&pix32Val); }
 
 		// Writes one float.
@@ -587,7 +588,7 @@ class RFile
 
 		// Reads in 24 bit data, swapped if necessary.
 		int32_t Read24(			// Returns number of 24 bit items read.
-			RPixel24* ppix24,	// In:  24 bit data to read (swapping, if necessary).
+         pixel24_t* ppix24,	// In:  24 bit data to read (swapping, if necessary).
          size_t lNum);		// In:  Number of 24 bit items to read.
 
 		// Reads in 32 bit data, swapped if necessary.
@@ -614,7 +615,7 @@ class RFile
 
 		// Writes out 24 bit data, swapped if necessary.
 		int32_t Write24(			// Returns number of 24 bit items written.
-			const RPixel24* ppix24,	// In:  24 bit data to write (swapping, if necessary).
+         const pixel24_t* ppix24,	// In:  24 bit data to write (swapping, if necessary).
          size_t lNum);		// In:  Number of 24 bit items to write.
 
 		// Writes out 32 bit data, swapped if necessary.
@@ -895,14 +896,14 @@ RFILE_INSTANTIATE_ANYLOAD(uint16_t)
 RFILE_INSTANTIATE_ANYSAVE(uint16_t)
 RFILE_INSTANTIATE_ANYLOAD(int16_t)
 RFILE_INSTANTIATE_ANYSAVE(int16_t)
-RFILE_INSTANTIATE_ANYLOAD(RPixel24)
-RFILE_INSTANTIATE_ANYSAVE(RPixel24)
+RFILE_INSTANTIATE_ANYLOAD(pixel24_t)
+RFILE_INSTANTIATE_ANYSAVE(pixel24_t)
 RFILE_INSTANTIATE_ANYLOAD(uint32_t)
 RFILE_INSTANTIATE_ANYSAVE(uint32_t)
 RFILE_INSTANTIATE_ANYLOAD(int32_t)
 RFILE_INSTANTIATE_ANYSAVE(int32_t)
-RFILE_INSTANTIATE_ANYLOAD(RPixel32)
-RFILE_INSTANTIATE_ANYSAVE(RPixel32)
+RFILE_INSTANTIATE_ANYLOAD(pixel32_t)
+RFILE_INSTANTIATE_ANYSAVE(pixel32_t)
 RFILE_INSTANTIATE_ANYLOAD(float)
 RFILE_INSTANTIATE_ANYSAVE(float)
 RFILE_INSTANTIATE_ANYLOAD(uint64_t)
