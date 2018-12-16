@@ -26,7 +26,7 @@
 //		02/05/97 MJR	Filled in.
 //
 //		02/10/97 MJR	Removed the no-longer-necessary "long" casts for loading
-//							and saving of RPixel32's.
+//							and saving of pixel32_t's.
 //							Renamed RForm3d to RSop (Sea-Of-Points) since that's what
 //							we all think of it as, so it may as well be called that.
 //
@@ -66,7 +66,7 @@ void RTexture::AllocIndices(void)
 void RTexture::AllocColors(void)
 	{
 	FreeColors();
-	m_pColors = (RPixel32*)calloc(m_sNum, sizeof(RPixel32));
+	m_pColors = (pixel32_t*)calloc(m_sNum, sizeof(pixel32_t));
    ASSERT(m_pColors != nullptr);
 	}
 
@@ -208,7 +208,7 @@ RTexture::Unmap(
 		AllocColors();
 
 	uint8_t*			pu8	= m_pIndices;
-	RPixel32*	ppix	= m_pColors;
+	pixel32_t*	ppix	= m_pColors;
 	int16_t	sCount		= m_sNum;
 	while (sCount--)
 		{
@@ -235,7 +235,7 @@ RTexture::Adjust(
 
 #define CLAMP8BIT(u8Color, fColor)	u8Color = fColor < 0xFF ? uint8_t(fColor + 0.5f) : 0xFF
 
-	RPixel32*	ppix	= m_pColors;
+	pixel32_t*	ppix	= m_pColors;
 	int16_t	sCount		= m_sNum / lInc;
 	float	fColor;
 	while (sCount--)

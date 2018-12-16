@@ -301,7 +301,7 @@ bool
 TrianglesIntersectLineSegment(
     Vector3D &linept1,				// In: line segment point 1
     Vector3D &linept2, 			// In: line segment point 2 closest to this point. this should be the first point.
-    triangle_t* ptri, 					// In: mesh
+    vertex_t* ptri, 					// In: mesh
     Vector3D* soparr, 				// In: points for mesh
     int16_t smeshNum,			// In: number of points in mesh
     Vector3D &hitpoint,			// Out: point where line hit triangle

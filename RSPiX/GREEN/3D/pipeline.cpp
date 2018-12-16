@@ -261,7 +261,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 		RMesh* pMesh,uint8_t ucColor) // wire!
    {
 	int32_t v1,v2,v3;
-   triangle_t* psVertex = pMesh->triangles;
+   vertex_t* psVertex = pMesh->triangles;
 	int32_t lNumHidden = 0;
 
    for (uint32_t i = 0; i < pMesh->triangles.size(); ++i)
@@ -290,7 +290,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 void RPipeLine::RenderShadow(RImage* pimDst,RMesh* pMesh,uint8_t ucColor)
    {
 	int32_t v1,v2,v3;
-   triangle_t* psVertex = pMesh->triangles;
+   vertex_t* psVertex = pMesh->triangles;
 
    for (uint32_t i = 0; i < pMesh->triangles.size(); ++i)
 		{
@@ -318,7 +318,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 		int16_t sOffsetY/* = 0*/) 	// In: 2D offset for pimDst and pZB.
    {
 	int32_t v1,v2,v3;
-   triangle_t* psVertex = pMesh->triangles;
+   vertex_t* psVertex = pMesh->triangles;
    uint8_t *pColor = pTexColors->indexes;
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pDst = pimDst->m_pData + (sDstX + sOffsetX) + lDstP * (sDstY + sOffsetY);
@@ -351,7 +351,7 @@ void RPipeLine::Render(RImage* pimDst,int16_t sDstX,int16_t sDstY,
 		int16_t sOffsetY/* = 0*/) 	// In: 2D offset for pimDst and pZB.
    {
 	int32_t v1,v2,v3;
-   triangle_t* psVertex = pMesh->triangles;
+   vertex_t* psVertex = pMesh->triangles;
    uint8_t *pColor = pTexColors->indexes;
 	int32_t lDstP = pimDst->m_lPitch;
 	uint8_t* pDst = pimDst->m_pData + (sDstX + sOffsetX) + lDstP * (sDstY + sOffsetY);

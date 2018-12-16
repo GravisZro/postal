@@ -20,7 +20,7 @@ void RTexture::load(void) noexcept
   {
     const uint8_t*  dataptr8;
     const uint16_t* dataptr16;
-    const RPixel32* dataptrP32;
+    const pixel32_t* dataptrP32;
   };
 
   dataptr8 = data;
@@ -35,7 +35,7 @@ void RTexture::load(void) noexcept
   }
   if(m_flags & flags_t::colorarr)
   {
-    colors = const_cast<RPixel32*>(dataptrP32);
+    colors = const_cast<pixel32_t*>(dataptrP32);
     colors.setSize(m_count);
     dataptrP32 += m_count;
   }
@@ -96,7 +96,7 @@ void RTexture::unmap(
     colors.allocate(m_count);
 
   uint8_t*  pu8    = indexes;
-  RPixel32* ppix   = colors;
+  pixel32_t* ppix   = colors;
   int16_t   sCount = m_count;
   while (sCount--)
   {
@@ -123,7 +123,7 @@ void RTexture::adjust(
   ASSERT(colors);
   ASSERT(fAdjustment >= 0.0f);
 
-  RPixel32* ppix = colors;
+  pixel32_t* ppix = colors;
   int16_t	sCount = colors.size() / lInc;
   while (sCount--)
   {
@@ -142,12 +142,12 @@ void RMesh::load(void) noexcept
   {
     const uint8_t*  dataptr8;
     const uint16_t* dataptr16;
-    const triangle_t* dataptrTri;
+    const vertex_t* dataptrTri;
   };
 
   dataptr8 = data;
   triangles.setSize(*dataptr16++);
-  triangles = const_cast<triangle_t*>(dataptrTri);
+  triangles = const_cast<vertex_t*>(dataptrTri);
   dataptrTri += triangles.size();
 
   data.setSize(dataptr8 - data);
@@ -167,7 +167,7 @@ void RSop::load(void) noexcept
   {
     const uint8_t*  dataptr8;
     const uint32_t* dataptr32;
-    const Vector3D*     dataptr3d;
+    const Vector3D* dataptr3d;
   };
 
   dataptr8 = data;

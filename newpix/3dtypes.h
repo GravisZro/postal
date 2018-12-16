@@ -1,9 +1,8 @@
 #ifndef THREEDTYPES_H
 #define THREEDTYPES_H
 
-#include <BLUE/System.h>
-
 #include "sakarchive.h"
+#include "paltypes.h"
 
 #include <cmath>
 
@@ -11,15 +10,18 @@
 typedef float real_t;
 //typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
 
-struct triangle_t
+template<typename T>
+struct point3d_t
 {
-  uint16_t x;
-  uint16_t y;
-  uint16_t z;
+  T x;
+  T y;
+  T z;
 
-  template<typename T>
-  inline uint16_t& operator [](T index) { return *(reinterpret_cast<uint16_t*>(this) + index); }
+  template<typename V>
+  inline T& operator [](V index) { return *(reinterpret_cast<T*>(this) + index); }
 }; // a triangle is 3 index values for RSop data
+
+using vertex_t = point3d_t<uint16_t>;
 
 // helper constant expressions
 template<typename R, typename C>
@@ -225,7 +227,7 @@ private:
   flags_t  m_flags;    // option flags
   uint16_t m_count;    // size of array(s)
   shared_arr<uint8_t>  indexes; // Array of indices
-  shared_arr<RPixel32> colors; // Array of colors
+  shared_arr<pixel32_t> colors; // Array of colors
 
 public:
   RTexture(uint32_t sz = 0) noexcept
@@ -277,7 +279,7 @@ class RMesh : public filedata_t
 {
   friend class RPipeLine; // allow encapsulation to be violated for speed
 private:
-  shared_arr<triangle_t> triangles; // Array of triangles
+  shared_arr<vertex_t> triangles; // Array of triangles
 
 public:
   RMesh(uint32_t sz = 0) noexcept

@@ -59,7 +59,7 @@ class RTexture
 	public:
       palindex_t m_sNum;												// Number of colors in array(s)
       uint8_t*   m_pIndices;										// Array of indices
-      RPixel32*  m_pColors;										// Array of colors
+      pixel32_t*  m_pColors;										// Array of colors
 
 	//------------------------------------------------------------------------------
 	// Functions
@@ -107,7 +107,7 @@ class RTexture
 			if (rhs.m_pColors != nullptr)
 				{
 				AllocColors();
-            memcpy(m_pColors, rhs.m_pColors, sizeof(RPixel32) * m_sNum);
+            memcpy(m_pColors, rhs.m_pColors, sizeof(pixel32_t) * m_sNum);
 				}
 			
 			return *this;
@@ -135,7 +135,7 @@ class RTexture
 						{
 						// If both pointers are non-zero then we compare their data
 						if (m_pColors && rhs.m_pColors)
-                     result = std::memcmp(m_pColors, rhs.m_pColors, sizeof(RPixel32) * m_sNum) == SUCCESS;
+                     result = std::memcmp(m_pColors, rhs.m_pColors, sizeof(pixel32_t) * m_sNum) == SUCCESS;
 						else
 							{
 							// If both pointers are not nullptr then they obviously don't match

@@ -99,15 +99,15 @@ extern int wideScreenWidth;
 
 extern RFont g_fontBig;	// I hope this one is OK....
 
-RPixel24 gmcSmallFont     = { 0xFF, 0xFF, 0x00 }; // yellow
-RPixel24 gmcLargeFont     = { 0xFF, 0xFF, 0x00 }; // yellow
-RPixel24 gmcWarningFont   = { 0xFF, 0x00, 0x00 }; // red
-RPixel24 gmcAmmoGoneFont  = { 0x60, 0x00, 0x00 }; // dark red
-RPixel24 gmcAttentionFont = { 0xFF, 0xFF, 0x80 }; // saturated yellow
+pixel24_t gmcSmallFont     = { 0xFF, 0xFF, 0x00 }; // yellow
+pixel24_t gmcLargeFont     = { 0xFF, 0xFF, 0x00 }; // yellow
+pixel24_t gmcWarningFont   = { 0xFF, 0x00, 0x00 }; // red
+pixel24_t gmcAmmoGoneFont  = { 0x60, 0x00, 0x00 }; // dark red
+pixel24_t gmcAttentionFont = { 0xFF, 0xFF, 0x80 }; // saturated yellow
 
 //------------------ Top Bar:
-RPixel24 gmcSolidScore    = { 0x28, 0x22, 0x0D }; // saturated yellow
-RPixel24 gmcShadowScore   = { 0x8A, 0x7B, 0x41 }; // saturated yellow
+pixel24_t gmcSolidScore    = { 0x28, 0x22, 0x0D }; // saturated yellow
+pixel24_t gmcShadowScore   = { 0x8A, 0x7B, 0x41 }; // saturated yellow
 //MatchColor gmcShadowScore = { 0x77, 0x66, 0x3C }; // saturated yellow
 //MatchColor gmcSolidScore  = { 0x00, 0x00, 0xFF }; // saturated yellow
 //MatchColor gmcShadowScore = { 0xFF, 0x00, 0x00 }; // saturated yellow

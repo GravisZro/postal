@@ -8,8 +8,8 @@
 # define ASSERT(x) assert(x)
 #endif
 
-#include "filestream.h"
 #include "sharedarray.h"
+#include "filestream.h"
 
 #include <cstdint>
 #include <memory>
@@ -31,6 +31,7 @@ public:
   filedata_t(uint32_t sz = 0) // number of bytes to allocate (0 by default)
     : m_loaded(false)
   { data.allocate(sz); } // doesn't allocate data if sz = 0
+  virtual ~filedata_t(void) = default;
 
   bool isLoaded(void) const { return m_loaded; }
   void setLoaded(void) { m_loaded = true; }

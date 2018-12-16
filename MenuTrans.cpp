@@ -110,9 +110,9 @@ static_assert(NONSHADE_END < UINT8_MAX, "value too large!");
 // Variables/data
 ////////////////////////////////////////////////////////////////////////////////
 
-static RPixel32* m_pOrig;
-static RPixel32* m_pWork;
-static RPixel32* m_pSaveStep4;
+static pixel32_t* m_pOrig;
+static pixel32_t* m_pWork;
+static pixel32_t* m_pSaveStep4;
 static channel_t* m_pUnmapStep4;
 static channel_t* m_pUnmapStep5;
 static RImage* m_pim;
@@ -149,9 +149,9 @@ extern void StartMenuTrans(
   m_bFinishASAP = false;
 
   // Allocate lots of stuff
-  m_pOrig = new RPixel32[palette::size];
-  m_pWork = new RPixel32[palette::size];
-  m_pSaveStep4 = new RPixel32[palette::size];
+  m_pOrig = new pixel32_t[palette::size];
+  m_pWork = new pixel32_t[palette::size];
+  m_pSaveStep4 = new pixel32_t[palette::size];
   m_pUnmapStep4 = new channel_t[palette::size];
   m_pUnmapStep5 = new channel_t[palette::size];
   m_pim = new RImage;
@@ -198,7 +198,7 @@ extern bool DoPreMenuTrans(void)
                          &m_pOrig[0].red,
         &m_pOrig[0].green,
         &m_pOrig[0].blue,
-        sizeof(RPixel32));
+        sizeof(pixel32_t));
 
     // Lock the buffer before reading from it.
     rspLockBuffer();
@@ -259,7 +259,7 @@ extern bool DoPreMenuTrans(void)
                          &m_pWork[EFFECT_BEG].red,
                          &m_pWork[EFFECT_BEG].green,
                          &m_pWork[EFFECT_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // If we're done with the fade, go to next step
@@ -357,7 +357,7 @@ extern bool DoPreMenuTrans(void)
                          &m_pWork[NONSHADE_BEG].red,
                          &m_pWork[NONSHADE_BEG].green,
                          &m_pWork[NONSHADE_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // Remap screen pixels
@@ -389,7 +389,7 @@ extern bool DoPreMenuTrans(void)
                          &m_pWork[SHADE_BEG].red,
                          &m_pWork[SHADE_BEG].green,
                          &m_pWork[SHADE_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // Start mapping table out as an "identity map" (pixels map to themselves)
@@ -460,7 +460,7 @@ extern bool DoPostMenuTrans(void)
                          &m_pWork[NONSHADE_BEG].red,
                          &m_pWork[NONSHADE_BEG].green,
                          &m_pWork[NONSHADE_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // Remap screen pixels
@@ -481,7 +481,7 @@ extern bool DoPostMenuTrans(void)
                          &m_pWork[SHADE_BEG].red,
                          &m_pWork[SHADE_BEG].green,
                          &m_pWork[SHADE_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // Remap screen pixels
@@ -513,7 +513,7 @@ extern bool DoPostMenuTrans(void)
                          &m_pWork[EFFECT_BEG].red,
                          &m_pWork[EFFECT_BEG].green,
                          &m_pWork[EFFECT_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // Lock the buffer before writing to it.
@@ -568,7 +568,7 @@ extern bool DoPostMenuTrans(void)
                          &m_pWork[EFFECT_BEG].red,
                          &m_pWork[EFFECT_BEG].green,
                          &m_pWork[EFFECT_BEG].blue,
-                         sizeof(RPixel32));
+                         sizeof(pixel32_t));
     rspUpdatePalette();
 
     // If we're done with the fade, go to next step

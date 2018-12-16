@@ -402,7 +402,11 @@ const char* RImage::ms_astrTypeNames[END_OF_TYPES] =
 // Instantiate Dynamic Arrays
 //////////////////////////////////////////////////////////////////////
 
-int16_t	ConvertNoSupport(RImage* pImage);
+int16_t ConvertNoSupport(RImage* /*pImage*/)
+{
+   TRACE("RImage::Convert - Conversion not supported - Invalid image type\n");
+   return RImage::NOT_SUPPORTED;
+}
 
 IMAGELINKINSTANTIATE();
 
@@ -2169,7 +2173,7 @@ int16_t RImage::WritePixelData(RFile* pcf) const
 				break;
 
 			case 24:
-            if (pcf->Write(reinterpret_cast<RPixel24*>(m_pData), m_ulSize/3) != (int32_t) m_ulSize/3)
+            if (pcf->Write(reinterpret_cast<pixel24_t*>(m_pData), m_ulSize/3) != (int32_t) m_ulSize/3)
 				{
 					TRACE("RImage::WritePixelData - Error writing 24-bit pixel data\n");
                sResult = FAILURE;
@@ -2242,7 +2246,7 @@ int16_t RImage::WritePixelData(RFile* pcf) const
 				for (l = lYPos; l < lYPos + lHeight; l++)
 				{
 					pLineData = m_pData + (lYPos * m_lPitch) + ((lXPos * lDepth) / 8);
-					if (pcf->Write((RPixel24*) pLineData, lBytesPerLine/3) != lBytesPerLine/3)
+               if (pcf->Write((pixel24_t*) pLineData, lBytesPerLine/3) != lBytesPerLine/3)
 					{
 						TRACE("RImage::WritePixelData - Error writing 24-bit line %d of image\n", l-lYPos);
                   sResult = FAILURE;
@@ -2383,7 +2387,7 @@ int16_t RImage::ReadPixelData(RFile* pcf)
 				break;
 
 			case 24:
-            if (pcf->Read(reinterpret_cast<RPixel24*>(m_pData), m_ulSize/3) != (int32_t) m_ulSize/3)
+            if (pcf->Read(reinterpret_cast<pixel24_t*>(m_pData), m_ulSize/3) != (int32_t) m_ulSize/3)
 				{
 					TRACE("RImage::ReadPixelData - Error reading 24-bit pixel data\n");
                sResult = FAILURE;
@@ -2456,7 +2460,7 @@ int16_t RImage::ReadPixelData(RFile* pcf)
 				for (l = lYPos; l < lYPos + lHeight; l++)
 				{
 					pLineData = m_pData + (lYPos*m_lPitch) + ((lXPos*lDepth)/8);
-					if (pcf->Read((RPixel24*) pLineData, lBytesPerLine/3) != lBytesPerLine/3)
+               if (pcf->Read((pixel24_t*) pLineData, lBytesPerLine/3) != lBytesPerLine/3)
 					{
 						TRACE("RImage::ReadPixelData - Error reading 24-bit line %d of image\n", l-lYPos);
                   sResult = FAILURE;

@@ -11,6 +11,7 @@ struct AnimatedResource : filedata_t
   {
     magic_number = 0x4E414843, // "CHAN"
     version = 1,
+    newframe = UINT32_MAX,
   };
   template<typename S>
   friend constexpr bool operator == (S a, consts b)
@@ -167,14 +168,14 @@ struct AnimatedResource : filedata_t
       case type_t::complexanimation:
         for(T& d : datapointers)
         {
-          if(*dataptr32 == UINT32_MAX)
+          if(*dataptr32 == consts::newframe) // new frame data
           {
             dataptr32++;
             d.setData(const_cast<uint8_t*>(dataptr8), 0);
             d.load();
             dataptr8 += d.dataSize();
           }
-          else
+          else // use existing frame data
             d = datapointers[*dataptr32++];
         }
         break;

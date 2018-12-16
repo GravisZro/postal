@@ -1,9 +1,6 @@
 #ifndef FILESTREAM_H
 #define FILESTREAM_H
 
-#if 1
-
-
 #include <fstream>
 #include <vector>
 #include <string>
@@ -85,7 +82,7 @@ private:
 template<> filestream& filestream::operator >> (std::string& data);
 template<> filestream& filestream::operator << (const std::string& data);
 
-#else
+#if 0
 
 #include <fstream>
 #include <vector>

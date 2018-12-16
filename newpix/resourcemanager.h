@@ -20,7 +20,8 @@ static bool rspGetResource(SAKArchive& archive,                   // In:  Archiv
   }
 
   res = archive.getFile<T>(filename);
-  reinterpret_cast<T*>(res.get())->load();
+  res->load();
+  //reinterpret_cast<T*>(res.get())->load();
   return res.operator bool();
 }
 

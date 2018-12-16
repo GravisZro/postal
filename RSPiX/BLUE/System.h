@@ -326,7 +326,7 @@ typedef uint16_t palindex_t;
 ////////////////////////////////////////////////////////////////////////////////
 // Palette/Pixel stuff
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 namespace palette
 {
   static const uint16_t size = 0x0100;
@@ -354,29 +354,29 @@ static_assert(sizeof(color32_t) == 4, "compiler fail!");
 typedef uint8_t RPixel;
 typedef uint16_t RPixel16;
 
-struct RPixel24
+struct pixel24_t
 {
   channel_t red;
   channel_t green;
   channel_t blue;
 
-  constexpr bool operator==(const RPixel24& other) const
+  constexpr bool operator==(const pixel24_t& other) const
   {
     return blue  == other.blue  &&
            green == other.green &&
            red   == other.red;
   }
 };
-static_assert(sizeof(RPixel24) == 3, "compiler fail!");
+static_assert(sizeof(pixel24_t) == 3, "compiler fail!");
 
-struct RPixel32
+struct pixel32_t
 {
   channel_t alpha;
   channel_t red;
   channel_t green;
   channel_t blue;
 
-  constexpr bool operator==(const RPixel32& other) const
+  constexpr bool operator==(const pixel32_t& other) const
   {
     return blue  == other.blue  &&
            green == other.green &&
@@ -384,8 +384,8 @@ struct RPixel32
            alpha == other.alpha;
   }
 };
-static_assert(sizeof(RPixel32) == 4, "compiler fail!");
-
+static_assert(sizeof(pixel32_t) == 4, "compiler fail!");
+*/
 ////////////////////////////////////////////////////////////////////////////////
 // Usefull Templates
 ////////////////////////////////////////////////////////////////////////////////

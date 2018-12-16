@@ -37,7 +37,8 @@
 // C++ ///////////////////////////////////////////////////////////////////////
 #include <cctype>
 #include <cstddef>
-#include "sharedarray.h"
+#include <newpix/sharedarray.h>
+#include <newpix/paltypes.h>
 
 extern SDL_Window *sdlWindow;
 static const char *sdlAppName;
