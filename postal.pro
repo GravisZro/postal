@@ -22,7 +22,7 @@ DEFINES+="MULTIPLAYER_REMOVED"
 INCLUDEPATH += RSPiX
 INCLUDEPATH += WishPiX
 INCLUDEPATH += newpix
-
+INCLUDEPATH += newtypes
 
 DISTFILES += \
     makeit.sh \
@@ -88,7 +88,6 @@ HEADERS += \
     RSPiX/GREEN/Hot/hot.h \
     RSPiX/GREEN/Image/Image.h \
     RSPiX/GREEN/Image/ImageAfp.h \
-    RSPiX/GREEN/Image/ImageCon.h \
     RSPiX/GREEN/Image/ImageFile.h \
     RSPiX/GREEN/Image/ImageType.h \
     RSPiX/GREEN/Image/Pal.h \
@@ -266,18 +265,9 @@ HEADERS += \
     update.h \
     warp.h \
     weapon.h \
-    yatime.h \
-    newpix/resourcemanager.h \
-    newpix/hashstring.h \
-    newpix/filestream.h \
-    newpix/sakarchive.h \
-    newpix/3dtypes.h \
-    newpix/animatedresource.h \
-    newpix/resource.h \
-    newpix/sharedarray.h
+    yatime.h
 
 SOURCES += \
-    RSPiX/RSPiX.cpp \
     RSPiX/GREEN/3D/pipeline.cpp \
     RSPiX/GREEN/3D/render.cpp \
     RSPiX/GREEN/3D/zbuffer.cpp \
@@ -295,7 +285,6 @@ SOURCES += \
     RSPiX/GREEN/Blit/ScaleFlat.cpp \
     RSPiX/GREEN/Hot/hot.cpp \
     RSPiX/GREEN/Image/Image.cpp \
-    RSPiX/GREEN/Image/ImageCon.cpp \
     RSPiX/GREEN/Image/ImageFile.cpp \
     RSPiX/GREEN/Image/Pal.cpp \
     RSPiX/GREEN/Image/PalFile.cpp \
@@ -436,11 +425,67 @@ SOURCES += \
     update.cpp \
     warp.cpp \
     weapon.cpp \
-    yatime.cpp \
+    yatime.cpp
+
+
+HEADERS += \
+    newpix/resourcemanager.h \
+    newpix/hashstring.h \
+    newpix/filestream.h \
+    newpix/sakarchive.h \
+    newpix/3dtypes.h \
+    newpix/animatedresource.h \
+    newpix/resource.h \
+    newpix/sharedarray.h \
+    newpix/paltypes.h \
+    newpix/2dtypes.h \
+    newpix/3dmath.h
+
+SOURCES += \
     newpix/resourcemanager.cpp \
     newpix/sakarchive.cpp \
     newpix/filestream.cpp \
-    newpix/3dtypes.cpp
+    newpix/3dtypes.cpp \
+    newpix/paltypes.cpp \
+    newpix/2dtypes.cpp
+
+newtypes:HEADERS += \
+    newtypes/realm.h \
+    newtypes/thing.h
+
+newtypes:SOURCES += \
+    newtypes/realm.cpp \
+    newtypes/thing.cpp
+
+PUT = put
+INCLUDEPATH += $$PUT
+
+HEADERS += \
+    $$PUT/object.h \
+    $$PUT/cxxutils/signal_helpers.h \
+    $$PUT/cxxutils/socket_helpers.h \
+    $$PUT/cxxutils/posix_helpers.h \
+    $$PUT/cxxutils/misc_helpers.h \
+    $$PUT/cxxutils/error_helpers.h \
+    $$PUT/cxxutils/hashing.h \
+    $$PUT/cxxutils/vterm.h \
+    $$PUT/cxxutils/cstringarray.h
+
+HEADERS += \
+    $$PUT/application.h \
+    $$PUT/specialized/eventbackend.h \
+    $$PUT/specialized/mutex.h \
+    $$PUT/cxxutils/vfifo.h \
+    $$PUT/cxxutils/syslogstream.h \
+    $$PUT/cxxutils/configmanip.h
+
+SOURCES += \
+    $$PUT/application.cpp \
+    $$PUT/specialized/eventbackend.cpp \
+    $$PUT/specialized/mutex.cpp \
+    $$PUT/cxxutils/vfifo.cpp \
+    $$PUT/cxxutils/syslogstream.cpp \
+    $$PUT/cxxutils/configmanip.cpp
 
 !dos:CONFIG += sdl2
 
@@ -448,11 +493,11 @@ SOURCES += \
 new_config {
 HEADERS += \
     inifile.h \
-    pdtk/cxxutils/configmanip.h
+    $$PUT/cxxutils/configmanip.h
 
 SOURCES += \
     inifile.cpp \
-    pdtk/cxxutils/configmanip.cpp
+    $$PUT/cxxutils/configmanip.cpp
 }
 
 sdl {
