@@ -1,0 +1,3 @@
+[submodule "put"]
+	path = put
+	url = https://github.com/GravisZro/put.git
