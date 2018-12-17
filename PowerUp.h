@@ -108,10 +108,8 @@ class CPowerUp : public CItem3d
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CPowerUp(CRealm* pRealm)
-			: CItem3d(pRealm, CPowerUpID)
+   public:
+      CPowerUp(void)
 			{
 			m_panimCur	= &m_anim;
 
@@ -122,9 +120,7 @@ class CPowerUp : public CItem3d
 			m_smash.m_pThing	= this;
 			}
 
-	public:
-		// Destructor
-		~CPowerUp()
+      ~CPowerUp(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -135,26 +131,6 @@ class CPowerUp : public CItem3d
 			// Remove collision thinger.
 			m_pRealm->m_smashatorium.Remove(&m_smash);
 			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CPowerUp(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CPowerUp::Construct(): Couldn't construct CPowerUp (that's a bad thing)\n");
-				}
-			return sResult;
-			}
-
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

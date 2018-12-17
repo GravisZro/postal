@@ -742,8 +742,7 @@ int16_t CDoofus::ms_sFileCount;
 ////////////////////////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////////////////////////
-CDoofus::CDoofus(CRealm* pRealm, ClassIDType id)
-	: CCharacter(pRealm, id)
+CDoofus::CDoofus(void)
 	{
 	m_sSuspend = 0;
 	m_pNavNet = nullptr;
@@ -777,7 +776,7 @@ CDoofus::CDoofus(CRealm* pRealm, ClassIDType id)
 	m_siPlaying = 0;
 
     // explicitly initialize to stop Valgrind whining. --ryan.
-	m_lIdleTimer = pRealm->m_time.GetGameTime() + 2000 + GetRandom() % 2000;
+   m_lIdleTimer = realm()->m_time.GetGameTime() + 2000 + GetRandom() % 2000;
 	m_lStuckTimeout = 0;
 
 	m_u16KillerId = 0;
@@ -786,7 +785,7 @@ CDoofus::CDoofus(CRealm* pRealm, ClassIDType id)
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
 ////////////////////////////////////////////////////////////////////////////////
-CDoofus::~CDoofus()
+CDoofus::~CDoofus(void)
 	{
 	// If we've been born . . .
 	if (m_bRegisteredBirth == true)
@@ -1178,9 +1177,9 @@ int16_t CDoofus::SelectDudeBouy(void)
       sResult = FAILURE;
 
 /*
-	if (m_pRealm->m_asClassNumThings[CThing::CDudeID] > 0)
+   if (m_pRealm->m_asClassNumThings[CDudeID] > 0)
 	{
-		pDude = (CDude*) m_pRealm->m_aclassHeads[CThing::CDudeID].GetNext();
+      pDude = (CDude*) m_pRealm->m_aclassHeads[CDudeID].GetNext();
 		m_ucDestBouyID = m_pNavNet->FindNearestBouy(pDude->GetX(), pDude->GetZ());
 	}
 	else
@@ -1237,10 +1236,10 @@ int16_t CDoofus::SelectDude(void)
    uint32_t	ulCurSqrDistance	= UINT32_MAX;
 	uint32_t	ulDistX;
 	uint32_t	ulDistZ;
-//	pDudes = m_pRealm->m_apthings[CThing::CDudeID];
+//	pDudes = m_pRealm->m_apthings[CDudeID];
 	CDude*	pdude;
 
-	CListNode<CThing>* pDudeList = m_pRealm->m_aclassHeads[CThing::CDudeID].m_pnNext;
+   CListNode<CThing>* pDudeList = m_pRealm->m_aclassHeads[CDudeID].m_pnNext;
 
 	while (pDudeList && pDudeList->m_powner)
 	{
@@ -1732,7 +1731,7 @@ void CDoofus::Logic_Die(void)
 			GameMessage msg;
 			msg.msg_Writhing.eType = typeWrithing;
 			msg.msg_Writhing.sPriority = 0;
-			CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+         CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 			if (pDemon)
 				SendThingMessage(&msg, pDemon);				
 		}
@@ -2695,7 +2694,7 @@ void CDoofus::Logic_Shoot(void)
 	// Switch behavior on weapon type.
 	switch (m_eWeaponType)
 	{
-		case CThing::CFirestreamID:
+      case CFirestreamID:
 			// If out of fire streams . . .
 			if (m_u16IdWeapon == CIdBank::IdNil)
 				{
@@ -2704,11 +2703,11 @@ void CDoofus::Logic_Shoot(void)
 					break;
 				}
 			// Intentional fall through.
-		case CThing::CShotGunID:
-		case CThing::CMachineGunID:
-		case CThing::CPistolID:
-		case CThing::CAssaultWeaponID:
-		case CThing::CDoubleBarrelID:
+      case CShotGunID:
+      case CMachineGunID:
+      case CPistolID:
+      case CAssaultWeaponID:
+      case CDoubleBarrelID:
 		case CUziID:
 		case CAutoRifleID:
 		case CSmallPistolID:
@@ -2724,21 +2723,21 @@ void CDoofus::Logic_Shoot(void)
 
 				switch (m_eWeaponType)
 				{
-					case CThing::CShotGunID:
-					case CThing::CDoubleBarrelID:
+               case CShotGunID:
+               case CDoubleBarrelID:
 						m_lShootTimer = lThisTime + 2000;
 						break;
 
 					case CUziID:
 					case CAutoRifleID:
-					case CThing::CMachineGunID:
-					case CThing::CAssaultWeaponID:
-					case CThing::CFirestreamID:
+               case CMachineGunID:
+               case CAssaultWeaponID:
+               case CFirestreamID:
 						m_lShootTimer = lThisTime + 100;
 						break;
 
 					case CSmallPistolID:
-					case CThing::CPistolID:
+               case CPistolID:
 						m_lShootTimer = lThisTime + 300;
 						break;
 				}
@@ -3584,7 +3583,7 @@ void CDoofus::OnExplosionMsg(Explosion_Message* pMessage)
 		GameMessage msg;
 		msg.msg_Explosion.eType = typeExplosion;
 		msg.msg_Explosion.sPriority = 0;
-		CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+      CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 		if (pDemon)
 			SendThingMessage(&msg, pDemon);				
 		// If he has a weapon ready, either get rid of it or shoot it off randomly
@@ -3648,7 +3647,7 @@ void CDoofus::OnBurnMsg(Burn_Message* pMessage)
 				GameMessage msg;
 				msg.msg_Burn.eType = typeBurn;
 				msg.msg_Burn.sPriority = 0;
-				CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+            CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 				if (pDemon)
 					SendThingMessage(&msg, pDemon);				
 			}

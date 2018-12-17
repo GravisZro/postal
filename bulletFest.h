@@ -101,13 +101,13 @@ class CBulletFest
 	// Con/Destruction.
 	///////////////////////////////////////////////////////////////////////////
 	public:
-		CBulletFest()
+      CBulletFest(void)
 			{
 			m_u16IdTarget		= CIdBank::IdNil;
 			m_sCurTracerPos	= 0;
 			}
 
-		~CBulletFest() 
+      ~CBulletFest(void)
 			{
 			}
 

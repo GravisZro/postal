@@ -238,7 +238,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 			
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// push along the ground on your back when writhing
@@ -295,7 +295,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CRocketID,		// Weapon to fallback on when none available.
+         CRocketID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Still,	// Writhing in place
@@ -352,7 +352,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CMachineGunID,		// Weapon to fallback on when none available.
+         CMachineGunID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// Slide on ground on back when writhing
@@ -409,7 +409,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -467,7 +467,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// Slide on back when writhing
@@ -524,7 +524,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CAutoRifleID,	// Weapon to fallback on when none available.
+         CAutoRifleID,	// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// Slide on back when writhing
@@ -582,7 +582,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CSmallPistolID,		// Weapon to fallback on when none available.
+         CSmallPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Still,	// Doesn't actually have writhing
@@ -637,7 +637,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -694,7 +694,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -751,7 +751,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CAutoRifleID,		// Weapon to fallback on when none available.
+         CAutoRifleID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// Slide on back when writhing
@@ -809,7 +809,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// Slide on back when writhing
@@ -866,7 +866,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -924,7 +924,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -983,7 +983,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1041,7 +1041,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1099,7 +1099,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 			
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1156,7 +1156,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 			
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1213,7 +1213,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CRocketID,		// Weapon to fallback on when none available.
+         CRocketID,		// Weapon to fallback on when none available.
 			},
 	
 			Personatorium::Still,	// Stay in place when writhing
@@ -1271,7 +1271,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CRocketID,		// Weapon to fallback on when none available.
+         CRocketID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Still,	// Stay in place when writhing
@@ -1328,7 +1328,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CMachineGunID,		// Weapon to fallback on when none available.
+         CMachineGunID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1386,7 +1386,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CMachineGunID,		// Weapon to fallback on when none available.
+         CMachineGunID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1444,7 +1444,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -1502,7 +1502,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -1560,7 +1560,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1618,7 +1618,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1675,7 +1675,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CAutoRifleID,		// Weapon to fallback on when none available.
+         CAutoRifleID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1732,7 +1732,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CAutoRifleID,		// Weapon to fallback on when none available.
+         CAutoRifleID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::PushBack,// slide on back when writhing
@@ -1789,7 +1789,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -1846,7 +1846,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -1904,7 +1904,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -1962,7 +1962,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2019,7 +2019,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2076,7 +2076,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2133,7 +2133,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2190,7 +2190,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2247,7 +2247,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2304,7 +2304,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2361,7 +2361,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2418,7 +2418,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2475,7 +2475,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2532,7 +2532,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2589,7 +2589,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2646,7 +2646,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2703,7 +2703,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2760,7 +2760,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2817,7 +2817,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2874,7 +2874,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2931,7 +2931,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -2988,7 +2988,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3047,7 +3047,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3104,7 +3104,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3162,7 +3162,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3219,7 +3219,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3276,7 +3276,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3333,7 +3333,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3392,7 +3392,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -3449,7 +3449,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -3506,7 +3506,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -3564,7 +3564,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -3623,7 +3623,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -3681,7 +3681,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,			// Weapon to fallback on when none available.
+         TotalIDs,			// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl face down when writhing
@@ -3739,7 +3739,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3797,7 +3797,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3855,7 +3855,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3912,7 +3912,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::CPistolID,		// Weapon to fallback on when none available.
+         CPistolID,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -3970,7 +3970,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -4027,7 +4027,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -4084,7 +4084,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -4141,7 +4141,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing
@@ -4198,7 +4198,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Weapons for this person.  Currently, only one supported.
 			{
-			CThing::TotalIDs,		// Weapon to fallback on when none available.
+         TotalIDs,		// Weapon to fallback on when none available.
 			},
 
 			Personatorium::Crawl,	// Crawl on knees when writhing

@@ -100,49 +100,26 @@ class CRocket : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CRocket(CRealm* pRealm)
-			: CWeapon(pRealm, CRocketID)
+   public:
+      CRocket(void)
 			{
 			m_sprite.m_pthing	= this;
 			m_lSmokeTimer		= 0;
 			m_siThrust			= 0;
-			}
+         }
 
-	public:
-		// Destructor
-		~CRocket()
+      ~CRocket(void)
 			{
 			// Stop sound, if any.
 			StopLoopingSample(m_siThrust);
 
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CRocket(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CRocket::Construct(): Couldn't construct CRocket (that's a bad thing)\n");
-				}
-			return sResult;
-			}
+         }
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -156,7 +133,7 @@ class CRocket : public CWeapon
 		void SetTransform(RTransform* pTransform)
 			{
 				m_sprite.m_ptrans = pTransform;
-			};
+         }
 
 
 	//---------------------------------------------------------------------------

@@ -18,7 +18,7 @@
 // grenade.cpp
 // Project: Nostril (aka Postal)
 //
-// This module implements the CGrenade weapon class which is a hand
+// This module implements the CUnguidedMissile weapon class which is a hand
 // thrown grenade weapon.
 // 
 //
@@ -179,52 +179,52 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // These are default values -- actually values are set using the editor!
-double CGrenade::ms_dAccUser     = 250.0;				// Acceleration due to user
-double CGrenade::ms_dAccDrag     = 300.0;				// Acceleration due to drag
+double CUnguidedMissile::ms_dAccUser     = 250.0;				// Acceleration due to user
+double CUnguidedMissile::ms_dAccDrag     = 300.0;				// Acceleration due to drag
 
-double CGrenade::ms_dMaxVelFore  = 150.0;				// Maximum forward velocity
-double CGrenade::ms_dMaxVelBack  = -150.0;				// Maximum backward velocity
+double CUnguidedMissile::ms_dMaxVelFore  = 150.0;				// Maximum forward velocity
+double CUnguidedMissile::ms_dMaxVelBack  = -150.0;				// Maximum backward velocity
 
-double CGrenade::ms_dDegPerSec   = 150.0;				// Degrees of rotation per second
+double CUnguidedMissile::ms_dDegPerSec   = 150.0;				// Degrees of rotation per second
 
-double CGrenade::ms_dCloseDistance = 30.0;			// Close enough to hit CDude
-double CGrenade::ms_dGravity = -9.5;					// acceleration due to gravity
-double CGrenade::ms_dThrowVertVel = 30;				// Throw up at this velocity
-double CGrenade::ms_dThrowHorizVel = 200;				// Throw out at this velocity
-double CGrenade::ms_dMinBounceVel = 40.0;				// Will bounce up if more than this
-double CGrenade::ms_dBounceTransferFract = -0.2;	// Amount of bounce velocity transferred.
-int32_t CGrenade::ms_lRandomAvoidTime = 200;				// Time to wander before looking again
-int32_t CGrenade::ms_lReseekTime = 1000;					// Do a 'find' again 
-int32_t CGrenade::ms_lGrenadeFuseTime = 1500;			// Time from throw to blow
-int32_t CGrenade::ms_lSmokeInterval		= 100;			// Time between smokes.
+double CUnguidedMissile::ms_dCloseDistance = 30.0;			// Close enough to hit CDude
+double CUnguidedMissile::ms_dGravity = -9.5;					// acceleration due to gravity
+double CUnguidedMissile::ms_dThrowVertVel = 30;				// Throw up at this velocity
+double CUnguidedMissile::ms_dThrowHorizVel = 200;				// Throw out at this velocity
+double CUnguidedMissile::ms_dMinBounceVel = 40.0;				// Will bounce up if more than this
+double CUnguidedMissile::ms_dBounceTransferFract = -0.2;	// Amount of bounce velocity transferred.
+int32_t CUnguidedMissile::ms_lRandomAvoidTime = 200;				// Time to wander before looking again
+int32_t CUnguidedMissile::ms_lReseekTime = 1000;					// Do a 'find' again
+int32_t CUnguidedMissile::ms_lGrenadeFuseTime = 1500;			// Time from throw to blow
+int32_t CUnguidedMissile::ms_lSmokeInterval		= 100;			// Time between smokes.
 
-const char*	CGrenade::ms_apszResNames[CGrenade::NumStyles]	= // Res names indexed Style.
+const char*	CUnguidedMissile::ms_apszResNames[CUnguidedMissile::NumStyles]	= // Res names indexed Style.
 	{
 	"3d/grenade",		// Grenade.
 	"3d/dynamite",		// Dynamite.
 	};
 
 // Dimishes velocities once it hits the ground.
-double	CGrenade::ms_adGroundDimisher[NumStyles]	=
+double	CUnguidedMissile::ms_adGroundDimisher[NumStyles]	=
 	{
 	0.66,	// Grenade. 
 	0.66,	// Dynamite.
 	};
 
 // Dimishes velocities when bouncing.
-double	CGrenade::ms_adBounceDimisher[NumStyles]	=
+double	CUnguidedMissile::ms_adBounceDimisher[NumStyles]	=
 	{
 	0.33,	// Grenade. 
 	0.66,	// Dynamite.
 	};
 
 // Let this auto-init to 0
-int16_t CGrenade::ms_sFileCount;
+int16_t CUnguidedMissile::ms_sFileCount;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CGrenade::Load(				// Returns 0 if successfull, non-zero otherwise
+int16_t CUnguidedMissile::Load(				// Returns 0 if successfull, non-zero otherwise
 	RFile* pFile,						// In:  File to load from
 	bool bEditMode,					// In:  True for edit mode, false otherwise
 	int16_t sFileCount,					// In:  File count (unique per file, never 0)
@@ -271,7 +271,7 @@ int16_t CGrenade::Load(				// Returns 0 if successfull, non-zero otherwise
 		else
 			{
 			sResult = FAILURE;
-			TRACE("CGrenade::Load(): Error reading from file!\n");
+         TRACE("CUnguidedMissile::Load(): Error reading from file!\n");
 			}
 	}
 
@@ -282,7 +282,7 @@ int16_t CGrenade::Load(				// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Save object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CGrenade::Save(										// Returns 0 if successfull, non-zero otherwise
+int16_t CUnguidedMissile::Save(										// Returns 0 if successfull, non-zero otherwise
 	RFile* pFile,											// In:  File to save to
 	int16_t sFileCount)										// In:  File count (unique per file, never 0)
 	{
@@ -313,7 +313,7 @@ int16_t CGrenade::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Update object
 ////////////////////////////////////////////////////////////////////////////////
-void CGrenade::Update(void)
+void CUnguidedMissile::Update(void)
 	{
 	uint16_t usAttrib;
 	int16_t sHeight = m_sPrevHeight;
@@ -533,8 +533,8 @@ void CGrenade::Update(void)
 				{
 					// Start an explosion object and then kill rocket
 					// object
-					CExplode* pExplosion;
-					if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+               CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));;
+               if (pExplosion != nullptr)
 					{
 						pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID, 1);
 						PlaySample(g_smidGrenadeExplode, 
@@ -545,8 +545,9 @@ void CGrenade::Update(void)
 					int16_t a;
 					CFire* pSmoke;
 					for (a = 0; a < 4; a++)
-					{
-						if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+               {
+                 pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+                  if (pSmoke != nullptr)
 						{
 							pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::Smoke);
 							pSmoke->m_u16ShooterID = m_u16ShooterID;
@@ -571,7 +572,7 @@ void CGrenade::Update(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Render object
 ////////////////////////////////////////////////////////////////////////////////
-void CGrenade::Render(void)
+void CUnguidedMissile::Render(void)
 	{
 	// Animate.
 	int32_t	lCurTime			= m_pRealm->m_time.GetGameTime();
@@ -626,7 +627,7 @@ void CGrenade::Render(void)
 // Setup new object - called by object that created this object
 ////////////////////////////////////////////////////////////////////////////////
 
-int16_t CGrenade::Setup(									// Returns 0 if successfull, non-zero otherwise
+int16_t CUnguidedMissile::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sX,												// In:  New x coord
 	int16_t sY,												// In:  New y coord
 	int16_t sZ/*,												// In:  New z coord
@@ -662,7 +663,7 @@ int16_t CGrenade::Setup(									// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CGrenade::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
+int16_t CUnguidedMissile::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
 	int16_t sResult = SUCCESS;
 
@@ -676,12 +677,12 @@ int16_t CGrenade::GetResources(void)						// Returns 0 if successfull, non-zero 
 			}
 			else
 			{
-				TRACE("CGrenade::GetResources - Failed to open 2D shadow image\n");
+            TRACE("CUnguidedMissile::GetResources - Failed to open 2D shadow image\n");
 			}
 		}
 	else
 		{
-		TRACE("CGrenade::GetResources - Failed to open 3D stuff file\n");
+      TRACE("CUnguidedMissile::GetResources - Failed to open 3D stuff file\n");
 		}
 
 	return sResult;
@@ -691,7 +692,7 @@ int16_t CGrenade::GetResources(void)						// Returns 0 if successfull, non-zero 
 ////////////////////////////////////////////////////////////////////////////////
 // Free all resources
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CGrenade::FreeResources(void)						// Returns 0 if successfull, non-zero otherwise
+int16_t CUnguidedMissile::FreeResources(void)						// Returns 0 if successfull, non-zero otherwise
 	{
 	int16_t sResult = SUCCESS;
 
@@ -707,7 +708,7 @@ int16_t CGrenade::FreeResources(void)						// Returns 0 if successfull, non-zero
 //				 created.
 ////////////////////////////////////////////////////////////////////////////////
 
-int16_t CGrenade::Preload(
+int16_t CUnguidedMissile::Preload(
 	CRealm* prealm)				// In:  Calling realm.
 	{
 	int16_t sResult = SUCCESS;
@@ -740,7 +741,7 @@ int16_t CGrenade::Preload(
 // ProcessMessages
 ////////////////////////////////////////////////////////////////////////////////
 
-void CGrenade::ProcessMessages(void)
+void CUnguidedMissile::ProcessMessages(void)
 {
 	GameMessage msg;
 
@@ -764,7 +765,7 @@ void CGrenade::ProcessMessages(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Smoke, if correct time.
 ////////////////////////////////////////////////////////////////////////////////
-void CGrenade::Smoke(void)
+void CUnguidedMissile::Smoke(void)
 	{
 	if (m_style == Dynamite)
 		{
@@ -773,8 +774,8 @@ void CGrenade::Smoke(void)
 		// If the timer has expired . . .
 		if (lCurTime > m_lNextSmokeTime)
 			{
-			CFire*	pSmoke;
-			if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+         CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+         if (pSmoke != nullptr)
 				{
 				pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::SmallSmoke);
 				pSmoke->m_u16ShooterID = m_u16ShooterID;

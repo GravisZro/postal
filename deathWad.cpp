@@ -393,8 +393,8 @@ void CDeathWad::Update(void)
 				else
 					{
 					// Otherwise, persist as powerup.
-					CPowerUp*	ppowerup	= nullptr;
-					if (CThing::Construct(CPowerUpID, m_pRealm, (CThing**)&ppowerup) == SUCCESS)
+               CPowerUp* ppowerup = static_cast<CPowerUp*>(realm()->makeType(CPowerUpID));
+               if (ppowerup != nullptr)
 						{
 						// Copy whatever's left.
 						ppowerup->m_stockpile.Copy(&m_stockpile);
@@ -717,8 +717,8 @@ void CDeathWad::Explosion(void)
 	{
 	// Start an explosion object and some smoke (doesn't an explosion object
 	// automatically make smoke??).
-	CExplode* pExplosion;
-	if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+   CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
+   if (pExplosion != nullptr)
 		{
 		// Don't blow us up.
 		pExplosion->m_u16ExceptID	= m_u16ShooterID;
@@ -735,7 +735,8 @@ void CDeathWad::Explosion(void)
 	CFire* pSmoke;
 	for (a = 0; a < 8; a++)
 		{
-		if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+      pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+      if (pSmoke != nullptr)
 			{
 			pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, ms_lSmokeTimeToLive, true, CFire::Smoke);
 			pSmoke->m_u16ShooterID = m_u16ShooterID;
@@ -760,8 +761,8 @@ void CDeathWad::Thrust(void)
 
 	if (m_bInsideTerrain == false)
 		{
-		CFire* pSmoke = nullptr;
-		if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+      CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+      if (pSmoke != nullptr)
 			{
 			// This needs to be fixed by calculating the position of the back end of
 			// the deathwad in 3D based on the rotation.  
@@ -770,8 +771,8 @@ void CDeathWad::Thrust(void)
 			}
 
 		// Also, create a fire (moving at the wad's velocity?).
-		CFireball*	pfireball	= nullptr;
-		if (CThing::Construct(CFireballID, m_pRealm, (CThing**) &pfireball) == SUCCESS)
+      CFireball* pfireball	= static_cast<CFireball*>(realm()->makeType(CFireballID));
+      if (pfireball != nullptr)
 			{
 			pfireball->Setup(m_dX, m_dY, m_dZ, m_dRot, ms_lFireBallTimeToLive, m_u16ShooterID);
 			pfireball->m_dHorizVel	= m_dHorizVel / 4.0;

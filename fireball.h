@@ -133,10 +133,8 @@ class CFireball : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CFireball(CRealm* pRealm)
-			: CWeapon(pRealm, CFireballID)
+   public:
+      CFireball(void)
 			{
 			m_sSuspend = 0;
 			m_lPrevTime = 0;
@@ -153,9 +151,7 @@ class CFireball : public CWeapon
 			m_sprite.m_pthing = this;
 			}
 
-	public:
-		// Destructor
-		~CFireball()
+      ~CFireball(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -167,25 +163,6 @@ class CFireball : public CWeapon
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFireball(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFireball::Construct(): Couldn't construct CFireball (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------
@@ -387,10 +364,8 @@ class CFirestream : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CFirestream(CRealm* pRealm)
-			: CWeapon(pRealm, CFirestreamID)
+   public:
+      CFirestream(void)
 			{
 			m_sSuspend = 0;
 			m_lPrevTime = 0;
@@ -403,31 +378,10 @@ class CFirestream : public CWeapon
 			m_idFireball3 = CIdBank::IdNil;
 			}
 
-	public:
-		// Destructor
-		~CFirestream()
+      ~CFirestream(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFirestream(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFirestream::Construct(): Couldn't construct CFirestream (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

@@ -65,10 +65,8 @@ class CFlagbase : public CThing3d
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CFlagbase(CRealm* pRealm)
-			: CThing3d(pRealm, CFlagbaseID)
+   public:
+      CFlagbase(void)
 			{
 			m_sSuspend = 0;
 			m_dRot = 0;
@@ -79,9 +77,7 @@ class CFlagbase : public CThing3d
 			m_u16Color = 0;
 			}
 
-	public:
-		// Destructor
-		~CFlagbase()
+      ~CFlagbase(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -89,25 +85,6 @@ class CFlagbase : public CThing3d
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFlagbase(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFlagbase::Construct(): Couldn't construct CFlagbase (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

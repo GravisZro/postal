@@ -100,9 +100,7 @@ class CDeathWad : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-		// Constructor
-		CDeathWad(CRealm* pRealm)
-			: CWeapon(pRealm, CDeathWadID)
+      CDeathWad(void)
 			{
 			m_sprite.m_pthing				= this;
 			m_smash.m_pThing				= this;
@@ -116,9 +114,7 @@ class CDeathWad : public CWeapon
 			m_dUnthrustedDistance		= 0.0;
 			}
 
-	public:
-		// Destructor
-		~CDeathWad()
+      ~CDeathWad(void)
 			{
 			// Stop sound, if any.
 			StopLoopingSample(m_siThrust);
@@ -129,25 +125,6 @@ class CDeathWad : public CWeapon
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CDeathWad(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CDeathWad::Construct(): Couldn't construct CDeathWad (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

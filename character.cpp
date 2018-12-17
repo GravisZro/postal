@@ -439,14 +439,14 @@ int16_t CCharacter::Load(									// Returns 0 if successfull, non-zero otherwis
 			{
 			default:
 			case 3:
-            pFile->Read(&m_eWeaponType);
+            pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 				break;
 
 			case 2:	// Versions 1 and 2, when CCharacter was not descended from
 			case 1:	// CThing3d, loaded the weapon type amidst all the other data.
 				// Load object data
 				// **FUDGE.
-				m_eWeaponType	= CThing::CRocketID;
+            m_eWeaponType	= CRocketID;
 				break;
 			}
 
@@ -478,7 +478,7 @@ int16_t CCharacter::Save(									// Returns 0 if successfull, non-zero otherwis
 	if (sResult == SUCCESS)
 		{
 		// Save object data
-		pFile->Write(&m_eWeaponType);
+      pFile->Write(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 
 		sResult	= pFile->Error();
 		}
@@ -933,7 +933,7 @@ void CCharacter::MakeBloody(
 		}
 
 	// Create blood animation.
-	CAnimThing*	pat	= new CAnimThing(m_pRealm);
+   CAnimThing*	pat	= static_cast<CAnimThing*>(m_pRealm->makeType(::CAnimThingID));
 	if (pat != nullptr)
 		{
       std::strcpy(pat->m_szResName, BLOOD_SPLAT_RES_NAME);
@@ -952,9 +952,9 @@ void CCharacter::MakeBloody(
 	for (i = 0; i < sNumChunks; i++)
 		{
 		// Create blood particles . . .
-		CChunk*	pchunk	= nullptr;	// Initialized for safety.
+      CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
 		// Note that this will fail if particles are disabled.
-		if (Construct(CChunkID, m_pRealm, (CThing**)&pchunk) == SUCCESS)
+      if (pchunk != nullptr)
 			{
 			pchunk->Setup(
 				dHitX,				// Source position.
@@ -989,7 +989,7 @@ void CCharacter::MakeBloodPool(void)
 	if (g_GameSettings.m_sKidMode == FALSE)
 	{
 #endif
-	CAnimThing*	pat	= new CAnimThing(m_pRealm);
+   CAnimThing*	pat	= static_cast<CAnimThing*>(m_pRealm->makeType(::CAnimThingID));
 	if (pat != nullptr)
 		{
       std::strcpy(pat->m_szResName, BLOOD_POOL_RES_NAME);
@@ -1087,40 +1087,25 @@ CWeapon* CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
 	{
 	CWeapon*	pweapon	= nullptr;
 
-	switch (m_eWeaponType)
-	{
-		case CPistolID:
-		case CMachineGunID:
-		case CShotGunID:
-		case CAssaultWeaponID:
-		case CDoubleBarrelID:
-		case CUziID:
-		case CAutoRifleID:
-		case CSmallPistolID:
-			break;
-
-		default:
-			if (ConstructWithID(m_eWeaponType, m_pRealm, (CThing**) &pweapon) == SUCCESS)
-				{
-				// Set its parent.
-				pweapon->m_idParent = GetInstanceID();
-				// Set it up.
-				pweapon->Setup(0, 0, 0);
-				pweapon->m_dRot = m_dRot;
-				// Set its initial state to hidden.
-				pweapon->m_eState = CWeapon::State_Hide;
-				// Let the scene know to render the weapon as a child of this.
-				m_sprite.AddChild(pweapon->GetSprite() );
-				// Store ID.
-				m_u16IdWeapon	= pweapon->GetInstanceID();
-				}
-			else
-				{
-				TRACE("PrepareWeapon(): Failed to construct new %s.\n",
-					ms_aClassInfo[m_eWeaponType].pszClassName);
-				}
-			break;
-	}
+   pweapon = static_cast<CWeapon*>(realm()->makeType(m_eWeaponType));
+   if (pweapon != nullptr)
+        {
+        // Set its parent.
+        pweapon->m_idParent = GetInstanceID();
+        // Set it up.
+        pweapon->Setup(0, 0, 0);
+        pweapon->m_dRot = m_dRot;
+        // Set its initial state to hidden.
+        pweapon->m_eState = CWeapon::State_Hide;
+        // Let the scene know to render the weapon as a child of this.
+        m_sprite.AddChild(pweapon->GetSprite() );
+        // Store ID.
+        m_u16IdWeapon	= pweapon->GetInstanceID();
+        }
+    else
+        {
+        TRACE("PrepareWeapon(): Failed to construct new thing.\n");
+        }
 
 	return pweapon;
 	}
@@ -1479,9 +1464,9 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 		}
 
 	// Create shells/casings . . .
-	CChunk*	pchunk	= nullptr;	// Initialized for safety.
+   CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
 	// Note that this will fail if particles are disabled.
-	if (Construct(CChunkID, m_pRealm, (CThing**)&pchunk) == SUCCESS)
+   if (pchunk != nullptr)
 		{
 		pchunk->Setup(
 			m_dX + ppt3d->x(),			// Source position.

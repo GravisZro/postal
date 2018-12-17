@@ -90,10 +90,8 @@ class CPylon : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CPylon(CRealm* pRealm)
-			: CThing(pRealm, CPylonID)
+   public:
+      CPylon(void)
 		{
 			m_pImage = 0;
 			m_sSuspend = 0;
@@ -105,26 +103,24 @@ class CPylon : public CThing
 			m_msg.msg_Generic.eType = typeGeneric;
 			m_msg.msg_Generic.sPriority = 0;
 
-			pRealm->m_sNumPylons++;
+         realm()->m_sNumPylons++;
 			m_u16TargetDudeID = 0;
 		}
 
-	public:
-		// Destructor
-		~CPylon()
+      ~CPylon(void)
 		{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+         realm()->m_scene.RemoveSprite(&m_sprite);
 
 			// Remove smash from smashatorium (this is safe even if it was already removed!).
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+         realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
 
-			m_pRealm->m_sNumPylons--;
+         realm()->m_sNumPylons--;
 		}
-
+/*
 	//---------------------------------------------------------------------------
 	// Required static functions
 	//---------------------------------------------------------------------------
@@ -154,7 +150,7 @@ class CPylon : public CThing
 
 			return sResult;
 			}
-
+*/
 	//---------------------------------------------------------------------------
 	// Enemy logic hint functions
 	//---------------------------------------------------------------------------

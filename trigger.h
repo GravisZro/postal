@@ -93,32 +93,9 @@ class CTrigger : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CTrigger(CRealm* pRealm);
-
-	public:
-		// Destructor
-		~CTrigger();
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CTrigger(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CTrigger::Construct(): Couldn't construct CTrigger!\n");
-				}
-			return sResult;
-			}
+   public:
+      CTrigger(void);
+      ~CTrigger(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

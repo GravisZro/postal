@@ -52,6 +52,7 @@
 
 #include <RSPiX.h>
 #include "realm.h"
+#include "thing.h"
 
 #include "AlphaAnimType.h"
 
@@ -91,8 +92,7 @@ class CAnimThing : public CThing
 	//---------------------------------------------------------------------------
 	public:
 		// Constructor
-		CAnimThing(CRealm* pRealm)
-			: CThing(pRealm, CAnimThingID)
+      CAnimThing(void)
 			{
 			m_paachannel		= nullptr;
 			m_sSuspend			= 0;
@@ -105,7 +105,7 @@ class CAnimThing : public CThing
 
 	public:
 		// Destructor
-		~CAnimThing()
+      ~CAnimThing(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -114,24 +114,6 @@ class CAnimThing : public CThing
 			FreeResources();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CAnimThing(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CExplode::Construct(): Couldn't construct CAnimThing (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

@@ -242,9 +242,11 @@ void CSndRelay::Update(void)
 					}
 				else
 					{
+#if defined (RELEASE)
 					TRACE("Update(): ID %hu is not a \"SoundThing\", it is a \"%s\".\n",
 						pst->GetClassID(),
 						ms_aClassInfo[pst->GetClassID()].pszClassName);
+#endif
 					}
 				}
 			}

@@ -444,7 +444,7 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 		pFile->Write(m_sX);
 		pFile->Write(m_sY);
 		pFile->Write(m_sZ);
-		pFile->Write(m_idDispenseeType);
+      pFile->Write(uint8_t(m_idDispenseeType));
 		pFile->Write((uint16_t)m_logictype);
 		pFile->Write(m_alLogicParms, 4);
 
@@ -887,11 +887,12 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 
 				pguiSel	= nullptr;
 
+#if defined (RELEASE)
             // Add available objects to listbox.
-            for (uint8_t idCur	= 0; idCur < CThing::TotalIDs; idCur++)
+            for (uint8_t idCur	= 0; idCur < TotalIDs; idCur++)
 					{
 					// If item is editor creatable . . .
-					if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
+               if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
 						{
 						// Add string for each item to listbox.
                   pguiItem	= plbThings->AddString(CThing::ms_aClassInfo[idCur].pszClassName);
@@ -909,6 +910,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 							}
 						}
 					}
+#endif
 
 				// Format list items.
 				plbThings->AdjustContents();
@@ -1026,8 +1028,8 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 		if (pthing == nullptr)
 			{
 			// Allocate the desired thing . . .
-			sResult	= ConstructWithID(m_idDispenseeType, m_pRealm, &pthing);
-			if (sResult == SUCCESS)
+        pthing = realm()->makeTypeWithID(m_idDispenseeType);
+         if (pthing != nullptr)
 				{
 				// New it in the correct location.
 				sResult	= pthing->EditNew(m_sX, m_sY, m_sZ);
@@ -1048,8 +1050,8 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 				}
 			else
 				{
-				TRACE("EditModify(): Failed to allocate new %s.\n",
-					CThing::ms_aClassInfo[m_idDispenseeType].pszClassName);
+//				TRACE("EditModify(): Failed to allocate new %s.\n",
+//					CThing::ms_aClassInfo[m_idDispenseeType].pszClassName);
 				}
 			}
 
@@ -1282,7 +1284,8 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 	if (m_idDispenseeType > 0 && m_idDispenseeType < TotalIDs)
 		{
 		// Allocate the desired thing . . .
-		if (CThing::Construct(m_idDispenseeType, m_pRealm, ppthing) == SUCCESS)
+     *ppthing = realm()->makeType(m_idDispenseeType);
+      if (*ppthing != nullptr)
 			{
 			if (m_fileDispensee.IsOpen() != FALSE)
 				{
@@ -1345,8 +1348,8 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 			}
 		else
 			{
-			TRACE("InstantiateDispensee(): Failed to allocate new %s.\n",
-				CThing::ms_aClassInfo[m_idDispenseeType].pszClassName);
+//			TRACE("InstantiateDispensee(): Failed to allocate new %s.\n",
+//				CThing::ms_aClassInfo[m_idDispenseeType].pszClassName);
 			sResult = FAILURE;
 			}
 		}
@@ -1487,12 +1490,14 @@ int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
 				RPrint	print;
 				print.SetFont(FONT_SIZE, &g_fontBig);
 				print.SetColor(FONT_COLOR, 0, 0);
+#if defined (RELEASE)
 				print.print(
 					&m_imRender,
 					0,
 					0,
 					"%s",
 					ms_aClassInfo[m_idDispenseeType].pszClassName);
+#endif
 				}
 #if 1
 			// Draw dispenser icon on top.
@@ -1529,7 +1534,7 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 	uint32_t	ulDistZ;
 	CDude*	pdude;
 
-	CListNode<CThing>* pDudeList = m_pRealm->m_aclassHeads[CThing::CDudeID].m_pnNext;
+	CListNode<CThing>* pDudeList = m_pRealm->m_aclassHeads[CDudeID].m_pnNext;
 	
 	// While we have a node and that node is owned (the head and tail are not owned).
 	while (pDudeList && pDudeList->m_powner)

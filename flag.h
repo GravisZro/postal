@@ -79,10 +79,8 @@ class CFlag : public CThing3d
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CFlag(CRealm* pRealm)
-			: CThing3d(pRealm, CFlagID)
+   public:
+      CFlag(void)
 			{
 			m_sSuspend = 0;
 			m_dRot = 0;
@@ -97,9 +95,7 @@ class CFlag : public CThing3d
 			m_sSavedZ = 0;
 			}
 
-	public:
-		// Destructor
-		~CFlag()
+      ~CFlag(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -107,25 +103,6 @@ class CFlag : public CThing3d
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFlag(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFlag::Construct(): Couldn't construct CFlag (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

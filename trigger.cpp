@@ -49,8 +49,7 @@
 // Constructor
 // (protected).
 ////////////////////////////////////////////////////////////////////////////////
-CTrigger::CTrigger(CRealm* pRealm)
-	: CThing(pRealm, CTriggerID)
+CTrigger::CTrigger(void)
 	{
 	// Insert a default instance into the realm:
 	m_pmgi = nullptr;
@@ -60,7 +59,7 @@ CTrigger::CTrigger(CRealm* pRealm)
 	// Assume we don't know the UID's fdor the pylons yet, so clear them all out:
 	for (int16_t i=0;i < 256;i++)
 		{
-		m_ausPylonUIDs[i] = pRealm->m_asPylonUIDs[i] = 0;
+      m_ausPylonUIDs[i] = realm()->m_asPylonUIDs[i] = 0;
 		}
 	}
 
@@ -96,7 +95,8 @@ int16_t CTrigger::Load(								// Returns 0 if successfull, non-zero otherwise
 		// Load object data
 		m_pRealm->m_pTriggerMap = nullptr; // clear the shadow
 		// ASSUME THERE WILL ALREADY BE AN EMPTY TRIGGER MAP HOLDER!
-		if (m_pRealm->m_pTriggerMapHolder == nullptr) m_pRealm->m_pTriggerMapHolder = new CTrigger(m_pRealm);
+      if (m_pRealm->m_pTriggerMapHolder == nullptr)
+        m_pRealm->m_pTriggerMapHolder = static_cast<CTrigger*>(realm()->makeType(CTriggerID));
 
 		if (m_pmgi) delete m_pmgi;
 		m_pmgi = nullptr;

@@ -89,43 +89,21 @@ class CNapalm : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CNapalm(CRealm* pRealm)
-			: CWeapon(pRealm, CNapalmID)
+   public:
+      CNapalm(void)
 			{
 			m_sprite.m_pthing	= this;
 			}
 
-	public:
-		// Destructor
-		~CNapalm()
+      ~CNapalm(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+         realm()->m_scene.RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CNapalm(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CNapalm::Construct(): Couldn't construct CNapalm (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -139,7 +117,7 @@ class CNapalm : public CWeapon
 		void SetTransform(RTransform* pTransform)
 			{
 				m_sprite.m_ptrans = pTransform;
-			};
+         }
 
 
 	//---------------------------------------------------------------------------

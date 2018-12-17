@@ -367,8 +367,8 @@ void CFirebomb::Update(void)
 //-----------------------------------------------------------------------
 			case CFirebomb::State_Explode:
 
-				CFire* pFire;
-				if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pFire) == SUCCESS)
+            CFire* pFire = static_cast<CFire*>(realm()->makeType(CFireID));
+            if (pFire != nullptr)
 				{
 					pFire->Setup(m_dX, m_dY, m_dZ, PRIMARY_BURN_TIME, true, CFire::LargeFire);
 					pFire->m_u16ShooterID = m_u16ShooterID;
@@ -388,7 +388,8 @@ void CFirebomb::Update(void)
 				CFirefrag* pFrag;
 				for (i = 0; i < 8; i++)
 				{
-					if (CThing::Construct(CThing::CFirefragID, m_pRealm, (CThing**) &pFrag) == SUCCESS)
+              pFrag = static_cast<CFirefrag*>(realm()->makeType(CFirefragID));
+              if (pFrag != nullptr)
 					{
 						pFrag->m_u16ShooterID = m_u16ShooterID;
 						pFrag->Setup(m_dX, m_dY, m_dZ);
@@ -778,8 +779,8 @@ void CFirefrag::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Explode:
 
-				CFire* pFire;
-				if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pFire) == SUCCESS)
+            CFire* pFire = static_cast<CFire*>(realm()->makeType(CFireID));
+            if (pFire != nullptr)
 				{
 					pFire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
 					pFire->m_u16ShooterID = m_u16ShooterID;
@@ -886,7 +887,8 @@ int16_t CFirefrag::Setup(									// Returns 0 if successfull, non-zero otherwis
 	// Load resources
 //	sResult = GetResources();
 
-	if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &m_pFire) == SUCCESS)
+   m_pFire = static_cast<CFire*>(realm()->makeType(CFireID));
+   if (m_pFire != nullptr)
 	{
 		m_pFire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
 		m_pFire->m_u16ShooterID = m_u16ShooterID;

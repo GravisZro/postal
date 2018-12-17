@@ -105,20 +105,16 @@ class CBand : public CDoofus
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CBand(CRealm* pRealm)
-			: CDoofus(pRealm, CBandID)
+   public:
+      CBand(void)
 			{
 			m_ucNextBouyID = 1;
 			m_ucDestBouyID = 1;
 			m_idChildItem	= CIdBank::IdNil;
 			m_bCivilian = true;
-			}
+         }
 
-	public:
-		// Destructor
-		~CBand()
+      ~CBand(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -133,25 +129,6 @@ class CBand : public CDoofus
 				AbortSample(ms_siBandSongInstance);
 				ms_siBandSongInstance	= 0;
 				}
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CBand(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CBand::Construct(): Couldn't construct CBand (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

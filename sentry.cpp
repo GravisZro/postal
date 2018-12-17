@@ -270,7 +270,7 @@ int16_t CSentry::Load(				// Returns 0 if successfull, non-zero otherwise
 		pFile->Read(&m_sRoundsPerShot);
 		pFile->Read(&m_lSqDistRange);
 		pFile->Read(&m_lShootDelay);
-		pFile->Read(&m_eWeaponType);
+      pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 
 		if (ulFileVersion > 24)
 			pFile->Read(&m_dAngularVelocity);
@@ -343,7 +343,7 @@ int16_t CSentry::Save(										// Returns 0 if successfull, non-zero otherwise
 	pFile->Write(&m_sRoundsPerShot);
 	pFile->Write(&m_lSqDistRange);
 	pFile->Write(&m_lShootDelay);
-	pFile->Write(&m_eWeaponType);
+   pFile->Write(uint8_t(m_eWeaponType));
 	pFile->Write(&m_dAngularVelocity);
 
 	if (!pFile->Error())
@@ -931,7 +931,7 @@ int16_t CSentry::EditModify(void)
 					RGuiItem* pSelection = pWeaponList->GetSel();
 					if (pSelection)
 					{
-						m_eWeaponType	= pSelection->m_lId;
+                  m_eWeaponType	= ClassIDType(pSelection->m_lId);
 					}
 
 					m_sNumRounds = RSP_SAFE_GUI_REF(peditAmmoCount, GetVal());

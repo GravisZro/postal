@@ -388,10 +388,8 @@ class CThing3d : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CThing3d(CRealm* pRealm, CThing::ClassIDType id)
-         : CThing(pRealm, id)
+   public:
+      CThing3d(void)
 			{
 			// Must call Zero() to initialize the stockpile since it has
 			// no constructor.
@@ -431,9 +429,7 @@ class CThing3d : public CThing
          m_pap2dAttribCheckPoints	= &ms_apt2dAttribCheckMedium;
 			}
 
-	public:
-		// Destructor
-		~CThing3d()
+      ~CThing3d(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);

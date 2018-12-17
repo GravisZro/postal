@@ -153,7 +153,7 @@ class CCharacter : public CThing3d
 	//---------------------------------------------------------------------------
 	public:
 		uint16_t	m_u16IdWeapon;						// ID of your generic weapon.
-		CThing::ClassIDType m_eWeaponType;	// Type of weapon to be shot
+      ClassIDType m_eWeaponType;	// Type of weapon to be shot
 		CBulletFest	m_bullets;					// Generic bullet interface.
 
 		int32_t	m_lCharacterTimer;				// This timer is intended for use by
@@ -177,20 +177,16 @@ class CCharacter : public CThing3d
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CCharacter(CRealm* pRealm, CThing::ClassIDType id)
-			: CThing3d(pRealm, id)
+   public:
+      CCharacter(void)
 			{
-			m_eWeaponType = CThing::CRocketID;
+         m_eWeaponType = CRocketID;
 			m_u16IdWeapon	= CIdBank::IdNil;
 			m_siLastWeaponPlayInstance	= 0;
 			m_lStopLoopingWeaponSoundTime	= 0;
-			}
+         }
 
-	public:
-		// Destructor
-		~CCharacter()
+      ~CCharacter(void)
 			{
 			Kill();
 			}

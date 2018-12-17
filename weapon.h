@@ -79,8 +79,6 @@ class CWeapon : public CThing
 	//---------------------------------------------------------------------------
 	public:
 
-	typedef uint8_t CWeaponState;
-
 	typedef enum
 		{
 		LaunchSndHalfLife			= 1000,
@@ -91,9 +89,9 @@ class CWeapon : public CThing
 		MineSndHalfLife			= 80
 		} Macros;
 
-   enum
+   enum CWeaponState : uint8_t
 	{
-		State_Idle,
+      State_Idle = 0,
 		State_Fire,
 		State_Go,
 		State_Roll,
@@ -145,10 +143,8 @@ class CWeapon : public CThing
  	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CWeapon(CRealm* pRealm, ClassIDType id)
-			: CThing(pRealm, id)
+   public:
+      CWeapon(void)
 			{
 			m_sSuspend = 0;
 			m_dX = m_dY = m_dZ = m_dRot = m_dVertVel = m_dHorizVel = 0.0;
@@ -160,10 +156,7 @@ class CWeapon : public CThing
 			m_lPrevTime = 0;  // valgrind fix.  --ryan.
 			}
 
-
-	public:
-		// Destructor
-		~CWeapon()
+      ~CWeapon(void)
 			{
 				// Remove sprite from scene (this is safe even if it was already removed!)
 				m_pRealm->m_scene.RemoveSprite(&m_spriteShadow);

@@ -163,54 +163,32 @@ class CPerson : public CDoofus
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CPerson(CRealm* pRealm)
-			: CDoofus(pRealm, CPersonID)
+   public:
+      CPerson(void)
 			{
 			m_sSuspend = 0;
 			m_dRot = 0;
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
 			m_ePersonType = Personatorium::Grenader;
-			m_eWeaponType = CThing::CGrenadeID;
+         m_eWeaponType = CGrenadeID;
 			m_panimCur = m_panimPrev = nullptr;
 			m_sprite.m_pthing	= this;
 			m_rstrLogicFile = "res/logics/default.lgk";
 			m_sShowState		= FALSE;
 			m_sUserState1 = 0; // Uninitialized
 			m_bHitComment = false;
-			}
+         }
 
-	public:
-		// Destructor
-		~CPerson()
+      ~CPerson(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CPerson(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CPerson::Construct(): Couldn't construct CPerson (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

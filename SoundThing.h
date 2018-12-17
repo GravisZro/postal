@@ -146,10 +146,8 @@ class CSoundThing : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CSoundThing(CRealm* pRealm)
-			: CThing(pRealm, CSoundThingID)
+   public:
+      CSoundThing(void)
 			{
 			m_bInitiallyEnabled = true;
 			m_bInitiallyRepeats = false;
@@ -191,31 +189,11 @@ class CSoundThing : public CThing
 			m_lCollectiveVolume	= 0;
 			}
 
-	public:
-		// Destructor
-		~CSoundThing()
+      ~CSoundThing(void)
 			{
 			Kill();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CSoundThing(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CExplode::Construct(): Couldn't construct CSoundThing (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

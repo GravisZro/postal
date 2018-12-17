@@ -105,20 +105,11 @@ class CItem3d : public CThing3d
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CItem3d(CRealm* pRealm)
-			: CThing3d(pRealm, CItem3dID)
+   public:
+      CItem3d(void)
 			{
 			Reset();
-			}
-
-		// Constructor
-		CItem3d(CRealm* pRealm, ClassIDType id)
-			: CThing3d(pRealm, id)
-			{
-			Reset();
-			}
+         }
 
 		// Reset this object.
 		void Reset(void)	// Returns nothing.
@@ -132,33 +123,12 @@ class CItem3d : public CThing3d
 			m_spriteChild.m_pthing		= this;
 			}
 
-	public:
-		// Destructor
-		~CItem3d()
+      ~CItem3d(void)
 			{
 			// Kill item3d
 			Kill();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CItem3d(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CItem3d::Construct(): Couldn't construct CItem3d!\n");
-				}
-
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

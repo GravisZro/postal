@@ -74,7 +74,7 @@
 
 
 // CGrenade is an unguided missile weapon class
-class CGrenade : public CWeapon
+class CUnguidedMissile : public CWeapon
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -139,13 +139,10 @@ class CGrenade : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CGrenade(CRealm* pRealm)
-			: CWeapon(pRealm, CGrenadeID)
+   public:
+      CUnguidedMissile(void)
 			{
-			m_sprite.m_pthing	= this;
-			m_style				= Grenade;
+         m_sprite.m_pthing	= this;
 			m_dAnimRotY			= 0.0;	
 			m_dAnimRotZ			= 0.0;	
 			m_dAnimRotVelY		= 0.0;
@@ -153,46 +150,13 @@ class CGrenade : public CWeapon
 			m_lNextSmokeTime	= 0;
 			}
 
-	public:
-		// Destructor
-		~CGrenade()
+      ~CUnguidedMissile(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CGrenade(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CGrenade::Construct(): Couldn't construct CGrenade (that's a bad thing)\n");
-				}
-			return sResult;
-			}
-
-		// Construct object as dynamite.
-		static int16_t ConstructDynamite(						// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult	= Construct(pRealm, ppNew);
-         if (sResult == SUCCESS)
-            static_cast<CGrenade*>(*ppNew)->m_style = Dynamite;
-
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------
@@ -271,6 +235,26 @@ class CGrenade : public CWeapon
 		// Process Message queue
 		void ProcessMessages(void);
 	};
+
+
+class CGrenade : public CUnguidedMissile
+{
+public:
+  CGrenade(void)
+  {
+    m_style = Grenade;
+  }
+};
+
+class CDynamite : public CUnguidedMissile
+{
+public:
+  CDynamite(void)
+  {
+    m_style = Dynamite;
+  }
+};
+
 
 
 #endif // GRENADE_H

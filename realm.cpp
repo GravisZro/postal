@@ -600,7 +600,7 @@ CRealm::CRealm()
 /*
 	// Create a container of things for each element in the array
 	short	s;
-	for (s = 0; s < CThing::TotalIDs; s++)
+   for (s = 0; s < TotalIDs; s++)
 		m_apthings[s] = new CThing::Things;
 */
 
@@ -619,7 +619,7 @@ CRealm::CRealm()
 	m_everythingTail.m_powner = nullptr;
 
 	int16_t i;
-	for (i = 0; i < CThing::TotalIDs; i++)
+   for (i = 0; i < TotalIDs; i++)
 		{
 		m_aclassHeads[i].m_pnNext = &(m_aclassTails[i]);
 		m_aclassHeads[i].m_pnPrev = nullptr;
@@ -929,12 +929,12 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 							break;
 					}
 
-
+#if defined (RELEASE)
 					// Scan through class info structs and for each non-0 preload func,
 					// call it to give that class a chance to preload stuff.  The intention
 					// is to give classes whose objects don't exist at the start of a level
 					// a chance to preload resources now rather than during gameplay.
-					for (int16_t sPre = 0; sPre < CThing::TotalIDs; sPre++)
+               for (int16_t sPre = 0; sPre < TotalIDs; sPre++)
 						{
 						CThing::FuncPreload func = CThing::ms_aClassInfo[sPre].funcPreload;
 						if (func != 0)
@@ -947,6 +947,7 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 								}
 							}
 						}
+#endif
                if (sResult == SUCCESS)
 						{
 
@@ -955,7 +956,7 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 						if (pFile->Read(&sCount) == 1)
 							{
 
-							CThing::ClassIDType	idLastThingLoaded	= CThing::TotalIDs;
+                     uint8_t	idLastThingLoaded	= TotalIDs;
 
 							// If there's a callback . . .
 							if (m_fnProgress)
@@ -977,14 +978,13 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 								{
 
 								// Read class ID of next object in file
-								CThing::ClassIDType id;
+                        uint8_t id;
 								if (pFile->Read(&id) == 1)
 									{
 
 									// Create object based on class ID
-									CThing* pThing;
-									sResult = CThing::Construct(id, this, &pThing);
-									if (!sResult)
+                           CThing* pThing = makeType(ClassIDType(id));
+                           if (pThing != nullptr)
 										{
 
 										// Load object assocated with this class ID
@@ -1010,11 +1010,12 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 													}
 												}
 											}
+#if defined (RELEASE)
 										else
 											{
 											TRACE("CRealm::Load(): Load() failed for thing of type %s; ",
 												CThing::ms_aClassInfo[id].pszClassName);
-											if (idLastThingLoaded != CThing::TotalIDs)
+                                 if (idLastThingLoaded != TotalIDs)
 												{
 												STRACE("The last thing to successfully loaded was a %s.\n",
 													CThing::ms_aClassInfo[idLastThingLoaded].pszClassName);
@@ -1024,6 +1025,7 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 												STRACE("This was the first thing to load.\n");
 												}
 											}
+#endif
 										}
 
 									}
@@ -1193,7 +1195,7 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 		pNext = pNext->m_pnNext;
 
 		// Write out object's class ID (so we know waht kind it is when we load it)
-		pFile->Write(pCur->m_powner->GetClassID());
+      pFile->Write(uint8_t(pCur->m_powner->GetClassID()));
 
 		// Let object save itself
 		sResult = pCur->m_powner->Save(pFile, ms_sFileCount);
@@ -1777,7 +1779,7 @@ bool CRealm::IsEndOfLevelGoalMet(bool bEndLevelKey)
 		case Checkpoint:
 			if (m_sFlagsGoal == 0)
 			{
-				if (m_lScoreTimeDisplay > 0 && m_sFlagsCaptured < m_asClassNumThings[CThing::CFlagID])
+            if (m_lScoreTimeDisplay > 0 && m_sFlagsCaptured < m_asClassNumThings[CFlagID])
 					bEnd = false;
 			}
 			else
@@ -2373,6 +2375,117 @@ void CRealm::CreateLayerMap(void)
 		}
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// EOF
-////////////////////////////////////////////////////////////////////////////////
+
+#include "hood.h"
+#include "dude.h"
+#include "doofus.h"
+#include "rocket.h"
+#include "grenade.h" // CGrenade, CDynamite
+#include "ball.h"
+#include "explode.h"
+#include "bouy.h"
+#include "navnet.h"
+#include "gameedit.h"
+#include "napalm.h"
+#include "fire.h"
+#include "firebomb.h" // CFirebomb, CFirefrag
+#include "AnimThing.h"
+#include "SoundThing.h"
+#include "band.h"
+#include "item3d.h"
+#include "barrel.h"
+#include "mine.h" // CProximityMine, CTimedMine, CBouncingBettyMine, CRemoteControlMine
+#include "dispenser.h"
+#include "fireball.h" // CFireball, CFirestream
+#include "weapon.h" // CPistol, CMachineGun, CShotGun, CAssaultWeapon
+#include "person.h"
+#include "pylon.h"
+#include "PowerUp.h"
+#include "ostrich.h"
+#include "trigger.h"
+#include "heatseeker.h"
+#include "chunk.h"
+#include "sentry.h"
+#include "warp.h"
+#include "demon.h"
+#include "character.h"
+#include "goaltimer.h"
+#include "flag.h"
+#include "flagbase.h"
+#include "deathWad.h"
+#include "SndRelay.h"
+
+CThing* CRealm::makeTypeWithID(ClassIDType type)
+{
+  CThing* t = makeType(type);
+  if (t != nullptr)
+  {
+    // If new thing has no ID . . .
+    if (t->m_u16InstanceId == CIdBank::IdNil)
+    {
+      int16_t sResult = m_idbank.Get(t, &(t->m_u16InstanceId) );
+      if (sResult != SUCCESS)
+      {
+        delete t;
+        t = nullptr;
+      }
+    }
+  }
+  return t;
+}
+
+CThing* CRealm::makeType(ClassIDType type)
+{
+  switch(type)
+  {
+    case CHoodID             : return new (type, this, false) CHood             ;
+    case CDudeID             : return new (type, this, false) CDude             ;
+    case CDoofusID           : return new (type, this, false) CDoofus           ;
+    case CRocketID           : return new (type, this, false) CRocket           ;
+    case CGrenadeID          : return new (type, this, false) CGrenade          ;
+    case CBallID             : return new (type, this, false) CBall             ;
+    case CExplodeID          : return new (type, this, false) CExplode          ;
+    case CBouyID             : return new (type, this,  true) CBouy             ;
+    case CNavigationNetID    : return new (type, this,  true) CNavigationNet    ;
+    case CGameEditThingID    : return new (type, this, false) CGameEditThing    ;
+    case CNapalmID           : return new (type, this, false) CNapalm           ;
+    case CFireID             : return new (type, this, false) CFire             ;
+    case CFirebombID         : return new (type, this, false) CFirebomb         ;
+    case CFirefragID         : return new (type, this, false) CFirefrag         ;
+    case CAnimThingID        : return new (type, this,  true) CAnimThing        ;
+    case CSoundThingID       : return new (type, this,  true) CSoundThing       ;
+    case CBandID             : return new (type, this,  true) CBand             ;
+    case CItem3dID           : return new (type, this,  true) CItem3d           ;
+    case CBarrelID           : return new (type, this,  true) CBarrel           ;
+    case CProximityMineID    : return new (type, this,  true) CProximityMine    ;
+    case CDispenserID        : return new (type, this,  true) CDispenser        ;
+    case CFireballID         : return new (type, this, false) CFireball         ;
+    case CPersonID           : return new (type, this,  true) CPerson           ;
+    case CTimedMineID        : return new (type, this,  true) CTimedMine        ;
+    case CBouncingBettyMineID: return new (type, this,  true) CBouncingBettyMine;
+    case CRemoteControlMineID: return new (type, this, false) CRemoteControlMine;
+    case CPylonID            : return new (type, this,  true) CPylon            ;
+    case CPowerUpID          : return new (type, this,  true) CPowerUp          ;
+    case COstrichID          : return new (type, this,  true) COstrich          ;
+    case CTriggerID          : return new (type, this, false) CTrigger          ;
+    case CHeatseekerID       : return new (type, this, false) CHeatseeker       ;
+    case CChunkID            :
+
+      if(!g_GameSettings.m_sParticleEffects) // Don't allow chunks when disabled . . .
+        return nullptr;
+      return new (type, this, false) CChunk            ;
+    case CSentryID           : return new (type, this,  true) CSentry           ;
+    case CWarpID             : return new (type, this,  true) CWarp             ;
+    case CDemonID            : return new (type, this,  true) CDemon            ;
+    case CCharacterID        : return new (type, this, false) CCharacter        ;
+    case CGoalTimerID        : return new (type, this, false) CGoalTimer        ;
+    case CFlagID             : return new (type, this,  true) CFlag             ;
+    case CFlagbaseID         : return new (type, this,  true) CFlagbase         ;
+    case CFirestreamID       : return new (type, this, false) CFirestream       ;
+    case CDeathWadID         : return new (type, this, false) CDeathWad         ;
+    case CDynamiteID         : return new (type, this, false) CDynamite         ;
+    case CSndRelayID         : return new (type, this,  true) CSndRelay         ;
+    default:
+      return nullptr;
+  }
+}

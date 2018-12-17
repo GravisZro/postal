@@ -68,43 +68,20 @@ class COstrich : public CDoofus
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		COstrich(CRealm* pRealm)
-			: CDoofus(pRealm, COstrichID)
+   public:
+      COstrich(void)
 			{
 				m_sRotDirection = 0;
 			}
 
-	public:
-		// Destructor
-		~COstrich()
+      ~COstrich(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new COstrich(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("COstrich::Construct(): Couldn't construct COstrich (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

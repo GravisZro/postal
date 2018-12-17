@@ -460,7 +460,7 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 				// read the space that is occupied by the weapon type for CCharacter.
 				// In file format versions 3 and above, this is written later in
 				// the file.
-				CThing::ClassIDType	idWeaponDummy;
+            uint8_t idWeaponDummy;
 				pFile->Read(&idWeaponDummy);
 				// END PATCH.
 				pFile->Read(&m_stockpile.m_sHitPoints);
@@ -1390,18 +1390,19 @@ void CThing3d::OnExplosionMsg(			// Returns nothing.
 void CThing3d::OnBurnMsg(	// Returns nothing.
 	Burn_Message* pburnmsg)		// In:  Message to handle.
 	{
-	CFire*	pfire;
+   CFire*	pFire;
 	// If we don't already have a fire . . .
-	if (m_pRealm->m_idbank.GetThingByID((CThing**)&pfire, m_u16IdFire) != SUCCESS)
+   if (m_pRealm->m_idbank.GetThingByID((CThing**)&pFire, m_u16IdFire) != SUCCESS)
 		{
 		// Make a fire and remember its ID.
-      if (CThing::ConstructWithID(CThing::CFireID, m_pRealm, (CThing**) &pfire) == SUCCESS)
+      pFire = static_cast<CFire*>(realm()->makeType(CFireID));
+      if (pFire != nullptr)
 			{
 			// Store its ID.
-			m_u16IdFire	= pfire->GetInstanceID();
+         m_u16IdFire	= pFire->GetInstanceID();
 
 			// Put it in the thing3d's midsection.
-			pfire->Setup(					
+         pFire->Setup(
 				m_dX, 							// In:  New x coord
 				m_dY + m_sprite.m_sRadius, // In:  New y coord
 				m_dZ, 							// In:  New z coord
@@ -1410,14 +1411,14 @@ void CThing3d::OnBurnMsg(	// Returns nothing.
 				CFire::SmallFire);			// In:  Animation type to use default = LargeFire
 
 			// We use this object as a weapon against others so we are the shooter.
-			pfire->m_u16ShooterID		 = m_u16InstanceId;
+         pFire->m_u16ShooterID		 = m_u16InstanceId;
 			// Note though who caused the creation of this fire so we know who's
 			// responsible for this thing's damage.
-			pfire->m_u16FireStarterID	= pburnmsg->u16ShooterID;
+         pFire->m_u16FireStarterID	= pburnmsg->u16ShooterID;
 
-			pfire->m_bIsBurningDude = (GetClassID() == CDudeID);
+         pFire->m_bIsBurningDude = (GetClassID() == CDudeID);
 
-//			pfire->MessagesOff();
+//			pFire->MessagesOff();
 			}
 		}
 	}
@@ -1843,9 +1844,9 @@ CAnimThing* CThing3d::StartAnim(		// Returns ptr to CAnimThing on success; nullp
 	int16_t	sZ,								// In:  Position.
 	bool	bLoop)							// In:  true to loop animation.
 	{
-	// Create the animator . . .
-	CAnimThing*	pat	= nullptr;
-   if (ConstructWithID(CAnimThingID, m_pRealm, (CThing**)&pat) == SUCCESS)
+   // Create the animator . . .
+   CAnimThing* pat = static_cast<CAnimThing*>(realm()->makeTypeWithID(CAnimThingID));
+   if (pat != nullptr)
 		{
       std::strcpy(pat->m_szResName, pszAnimResName);
 

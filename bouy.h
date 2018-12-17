@@ -256,10 +256,8 @@ class CBouy : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CBouy(CRealm* pRealm)
-			: CThing(pRealm, CBouyID)
+   public:
+      CBouy(void)
 			{
 			m_pImage = 0;
 			m_sSuspend = 0;
@@ -267,10 +265,8 @@ class CBouy : public CThing
 			m_paucRouteTable = nullptr;
 			m_sRouteTableSize = 0;
 			m_sNumDirectLinks = 0;
-			}
+         }
 
-	public:
-		// Destructor
 		~CBouy()
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
@@ -281,25 +277,6 @@ class CBouy : public CThing
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CBouy(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CBouy::Construct(): Couldn't construct CBouy (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

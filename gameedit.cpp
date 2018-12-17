@@ -241,7 +241,7 @@
 //							device mode as returned by rspSuggestVideoMode().
 //
 //		03/05/97	JMI	Dude now commits suicide when user exits PlayRealm().
-//							CreateNewThing() now uses CThing::ConstructWithID() to
+//							CreateNewThing() now uses ConstructWithID() to
 //							create new things.
 //
 //		03/06/97	JMI	PlayRealm() now sends a suicide message to the local dude
@@ -930,7 +930,7 @@
 #define GUI_ID_REALM_STATISTICS	1000
 
 // The ID of the item to be selected by default.
-#define DEFAULT_THING_ID		CThing::CDudeID
+#define DEFAULT_THING_ID		CDudeID
 
 // Each item added to the Pick Object listbox will have an GUI ID of this plus
 // their class ID (e.g., CDude's list item would be LIST_ITEM_GUI_ID_BASE + CDudeId).
@@ -1208,7 +1208,7 @@ static RFile			ms_filePaste;
 static int16_t			ms_sFileCount		= -1;
 
 // Type of item to paste.
-static CThing::ClassIDType	ms_idPaste;
+static ClassIDType	ms_idPaste;
 
 // Sprite used to draw attributes.
 static CSprite2		ms_spriteAttributes;
@@ -1304,7 +1304,7 @@ static void PlayRealm(				// Returns nothing.
 // position.
 static int16_t CreateNewThing(		// Returns 0 on success.
 	CRealm*	prealm,					// In:  Realm to add new CThing to.
-	CThing::ClassIDType	id,		// ID of new CThing type to create.
+	ClassIDType	id,		// ID of new CThing type to create.
 	int16_t		sPosX,					// Position for new CThing.
 	int16_t		sPosY,					// Position for new CThing.
 	int16_t		sPosZ,					// Position for new CThing.
@@ -1801,11 +1801,12 @@ extern void GameEdit(
 
 			ASSERT(plbPicker != nullptr);
 			ASSERT(plbPicker->m_type == RGuiItem::ListBox);
-			
+
+         RGuiItem*				pguiItem;
+#if defined (RELEASE)
 			// Add available objects to listbox.
-			CThing::ClassIDType	idCur;
-			RGuiItem*				pguiItem;
-			for (idCur	= 1; idCur < CThing::TotalIDs; idCur++)
+         ClassIDType	idCur;
+			for (idCur	= 1; idCur < TotalIDs; idCur++)
 				{
 				// If item is editor creatable . . .
 				if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
@@ -1822,6 +1823,7 @@ extern void GameEdit(
 						}
 					}
 				}
+#endif
 
 			// Format list items.
 			plbPicker->AdjustContents();
@@ -1956,7 +1958,7 @@ extern void GameEdit(
 			bool bExit = false;
 
 			// Set currently select thing to default value
-//			CThing::ClassIDType idCurrent = DEFAULT_THING_ID;
+//			ClassIDType idCurrent = DEFAULT_THING_ID;
 			// Clear mouse and keyboard events
 			rspClearAllInputEvents();
 
@@ -2301,7 +2303,7 @@ static bool DoInput(		// Returns true when done.
 						if (ms_bDrawNetwork)
 						{
 							CThing*	pThing;
-							CListNode<CThing>* pNext = prealm->m_aclassHeads[CThing::CBouyID].m_pnNext;
+							CListNode<CThing>* pNext = prealm->m_aclassHeads[CBouyID].m_pnNext;
 							while (pNext->m_powner != nullptr)
 							{
 								pThing = pNext->m_powner;
@@ -2317,7 +2319,7 @@ static bool DoInput(		// Returns true when done.
 						else
 						{
 							CThing*	pThing;
-							CListNode<CThing>* pNext = prealm->m_aclassHeads[CThing::CBouyID].m_pnNext;
+							CListNode<CThing>* pNext = prealm->m_aclassHeads[CBouyID].m_pnNext;
 							while (pNext->m_powner != nullptr)
 							{
 								pThing = pNext->m_powner;
@@ -2533,7 +2535,7 @@ static bool DoInput(		// Returns true when done.
 			ms_pguiGUIs->m_hot.Do(&ie);
 			ms_pguiRealmBar->m_hot.Do(&ie);
 			//If there is a hood . . .
-			if (prealm->m_asClassNumThings[CThing::CHoodID] > 0)
+			if (prealm->m_asClassNumThings[CHoodID] > 0)
 				{
 				// Do extra views.
 				DoViews(&ie);
@@ -2603,7 +2605,7 @@ static bool DoInput(		// Returns true when done.
 					if (ms_pthingSel != nullptr)
 						{
 						// Let's not drag the hood . . .
-						if (ms_pthingSel->GetClassID() != CThing::CHoodID)
+						if (ms_pthingSel->GetClassID() != CHoodID)
 							{
 							// Move mode.
 							ms_sMoving			= TRUE;
@@ -2919,14 +2921,15 @@ static bool DoInput(		// Returns true when done.
 				default:
 					// If the range of CThings . . .
 					if (	ms_lPressedId >= LIST_ITEM_GUI_ID_BASE
-						&&	ms_lPressedId < LIST_ITEM_GUI_ID_BASE + CThing::TotalIDs
+						&&	ms_lPressedId < LIST_ITEM_GUI_ID_BASE + TotalIDs
 						&& ms_sMoving == FALSE)
 						{
 						CThing*	pthingNew;
-						RHot*		photNew;
+                  RHot*		photNew;
+
 						if (CreateNewThing(								// CThing* to new thing.
 							prealm,											// Realm to create in.
-							ms_lPressedId - LIST_ITEM_GUI_ID_BASE,	// ID to create.
+                     ClassIDType(ms_lPressedId - LIST_ITEM_GUI_ID_BASE),	// ID to create.
 							sCursorX,										// x
 							sCursorY,										// y
 							sCursorZ,										// z
@@ -3014,7 +3017,7 @@ static void DoOutput(	// Returns nothing.
 		prealm->EditRender();
 
 		// Need hood for this . . .
-		if (prealm->m_asClassNumThings[CThing::CHoodID] > 0)
+		if (prealm->m_asClassNumThings[CHoodID] > 0)
 			{
 			// If showing any attributes . . .
 			if (ms_spriteAttributes.m_pImage)
@@ -3136,7 +3139,7 @@ static void DoOutput(	// Returns nothing.
 		ms_sbVert.Draw(g_pimScreenBuf);
 		ms_sbHorz.Draw(g_pimScreenBuf);
 		//If there is a hood . . .
-		if (prealm->m_asClassNumThings[CThing::CHoodID] > 0)
+		if (prealm->m_asClassNumThings[CHoodID] > 0)
 			{
 			ms_pguiLayers->Draw(g_pimScreenBuf);
 			ms_pguiPickObj->Draw(g_pimScreenBuf);
@@ -3568,12 +3571,12 @@ static int16_t NewRealm(
 		prealm->m_resmgr.SetBasePath(g_GameSettings.m_szNoSakDir);
 
 		CThing*	pthing;
-		int16_t		sResult	= CreateNewThing(prealm, CThing::CHoodID, 0, 0, 0, &pthing, &ms_photHood);
+		int16_t		sResult	= CreateNewThing(prealm, CHoodID, 0, 0, 0, &pthing, &ms_photHood);
 		// Create hood object because we can't really do anything without it
 		if (sResult == SUCCESS)
 			{
 			RHot*		photdummy;
-			sResult	= CreateNewThing(prealm, CThing::CGameEditThingID, 0, 0, 0, &pthing, &photdummy);
+			sResult	= CreateNewThing(prealm, CGameEditThingID, 0, 0, 0, &pthing, &photdummy);
 			// Create editor object . . .
 			if (sResult == SUCCESS)
 				{
@@ -3581,7 +3584,7 @@ static int16_t NewRealm(
             ms_pgething	= static_cast<CGameEditThing*>(pthing);
             ms_pgething->m_plbNavNetList = static_cast<RListBox*>(ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST));
 
-				sResult	= CreateNewThing(prealm, CThing::CNavigationNetID, 150, 0, 50, &pthing, &ms_photSel);
+				sResult	= CreateNewThing(prealm, CNavigationNetID, 150, 0, 50, &pthing, &ms_photSel);
 				if (sResult == SUCCESS)
 					{
 					// Success.
@@ -3594,7 +3597,7 @@ static int16_t NewRealm(
 					// Freshen the map.
 					RefreshMap(prealm);
 
-					sResult = CreateNewThing(prealm, CThing::CTriggerID, 0, 0, 0, &pthing, &photdummy);
+					sResult = CreateNewThing(prealm, CTriggerID, 0, 0, 0, &pthing, &photdummy);
 					if (sResult == SUCCESS) 
 						{
                   prealm->m_pTriggerMap = static_cast<CTrigger*>(pthing)->m_pmgi;
@@ -3764,7 +3767,7 @@ static int16_t LoadRealm(
 					}
 
 				// Store ptr to GameEdit thing.
-				CListNode<CThing>* pEditorList = prealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
+				CListNode<CThing>* pEditorList = prealm->m_aclassHeads[CGameEditThingID].m_pnNext;
             CGameEditThing* peditor = static_cast<CGameEditThing*>(pEditorList->m_powner);
 				if (peditor)
 					{
@@ -3775,11 +3778,11 @@ static int16_t LoadRealm(
 				// Create Hot for every CThing.
 				///////////////////////////////////////////////////////////////////
 				// Get the hood . . .
-				if (prealm->m_asClassNumThings[CThing::CHoodID] > 0)
+				if (prealm->m_asClassNumThings[CHoodID] > 0)
 					{
 					RRect		rc;
 					// Get first and only Hood iterator.
-               CHood* phood = static_cast<CHood*>(prealm->m_aclassHeads[CThing::CHoodID].m_pnNext->m_powner);
+               CHood* phood = static_cast<CHood*>(prealm->m_aclassHeads[CHoodID].m_pnNext->m_powner);
 					// Get rectangle.
 					phood->EditRect(&rc);
 					// Create and setup RHot for hood.
@@ -3804,14 +3807,14 @@ static int16_t LoadRealm(
 							{
 							pthing	= pList->m_powner;
 							// Already got one for Hood.  If not the Hood . . .
-							if (pthing->GetClassID() != CThing::CHoodID)
+							if (pthing->GetClassID() != CHoodID)
 								{
 								sActivateHot	= TRUE;
 
 								// Some types may need to hook in here.
 								switch (pthing->GetClassID() )
 									{
-									case CThing::CBouyID:
+									case CBouyID:
 										// If bouy lines are hidden . . .
 										if (ms_bDrawNetwork == false)
 											{
@@ -3820,7 +3823,7 @@ static int16_t LoadRealm(
 											}
 										break;
 
-									case CThing::CNavigationNetID:
+									case CNavigationNetID:
                               static_cast<CNavigationNet*>(pthing)->EditPostLoad();
 										break;
 									}
@@ -4173,7 +4176,7 @@ static void PlayRealm(
 							{
 							switch (pthingSel->GetClassID() )
 								{
-								case CThing::CWarpID:
+								case CWarpID:
 									// Get user's preferred warp.
 									idSpecificWarp	= pthingSel->GetInstanceID();
 									break;
@@ -4246,7 +4249,7 @@ static void PlayRealm(
 						// Make sure no Scrollbars have focus.
 						RGuiItem::SetFocus(nullptr);
 
-						CListNode<CThing>* pNext = prealm->m_aclassHeads[CThing::CDudeID].m_pnNext;
+						CListNode<CThing>* pNext = prealm->m_aclassHeads[CDudeID].m_pnNext;
 						uint16_t u16IdDude = CIdBank::IdNil;
 						while (pNext->m_powner != nullptr)
 						{
@@ -4775,7 +4778,7 @@ static void PlayRealm(
 ////////////////////////////////////////////////////////////////////////////////
 static int16_t CreateNewThing(		// Returns 0 on success.
 	CRealm*	prealm,					// In:  Realm to add new CThing to.
-	CThing::ClassIDType	id,		// ID of new CThing type to create.
+	ClassIDType	id,		// ID of new CThing type to create.
 	int16_t		sPosX,					// Position for new CThing.
 	int16_t		sPosY,					// Position for new CThing.
 	int16_t		sPosZ,					// Position for new CThing.
@@ -4786,7 +4789,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
    int16_t sError = SUCCESS;
 
 	// Don't allow more than one CHood . . .
-	if ((id == CThing::CHoodID) && (prealm->m_asClassNumThings[CThing::CHoodID] > 0))
+	if ((id == CHoodID) && (prealm->m_asClassNumThings[CHoodID] > 0))
 		{
 		// ***LOCALIZE***
 		rspMsgBox(
@@ -4798,12 +4801,12 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 		}
 	else
 		{
-		if (prealm->m_asClassNumThings[CThing::CHoodID] > 0 || id == CThing::CHoodID)
+		if (prealm->m_asClassNumThings[CHoodID] > 0 || id == CHoodID)
 			{
-			if (!(id == CThing::CBouyID && prealm->GetCurrentNavNet() == nullptr))
-				{
-				// Create new object of currently selected type
-            if (CThing::ConstructWithID(id, prealm, ppthing) == SUCCESS)
+			if (!(id == CBouyID && prealm->GetCurrentNavNet() == nullptr))
+            {
+               *ppthing = prealm->makeTypeWithID(id);
+               if (*ppthing != nullptr) // Create new object of currently selected type
 					{
 					// Successfully allocated object.
 
@@ -4856,7 +4859,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 						// Some types may need to hook in here.
 						switch ( (*ppthing)->GetClassID() )
 							{
-							case CThing::CBouyID:
+							case CBouyID:
 								// If bouy lines are hidden . . .
 								if (ms_bDrawNetwork == false)
 									{
@@ -4884,7 +4887,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 						if (*pphot != nullptr)
 							{
 							// If this is not THE HOOD . . .
-							if (id != CThing::CHoodID)
+							if (id != CHoodID)
 								{
 								(*pphot)->SetParent(ms_photHood);
 								}
@@ -4892,7 +4895,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 							// Special things.
 							switch (id)
 								{
-								case CThing::CDudeID:
+								case CDudeID:
 									// If there is an editor thing . . .
 									if (ms_pgething != nullptr)
 										{
@@ -5188,8 +5191,8 @@ static int16_t SizeUpdate(		// Returns 0 on success.
 
 	// Get the hood . . .
 	CHood*	phood = nullptr;
-	if (prealm->m_asClassNumThings[CThing::CHoodID] > 0)
-      phood = static_cast<CHood*>(prealm->m_aclassHeads[CThing::CHoodID].GetNext());
+	if (prealm->m_asClassNumThings[CHoodID] > 0)
+      phood = static_cast<CHood*>(prealm->m_aclassHeads[CHoodID].GetNext());
 	else
 		{
 		TRACE("SizeUpdate(): No hood.\n");
@@ -5335,9 +5338,9 @@ static CGameEditThing* GetEditorThing(	// Returns ptr to editor thing for
 	{
 	CGameEditThing*	pgething	= nullptr;
 
-	if (prealm->m_asClassNumThings[CThing::CGameEditThingID] > 0)
+	if (prealm->m_asClassNumThings[CGameEditThingID] > 0)
 	{
-      pgething = static_cast<CGameEditThing*>(prealm->m_aclassHeads[CThing::CGameEditThingID].GetNext());
+      pgething = static_cast<CGameEditThing*>(prealm->m_aclassHeads[CGameEditThingID].GetNext());
 	}
 	else
 	{
@@ -5513,7 +5516,7 @@ static void ThingHotCall(	// Returns nothing.
 					if (ms_pgething != nullptr)
 						{
 						// If this thing is not the hood . . .
-						if (pthing->GetClassID() != CThing::CHoodID)
+						if (pthing->GetClassID() != CHoodID)
 							{
 							// Get ID of item to track.
 							ms_pgething->m_u16CameraTrackId	= pthing->GetInstanceID();
@@ -5557,7 +5560,7 @@ static void ThingHotCall(	// Returns nothing.
 				ms_photSel->m_sH	= rc.sH;
 
 				// See if a bouy was double clicked on
-				if (ms_pthingSel->GetClassID() == CThing::CBouyID)
+				if (ms_pthingSel->GetClassID() == CBouyID)
 				{
 					// If no bouys have been clicked on yet, set the
 					// starting bouy link and start drawing the line
@@ -5623,7 +5626,7 @@ static void ThingHotCall(	// Returns nothing.
 				SetSel(pthing, phot);
 
 				// If this is a pylon . . .
-				if (ms_pthingSel->GetClassID() == CThing::CPylonID)
+				if (ms_pthingSel->GetClassID() == CPylonID)
 					{
 					// Enter pylon trigger region edit mode.
 					EditPylonTriggerRegion(ms_pthingSel);
@@ -6544,7 +6547,7 @@ static int16_t CreateTriggerRegions(	// Returns 0 on success.
 		CThing*	pThing = nullptr;
 		RHot*	photdummy;
 
-		sResult = CreateNewThing(prealm, CThing::CTriggerID, 0, 0, 0, &pThing, &photdummy);
+		sResult = CreateNewThing(prealm, CTriggerID, 0, 0, 0, &pThing, &photdummy);
 		if (sResult == SUCCESS) 
 			{
          prealm->m_pTriggerMap = static_cast<CTrigger*>(pThing)->m_pmgi;
@@ -6646,7 +6649,7 @@ static void EditPylonTriggerRegion(	// Returns nothing.
 	// If there's a new pylon . . .
 	if (pthingPylon != nullptr)
 		{
-		ASSERT(pthingPylon->GetClassID() == CThing::CPylonID);
+		ASSERT(pthingPylon->GetClassID() == CPylonID);
 
       CPylon* pylon = static_cast<CPylon*>(pthingPylon);
 
@@ -6739,7 +6742,7 @@ static void DelThing(	// Returns nothing.
 
 		switch (pthingDel->GetClassID())
 			{
-			case CThing::CHoodID:
+			case CHoodID:
 				// *** LOCALIZE ***
 				rspMsgBox(
 					RSP_MB_ICN_STOP | RSP_MB_BUT_OK,
@@ -6750,7 +6753,7 @@ static void DelThing(	// Returns nothing.
 				photDel = nullptr;
 				break;
 
-			case CThing::CGameEditThingID:
+			case CGameEditThingID:
 				// *** LOCALIZE ***
 				rspMsgBox(
 					RSP_MB_ICN_STOP | RSP_MB_BUT_OK,
@@ -6761,12 +6764,12 @@ static void DelThing(	// Returns nothing.
 				photDel = nullptr;
 				break;
 
-			case CThing::CPylonID:
+			case CPylonID:
 				// Destroy its associated trigger region.
             ms_argns[static_cast<CPylon*>(pthingDel)->m_ucID].Destroy();
 				break;
 
-			case CThing::CBouyID:
+			case CBouyID:
 				// If it is a Bouy, unlink the bouy from the network and
 				// update the network.
             static_cast<CBouy*>(ms_pthingSel)->Unlink();
@@ -6784,12 +6787,12 @@ static void DelThing(	// Returns nothing.
 					UpdateNetLines(pNavNet);
 				break;
 
-			case CThing::CNavigationNetID:
+			case CNavigationNetID:
 				// If it is a NavNet, delete all of the Bouys associated
 				// with the NavNet.  Make sure its not the last NavNet, 
 				// and make sure there is still a current NavNet for the
 				// realm after it is deleted.
-				if (prealm->m_asClassNumThings[CThing::CNavigationNetID] > 1)
+				if (prealm->m_asClassNumThings[CNavigationNetID] > 1)
 				{
 					// Remove the Net from the list box
                RListBox* plbRemove = static_cast<RListBox*>(ms_pguiNavNets->GetItemFromId(GUI_ID_NAVNET_LIST));
@@ -6800,7 +6803,7 @@ static void DelThing(	// Returns nothing.
                static_cast<CNavigationNet*>(ms_pthingSel)->DeleteNetwork();
 					if (ms_pthingSel == prealm->GetCurrentNavNet())
 					{
-						CListNode<CThing>* pNext = prealm->m_aclassHeads[CThing::CNavigationNetID].m_pnNext;
+						CListNode<CThing>* pNext = prealm->m_aclassHeads[CNavigationNetID].m_pnNext;
 						bool bSearching = true;
 						CNavigationNet* pNet = nullptr;
 						while (bSearching && pNext->m_powner != nullptr)
@@ -6881,6 +6884,7 @@ static void DelClass(	// Returns nothing.
 	CRealm* prealm)		// In:  Current realm
 	{
 	char	szTitle[512];
+#if defined (RELEASE)
 	sprintf(
 		szTitle, 
 		"Delete entire \"%s\" class",
@@ -6888,6 +6892,7 @@ static void DelClass(	// Returns nothing.
 			? CThing::ms_aClassInfo[pthingDel->GetClassID()].pszClassName
 			: "CThing"
 		);
+#endif
 	// VERIFY . . .
 	if (rspMsgBox(
 		RSP_MB_ICN_QUERY | RSP_MB_BUT_YESNO,
@@ -6945,7 +6950,7 @@ static void DelMost(	// Returns nothing.
 		{
 		CListNode<CThing>*	plnDel;
 		CListNode<CThing>*	plnTail;
-		CThing::ClassIDType classType;
+		ClassIDType classType;
 		// Use all CThings.
 		plnDel	= prealm->m_everythingHead.m_pnNext;
 		plnTail	= &(prealm->m_everythingTail);
@@ -6962,14 +6967,14 @@ static void DelMost(	// Returns nothing.
 					DelThing(plnDel->m_powner, nullptr, prealm);
 					break;
 
-				case CThing::CHoodID:
-				case CThing::CPylonID:
-				case CThing::CBouyID:
-				case CThing::CNavigationNetID:
-				case CThing::CSoundThingID:
-				case CThing::CSndRelayID:
-				case CThing::CGameEditThingID:
-				case CThing::CWarpID:
+				case CHoodID:
+				case CPylonID:
+				case CBouyID:
+				case CNavigationNetID:
+				case CSoundThingID:
+				case CSndRelayID:
+				case CGameEditThingID:
+				case CWarpID:
 					break;
 			}
 
@@ -6993,15 +6998,17 @@ static int16_t CopyItem(	// Returns 0 on success.
 		// Switch for exceptions by type.
 		switch (pthingCopy->GetClassID() )
 			{
-			case CThing::CBouyID:
-			case CThing::CPylonID:
-			case CThing::CNavigationNetID:
-			case CThing::CHoodID:
+			case CBouyID:
+			case CPylonID:
+			case CNavigationNetID:
+			case CHoodID:
+#if defined (RELEASE)
 				rspMsgBox(
 					RSP_MB_ICN_INFO | RSP_MB_BUT_OK,
 					"Cannot Copy",
-					"Cannot Copy %s",
-					CThing::ms_aClassInfo[pthingCopy->GetClassID()].pszClassName);
+               "Cannot Copy %s",
+               CThing::ms_aClassInfo[pthingCopy->GetClassID()].pszClassName);
+#endif
 				break;
 			default:
 				{
@@ -7508,8 +7515,9 @@ static void UpdateSelectionInfo(	// Returns nothing.
 			if (ms_pthingSel)
 				{
 				ms_pguiInfo->SetText(
-					"Info for \"%s\" [%u]",
-					CThing::ms_aClassInfo[ms_pthingSel->GetClassID()].pszClassName,
+               "Info for \"%s\" [%u]",
+                  "some type",
+//					CThing::ms_aClassInfo[ms_pthingSel->GetClassID()].pszClassName,
 					ms_pthingSel->GetInstanceID() );
 				}
 			else
@@ -7649,7 +7657,7 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 					szThingDescription, 
                "%i) \"%s\" ID: %u X: %s Y: %s Z: %s",
 					lNum,
-					CThing::ms_aClassInfo[pthing->GetClassID()].pszClassName,
+               pthing->GetClassName(),
 					pthing->GetInstanceID(),
 					szX,
 					szY,

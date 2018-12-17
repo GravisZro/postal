@@ -455,8 +455,8 @@ void CBarrel::Update(void)
 			case CBarrel::State_Wait:
 				if (lThisTime > m_lTimer)
 				{
-					CExplode* pExplosion;
-					if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+               CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
+               if (pExplosion != nullptr)
 					{
 						pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
 						PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
@@ -499,7 +499,8 @@ void CBarrel::Update(void)
 					CFire* pFire;
 					for (i = 0; i < ms_sNumFires; i++)
 					{
-						if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pFire) == SUCCESS)
+                 pFire = static_cast<CFire*>(realm()->makeType(CFireID));
+                  if (pFire != nullptr)
 						{
 							if (pFire->Setup(m_dX - 20 + (GetRandom() % 40), m_dY, m_dZ - 20 + (GetRandom() % 40), 
 											  4000 + (GetRandom() % 9000), false, CFire::LargeFire) != SUCCESS)
@@ -664,8 +665,8 @@ void CBarrel::OnShotMsg(Shot_Message* pMessage)
 		{
 			m_state = State_BlownUp;
 			m_lAnimTime = 0;
-			CExplode* pExplosion;
-			if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+         CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
+         if (pExplosion != nullptr)
 			{
 				pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
 				PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
@@ -746,8 +747,8 @@ void CBarrel::OnBurnMsg(Burn_Message* pMessage)
 			m_state = State_BlownUp;
 			m_lTimer = m_pRealm->m_time.GetGameTime();
 			m_lAnimTime = 0;
-			CExplode* pExplosion;
-			if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+         CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
+         if (pExplosion != nullptr)
 			{
 				pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
 				PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);

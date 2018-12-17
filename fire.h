@@ -172,10 +172,8 @@ class CFire : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CFire(CRealm* pRealm)
-			: CThing(pRealm, CFireID)
+   public:
+      CFire(void)
 			{
 			m_bIsBurningDude = false;
 			m_sSuspend = 0;
@@ -191,9 +189,7 @@ class CFire : public CThing
 			m_u16FireStarterID = CIdBank::IdNil;
 			}
 
-	public:
-		// Destructor
-		~CFire()
+      ~CFire(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -205,25 +201,6 @@ class CFire : public CThing
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFire(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFire::Construct(): Couldn't construct CFire (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

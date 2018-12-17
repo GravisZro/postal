@@ -223,8 +223,7 @@
 // Constructor
 // (protected).
 ////////////////////////////////////////////////////////////////////////////////
-CHood::CHood(CRealm* pRealm)
-	: CThing(pRealm, CHoodID)
+CHood::CHood(void)
 	{
 	// Initialize ptrs to resources.
 	m_pimBackground	= nullptr;
@@ -271,7 +270,7 @@ CHood::CHood(CRealm* pRealm)
 	m_sScaleAttribHeights	= TRUE;
 
 	// Let realm have quick access to us.
-	pRealm->m_phood	= this;
+   realm()->m_phood = this;
 
 	// We want a Startup() call.
 	m_sCallStartup		= 1;
@@ -284,7 +283,7 @@ CHood::CHood(CRealm* pRealm)
 // Destructor
 // (public).
 ////////////////////////////////////////////////////////////////////////////////
-CHood::~CHood()
+CHood::~CHood(void)
 	{
 	Kill();
 	// Clear Realm's ptr.

@@ -995,6 +995,7 @@ if (g_bSceneDontBlit == false)
         ASSERT(m_pipeline.m_sCenY + sRadius < SCREEN_DIAMETER_FOR_3D - sRenderOffY);
 */
 			char	szMsg[1024];
+#if defined (RELEASE)
 			if (ps3Cur->m_pthing)
 				{
 				sprintf(szMsg, "Render3D(): %s with ID %d",
@@ -1005,7 +1006,7 @@ if (g_bSceneDontBlit == false)
 				{
 				std::strcpy(szMsg, "Render3D(): Unknown class with unknown ID");
 				}
-			
+
 			// If there's a parent . . .
 			CSprite*	psprParent	= ps3Cur->m_psprParent;
 			if (psprParent != nullptr)
@@ -1018,7 +1019,7 @@ if (g_bSceneDontBlit == false)
 						psprParent->m_pthing->GetInstanceID());
 					}
 				}
-
+#endif
 			strcat(szMsg, " would exceed the Z buffer, if rendered.  Not gonna do it.\n");
 			TRACE(szMsg);
 			}

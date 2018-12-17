@@ -420,8 +420,8 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 	{
 		m_lTimeToLive = m_pRealm->m_time.GetGameTime() + lTimeToLive;
 
-		CFireball*	pfireball;
-		if (CThing::ConstructWithID(CThing::CFireballID, m_pRealm, (CThing**) &pfireball) == SUCCESS)
+      CFireball* pfireball = static_cast<CFireball*>(realm()->makeTypeWithID(CFireballID));
+      if (pfireball != nullptr)
 		{
 			pfireball->Setup(m_dX, m_dY, m_dZ, sDir, lTimeToLive, u16ShooterID);
 			m_idFireball1	= pfireball->GetInstanceID();
@@ -429,7 +429,8 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;	// First interval
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;	
-		if (CThing::ConstructWithID(CThing::CFireballID, m_pRealm, (CThing**) &pfireball) == SUCCESS)
+      pfireball = static_cast<CFireball*>(realm()->makeTypeWithID(CFireballID));
+      if (pfireball != nullptr)
 		{
 			pfireball->Setup(dX, m_dY, dZ, sDir, lTimeToLive, u16ShooterID);
 			m_idFireball2	= pfireball->GetInstanceID();
@@ -437,7 +438,8 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
-		if (CThing::ConstructWithID(CThing::CFireballID, m_pRealm, (CThing**) &pfireball) == SUCCESS)
+      pfireball = static_cast<CFireball*>(realm()->makeTypeWithID(CFireballID));
+      if (pfireball != nullptr)
 		{
 			pfireball->Setup(dX, m_dY, dZ, sDir, lTimeToLive, u16ShooterID);
 			m_idFireball3	= pfireball->GetInstanceID();

@@ -278,7 +278,7 @@ typedef struct
 		// Weapons for this person.  Currently, only one supported.
 		struct
 			{
-			CThing::ClassIDType	idWeapon1;		// CThing ID of preferred weapon.
+			ClassIDType	idWeapon1;		// CThing ID of preferred weapon.
 			} Weapon;
 
 		// Type of writhing motion

@@ -76,9 +76,7 @@ class CSndRelay : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-		// Constructor
-		CSndRelay(CRealm* pRealm)
-			: CThing(pRealm, CSndRelayID)
+      CSndRelay(void)
 			{
 			m_bInitiallyEnabled = true;
 			m_bEnabled	= m_bInitiallyEnabled;
@@ -90,30 +88,9 @@ class CSndRelay : public CThing
 			m_idParent	= CIdBank::IdNil;
 			}
 
-	public:
-		// Destructor
-		~CSndRelay()
+      ~CSndRelay(void)
 			{
 			Kill();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CSndRelay(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CSndRelay::Construct(): Couldn't construct CSndRelay (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

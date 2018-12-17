@@ -87,11 +87,9 @@ class CBall : public CThing
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
-	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CBall(CRealm* pRealm)
-			: CThing(pRealm, CBallID)
+   //---------------------------------------------------------------------------
+    public:
+      CBall(void)
 			{
 			m_sSuspend	= 0;
 			m_dDX			= 0;
@@ -100,9 +98,7 @@ class CBall : public CThing
 			m_sprite.m_pthing	= this;
 			}
 
-	public:
-		// Destructor
-		~CBall()
+      ~CBall(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -111,24 +107,6 @@ class CBall : public CThing
 			FreeResources();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CBall(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CBall::Construct(): Couldn't construct CBall!\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

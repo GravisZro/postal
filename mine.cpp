@@ -601,8 +601,8 @@ void CMine::Update(void)
 				{
 					// Start an explosion object and then kill rocket
 					// object
-					CExplode* pExplosion;
-               if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+              CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));;
+              if (pExplosion != nullptr)
 					{
 						pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
 						PlaySample(

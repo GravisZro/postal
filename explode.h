@@ -105,16 +105,12 @@ class CExplode : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-		// Constructor
-		CExplode(CRealm* pRealm)
-			: CThing(pRealm, CExplodeID)
+      CExplode(void)
 			{
 			m_sSuspend		= 0;
 			m_u16ExceptID	= CIdBank::IdNil;
 			}
 
-	public:
-		// Destructor
 		~CExplode()
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
@@ -123,25 +119,6 @@ class CExplode : public CThing
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CExplode(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CExplode::Construct(): Couldn't construct CExplode (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

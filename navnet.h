@@ -88,16 +88,14 @@ class CNavigationNet : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CNavigationNet(CRealm* pRealm)
-			: CThing(pRealm, CNavigationNetID)
+   public:
+      CNavigationNet(void)
 			{
 			m_pImage = 0;
 			m_sSuspend = 0;
 			m_ucNextID = 1;
 			// Set yourself to be the new current Nav Net in the realm
-			pRealm->m_pCurrentNavNet = this;
+         //pRealm->m_pCurrentNavNet = this; // TODO: REPLACE
 			// Set default name as NavNetxx where xx is CThing ID
 			m_rstrNetName = "Untitled NavNet";
 			// Initialize the dummy nodes for the sorted tree/list
@@ -113,34 +111,13 @@ class CNavigationNet : public CThing
 			m_BouyTreeListTail.m_pnLeft = nullptr;
 			}
 
-	public:
-		// Destructor
-		~CNavigationNet()
+      ~CNavigationNet(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-         int16_t sResult = SUCCESS;
-			*ppNew = new CNavigationNet(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CNavigationNet::Construct(): Couldn't construct CNavigationNet (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

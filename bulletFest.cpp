@@ -606,7 +606,7 @@ void CBulletFest::Flare(		// Returns nothing.
 	{
   UNUSED(sAngle);
 	// Create the animator . . .
-	CAnimThing*	pat	= new CAnimThing(pRealm);
+   CAnimThing*	pat	= static_cast<CAnimThing*>(pRealm->makeType(CAnimThingID));
 	ASSERT(pat != nullptr);
 
    std::strcpy(pat->m_szResName, FLARE_RES_NAME);
@@ -639,7 +639,7 @@ void CBulletFest::Impact(	// Returns nothing.
 	{
   UNUSED(sAngle);
 	// Create the animator . . .
-	CAnimThing*	pat	= new CAnimThing(pRealm);
+   CAnimThing*	pat	= static_cast<CAnimThing*>(pRealm->makeType(CAnimThingID));
 	ASSERT(pat != nullptr);
 
    std::strcpy(pat->m_szResName, IMPACT_RES_NAME);
@@ -666,7 +666,7 @@ void CBulletFest::Ricochet(	// Returns nothing.
 	{
   UNUSED(sAngle);
 	// Create the animator . . .
-	CAnimThing*	pat	= new CAnimThing(pRealm);
+   CAnimThing*	pat	= static_cast<CAnimThing*>(pRealm->makeType(CAnimThingID));
 	ASSERT(pat != nullptr);
 
    std::strcpy(pat->m_szResName, RICOCHET_RES_NAME);

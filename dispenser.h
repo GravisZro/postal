@@ -147,10 +147,8 @@ class CDispenser : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CDispenser(CRealm* pRealm)
-			: CThing(pRealm, CDispenserID)
+   public:
+      CDispenser(void)
 			{
 			m_pim					= nullptr;
 			m_idDispenseeType	= TotalIDs;			// This means none.
@@ -165,33 +163,12 @@ class CDispenser : public CThing
 			m_sDispenseeHotSpotY	= 0;
 			}
 
-	public:
-		// Destructor
-		~CDispenser()
+      ~CDispenser(void)
 			{
 			// Kill dispenser
 			Kill();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CDispenser(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CDispenser::Construct(): Couldn't construct CDispenser!\n");
-				}
-
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

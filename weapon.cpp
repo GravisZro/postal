@@ -105,7 +105,7 @@ int16_t CWeapon::Load(										// Returns 0 if successfull, non-zero otherwise
 				pFile->Read(&m_dRot);
 				pFile->Read(&m_dVertVel);
 				pFile->Read(&m_dHorizVel);
-				pFile->Read(&m_eState);
+            pFile->Read(reinterpret_cast<uint8_t*>(&m_eState));
 				break;
 			}
 
@@ -165,7 +165,7 @@ int16_t CWeapon::Save(										// Returns 0 if successfull, non-zero otherwise
 	pFile->Write(&m_dRot);
 	pFile->Write(&m_dVertVel);
 	pFile->Write(&m_dHorizVel);
-	pFile->Write(&m_eState);
+   pFile->Write(uint8_t(m_eState));
 
    return SUCCESS;
 	}

@@ -314,6 +314,11 @@ void CHeatseeker::Update(void)
 		// Check the current state
 		switch (m_eState)
 		{
+        case CWeapon::State_Deleted:
+//           delete this;
+           return;
+           break;
+
 			case CWeapon::State_Hide:
 			case CWeapon::State_Idle:
 				break;
@@ -529,8 +534,8 @@ void CHeatseeker::Update(void)
 				if (lThisTime > m_lSmokeTimer)
 				{
 					m_lSmokeTimer = lThisTime + ms_lSmokeTrailInterval;
-					CFire* pSmoke = nullptr;
-					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+               CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+               if (pSmoke != nullptr)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
@@ -555,8 +560,8 @@ void CHeatseeker::Update(void)
 
 				// Start an explosion object and then kill rocket
 				// object
-				CExplode* pExplosion;
-				if (CThing::Construct(CThing::CExplodeID, m_pRealm, (CThing**) &pExplosion) == SUCCESS)
+          CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));;
+          if (pExplosion != nullptr)
 				{
 					pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_u16ShooterID);
 					PlaySample(
@@ -569,18 +574,14 @@ void CHeatseeker::Update(void)
 				CFire* pSmoke;
 				for (a = 0; a < 8; a++)
 				{
-					if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+              pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+               if (pSmoke != nullptr)
 					{
 						pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 						pSmoke->m_u16ShooterID = m_u16ShooterID;
 					}
 				}
 
-				delete this;
-				return;
-				break;
-
-			case CWeapon::State_Deleted:
 				delete this;
 				return;
 				break;

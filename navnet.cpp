@@ -344,7 +344,7 @@ int16_t CNavigationNet::EditPostLoad(void)
 {
    int16_t sResult = SUCCESS;
 
-	CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
+	CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
 	CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 	RListBox* plb = peditor->m_plbNavNetList;
 	if (plb != nullptr)
@@ -385,7 +385,7 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
 
 	if (sResult == SUCCESS)
 	{
-		CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
+		CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
 		CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 		RListBox* plb = peditor->m_plbNavNetList;
 		if (plb != nullptr)
@@ -439,7 +439,7 @@ int16_t CNavigationNet::EditModify(void)
          pGui->GetText(3, m_rstrNetName.Data(), 255);
 			m_rstrNetName.Update();
 
-			CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
+			CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
 			CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 			RListBox* plb = peditor->m_plbNavNetList;			
          SetText(plb, GetInstanceID(), m_rstrNetName.operator const char *());

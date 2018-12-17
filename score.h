@@ -120,7 +120,7 @@ class CScoreboard
 //			short sPlayerIndex = Net::MaxNumIDs;
  //
 //			CThing* pShooter = GetItemById(uInstanceID)
-//			if (pShooter && pShooter->m_id == CThing::CDudeID)
+//			if (pShooter && pShooter->m_id == CDudeID)
 //			{
 //				sPlayerIndex = MIN(((CDude*) pShooter)->m_sDudeNum, Net::MaxNumIDs);
 //			}	

@@ -550,8 +550,8 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 	// If no dude passed . . .
 	if (*ppdude == nullptr)
 		{
-		sResult	= ConstructWithID(CDudeID, m_pRealm, (CThing**)ppdude);
-		if (sResult == SUCCESS)
+         *ppdude = static_cast<CDude*>(realm()->makeTypeWithID(CDudeID));
+         if (*ppdude != nullptr)
 			{
 			// Copy stockpile to new CDude.
 			(*ppdude)->m_stockpile.Copy(&ms_stockpile);
@@ -683,7 +683,9 @@ int16_t CWarp::CreateWarpFromDude(	// Returns 0 on success.
 	int16_t sResult = SUCCESS;	// Assume success.
 
 	// Create warp . . .
-	if (ConstructWithID(CWarpID, prealm, (CThing**)ppwarp) == SUCCESS)
+
+   *ppwarp = static_cast<CWarp*>(prealm->makeTypeWithID(CWarpID));
+   if (*ppwarp != nullptr)
 		{
 		// Copy dude's position and orientation.
 		(*ppwarp)->m_dX		= pdude->m_dX;

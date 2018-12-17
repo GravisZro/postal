@@ -71,40 +71,17 @@ class CGameEditThing : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CGameEditThing(CRealm* pRealm)
-			: CThing(pRealm, CGameEditThingID)
+   public:
+      CGameEditThing(void)
 			{
 			// Set defaults.
 			m_u16CameraTrackId	= CIdBank::IdNil;
 			m_sViewPosX				= 0;
 			m_sViewPosY				= 0;
-			}
+         }
 
-	public:
-		// Destructor
-		~CGameEditThing()
+      ~CGameEditThing(void)
 			{
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CGameEditThing(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CGameEditThing::Construct(): Couldn't construct CGameEditThing!\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

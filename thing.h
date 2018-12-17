@@ -337,6 +337,72 @@ class CListNode
 	};
 
 
+enum ClassIDType : uint8_t
+{
+  // First entry should start at 0!
+  CHoodID = 0,
+  CDudeID,
+  CDoofusID,
+  CTkachukID, // unused
+  CRocketManID, // unused
+  CGrenaderID, // unused
+  CRocketID,
+  CGrenadeID,
+  CBallID,
+  CExplodeID,
+  CBouyID,
+  CNavigationNetID,
+  CGameEditThingID,
+  CNapalmID,
+  CFireID,
+  CImbecileID, // unused
+  CFirebombID,
+  CFirefragID,
+  CAnimThingID,
+  CSoundThingID,
+  CGunnerID, // unused
+  CBandID,
+  CItem3dID,
+  CBarrelID,
+  CProximityMineID,
+  CDispenserID,
+  CFireballID,
+  CCopID, // unused
+  CPistolID,
+  CMachineGunID,
+  CShotGunID,
+  CPersonID,
+  CTimedMineID,
+  CBouncingBettyMineID,
+  CRemoteControlMineID,
+  CPylonID,
+  CPowerUpID,
+  COstrichID,
+  CTriggerID,
+  CHeatseekerID,
+  CChunkID,
+  CAssaultWeaponID,
+  CSentryID,
+  CSentryGunID,
+  CWarpID,
+  CDemonID,
+  CCharacterID,
+  CGoalTimerID,
+  CFlagID,
+  CFlagbaseID,
+  CFirestreamID,
+  CDeathWadID,
+  CDoubleBarrelID,
+  CUziID,
+  CAutoRifleID,
+  CSmallPistolID,
+  CDynamiteID,
+  CSndRelayID,
+
+  // This must be the last entry so it gets set to the total number of ID's
+  TotalIDs,
+};
+
 // This abstract class is the root of all objects that are part of a CRealm.
 // Its primary purpose is to force all derived classes to supply a common set
 // of functions so all ojects can be accessed in a generic manner.
@@ -367,79 +433,6 @@ class CThing
 																		// cannot.
 			} ClassInfo;
 
-      // Typedef for class ID's, required because we want specify the type,
-      // whereas the compiler always uses type int for enums.
-      typedef uint8_t ClassIDType;
-
-		// Class ID's for all derived classes that need to be loaded/saved.  If
-		// these numbers change, it will completely invalidate any world files
-		// that were created prior to the change!  Add new ID's after existing
-		// ID's so the existing ones don't change.
-      enum : uint8_t
-			{
-			// First entry should start at 0!
-			CHoodID = 0,
-			CDudeID,
-			CDoofusID,
-			CTkachukID,
-			CRocketManID,
-			CGrenaderID,
-			CRocketID,
-			CGrenadeID,
-			CBallID,
-			CExplodeID,
-			CBouyID,
-			CNavigationNetID,
-			CGameEditThingID,
-			CNapalmID,
-			CFireID,
-			CImbecileID,
-			CFirebombID,
-			CFirefragID,
-			CAnimThingID,
-			CSoundThingID,
-			CGunnerID,
-			CBandID,
-			CItem3dID,
-			CBarrelID,
-			CProximityMineID,
-			CDispenserID,
-			CFireballID,
-			CCopID,
-			CPistolID,
-			CMachineGunID,
-			CShotGunID,
-			CPersonID,
-			CTimedMineID,
-			CBouncingBettyMineID,
-			CRemoteControlMineID,
-			CPylonID,
-			CPowerUpID,
-			COstrichID,
-			CTriggerID,
-			CHeatseekerID,
-			CChunkID,
-			CAssaultWeaponID,
-			CSentryID,
-			CSentryGunID,
-			CWarpID,
-			CDemonID,
-			CCharacterID,
-			CGoalTimerID,
-			CFlagID,
-			CFlagbaseID,
-			CFirestreamID,
-			CDeathWadID,
-			CDoubleBarrelID,
-			CUziID,
-			CAutoRifleID,
-			CSmallPistolID,
-			CDynamiteID,
-			CSndRelayID,
-
-			// This must be the last entry so it gets set to the total number of ID's
-			TotalIDs
-         };
 
 		typedef enum	// Macros within CThing namespace.
 			{
@@ -466,28 +459,8 @@ class CThing
 	//---------------------------------------------------------------------------
 	public:
 		// Array of class info for each derived class
-		static ClassInfo ms_aClassInfo[TotalIDs];
+//		static ClassInfo ms_aClassInfo[TotalIDs];
 
-	//---------------------------------------------------------------------------
-	// Static functions dealing with common static functions in derived classes.
-	// The purpose of these functions is to make it easy to call the appropriate
-	// static function in a derived class based on its class ID.  This basically
-	// impliments something similar to virtual functions, except these are static
-	// functions, which the C++ mechanism doesn't support.
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			ClassIDType id,										// In:  Class ID
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
- 			CThing** ppNew);										// Out: Pointer to new object
-
-		// Construct object and assign it an ID from the Realm's ID bank,
-		// if it does not already have one.
-		static int16_t ConstructWithID(							// Returns 0 if successfull, non-zero otherwise
-			ClassIDType id,										// In:  Class ID
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
- 			CThing** ppNew);										// Out: Pointer to new object
 
 	//---------------------------------------------------------------------------
 	// Non-static variables
@@ -543,22 +516,33 @@ class CThing
 	//---------------------------------------------------------------------------
 	protected:
 		// Constructor
-		CThing(
-			CRealm* pRealm,										// In:  Pointer to realm
-			ClassIDType id);										// In:  Class ID
+      CThing(void);
 
 	public:
 		// Destructor (must be virtual so derived class destructors are always called!)
 		virtual ~CThing();
 
+  constexpr CRealm* realm(void) const noexcept { return m_realm; }
+  constexpr ClassIDType type(void) const noexcept { return m_type; }
+  constexpr bool instantiable(void) const noexcept { return m_instantiable; }
+
+  void* operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept;
+ private:
+  CRealm* m_realm;
+  ClassIDType m_type;
+  bool m_instantiable;
 	//---------------------------------------------------------------------------
 	// CThing-only functions
 	//---------------------------------------------------------------------------
 	public:
+      const char* GetClassName(void)
+      {
+        return "";
+      }
 		// Get object's class ID (must NOT be virtual!)
 		ClassIDType GetClassID(void)							// Returns object's class ID
 			{
-			return m_id;
+         return m_type;
 			}
 
 		// Get object instance's unique ID.

@@ -105,9 +105,7 @@ class CWarp : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-		// Constructor
-		CWarp(CRealm* pRealm)
-			: CThing(pRealm, CWarpID)
+      CWarp(void)
 			{
 			m_sSuspend					= 0;
 			m_sRotY						= 0;
@@ -115,8 +113,6 @@ class CWarp : public CThing
 			m_sprite.m_pthing			= this;
 			}
 
-	public:
-		// Destructor
 		~CWarp()
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
@@ -124,25 +120,6 @@ class CWarp : public CThing
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CWarp(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CWarp::Construct(): Couldn't construct CWarp (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

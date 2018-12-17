@@ -168,7 +168,7 @@ CSmash::~CSmash()
 int16_t	CSmashatorium::CollideCyl(CSmash* pSmashee,RSphere* pSphere) // sphere of Smasher
 	{
 	if (!pSmashee->m_pThing) return SUCCESS;	// not a dude
-	if (pSmashee->m_pThing->GetClassID() != CThing::CDudeID) return SUCCESS;	// not a dude
+	if (pSmashee->m_pThing->GetClassID() != CDudeID) return SUCCESS;	// not a dude
 	// it's a dude !  see if the cylinder collides:
 	int32_t	lCylR = pSmashee->m_sphere.sphere.lRadius / 3;	// go with half the sphere radius
 	// NOTE that if it's a DUDE colliding with a DUDE, only one uses a cylinder:
@@ -189,7 +189,7 @@ int16_t	CSmashatorium::CollideCyl(CSmash* pSmashee,RSphere* pSphere) // sphere o
 int16_t	CSmashatorium::CollideCyl(CSmash* pSmashee,R3DLine* pLine) // sphere of Smasher
 	{
 	if (!pSmashee->m_pThing) return SUCCESS;	// not a dude
-	if (pSmashee->m_pThing->GetClassID() != CThing::CDudeID) return SUCCESS;	// not a dude
+	if (pSmashee->m_pThing->GetClassID() != CDudeID) return SUCCESS;	// not a dude
 	// it's a dude !  see if the cylinder collides:
 	int32_t	lCylR = pSmashee->m_sphere.sphere.lRadius / 3;	// go with half the sphere radius
 	int32_t	lOldR = pSmashee->m_sphere.sphere.lRadius;

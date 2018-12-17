@@ -687,7 +687,7 @@ void CPerson::Update(void)
 				GameMessage msg;
 				msg.msg_Death.eType = typeDeath;
 				msg.msg_Death.sPriority = 0;
-				pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+				pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 				if (pDemon)
 					SendThingMessage(&msg, pDemon);				
 				CDoofus::OnDead();
@@ -1173,7 +1173,7 @@ int16_t CPerson::EditModify(void)
 					RGuiItem* pSelection = pWeaponList->GetSel();
 					if (pSelection)
 					{
-						m_eWeaponType	= pSelection->m_lId;
+                  m_eWeaponType	= ClassIDType(pSelection->m_lId);
 					}
 					pSelection = pPersonalityList->GetSel();
 					if (pSelection)

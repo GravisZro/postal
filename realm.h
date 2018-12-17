@@ -334,6 +334,9 @@
 #include "trigger.h"
 
 
+#include <put/object.h>
+
+
 // The overall "universe" in which a game takes place is represented by one or
 // more CRealm's.  A realm is basically a collection of objects plus a handfull
 // of functions for managing those objects.  These functions include loading,
@@ -412,7 +415,7 @@
 
 class CNavigationNet;
 
-class CRealm
+class CRealm : Object
 	{
 	friend class CNavigationNet;
 	//---------------------------------------------------------------------------
@@ -577,9 +580,9 @@ class CRealm
 		// Array of Head and Tail pointers to the various lists of derived CThings
 		// in the game.  The array is indexed by the class ID, and each list contains
 		// only objects of that type.		
-		CListNode<CThing> m_aclassHeads[CThing::TotalIDs];
-		CListNode<CThing> m_aclassTails[CThing::TotalIDs];
-		int16_t m_asClassNumThings[CThing::TotalIDs];
+      CListNode<CThing> m_aclassHeads[TotalIDs];
+      CListNode<CThing> m_aclassTails[TotalIDs];
+      int16_t m_asClassNumThings[TotalIDs];
 
 		// Pointer to the attribute map.  The CHood is expected to set these
 		// as soon as it can so that other obects can use it.  This is really
@@ -683,6 +686,10 @@ class CRealm
 		// Destructor
 		~CRealm();
 
+
+      CThing* makeType(ClassIDType type);
+      CThing* makeTypeWithID(ClassIDType type);
+
 		// Register a birth for this realm - Each enemy and victim should call
 		// this when they are created.
 		void RegisterBirth(bool bCivilian = false)
@@ -741,7 +748,7 @@ class CRealm
 		// Add thing to realm
 		void AddThing(
 			CThing* pThing,										// In:  Pointer to thing to be added
-			CThing::ClassIDType id,								// In:  Thing's class ID
+         ClassIDType id,								// In:  Thing's class ID
 #if _MSC_VER >= 1020
 			CThing::Things::const_iterator* piterEvery,	// Out: Iterator into everything container
 			CThing::Things::const_iterator* piterClass)	// Out: Iterator into class container
@@ -768,7 +775,7 @@ class CRealm
 		// Add thing to realm
 		void AddThing(
 			CThing* pThing, 
-			CThing::ClassIDType id)
+         ClassIDType id)
 			{
 			pThing->m_everything.InsertBefore(&m_everythingTail);
 			pThing->m_nodeClass.InsertBefore(&(m_aclassTails[id]));			
@@ -791,7 +798,7 @@ class CRealm
 		// Remove thing from realm
 /*
 		void RemoveThing(
-			CThing::ClassIDType id,								// In:  Thing's class ID
+         ClassIDType id,								// In:  Thing's class ID
 #if _MSC_VER >= 1020
 			CThing::Things::const_iterator iterEvery,		// In: Thing's iterator into everything container
 			CThing::Things::const_iterator iterClass)		// In: Thing's iterator into class container

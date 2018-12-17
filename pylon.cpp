@@ -713,7 +713,7 @@ uint8_t CPylon::GetFreePylonID(void)
 	{
 		bIdInUse = false;
 		// Loop through list of CPylons and see if they already have this ID
-		pNext = m_pRealm->m_aclassHeads[CThing::CPylonID].m_pnNext;
+		pNext = m_pRealm->m_aclassHeads[CPylonID].m_pnNext;
 		while (pNext && pNext->m_powner && !bIdInUse)
 		{
 			if (((CPylon*) pNext->m_powner)->m_ucID == id)
@@ -762,7 +762,7 @@ CPylon* CPylon::GetPylon(uint8_t ucPylonID)
 uint16_t CPylon::GetPylonUniqueID(uint8_t ucPylonID)
 {
 	uint16_t u16UniqueID = CIdBank::IdNil;
-	CListNode<CThing>* pNext = m_pRealm->m_aclassHeads[CThing::CPylonID].m_pnNext;
+	CListNode<CThing>* pNext = m_pRealm->m_aclassHeads[CPylonID].m_pnNext;
 	
 	bool bSearching = true;
 

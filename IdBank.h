@@ -86,17 +86,13 @@ class CIdBank
 			} IdNode;
 
 //////////////////////////////////////////////////////////////////////////////
-	public:	// Con/Destruction.
-//////////////////////////////////////////////////////////////////////////////
-
-		// Default constructor.
-		CIdBank()
+   public:	// Con/Destruction.
+      CIdBank(void)
 			{
 			Reset();
 			}
 
-		// Destructor.
-		~CIdBank()
+      ~CIdBank(void)
 			{
 			}
 

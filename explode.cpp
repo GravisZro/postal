@@ -314,7 +314,8 @@ void CExplode::Update(void)
 			CFire* pSmoke;
 			for (a = 0; a < 8; a++)
 			{
-				if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pSmoke) == SUCCESS)
+           pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
+            if (pSmoke != nullptr)
 					pSmoke->Setup(m_dX - 4 + GetRandom() % 9, MAX(m_dY-20, 0.0), m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}
 

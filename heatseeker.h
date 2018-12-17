@@ -101,18 +101,14 @@ class CHeatseeker : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-		// Constructor
-		CHeatseeker(CRealm* pRealm)
-			: CWeapon(pRealm, CHeatseekerID)
+      CHeatseeker(void)
 			{
 			m_sprite.m_pthing	= this;
 			m_lSmokeTimer = 0;
 			m_siThrust = 0;
 			}
 
-	public:
-		// Destructor
-		~CHeatseeker()
+      ~CHeatseeker(void)
 			{
 			// Stop sound if any
 			StopLoopingSample(m_siThrust);
@@ -125,24 +121,6 @@ class CHeatseeker : public CWeapon
 			FreeResources();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CHeatseeker(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CHeatseeker::Construct(): Couldn't construct CHeatseeker (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

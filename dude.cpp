@@ -1609,8 +1609,7 @@ void CDude::CDudeAnim3D::Release(void)	// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 // Constructor.
 ////////////////////////////////////////////////////////////////////////////////
-CDude::CDude(CRealm* pRealm)
-	: CCharacter(pRealm, CDudeID)
+CDude::CDude(void)
 	{
 	m_statePersistent	= State_Stand;
 
@@ -2807,7 +2806,7 @@ if (!demoCompat)
 			GameMessage msg;
 			msg.msg_Cheater.eType = typeCheater;
 			msg.msg_Cheater.sPriority = 0;
-			CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+			CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 			if (pDemon)
 				SendThingMessage(&msg, pDemon);				
 			break;
@@ -4343,7 +4342,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 				GameMessage msg;
 				msg.msg_Suicide.eType = typeSuicide;
 				msg.msg_Suicide.sPriority = 0;
-				CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+				CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 				if (pDemon)
 					SendThingMessage(&msg, pDemon);				
 
@@ -4486,7 +4485,7 @@ void CDude::GetWeaponInfo(		// Returns nothing.
 	switch (weapon)
 		{
 		case NoWeapon:
-			*pidWeapon	= 0;
+         *pidWeapon	= CHoodID;
 			*ppsNum		= &sSafetyNum;
 			break;
 		case Grenade:
@@ -4668,7 +4667,7 @@ void CDude::ArmWeapon(							// Returns nothing.
 					msg.msg_WeaponFire.eType = typeWeaponFire;
 					msg.msg_WeaponFire.sPriority = 0;
 					msg.msg_WeaponFire.sWeapon = (int16_t) weapon;
-					CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+					CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 					if (pDemon)
 						SendThingMessage(&msg, pDemon);				
 					}
@@ -4877,9 +4876,8 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 	for (i = 0; i < BRAIN_SPLAT_NUM_CHUNKS; i++)
 		{
 		// Create blood particles . . .
-		CChunk*	pchunk	= nullptr;	// Initialized for safety.
-		// Note that this will fail if particles are disabled.
-      if (CThing::Construct(CChunkID, m_pRealm, (CThing**)&pchunk) == SUCCESS)
+      CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
+      if (pchunk != nullptr)
 			{
 			pchunk->Setup(
 				dBrainX,				// Source position.
@@ -5051,9 +5049,8 @@ void CDude::OnShotMsg(			// Returns nothing.
 		StartAnim(VEST_HIT_RES_NAME, dHitX, dHitY, dHitZ, false);
 
 		// Create a kevlar peice.
-		CChunk*	pchunk	= nullptr;	// Initialized for safety.
-		// Note that this will fail if particles are disabled.
-      if (CThing::Construct(CChunkID, m_pRealm, (CThing**)&pchunk) == SUCCESS)
+      CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
+      if (pchunk != nullptr)
 			{
 			pchunk->Setup(
 				dHitX,						// Source position.
@@ -5705,7 +5702,7 @@ bool CDude::SetWeapon(					// Returns true if weapon could be set as current.
 				msg.msg_WeaponSelect.eType = typeWeaponSelect;
 				msg.msg_WeaponSelect.sPriority = 0;
 				msg.msg_WeaponSelect.sWeapon = (int16_t) m_weapontypeCur;
-				CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+				CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 				if (pDemon)
 					SendThingMessage(&msg, pDemon);				
 				}
@@ -5737,7 +5734,8 @@ CPowerUp* CDude::DropPowerUp(		// Returns new powerup on success; nullptr on fai
 	if (pstockpile->IsEmpty() == false)
 		{
 		// Create powerup . . .
-      if (ConstructWithID(CPowerUpID, m_pRealm, (CThing**)&ppowerup) == SUCCESS)
+     ppowerup = static_cast<CPowerUp*>(realm()->makeTypeWithID(CPowerUpID));
+      if (ppowerup != nullptr)
 			{
 			// Put stockpile into powerup.
 			ppowerup->m_stockpile.Copy(pstockpile);
@@ -6029,7 +6027,7 @@ CPowerUp* CDude::CreateCheat(	// Returns new powerup on success; nullptr on fail
 	GameMessage msg;
 	msg.msg_Cheater.eType = typeCheater;
 	msg.msg_Cheater.sPriority = 0;
-	CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+	CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 	if (pDemon)
 		SendThingMessage(&msg, pDemon);				
 

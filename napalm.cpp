@@ -390,8 +390,8 @@ void CNapalm::Update(void)
 					m_dFireX = m_dX;
 					m_dFireZ = m_dZ;
 					// Start a fire here
-					CFire* pFire;
-               if (CThing::Construct(CThing::CFireID, m_pRealm, (CThing**) &pFire) == SUCCESS)
+               CFire* pFire = static_cast<CFire*>(realm()->makeType(CFireID));
+               if (pFire != nullptr)
 					{
 						if (pFire->Setup(m_dX - 20 + (GetRand() % 40), m_dY, m_dZ - 20 + (GetRand() % 40), 
 						                 4000 + (GetRand() % 9000), false, CFire::LargeFire) != SUCCESS)

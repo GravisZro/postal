@@ -120,25 +120,13 @@ class CMine : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CMine(CRealm* pRealm)
-			: CWeapon(pRealm, CProximityMineID)
+   public:
+      CMine(void)
 			{
 			Reset();
-			}
+         }
 
-		// Constructor
-		CMine(CRealm* pRealm, ClassIDType id)
-			: CWeapon(pRealm, id)
-			{
-
-			Reset();
-			}
-
-	public:
-		// Destructor
-		~CMine()
+      ~CMine(void)
 			{
 			// Stop sound, if any.
 			StopLoopingSample(m_siMineBeep);
@@ -149,58 +137,6 @@ class CMine : public CWeapon
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct mine object.
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew,										// Out: Pointer to new object
-			ClassIDType id)										// In:  ID of mine to construct.
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CMine(pRealm, id);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CMine::Construct(): Couldn't construct CMine (that's a bad thing)\n");
-				}
-			return sResult;
-			}
-
-		// Construct proximity mine object.
-		static int16_t ConstructProximity(						// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			return Construct(pRealm, ppNew, CProximityMineID);
-			}
-
-		// Construct timed mine object.
-		static int16_t ConstructTimed(							// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			return Construct(pRealm, ppNew, CTimedMineID);
-			}
-
-		// Construct bouncing betty mine object.
-		static int16_t ConstructBouncingBetty(				// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			return Construct(pRealm, ppNew, CBouncingBettyMineID);
-			}
-
-		// Construct remote control mine object.
-		static int16_t ConstructRemoteControl(				// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			return Construct(pRealm, ppNew, CRemoteControlMineID);
 			}
 
 	//---------------------------------------------------------------------------
@@ -343,6 +279,18 @@ class CMine : public CWeapon
 			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 	};
 
+
+class CProximityMine : public CMine
+{ };
+
+class CTimedMine : public CMine
+{ };
+
+class CBouncingBettyMine : public CMine
+{ };
+
+class CRemoteControlMine : public CMine
+{ };
 
 #endif // MINE_H
 ////////////////////////////////////////////////////////////////////////////////

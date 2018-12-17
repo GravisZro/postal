@@ -3915,7 +3915,7 @@ class CPlayRealm : public CPlay
 
 				// Setup camera
 				pinfo->Camera()->SetScene(&(prealm->m_scene));
-            pinfo->Camera()->SetHood(static_cast<CHood*>(prealm->m_aclassHeads[CThing::CHoodID].GetNext()) );
+            pinfo->Camera()->SetHood(static_cast<CHood*>(prealm->m_aclassHeads[CHoodID].GetNext()) );
 				pinfo->Camera()->SetView(VIEW_X, VIEW_Y, VIEW_W, VIEW_H);
 
 				// Set grip to control camera.
@@ -4115,8 +4115,8 @@ class CPlayRealm : public CPlay
 				if (pinfo->IsRestartingRealm() == false)
 					{
 					// Update players' stockpiles.
-					CListNode<CThing>*	plnDude		= prealm->m_aclassHeads[CThing::CDudeID].m_pnNext;
-					CListNode<CThing>*	plnDudeTail	= &(prealm->m_aclassTails[CThing::CDudeID]);
+					CListNode<CThing>*	plnDude		= prealm->m_aclassHeads[CDudeID].m_pnNext;
+					CListNode<CThing>*	plnDudeTail	= &(prealm->m_aclassTails[CDudeID]);
 					while (plnDude != plnDudeTail)
 						{
 						CDude* pdude = (CDude*)plnDude->m_powner;
@@ -4208,8 +4208,8 @@ class CPlayRealm : public CPlay
 			// After this point, there will be NO DUDE'S, either because there weren't any
 			// to start with or because we converted them into warps.
 			//------------------------------------------------------------------------------
-			CListNode<CThing>*	pln		= prealm->m_aclassHeads[CThing::CDudeID].m_pnNext;
-			CListNode<CThing>*	plnTail	= &(prealm->m_aclassTails[CThing::CDudeID]);
+			CListNode<CThing>*	pln		= prealm->m_aclassHeads[CDudeID].m_pnNext;
+			CListNode<CThing>*	plnTail	= &(prealm->m_aclassTails[CDudeID]);
 			CDude*	pdude;
 			CWarp*	pwarp;
 			bool		bFirst = true; 
@@ -4233,13 +4233,13 @@ class CPlayRealm : public CPlay
 			// Here, we warp-in as many dude's as we need.  If there are no warps, it
 			// probably means the realm wasn't designed correctecly, and we bail out.
 			//------------------------------------------------------------------------------
-			if (prealm->m_asClassNumThings[CThing::CWarpID] > 0)
+			if (prealm->m_asClassNumThings[CWarpID] > 0)
 				{
 				// Setup warp pointers
-				CListNode<CThing>*	plnWarpHead	= &(prealm->m_aclassHeads[CThing::CWarpID]);
+				CListNode<CThing>*	plnWarpHead	= &(prealm->m_aclassHeads[CWarpID]);
 				CListNode<CThing>*	plnWarp		= plnWarpHead->m_pnNext;
 #if !defined(MULTIPLAYER_REMOVED)
-            CListNode<CThing>*	plnWarpTail	= &(prealm->m_aclassTails[CThing::CWarpID]);
+            CListNode<CThing>*	plnWarpTail	= &(prealm->m_aclassTails[CWarpID]);
 
             // Multiplayer mode is handled separately
 				if (pinfo->IsMP())
@@ -4250,7 +4250,7 @@ class CPlayRealm : public CPlay
 					// Find a random starter.  Pick a number from 0 to n - 1 where n is the
 					// number of CWarps in the realm.  Next, iterate to that warp so we start
 					// creating dudes at a 'random' warp.
-					int16_t	sStartWarpNum	= GetRand() % prealm->m_asClassNumThings[CThing::CWarpID];
+					int16_t	sStartWarpNum	= GetRand() % prealm->m_asClassNumThings[CWarpID];
 					int16_t	i;
 					for (i = 0; i < sStartWarpNum; i++, plnWarp = plnWarp->m_pnNext)
 						;

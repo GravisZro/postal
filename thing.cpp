@@ -295,13 +295,13 @@ int16_t CThing::ms_sDetectStaticInits = 1;
 // This is used by DoGui() to perform GUI processing.
 RProcessGui   CThing::ms_pgDoGui;
 
-
+#if 0
 // Array of class info
 // This sucks right now.  I need to add the info for each class into this
 // array, but I don't like this method because it means this file has to
 // include the headers for each class.  Sounds like an RImage-style solution
 // might work, but I'm not sure exactly how.
-CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
+CThing::ClassInfo CThing::ms_aClassInfo[TotalIDs] =
 { // Object Allocator               Preload function         Object Name            User can create in Editor
   // =====================         =====================   ================
    { CHood::Construct,                0,                        "Hood",               false   },
@@ -363,7 +363,7 @@ CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
    { CGrenade::ConstructDynamite,     0,                        "Dynamite",           false   },
    { CSndRelay::Construct,            0,                        "SndRelay",           true    },
 };
-
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototypes
@@ -373,23 +373,16 @@ CThing::ClassInfo CThing::ms_aClassInfo[CThing::TotalIDs] =
 ////////////////////////////////////////////////////////////////////////////////
 // Default (and only) constructor
 ////////////////////////////////////////////////////////////////////////////////
-CThing::CThing(                   // Contructor
-    CRealm* pRealm,                 // In:  Pointer to realm
-    ClassIDType id)                 // In:  Class ID
+CThing::CThing(void)                 // In:  Class ID
 {
   // Make sure CThing static's have been initialized by C++ runtime
   if (ms_sDetectStaticInits != 1)
     TRACE("CThing::CThing(): Can't create global/static objects based on CThing!\n");
 
-  // Save class id so we have it quickly avaiable in destructor
-  m_id = id;
-
   // Default to calling startup and shutdown.  What could be the harm?!
   m_sCallStartup  = TRUE;
   m_sCallShutdown = TRUE;
 
-  // Save realm
-  m_pRealm = pRealm;
 
   m_everything.m_powner = this;
   m_everything.m_pnNext = nullptr;
@@ -400,7 +393,7 @@ CThing::CThing(                   // Contructor
 
   // Add this object to realm and save its assigned position in realm's container
   //   pRealm->AddThing(this, id, &m_iterEvery, &m_iterClass);
-  pRealm->AddThing(this, id);
+  realm()->AddThing(this, type());
 
   // Start out with no ID.
   m_u16InstanceId = CIdBank::IdNil;
@@ -413,7 +406,7 @@ CThing::CThing(                   // Contructor
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
 ////////////////////////////////////////////////////////////////////////////////
-CThing::~CThing()
+CThing::~CThing(void)
 {
   // Remove this object from realm
   //   m_pRealm->RemoveThing(m_id, m_iterEvery, m_iterClass);
@@ -602,57 +595,17 @@ void CThing::Map3Dto2D(           // Returns nothing.
   m_pRealm->Map3Dto2D(dX, dY, dZ, pdX, pdY);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Construct object
-// (static).
-////////////////////////////////////////////////////////////////////////////////
-int16_t CThing::Construct(        // Returns 0 if successfull, non-zero otherwise
-    ClassIDType id,                 // In:  Class ID
-    CRealm* pRealm,                 // In:  Pointer to realm this object belongs to
-    CThing** ppNew)                 // Out: Pointer to new object
-{
-  // If in bounds (note ClassIDType is unsigned) . . .
-  if (id < TotalIDs)
-  {
-    // If there is a Construct func . . .
-    if (ms_aClassInfo[id].funcConstruct)
-      return (*(ms_aClassInfo[id].funcConstruct))(pRealm, ppNew);
-    else
-      return FAILURE;
-  }
-  else
-  {
-    TRACE("Construct(): id %d is out of bounds.\n", id);
-    return FAILURE * 2;
-  }
-}
 
-////////////////////////////////////////////////////////////////////////////////
-// Construct object and assign it an ID from the Realm's ID bank,
-// if it does not already have one.
-// (static).
-////////////////////////////////////////////////////////////////////////////////
-int16_t CThing::ConstructWithID(  // Returns 0 if successfull, non-zero otherwise
-    ClassIDType id,                 // In:  Class ID
-    CRealm* pRealm,                 // In:  Pointer to realm this object belongs to
-    CThing** ppNew)                 // Out: Pointer to new object
-{
-  int16_t sResult   = Construct(id, pRealm, ppNew);
-  if (sResult == SUCCESS)
-  {
-    // If new thing has no ID . . .
-    if ((*ppNew)->m_u16InstanceId == CIdBank::IdNil)
-    {
-      sResult = pRealm->m_idbank.Get(*ppNew, &((*ppNew)->m_u16InstanceId) );
-      if (sResult != SUCCESS)
-      {
-        delete *ppNew;
-        *ppNew = nullptr;
-      }
-    }
-  }
+#include <new>
 
-  return sResult;
+void* CThing::operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept
+{
+  CThing* rval = reinterpret_cast<CThing*>(::operator new(sz, std::nothrow));
+  rval->m_type = type_id;
+  rval->m_pRealm = realm_ptr; // TODO: REMOVE
+  rval->m_realm = realm_ptr;
+  rval->m_instantiable = instantiable;
+  return rval;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

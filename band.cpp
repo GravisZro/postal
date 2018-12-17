@@ -353,7 +353,7 @@ int16_t CBand::Load(					// Returns 0 if successfull, non-zero otherwise
 				case 37:
 					pFile->Read(&m_ucDestBouyID);
 					pFile->Read(&m_idChildItem);
-               pFile->Read(&m_eWeaponType);
+               pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 					pFile->Read(&m_ucNextBouyID);
 					break;
 				case 36:
@@ -389,14 +389,14 @@ int16_t CBand::Load(					// Returns 0 if successfull, non-zero otherwise
 				case 6:
 				case 5:
 				case 4:
-					pFile->Read(&m_idChildItem);
-					pFile->Read(&m_eWeaponType);
+               pFile->Read(&m_idChildItem);
+               pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 					pFile->Read(&m_ucNextBouyID);
 					break;
 				case 3:
 				case 2:
 				case 1:
-					pFile->Read(&m_eWeaponType);
+               pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 					pFile->Read(&m_ucNextBouyID);
 					break;
 			}
@@ -445,7 +445,7 @@ int16_t CBand::Save(										// Returns 0 if successfull, non-zero otherwise
 	// Save band member specific data
 	pFile->Write(&m_ucDestBouyID);
 	pFile->Write(&m_idChildItem);
-	pFile->Write(&m_eWeaponType);
+   pFile->Write(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 	pFile->Write(&m_ucNextBouyID);
 
 	if (!pFile->Error())
@@ -999,7 +999,7 @@ void CBand::Update(void)
 				GameMessage msg;
 				msg.msg_Death.eType = typeDeath;
 				msg.msg_Death.sPriority = 0;
-				pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+				pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 				if (pDemon)
 					SendThingMessage(&msg, pDemon);				
 				OnDead();
@@ -1187,8 +1187,8 @@ int16_t CBand::EditModify(void)
 						// If a child is desired . . .
 						if (itChild != CItem3d::None)
 							{
-							// Have one.
-							if (ConstructWithID(CItem3dID, m_pRealm, (CThing**)&pitem) == SUCCESS)
+                        pitem = static_cast<CItem3d*>(realm()->makeTypeWithID(CItem3dID));
+                        if (pitem != nullptr)
 								{
 								// Remember who our child is.
 								m_idChildItem	= pitem->GetInstanceID();
@@ -1446,7 +1446,7 @@ void CBand::OnExplosionMsg(Explosion_Message* pMessage)
 		GameMessage msg;
 		msg.msg_Explosion.eType = typeExplosion;
 		msg.msg_Explosion.sPriority = 0;
-		CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+		CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 		if (pDemon)
 			SendThingMessage(&msg, pDemon);				
 	}
@@ -1509,7 +1509,7 @@ void CBand::OnBurnMsg(Burn_Message* pMessage)
 		GameMessage msg;
 		msg.msg_Burn.eType = typeBurn;
 		msg.msg_Burn.sPriority = 0;
-		CThing* pDemon = m_pRealm->m_aclassHeads[CThing::CDemonID].GetNext();
+		CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
 		if (pDemon)
 			SendThingMessage(&msg, pDemon);				
 	}
@@ -1585,7 +1585,7 @@ void CBand::AlertBand(void)
 	msg.msg_Panic.sY = (int16_t) m_dY;
 	msg.msg_Panic.sZ = (int16_t) m_dZ;
 
-	CListNode<CThing>* pNext = m_pRealm->m_aclassHeads[CThing::CBandID].m_pnNext;
+	CListNode<CThing>* pNext = m_pRealm->m_aclassHeads[CBandID].m_pnNext;
 	while (pNext->m_powner != nullptr)
 	{
 		pThing = pNext->m_powner;

@@ -419,7 +419,7 @@ void ScoreRegisterKill(CRealm* pRealm, uint16_t u16DeadGuy, uint16_t u16Killer)
 {
 	CThing* pShooter = nullptr;
 	pRealm->m_idbank.GetThingByID(&pShooter, u16Killer);
-	if (pShooter && pShooter->GetClassID() == CThing::CDudeID)
+	if (pShooter && pShooter->GetClassID() == CDudeID)
 	{
 		if (u16DeadGuy == u16Killer)
 			g_scoreboard.SubtractOne(((CDude*) pShooter)->m_sDudeNum);
@@ -467,7 +467,7 @@ bool ScoreUpdateDisplay(RImage* pim, RRect* prc, CRealm* pRealm, CNetClient* pcl
 			pHood->m_pimTopBar->m_sWidth,pHood->m_pimTopBar->m_sHeight);
 
 #if !defined(MULTIPLAYER_REMOVED)
-      int16_t sNumDudes = pRealm->m_asClassNumThings[CThing::CDudeID];
+      int16_t sNumDudes = pRealm->m_asClassNumThings[CDudeID];
 #endif
 
 		switch (pRealm->m_ScoringMode)
@@ -699,7 +699,7 @@ bool ScoreUpdateDisplay(RImage* pim, RRect* prc, CRealm* pRealm, CNetClient* pcl
 					sMinutes,
 					sSeconds,
 					pRealm->m_sFlagsCaptured,
-					pRealm->m_asClassNumThings[CThing::CFlagID] - pRealm->m_sFlagsCaptured
+					pRealm->m_asClassNumThings[CFlagID] - pRealm->m_sFlagsCaptured
 					);
 				break;
 
@@ -1117,7 +1117,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 			int16_t	sIndex;
 			for (sIndex = 0; sIndex < MAX_HIGH_SCORES ; sIndex++)
 				{
-				if (sIndex < pRealm->m_asClassNumThings[CThing::CDudeID])
+				if (sIndex < pRealm->m_asClassNumThings[CDudeID])
 					{
 					strncpy(astrTempNames[sIndex], pclient->GetPlayerName(sIndex), MAX_PLAYER_NAME_LEN);
 					// Strncpy does not nullptr terminate if the 'n' is less than or equal to the length
@@ -1482,7 +1482,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 int16_t ScoreHighestKills(CRealm* pRealm)
 {
 	int16_t sHighest = 0;
-	int16_t sNumDudes = pRealm->m_asClassNumThings[CThing::CDudeID];	
+	int16_t sNumDudes = pRealm->m_asClassNumThings[CDudeID];	
 	int16_t i;
 
 	for (i = 0; i < sNumDudes; i++)

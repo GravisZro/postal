@@ -99,10 +99,8 @@ class CBarrel : public CThing3d
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CBarrel(CRealm* pRealm)
-			: CThing3d(pRealm, CBarrelID)
+   public:
+      CBarrel(void)
 			{
 			m_sSuspend = 0;
 			m_dRot = 0;
@@ -111,11 +109,9 @@ class CBarrel : public CThing3d
 			m_panimCur = m_pPreviousAnim = nullptr;
 			m_sprite.m_pthing	= this;
 			m_bSpecial = false;
-			}
+         }
 
-	public:
-		// Destructor
-		~CBarrel()
+      ~CBarrel(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -124,25 +120,6 @@ class CBarrel : public CThing3d
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CBarrel(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CBarrel::Construct(): Couldn't construct CBarrel (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------

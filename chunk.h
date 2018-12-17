@@ -99,19 +99,13 @@ class CChunk : public CThing
 
 		// Chunk info for each type.
 		static TypeInfo	ms_atiChunks[NumTypes];
-														
-	//---------------------------------------------------------------------------
-	// Static Variables
-	//---------------------------------------------------------------------------
-	public:
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
 		// Constructor
-		CChunk(CRealm* pRealm)
-			: CThing(pRealm, CChunkID)
+      CChunk(void)
 			{
 			m_sSuspend			= 0;
 			m_dRot				= 0.0;
@@ -125,44 +119,13 @@ class CChunk : public CThing
 			m_type				= Blood;
 			}
 
-	public:
-		// Destructor
-		~CChunk()
+      ~CChunk(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
 
-			// Don't allow chunks when disabled . . .
-			if (g_GameSettings.m_sParticleEffects)
-				{
-				*ppNew = new CChunk(pRealm);
-				if (*ppNew == nullptr)
-					{
-					sResult = FAILURE;
-					TRACE("CChunk::Construct(): Couldn't construct CChunk (that's really "
-						"not that bad a thing)\n");
-					}
-				}
-			else
-				{
-				// Particles disabled.
-				sResult = FAILURE;
-				}
-
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Virtual functions (implementing them as inlines doesn't pay!)

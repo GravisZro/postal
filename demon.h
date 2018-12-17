@@ -133,10 +133,8 @@ class CDemon : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-		CDemon(CRealm* pRealm)
-			: CThing(pRealm, CDemonID)
+   public:
+      CDemon(void)
 			{
 			m_lIdleTime = 0;
 			m_lKillTimer = 0;
@@ -158,31 +156,11 @@ class CDemon : public CThing
 			m_sSoundBank	= 0;
 			}
 
-	public:
-		// Destructor
-		~CDemon()
+      ~CDemon(void)
 			{
 			Kill();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CDemon(pRealm);
-			if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CExplode::Construct(): Couldn't construct CDemon (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

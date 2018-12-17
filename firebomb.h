@@ -92,43 +92,20 @@ class CFirebomb : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CFirebomb(CRealm* pRealm)
-			: CWeapon(pRealm, CFirebombID)
+   public:
+      CFirebomb(void)
 			{
 			m_sSuspend = 0;
 			m_sprite.m_pthing	= this;
-			}
+         }
 
-	public:
-		// Destructor
-		~CFirebomb()
+      ~CFirebomb(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFirebomb(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFirebomb::Construct(): Couldn't construct CFirebomb (that's a bad thing)\n");
-				}
-			return sResult;
 			}
 
 	//---------------------------------------------------------------------------
@@ -238,10 +215,8 @@ class CFirefrag : public CWeapon
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-		CFirefrag(CRealm* pRealm)
-			: CWeapon(pRealm, CFirefragID)
+   public:
+      CFirefrag(void)
 			{
 			m_pImage = 0;
 			m_pFire = nullptr;
@@ -249,9 +224,7 @@ class CFirefrag : public CWeapon
 			m_sNumExplosions	= 0;
 			}
 
-	public:
-		// Destructor
-		~CFirefrag()
+      ~CFirefrag(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
 			m_pRealm->m_scene.RemoveSprite(&m_sprite);
@@ -260,24 +233,6 @@ class CFirefrag : public CWeapon
 			FreeResources();
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-			*ppNew = new CFirefrag(pRealm);
-         if (*ppNew == nullptr)
-				{
-				sResult = FAILURE;
-				TRACE("CFirefrag::Construct(): Couldn't construct CFirefrag (that's a bad thing)\n");
-				}
-			return sResult;
-			}
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

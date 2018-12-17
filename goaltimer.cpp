@@ -231,7 +231,7 @@ int16_t CGoalTimer::EditNew(									// Returns 0 if successfull, non-zero other
 	if (sResult == SUCCESS)
 	{
 /*
-		CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CThing::CGameEditThingID].m_pnNext;
+      CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
 		CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 		RListBox* plb = peditor->m_plbNavNetList;
 		if (plb != nullptr)
