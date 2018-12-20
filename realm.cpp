@@ -347,6 +347,47 @@
 #include "score.h"
 #include "MemFileFest.h"
 
+#include "thing.h"
+#include "hood.h"
+#include "dude.h"
+#include "doofus.h"
+#include "rocket.h"
+#include "grenade.h" // CGrenade, CDynamite
+#include "ball.h"
+#include "explode.h"
+#include "bouy.h"
+#include "navnet.h"
+#include "gameedit.h"
+#include "napalm.h"
+#include "fire.h"
+#include "firebomb.h" // CFirebomb, CFirefrag
+#include "AnimThing.h"
+#include "SoundThing.h"
+#include "band.h"
+#include "item3d.h"
+#include "barrel.h"
+#include "mine.h" // CProximityMine, CTimedMine, CBouncingBettyMine, CRemoteControlMine
+#include "dispenser.h"
+#include "fireball.h" // CFireball, CFirestream
+#include "weapon.h" // CPistol, CMachineGun, CShotGun, CAssaultWeapon
+#include "person.h"
+#include "pylon.h"
+#include "PowerUp.h"
+#include "ostrich.h"
+#include "trigger.h"
+#include "heatseeker.h"
+#include "chunk.h"
+#include "sentry.h"
+#include "warp.h"
+#include "demon.h"
+#include "character.h"
+#include "goaltimer.h"
+#include "flag.h"
+#include "flagbase.h"
+#include "deathWad.h"
+#include "SndRelay.h"
+
+
 //#define RSP_PROFILE_ON
 
 
@@ -573,6 +614,7 @@ void MapY2DtoY3D(		// Returns nothing.
 // Default (and only) constructor
 ////////////////////////////////////////////////////////////////////////////////
 CRealm::CRealm()
+  : m_scene(new CScene())
 	{
 	time_t lTime;
 	time(&lTime);
@@ -586,7 +628,7 @@ CRealm::CRealm()
 	CreateLayerMap();
 	
 	// Setup render object (it's constructor was automatically called)
-	m_scene.SetLayers(TotalLayers);
+   m_scene->SetLayers(TotalLayers);
 
 	// Set attribute map to a safe (but invalid) value
 	m_pTerrainMap = 0;
@@ -595,7 +637,7 @@ CRealm::CRealm()
 	m_pTriggerMapHolder = 0;
 
 	// Set Hood ptr to a safe (but invalid) value.
-	m_phood			= nullptr;
+   m_hood.reset();
 
 /*
 	// Create a container of things for each element in the array
@@ -604,33 +646,8 @@ CRealm::CRealm()
 		m_apthings[s] = new CThing::Things;
 */
 
-	// Initialize current Navigation Net pointer
-	m_pCurrentNavNet = nullptr;
-
 	// Not currently updating.
 	m_bUpdating		= false;
-
-	// Initialize dummy nodes for linked lists of CThings
-	m_everythingHead.m_pnNext = &m_everythingTail;
-	m_everythingHead.m_pnPrev = nullptr;
-	m_everythingHead.m_powner = nullptr;
-	m_everythingTail.m_pnNext = nullptr;
-	m_everythingTail.m_pnPrev = &m_everythingHead;
-	m_everythingTail.m_powner = nullptr;
-
-	int16_t i;
-   for (i = 0; i < TotalIDs; i++)
-		{
-		m_aclassHeads[i].m_pnNext = &(m_aclassTails[i]);
-		m_aclassHeads[i].m_pnPrev = nullptr;
-		m_aclassHeads[i].m_powner = nullptr;
-		m_aclassTails[i].m_pnNext = nullptr;
-		m_aclassTails[i].m_pnPrev = &(m_aclassHeads[i]);
-		m_aclassTails[i].m_powner = nullptr;
-		m_asClassNumThings[i] = 0;
-		}
-
-	m_sNumThings = 0;
 
 	m_sNumSuspends	= 0;
 
@@ -667,9 +684,6 @@ CRealm::~CRealm()
 	// Clear the realm (in case this hasn't been done yet)
 	Clear();
 
-	// Double-check to be sure there's nothing left
-	if (m_everythingHead.m_pnNext != &m_everythingTail)
-		TRACE("CRealm::~CRealm(): There are still %d CThing's in this realm!\n", m_sNumThings);
 	}
 
 
@@ -717,24 +731,14 @@ void CRealm::Init(void)		// Returns nothing.  Cannot fail.
 void CRealm::Clear()
 	{
 	// Shutdown the realm (in case this hasn't been done yet)
-	Shutdown();
+//	Shutdown();
 
-	// Destroy all the objects.  We use a copy of the iterator to avoid being
-	// stuck with an invalid iterator once the object is gone.
-	CListNode<CThing>* pCur;
-	CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-	while (pNext->m_powner != nullptr)
-	{
-		pCur = pNext;
-		pNext = pNext->m_pnNext;
-		delete (pCur->m_powner);
-	}
+   m_thing_by_type.clear();
+   m_thing_by_id.clear();
+   m_id_by_thing.clear();
 
 	// Clear out any sprites that didn't already remove themselves
-	m_scene.RemoveAllSprites();
-
-	// Clear out any residue IDs.  Shouldn't need to, but . . .
-	m_idbank.Reset();
+   m_scene->RemoveAllSprites();
 
 	// Reset smashatorium.
 
@@ -980,12 +984,16 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 								// Read class ID of next object in file
                         uint8_t id;
 								if (pFile->Read(&id) == 1)
-									{
+                        {
 
-									// Create object based on class ID
-                           CThing* pThing = makeType(ClassIDType(id));
-                           if (pThing != nullptr)
-										{
+                          auto pThing = AddThing<CThing>(ClassIDType(id)); // Create object based on class ID
+
+                           if (pThing)
+                           {
+                             if(id == CNavigationNetID)
+                               m_navnet = pThing;
+                             if(id == CHoodID)
+                               m_hood = pThing;
 
 										// Load object assocated with this class ID
 										sResult = pThing->Load(pFile, bEditMode, ms_sFileCount, ulFileVersion);
@@ -1167,14 +1175,19 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 	pFile->Write(&m_sFlagsGoal);
 	pFile->Write(&m_dKillsPercentGoal);
 
+   int16_t count = 0;
+   for(auto pair : m_thing_by_type)
+     for(auto pthing : pair.second)
+       ++count;
+
 	// Write out number of objects
-	pFile->Write(m_sNumThings);
+   pFile->Write(count);
 
 	// If there's a callback . . .
 	if (m_fnProgress)
 		{
 		// Call it . . .
-		if (m_fnProgress(0, m_sNumThings) == true)
+      if (m_fnProgress(0, count) == true)
 			{
 			// Callback is happy to continue.
 			}
@@ -1185,42 +1198,30 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 			}
 		}
 
-	// Do this for all of the objects
-	CListNode<CThing>* pCur;
-	CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-	int16_t	sCurItemNum	= 0;
-	while (pNext->m_powner != nullptr && !sResult)
-		{
-		pCur = pNext;
-		pNext = pNext->m_pnNext;
+   int16_t	sCurItemNum	= 0;
+   std::set<managed_ptr<CThing>> already_written;
+   for(auto pair : m_thing_by_type)
+   {
+     for(managed_ptr<CThing> pthing : pair.second)
+     {
+       if(already_written.find(pthing) == already_written.end()) // don't write children twice
+       {
 
-		// Write out object's class ID (so we know waht kind it is when we load it)
-      pFile->Write(uint8_t(pCur->m_powner->GetClassID()));
+         if(pthing && pthing->child()) // dude with powerup
+         {
+           already_written.insert(pthing->child());
+           pFile->Write(uint8_t(pthing->child()->type()));
+           pthing->child()->Save(pFile, ms_sFileCount);
+           sCurItemNum++;
+         }
 
-		// Let object save itself
-		sResult = pCur->m_powner->Save(pFile, ms_sFileCount);
-		if (sResult)
-			break;
-		else
-			{
-			sCurItemNum++;
+         pFile->Write(uint8_t(pthing->type()));
+         pthing->Save(pFile, ms_sFileCount);
+         sCurItemNum++;
+       }
+     }
+   }
 
-			// If there's a callback . . .
-			if (m_fnProgress)
-				{
-				// Call it . . .
-				if (m_fnProgress(sCurItemNum, m_sNumThings) == true)
-					{
-					// Callback is happy to continue.
-					}
-				else
-					{
-					// Callback has decided to end this operation.
-					sResult = FAILURE;
-					}
-				}
-			}
-		}
 
 	// Check for I/O errors (only matters if no errors were reported so far)
 	if (!sResult && pFile->Error())
@@ -1250,102 +1251,12 @@ int16_t CRealm::Startup(void)							// Returns 0 if successfull, non-zero otherw
 	m_sHostileKills = 0;
 
 
-	// The idea is to only call Startup() for those objects that were Load()'ed,
-	// and NOT for any other objects in the realm.  The m_sCallStartup flags are
-	// set during the CRealm::Load() process to ensure that only those objects
-	// are called here.  I'm no longer sure I like this idea, so perhaps we
-	// should do what Shutdown() does, which is to call Startup() for every
-	// object.  The original reasoning was that once the game gets going, any
-	// newly created objects will NOT have their Startup() called, so Startup()
-	// was seen as a special service for Load()'ed objects so they could interact
-	// with other objects once all the objects are Load()'ed.  Actually, that
-	// sounds pretty good!  I guess I'll keep it this way pending suggestions.
-
-	// This loop is specifically designed so that it will not end until all of
-	// the objects have been scanned in a single pass and none have their flags
-	// set.  Keep in mind that since objects may be interacting with one another,
-	// calling one object may result in indirectly changing another's flag!
-	int16_t sDone;
-	int32_t lPassNum = 0;
-	do	{
-		// Always assume this will be the last pass.  If it isn't, this flag will
-		// be reset to 0, and we'll do the whole thing again.
-		sDone = 1;
-
-		// Do this for all the objects.  We use a copy of the iterator to avoid being
-		// stuck with an invalid iterator once the object is gone.
-		CListNode<CThing>* pCur;
-		CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-		// Go through all objects, calling Startup() for those that have the flag set
-		while (pNext->m_powner != nullptr && !sResult)
-		{
-			pCur = pNext;
-			pNext = pNext->m_pnNext;
-
-			if (pCur->m_powner->m_sCallStartup)
-			{
-				sDone = 0;
-				pCur->m_powner->m_sCallStartup = 0;
-				sResult = pCur->m_powner->Startup();
-			}
-		}
-
-		// Increment pass number for testing/debugging
-		lPassNum++;
+      for(const managed_ptr<CThing>& thing : m_every_thing)
+        thing->Startup();
 
 		// Setup the previous time for the start of the game.														
 		m_lPrevTime = m_time.GetGameTime();
 
-		} while (!sDone && !sResult); 
-
-
-	return sResult;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown the realm
-////////////////////////////////////////////////////////////////////////////////
-int16_t CRealm::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-
-	// This loop is specifically designed so that it will not end until all of
-	// the objects have been scanned in a single pass and none have their flags
-	// set.  Keep in mind that since objects may be interacting with one another,
-	// calling one object may result in indirectly changing another's flag!
-	int16_t sDone;
-	int16_t sFirstTime = 1;
-	int32_t lPassNum = 0;
-	do	{
-		// Always assume this will be the last pass.  If it isn't, this flag will
-		// be reset to 0, and we'll do the whole thing again.
-		sDone = 1;
-
-		// Do this for all the objects.  We use a copy of the iterator to avoid being
-		// stuck with an invalid iterator once the object is gone.
-		CListNode<CThing>* pCur;
-		CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-		while (pNext->m_powner != nullptr && !sResult)
-		{
-			pCur = pNext;
-			pNext = pNext->m_pnNext;
-
-			if (pCur->m_powner->m_sCallShutdown || sFirstTime)
-			{
-				sDone = 0;
-				pCur->m_powner->m_sCallShutdown = 0;
-				sResult = pCur->m_powner->Shutdown();
-			}
-		}
-
-		// Clear first-time flag
-		sFirstTime = 0;
-
-		// Increment pass number for testing/debugging
-		lPassNum++;
-
-		} while (!sDone && !sResult);
 
 
 	return sResult;
@@ -1359,17 +1270,8 @@ void CRealm::Suspend(void)
 	{
 	m_sNumSuspends++;
 
-	// Do this for all the objects.  We use a copy of the iterator to avoid being
-	// stuck with an invalid iterator once the object is gone.
-	CListNode<CThing>* pCur;
-	CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-	while (pNext->m_powner != nullptr)
-	{
-		pCur = pNext;
-		pNext = pNext->m_pnNext;
-
-		pCur->m_powner->Suspend();
-	}
+  for(const managed_ptr<CThing>& thing : m_every_thing)
+    thing->Suspend();
 
 	// Suspend the game time.  I don't think it matters whether this is done
 	// before or after the CThing->Suspend() calls since game time never actually
@@ -1387,17 +1289,8 @@ void CRealm::Resume(void)
 	{
 	if (m_sNumSuspends > 0)
 		{
-		// Do this for all the objects.  We use a copy of the iterator to avoid being
-		// stuck with an invalid iterator once the object is gone.
-		CListNode<CThing>* pCur;
-		CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-		while (pNext->m_powner != nullptr)
-		{
-			pCur = pNext;
-			pNext = pNext->m_pnNext;
-
-			pCur->m_powner->Resume();
-		}	
+     for(const managed_ptr<CThing>& thing : m_every_thing)
+       thing->Resume();
 
 		// Resume the game time.  I don't think it matters whether this is done
 		// before or after the CThing->Resume() calls since game time never actually
@@ -1437,15 +1330,8 @@ void CRealm::Update(void)
 	// Entering update loop.
 	m_bUpdating	= true;
 
-	// Do this for everything.
-	CThing* pthing;
-	m_pNext = m_everythingHead.m_pnNext;
-	while (m_pNext->m_powner != nullptr)
-	{
-		pthing = m_pNext->m_powner;
-		m_pNext = m_pNext->m_pnNext;
-		pthing->Update();
-	}
+   for(const managed_ptr<CThing>& thing : m_every_thing)
+     thing->Update();
 
 	// Update the display timer
 	m_lThisTime = m_time.GetGameTime();
@@ -1471,15 +1357,8 @@ void CRealm::Render(void)
 	// Entering update loop.
 	m_bUpdating	= true;
 
-	// Do this for everything.
-	CThing* pthing;
-	m_pNext = m_everythingHead.m_pnNext;
-	while (m_pNext->m_powner != nullptr)
-	{
-		pthing = m_pNext->m_powner;
-		m_pNext = m_pNext->m_pnNext;
-		pthing->Render();
-	}
+   for(const managed_ptr<CThing>& thing : m_every_thing)
+     thing->Render();
 
 	// Leaving update loop.
 	m_bUpdating	= false;
@@ -1514,7 +1393,7 @@ void CRealm::Render(
 		(*i)->Render();
 
 	// Render specified view to specified position in specified image
-	m_scene.Render(
+   m_scene->Render(
 		sViewX,
 		sViewY,
 		sViewW,
@@ -1531,17 +1410,9 @@ void CRealm::Render(
 ////////////////////////////////////////////////////////////////////////////////
 void CRealm::EditUpdate(void)
 	{
-	// Do this for all the objects.  We use a copy of the iterator to avoid being
-	// stuck with an invalid iterator once the object is gone.
-	CListNode<CThing>* pCur;
-	CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-	while (pNext->m_powner != nullptr)
-		{
-		pCur = pNext;
-		pNext = pNext->m_pnNext;
 
-		pCur->m_powner->EditUpdate();
-		}
+  for(const managed_ptr<CThing>& thing : m_every_thing)
+    thing->EditUpdate();
 	}
 
 
@@ -1550,17 +1421,8 @@ void CRealm::EditUpdate(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CRealm::EditRender(void)
 	{
-	// Do this for all the objects.  We use a copy of the iterator to avoid being
-	// stuck with an invalid iterator once the object is gone.
-	CListNode<CThing>* pCur;
-	CListNode<CThing>* pNext = m_everythingHead.m_pnNext;
-	while (pNext->m_powner != nullptr)
-		{
-		pCur = pNext;
-		pNext = pNext->m_pnNext;
-
-		pCur->m_powner->EditRender();
-		}
+  for(const managed_ptr<CThing>& thing : m_every_thing)
+    thing->EditRender();
 	}
 
 // This old way probably doesn't make sense any more since we're going to allow
@@ -1592,7 +1454,7 @@ void CRealm::EditRender(
 		(*i)->EditRender();
 
 	// Render specified view to specified position in specified image
-	m_scene.Render(
+   m_scene->Render(
 		sViewX,
 		sViewY,
 		sViewW,
@@ -1779,7 +1641,7 @@ bool CRealm::IsEndOfLevelGoalMet(bool bEndLevelKey)
 		case Checkpoint:
 			if (m_sFlagsGoal == 0)
 			{
-            if (m_lScoreTimeDisplay > 0 && m_sFlagsCaptured < m_asClassNumThings[CFlagID])
+            if (m_lScoreTimeDisplay > 0 && m_sFlagsCaptured < GetThingsByType(CFlagID).size())
 					bEnd = false;
 			}
 			else
@@ -1947,7 +1809,7 @@ bool CRealm::IsPathClear(			// Returns true, if the entire path is clear.
 		// Destroy when done.
 		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 		// Put 'er there.
-		m_scene.UpdateSprite(psl2d);
+      m_scene->UpdateSprite(psl2d);
 		}
 #endif
 
@@ -2054,7 +1916,7 @@ void CRealm::Map3Dto2D(	// Returns nothing.
 	int16_t* psX,				// Out.
 	int16_t* psY)				// Out.
 	{
-	::Map3Dto2D(sX, sY, sZ, psX, psY, m_phood->GetRealmRotX() );
+   ::Map3Dto2D(sX, sY, sZ, psX, psY, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2068,7 +1930,7 @@ void CRealm::Map3Dto2D(	// Returns nothing.
 	double* pdX,			// Out.
 	double* pdY)			// Out.
 	{
-	::Map3Dto2D(dX, dY, dZ, pdX, pdY, m_phood->GetRealmRotX() );
+   ::Map3Dto2D(dX, dY, dZ, pdX, pdY, m_hood->GetRealmRotX() );
 	}
 
 
@@ -2080,7 +1942,7 @@ void CRealm::MapZ3DtoY2D(	// Returns nothing.
 	double	dZIn,				// In.
 	double*	pdYOut)			// Out.
 	{
-	::MapZ3DtoY2D(dZIn, pdYOut, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(dZIn, pdYOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2091,7 +1953,7 @@ void CRealm::MapZ3DtoY2D(	// Returns nothing.
 	int16_t		sZIn,				// In.
 	int16_t*	psYOut)			// Out.
 	{
-	::MapZ3DtoY2D(sZIn, psYOut, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZIn, psYOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2102,7 +1964,7 @@ void CRealm::MapY2DtoZ3D(	// Returns nothing.
 	double	dYIn,				// In.
 	double*	pdZOut)			// Out.
 	{
-	::MapY2DtoZ3D(dYIn, pdZOut, m_phood->GetRealmRotX() );
+   ::MapY2DtoZ3D(dYIn, pdZOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2113,7 +1975,7 @@ void CRealm::MapY2DtoZ3D(	// Returns nothing.
 	int16_t		sYIn,				// In.
 	int16_t*	psZOut)			// Out.
 	{
-	::MapY2DtoZ3D(sYIn, psZOut, m_phood->GetRealmRotX() );
+   ::MapY2DtoZ3D(sYIn, psZOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2124,7 +1986,7 @@ void CRealm::MapY3DtoY2D(	// Returns nothing.
 	double	dYIn,				// In.
 	double*	pdYOut)			// Out.
 	{
-	::MapY3DtoY2D(dYIn, pdYOut, m_phood->GetRealmRotX() );
+   ::MapY3DtoY2D(dYIn, pdYOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2135,7 +1997,7 @@ void CRealm::MapY3DtoY2D(	// Returns nothing.
 	int16_t		sYIn,				// In.
 	int16_t*	psYOut)			// Out.
 	{
-	::MapY3DtoY2D(sYIn, psYOut, m_phood->GetRealmRotX() );
+   ::MapY3DtoY2D(sYIn, psYOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2146,7 +2008,7 @@ void CRealm::MapY2DtoY3D(	// Returns nothing.
 	double	dYIn,				// In.
 	double*	pdYOut)			// Out.
 	{
-	::MapY2DtoY3D(dYIn, pdYOut, m_phood->GetRealmRotX() );
+   ::MapY2DtoY3D(dYIn, pdYOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2157,7 +2019,7 @@ void CRealm::MapY2DtoY3D(	// Returns nothing.
 	int16_t		sYIn,				// In.
 	int16_t*	psYOut)			// Out.
 	{
-	::MapY2DtoY3D(sYIn, psYOut, m_phood->GetRealmRotX() );
+   ::MapY2DtoY3D(sYIn, psYOut, m_hood->GetRealmRotX() );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2168,9 +2030,9 @@ void CRealm::MapAttribHeight(	// Returns nothing.
 	int16_t*	psHOut)				// Out.
 	{
 	// If scaling attrib map heights . . .
-	if (m_phood->m_sScaleAttribHeights != FALSE)
+   if (m_hood->m_sScaleAttribHeights != FALSE)
 		{
-		int16_t	sRotX	= m_phood->GetRealmRotX();
+      int16_t	sRotX	= m_hood->GetRealmRotX();
 
 		// Scale into realm.
 		::MapY2DtoY3D(sHIn, psHOut, sRotX);
@@ -2191,7 +2053,7 @@ void CRealm::MapAttribHeight(	// Returns nothing.
 // Zero, if off map.
 int16_t CRealm::GetHeight(int16_t sX, int16_t sZ)
 	{
-	int16_t	sRotX	= m_phood->GetRealmRotX();
+   int16_t	sRotX	= m_hood->GetRealmRotX();
 	// Scale the Z based on the view angle.
 	::MapZ3DtoY2D(sZ, &sZ, sRotX);
 
@@ -2210,7 +2072,7 @@ int16_t CRealm::GetHeightAndNoWalk(	// Returns height at new location.
 	int16_t	sZ,								// In:  Z position to check on map.
 	bool* pbNoWalk)						// Out: true, if 'no walk'.
 	{
-	int16_t	sRotX	= m_phood->GetRealmRotX();
+   int16_t	sRotX	= m_hood->GetRealmRotX();
 	// Scale the Z based on the view angle.
 	::MapZ3DtoY2D(sZ, &sZ, sRotX);
 
@@ -2239,7 +2101,7 @@ int16_t CRealm::GetHeightAndNoWalk(	// Returns height at new location.
 int16_t CRealm::GetTerrainAttributes(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
 
 	return m_pTerrainMap->GetVal(sX, sZ, REALM_ATTR_NOT_WALKABLE); 
 	}
@@ -2249,7 +2111,7 @@ int16_t CRealm::GetTerrainAttributes(int16_t sX, int16_t sZ)
 int16_t CRealm::GetFloorAttribute(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
 
 	return m_pTerrainMap->GetVal(sX, sZ, 0) & REALM_ATTR_FLOOR_MASK; 
 	}
@@ -2259,7 +2121,7 @@ int16_t CRealm::GetFloorAttribute(int16_t sX, int16_t sZ)
 int16_t CRealm::GetFloorMapValue(int16_t sX, int16_t sZ, int16_t sMask/* = 0x007F*/)
 	{
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
 
 	return m_pTerrainMap->GetVal(sX, sZ, sMask); 
 	}
@@ -2269,7 +2131,7 @@ int16_t CRealm::GetFloorMapValue(int16_t sX, int16_t sZ, int16_t sMask/* = 0x007
 int16_t CRealm::GetLayer(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
 
 	return m_pLayerMap->GetVal(sX, sZ, 0) & REALM_ATTR_LAYER_MASK; 
 	}
@@ -2279,7 +2141,7 @@ int16_t CRealm::GetLayer(int16_t sX, int16_t sZ)
 int16_t CRealm::GetEffectAttribute(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
 
 	return m_pTerrainMap->GetVal(sX, sZ, 0) & REALM_ATTR_EFFECT_MASK; 
 	}
@@ -2289,7 +2151,7 @@ int16_t CRealm::GetEffectAttribute(int16_t sX, int16_t sZ)
 int16_t CRealm::GetEffectMapValue(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, m_phood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
 
 	return m_pTerrainMap->GetVal(sX, sZ, 0); 
 	}
@@ -2376,64 +2238,6 @@ void CRealm::CreateLayerMap(void)
 	}
 
 
-#include "hood.h"
-#include "dude.h"
-#include "doofus.h"
-#include "rocket.h"
-#include "grenade.h" // CGrenade, CDynamite
-#include "ball.h"
-#include "explode.h"
-#include "bouy.h"
-#include "navnet.h"
-#include "gameedit.h"
-#include "napalm.h"
-#include "fire.h"
-#include "firebomb.h" // CFirebomb, CFirefrag
-#include "AnimThing.h"
-#include "SoundThing.h"
-#include "band.h"
-#include "item3d.h"
-#include "barrel.h"
-#include "mine.h" // CProximityMine, CTimedMine, CBouncingBettyMine, CRemoteControlMine
-#include "dispenser.h"
-#include "fireball.h" // CFireball, CFirestream
-#include "weapon.h" // CPistol, CMachineGun, CShotGun, CAssaultWeapon
-#include "person.h"
-#include "pylon.h"
-#include "PowerUp.h"
-#include "ostrich.h"
-#include "trigger.h"
-#include "heatseeker.h"
-#include "chunk.h"
-#include "sentry.h"
-#include "warp.h"
-#include "demon.h"
-#include "character.h"
-#include "goaltimer.h"
-#include "flag.h"
-#include "flagbase.h"
-#include "deathWad.h"
-#include "SndRelay.h"
-
-CThing* CRealm::makeTypeWithID(ClassIDType type)
-{
-  CThing* t = makeType(type);
-  if (t != nullptr)
-  {
-    // If new thing has no ID . . .
-    if (t->m_u16InstanceId == CIdBank::IdNil)
-    {
-      int16_t sResult = m_idbank.Get(t, &(t->m_u16InstanceId) );
-      if (sResult != SUCCESS)
-      {
-        delete t;
-        t = nullptr;
-      }
-    }
-  }
-  return t;
-}
-
 CThing* CRealm::makeType(ClassIDType type)
 {
   switch(type)
@@ -2486,6 +2290,51 @@ CThing* CRealm::makeType(ClassIDType type)
     case CDynamiteID         : return new (type, this, false) CDynamite         ;
     case CSndRelayID         : return new (type, this,  true) CSndRelay         ;
     default:
+      ASSERT(false);
       return nullptr;
   }
 }
+
+template<> constexpr ClassIDType CRealm::lookupType<CHood             >(void) { return CHoodID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CDude             >(void) { return CDudeID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CDoofus           >(void) { return CDoofusID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CRocket           >(void) { return CRocketID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CGrenade          >(void) { return CGrenadeID          ; }
+template<> constexpr ClassIDType CRealm::lookupType<CBall             >(void) { return CBallID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CExplode          >(void) { return CExplodeID          ; }
+template<> constexpr ClassIDType CRealm::lookupType<CBouy             >(void) { return CBouyID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CNavigationNet    >(void) { return CNavigationNetID    ; }
+template<> constexpr ClassIDType CRealm::lookupType<CGameEditThing    >(void) { return CGameEditThingID    ; }
+template<> constexpr ClassIDType CRealm::lookupType<CNapalm           >(void) { return CNapalmID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFire             >(void) { return CFireID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFirebomb         >(void) { return CFirebombID         ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFirefrag         >(void) { return CFirefragID         ; }
+template<> constexpr ClassIDType CRealm::lookupType<CAnimThing        >(void) { return CAnimThingID        ; }
+template<> constexpr ClassIDType CRealm::lookupType<CSoundThing       >(void) { return CSoundThingID       ; }
+template<> constexpr ClassIDType CRealm::lookupType<CBand             >(void) { return CBandID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CItem3d           >(void) { return CItem3dID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CBarrel           >(void) { return CBarrelID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CProximityMine    >(void) { return CProximityMineID    ; }
+template<> constexpr ClassIDType CRealm::lookupType<CDispenser        >(void) { return CDispenserID        ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFireball         >(void) { return CFireballID         ; }
+template<> constexpr ClassIDType CRealm::lookupType<CPerson           >(void) { return CPersonID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CTimedMine        >(void) { return CTimedMineID        ; }
+template<> constexpr ClassIDType CRealm::lookupType<CBouncingBettyMine>(void) { return CBouncingBettyMineID; }
+template<> constexpr ClassIDType CRealm::lookupType<CRemoteControlMine>(void) { return CRemoteControlMineID; }
+template<> constexpr ClassIDType CRealm::lookupType<CPylon            >(void) { return CPylonID            ; }
+template<> constexpr ClassIDType CRealm::lookupType<CPowerUp          >(void) { return CPowerUpID          ; }
+template<> constexpr ClassIDType CRealm::lookupType<COstrich          >(void) { return COstrichID          ; }
+template<> constexpr ClassIDType CRealm::lookupType<CTrigger          >(void) { return CTriggerID          ; }
+template<> constexpr ClassIDType CRealm::lookupType<CHeatseeker       >(void) { return CHeatseekerID       ; }
+template<> constexpr ClassIDType CRealm::lookupType<CChunk            >(void) { return CChunkID            ; }
+template<> constexpr ClassIDType CRealm::lookupType<CSentry           >(void) { return CSentryID           ; }
+template<> constexpr ClassIDType CRealm::lookupType<CWarp             >(void) { return CWarpID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CDemon            >(void) { return CDemonID            ; }
+template<> constexpr ClassIDType CRealm::lookupType<CCharacter        >(void) { return CCharacterID        ; }
+template<> constexpr ClassIDType CRealm::lookupType<CGoalTimer        >(void) { return CGoalTimerID        ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFlag             >(void) { return CFlagID             ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFlagbase         >(void) { return CFlagbaseID         ; }
+template<> constexpr ClassIDType CRealm::lookupType<CFirestream       >(void) { return CFirestreamID       ; }
+template<> constexpr ClassIDType CRealm::lookupType<CDeathWad         >(void) { return CDeathWadID         ; }
+template<> constexpr ClassIDType CRealm::lookupType<CDynamite         >(void) { return CDynamiteID         ; }
+template<> constexpr ClassIDType CRealm::lookupType<CSndRelay         >(void) { return CSndRelayID         ; }

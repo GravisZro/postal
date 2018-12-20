@@ -50,7 +50,7 @@
 //
 //		07/01/97	JMI	Replaced GetFloorMapValue() with GetHeightAndNoWalk() call.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/12/97 BRH	Changed panic motion to the same as the base class, but
@@ -350,17 +350,17 @@ int16_t COstrich::Init(void)
 	// Init position, rotation and velocity
 	m_dVel = 0.0;
 	m_dRot = rspMod360(GetRandom());
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_state = CCharacter::State_Idle;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+	m_lTimer = realm()->m_time.GetGameTime() + 500;
 	m_sBrightness = 0;	// Default brightness
 
 	m_smash.m_bits		= CSmash::Civilian | CSmash::Character;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	m_lAnimTime = 0;
 	m_panimCur = &m_animStand;
-	m_lTimer = m_pRealm->m_time.GetGameTime();
+	m_lTimer = realm()->m_time.GetGameTime();
 	m_stockpile.m_sHitPoints = ms_sStartingHitPoints;
 
 	m_state = CCharacter::State_Stand;
@@ -404,7 +404,7 @@ void COstrich::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		lThisTime = m_pRealm->m_time.GetGameTime(); 
+		lThisTime = realm()->m_time.GetGameTime(); 
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		// Calculate elapsed time in seconds
@@ -499,7 +499,7 @@ void COstrich::Update(void)
 
 				// Get height and 'no walk' status at new position.
 				bool		bNoWalk;
-				sHeight	= m_pRealm->GetHeightAndNoWalk(dNewX, dNewY, &bNoWalk);
+				sHeight	= realm()->GetHeightAndNoWalk(dNewX, dNewY, &bNoWalk);
 
 				// If too big a height difference or completely not walkable . . .
 				if (bNoWalk == true
@@ -633,7 +633,7 @@ void COstrich::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save height for next time
 		m_sPrevHeight = sHeight;
@@ -783,22 +783,14 @@ int16_t COstrich::FreeResources(void)						// Returns 0 if successfull, non-zero
 
 void COstrich::ProcessMessages(void)
 {
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-	{
-		ProcessMessage(&msg);
-
-		switch(msg.msg_Generic.eType)
-		{
-			case typePanic:
-				OnPanicMsg(&(msg.msg_Panic));
-				break;
-				
-		}
-
-	}
-
+  while (!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    ProcessMessage(&msg);
+    if(msg.msg_Generic.eType == typePanic)
+      OnPanicMsg(&(msg.msg_Panic));
+    m_MessageQueue.pop_front();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -929,16 +921,9 @@ void COstrich::AlertFlock(void)
 	msg.msg_Panic.sY = (int16_t) m_dY;
 	msg.msg_Panic.sZ = (int16_t) m_dZ;
 
-	CListNode<CThing>* pNext = m_pRealm->m_everythingHead.m_pnNext;
-	while (pNext->m_powner != nullptr)
-	{
-		pThing = pNext->m_powner;
-		if (pThing->GetClassID() == COstrichID && pThing != this)
-			SendThingMessage(&msg, pThing);
-//		else if (pThing->GetClassID() == CSoundThingID)
-//			SendThingMessage(&msgStopSound, pThing);
-		pNext = pNext->m_pnNext;
-	}	
+   for(managed_ptr<CThing>& pThing : realm()->GetThingsByType(COstrichID))
+     if(pThing != this)
+       SendThingMessage(msg, pThing);
 }
 
 
@@ -959,7 +944,7 @@ void COstrich::OnDead(void)
 void COstrich::ChangeRandomState(void)
 {
 	int16_t sMod;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + ms_lStateChangeTime + GetRandom() % 5000;
+	m_lTimer = realm()->m_time.GetGameTime() + ms_lStateChangeTime + GetRandom() % 5000;
 	sMod = m_lTimer % 3;
 	m_dRot = rspMod360(m_dRot - 10 + (GetRandom() % 20));
 	m_sRotDirection = m_lTimer % 2;

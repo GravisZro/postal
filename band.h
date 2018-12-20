@@ -60,12 +60,7 @@
 
 // CBand is a class of marching band members for the parade
 class CBand : public CDoofus
-	{
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	protected:
-
+   {
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
@@ -81,8 +76,6 @@ class CBand : public CDoofus
 		CAnim3D m_animBlownup;					// Blown up by explosion
 		CAnim3D m_animOnFire;					// Running while on fire
 
-		uint16_t					m_idChildItem;		// ID of child item or CIdBank::IdNil.
-
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
 
@@ -95,7 +88,7 @@ class CBand : public CDoofus
 		static int32_t ms_lMingleTime;			// How long to mingle before moving
 		static int16_t ms_sStartingHitPoints;	// How many hit points to start with
 		static SampleMaster::SoundInstance ms_siBandSongInstance;		// sound played during band march.
-		static uint16_t	ms_idBandLeader;			// The person who adjusts the band sound
+      static CBand* ms_bandLeader;			// The person who adjusts the band sound
 														// volume or IdNil.
 
 
@@ -106,19 +99,21 @@ class CBand : public CDoofus
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
+
+      CBand(CBand*) { ASSERT(false); } // for make_shared
+
       CBand(void)
 			{
 			m_ucNextBouyID = 1;
-			m_ucDestBouyID = 1;
-			m_idChildItem	= CIdBank::IdNil;
+         m_ucDestBouyID = 1;
 			m_bCivilian = true;
          }
 
       ~CBand(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+         realm()->Scene()->RemoveSprite(&m_sprite);
+         realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();

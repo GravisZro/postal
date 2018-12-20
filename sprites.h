@@ -149,7 +149,7 @@ class CSprite
 		int16_t m_sLayer;											// Sprite's layer
 		int16_t m_sInFlags;											// Sprite's input flags
 		int16_t m_sOutFlags;										// Sprite's output flags
-		CThing*	m_pthing;										// Owner of this sprite (for debugging).
+      //CThing*	m_pthing;										// Owner of this sprite (for debugging).
 
       const char*	m_pszText;											// Point this at your text.
 																		// DO NOT strcpy/cat/etc to this until
@@ -182,7 +182,7 @@ class CSprite
 			m_psprNext			= nullptr;
 			m_psprParent		= nullptr;
 
-			m_pthing				= nullptr;
+//			m_pthing				= nullptr;
 			}
 
 		virtual ~CSprite()

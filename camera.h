@@ -68,7 +68,7 @@ class CCamera
 		int16_t m_sViewW;											// View's width
 		int16_t m_sViewH;											// View's height
 
-		CScene* m_pScene;											// Scene (the source)
+      managed_ptr<CScene> m_pScene;											// Scene (the source)
 		int16_t m_sSceneViewX;										// View's upper left x in the scene
 		int16_t m_sSceneViewY;										// View's upper left y in the scene
 
@@ -79,7 +79,7 @@ class CCamera
 		int16_t m_sScene2FilmX;									// Subtract from scene x to convert to film x
 		int16_t m_sScene2FilmY;									// Subtract from scene y to convert to film y
 
-		CHood* m_pHood;											// Hood (used to limit camera movement)
+      managed_ptr<CHood> m_pHood;											// Hood (used to limit camera movement)
 
 		bool	m_bClip;												// Clip camera position to edge of realm, if true
 																		// (default); otherwise, no clipping.
@@ -96,11 +96,11 @@ class CCamera
 
 		// Set camera's scene
 		void SetScene(
-			CScene* pScene);										// In:  Scene to take picture of
+         managed_ptr<CScene> pScene);										// In:  Scene to take picture of
 
 		// Set camera's hood
 		void SetHood(
-			CHood* pHood);											// In:  Hood to use for camera control
+         managed_ptr<CHood> pHood);											// In:  Hood to use for camera control
 
 		// Set camera's view of the scene
 		void SetView(
@@ -137,8 +137,8 @@ class CCamera
 		void Snap(
 			int16_t sViewW,											// In:  View's width
 			int16_t sViewH,											// In:  View's height
-			CScene* pScene,										// In:  Scene to take picture of
-			CHood* phood,											// In:  Hood for this scene.
+         managed_ptr<CScene> pScene,										// In:  Scene to take picture of
+         managed_ptr<CHood> phood,											// In:  Hood for this scene.
 			int16_t sSceneViewX,									// In:  View's upper left x (in scene coords)
 			int16_t sSceneViewY,									// In:  View's upper left y (in scene coords)
 			RImage* pimFilm,										// In:  Film (where the picture ends up)

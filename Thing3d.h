@@ -174,6 +174,8 @@
 
 #include <array>
 
+class CFire;
+
 class CThing3d : public CThing
 	{
 	/////////////////////////////////////////////////////////////////////////////
@@ -336,7 +338,7 @@ class CThing3d : public CThing
 		int16_t  m_sPrevHeight;				// Previous height
 		int16_t  m_sSuspend;					// Suspend flag
 
-		uint16_t	m_u16IdFire;					// ID of fire to carry around when you are burning.
+      managed_ptr<CFire> m_fire;					// ID of fire to carry around when you are burning.
 
 		CSprite3 m_sprite;					// 3D Sprite used to render the 3D Thing.
 		CSprite2	m_spriteShadow;			// 2D shadow sprite to be shown on the ground
@@ -356,8 +358,6 @@ class CThing3d : public CThing
 		int16_t	m_sBrightness;					// Normal brightness level or dark if burnt
 
 		bool	m_bAboveTerrain;				// true, if in the air, false if on terrain.
-
-		uint16_t	m_u16IdParent;					// Instance ID of parent.
 
 		CStockPile	m_stockpile;			// Stockpile of ammo and health.
 
@@ -411,16 +411,14 @@ class CThing3d : public CThing
 			m_dScaleY			= 1.0;
 			m_dScaleZ			= 1.0;
 			m_dDrag				= 0.0;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			m_sSuspend			= 0;
-			m_sBrightness		= 0;
-			m_u16IdFire			= CIdBank::IdNil;
+         m_sBrightness		= 0;
 			m_bAboveTerrain	= false;
-			m_stockpile.m_sHitPoints	= DefHitPoints;
-			m_u16IdParent		= CIdBank::IdNil;
+         m_stockpile.m_sHitPoints	= DefHitPoints;
 			m_spriteShadow.m_sInFlags = CSprite::InHidden;
 			m_spriteShadow.m_pImage = nullptr;
-			m_spriteShadow.m_pthing = this;
+//			m_spriteShadow.m_pthing = this;
 			m_lAnimTime = 0;
 			m_lTimer = 0;
 			m_sLayerOverride	= -1;
@@ -432,21 +430,22 @@ class CThing3d : public CThing
       ~CThing3d(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_spriteShadow);
+         realm()->Scene()->RemoveSprite(&m_spriteShadow);
 			// Remove smash from smashatorium (this is safe even if it was already 
 			// removed).
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+         realm()->m_smashatorium.Remove(&m_smash);
 			// Free the shadow resource
 			if (m_spriteShadow.m_pImage)
 				rspReleaseResource(&g_resmgrGame, &(m_spriteShadow.m_pImage));
 			}
 
-	//---------------------------------------------------------------------------
-	// Required static functions - None for this non-instantiable object.
-	//---------------------------------------------------------------------------
+
 	public:
+      managed_ptr<CThing3d> child3d (void) noexcept { return child(); }
+      //managed_ptr<CThing3d> parent3d(void) noexcept { return parent(); }
+
 
 	//---------------------------------------------------------------------------
 	// Not necessarily required virtual functions (implementing them as inlines 
@@ -467,9 +466,6 @@ class CThing3d : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -694,8 +690,8 @@ class CThing3d : public CThing
 		// Detach the specified Thing3d.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-		CThing3d* DetachChild(			// Returns ptr to the child or nullptr, if none.
-			uint16_t*		pu16InstanceId,	// In:  Instance ID of child to detach.
+      void DetachChild(			// Returns ptr to the child or nullptr, if none.
+         managed_ptr<CThing3d> child,	// In:  Instance ID of child to detach.
 												// Out: CIdBank::IdNil.
 			RTransform*	ptrans);			// In:  Transform for positioning child.
 
@@ -761,7 +757,7 @@ class CThing3d : public CThing
 
 
 		// Start a CAnimThing.
-		CAnimThing* StartAnim(					// Returns ptr to CAnimThing on success; nullptr otherwise.
+      managed_ptr<CAnimThing> StartAnim(					// Returns ptr to CAnimThing on success; nullptr otherwise.
          const char* pszAnimResName,				// In:  Animation's resource name.
 			int16_t	sX,								// In:  Position.
 			int16_t	sY,								// In:  Position.

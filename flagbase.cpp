@@ -280,10 +280,10 @@ int16_t CFlagbase::Init(void)
 	m_state = CFlagbase::State_Wait;
 	m_panimCur = &m_animFlagWave;
 	m_lAnimTime = 0;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+	m_lTimer = realm()->m_time.GetGameTime() + 500;
 
 	m_smash.m_bits = CSmash::FlagBase;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	m_sBrightness = 0;	// Default Brightness level
 
@@ -309,19 +309,6 @@ int16_t CFlagbase::Startup(void)								// Returns 0 if successfull, non-zero ot
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CFlagbase::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	int16_t sResult = SUCCESS;
-
-   m_trans.makeIdentity();
-
-	return sResult;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Update object
 ////////////////////////////////////////////////////////////////////////////////
 void CFlagbase::Update(void)
@@ -335,7 +322,7 @@ void CFlagbase::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		lThisTime = m_pRealm->m_time.GetGameTime();
+		lThisTime = realm()->m_time.GetGameTime();
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		// Calculate elapsed time in seconds
@@ -361,7 +348,7 @@ void CFlagbase::Update(void)
 				m_smash.m_sphere.sphere.lRadius	= 20; //m_spriteBase.m_sRadius;
 
 				// Update the smash.
-				m_pRealm->m_smashatorium.Update(&m_smash);
+				realm()->m_smashatorium.Update(&m_smash);
 				break;
 
 //-----------------------------------------------------------------------
@@ -369,14 +356,14 @@ void CFlagbase::Update(void)
 //-----------------------------------------------------------------------
 
 			case CFlagbase::State_Guard:
-				m_pRealm->m_smashatorium.QuickCheckReset(&m_smash, CSmash::Flag, 0, 0);
-				while (m_pRealm->m_smashatorium.QuickCheckNext(&pSmashed))
+				realm()->m_smashatorium.QuickCheckReset(&m_smash, CSmash::Flag, 0, 0);
+				while (realm()->m_smashatorium.QuickCheckNext(&pSmashed))
 				{
-					if (pSmashed->m_pThing->GetClassID() == CFlagID)
+					if (pSmashed->m_pThing->type() == CFlagID)
 					{
-						if (((CFlag*) (pSmashed->m_pThing))->m_u16FlagID == m_u16FlagID)
+                  if (managed_ptr<CFlag>(pSmashed->m_pThing)->m_u16FlagID == m_u16FlagID)
 						{
-							m_pRealm->m_sFlagbaseCaptured++;
+							realm()->m_sFlagbaseCaptured++;
 							m_state = State_Dead;
 						}	
 					}
@@ -405,13 +392,12 @@ void CFlagbase::Update(void)
 // Dead - You are dead, so lay there and decompose, then go away
 //-----------------------------------------------------------------------
 
-				case CFlagbase::State_Dead:
-					CHood*	phood	= m_pRealm->m_phood;
+            case CFlagbase::State_Dead:
 					// Render current dead frame into background to stay.
-					m_pRealm->m_scene.DeadRender3D(
-						phood->m_pimBackground,		// Destination image.
+					realm()->Scene()->DeadRender3D(
+                  realm()->Hood()->m_pimBackground,		// Destination image.
 						&m_sprite,						// Tree of 3D sprites to render.
-						phood);							// Dst clip rect.
+                  realm()->Hood());							// Dst clip rect.
 
 					delete this;
 					return;
@@ -428,7 +414,7 @@ void CFlagbase::Update(void)
 				m_smash.m_sphere.sphere.lRadius	= 20; //m_spriteBase.m_sRadius;
 
 				// Update the smash.
-				m_pRealm->m_smashatorium.Update(&m_smash);
+				realm()->m_smashatorium.Update(&m_smash);
 
 
 		// Save time for next time
@@ -632,7 +618,7 @@ void CFlagbase::OnExplosionMsg(Explosion_Message* pMessage)
 //		m_panimCur = &m_animDie;
 		m_lAnimTime = 0;
 //		m_stockpile.m_sHitPoints = 0;
-		m_lTimer = m_pRealm->m_time.GetGameTime();
+		m_lTimer = realm()->m_time.GetGameTime();
 
 		m_dExtHorzVel *= 1.4; //2.5;
 		m_dExtVertVel *= 1.1; //1.4;

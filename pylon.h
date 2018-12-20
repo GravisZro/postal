@@ -110,7 +110,7 @@ class CPylon : public CThing
       ~CPylon(void)
 		{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Remove smash from smashatorium (this is safe even if it was already removed!).
          realm()->m_smashatorium.Remove(&m_smash);
@@ -157,7 +157,7 @@ class CPylon : public CThing
 
 	// An enemy can call this function to request that a message be sent to it
 	// with any hint information that this bouy may have.
-	void MessageRequest(CThing* pThing);
+   //void MessageRequest(CThing* pThing);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -177,9 +177,6 @@ class CPylon : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -237,7 +234,7 @@ class CPylon : public CThing
       double GetZ(void)	const { return m_dZ; }
 
 		// Search the list of pylons and return a pointer to the one with the given ID
-		CPylon* GetPylon(uint8_t ucPylonID);
+      managed_ptr<CPylon> GetPylon(uint8_t ucPylonID);
 
 		// Search the list of pylons and return the instance ID of the one with
 		// the given pylon id.
@@ -251,8 +248,8 @@ class CPylon : public CThing
 			if (m_u16TargetDudeID != CIdBank::IdNil)
 			{
 				CThing* pthing;
-				m_pRealm->m_idbank.GetThingByID((CThing**) &pthing, m_u16TargetDudeID);
-				if (pthing && pthing->GetClassID() == CDudeID)
+				realm()->m_idbank.GetThingByID((CThing**) &pthing, m_u16TargetDudeID);
+				if (pthing && pthing->type() == CDudeID)
 				{
 					if (((CDude*) pthing)->m_state != CThing3d::State_Dead)
 						bTriggered = true;

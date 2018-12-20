@@ -29,7 +29,7 @@
 //
 //		03/13/97	JMI	Load now takes a version number.
 //
-//		06/11/97 BRH	Added m_u16ShooterID to store the shooter as it
+//		06/11/97 BRH	Added m_shooter to store the shooter as it
 //							passes the information along to the explosion message.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -52,6 +52,7 @@
 #include "smash.h"
 
 
+class CThing3d;
 // CExplode is a firey explosion weapon class
 class CExplode : public CThing
 	{
@@ -78,8 +79,8 @@ class CExplode : public CThing
 		double	m_dX;
 		double	m_dY;
 		double	m_dZ;
-		uint16_t		m_u16ShooterID;
-		uint16_t		m_u16ExceptID;									// ID of object to except from explosion.
+      managed_ptr<CThing3d> m_shooter;
+      managed_ptr<CThing3d> m_except;									// ID of object to except from explosion.
 
 
 	protected:
@@ -108,14 +109,14 @@ class CExplode : public CThing
       CExplode(void)
 			{
 			m_sSuspend		= 0;
-			m_u16ExceptID	= CIdBank::IdNil;
+         m_except.reset();
 			}
 
 		~CExplode()
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->Scene()->RemoveSprite(&m_sprite);
+			realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
@@ -147,9 +148,6 @@ class CExplode : public CThing
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
-
 		// Suspend object
 		void Suspend(void);
 
@@ -166,7 +164,7 @@ class CExplode : public CThing
 			int16_t sX,												// In: New x coord
 			int16_t sY,												// In: New y coord
 			int16_t sZ,												// In: New z coord
-			uint16_t	u16ShooterID,									// In: Who is responsible for this explosion
+         managed_ptr<CThing3d> shooter,									// In: Who is responsible for this explosion
          int16_t sAnim = 0);										// In: Which explosion to use, standard = 0, grenade = 1 etc.
 
 #if !defined(EDITOR_REMOVED)

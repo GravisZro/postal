@@ -235,19 +235,7 @@ RHot::~RHot()
 	// Deactivate.
 	SetActive(FALSE);
 	// Decapture.
-	SetCapture(FALSE);
-
-	// Release all children.
-	RHot*	phot	= m_listChildren.GetHead();
-   while (phot != nullptr)
-		{
-      phot->SetParent(nullptr);
-
-		phot	= m_listChildren.GetNext();
-		}
-
-	// Release parent.
-   SetParent(nullptr);
+   SetCapture(FALSE);
 	}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -268,14 +256,14 @@ void RHot::SetActive(	// Returns nothing.
 		if (sActive == TRUE)
 			{
 			// If this item has a parent . . .
-         RHot*	photParent	= GetParent();
+         RHot* photParent = GetParent();
          if (photParent != nullptr)
 				{
-				// Add us into its list.
-				if (photParent->m_slistActiveChildren.Insert(this, &m_sPriority) == SUCCESS)
-					{
-					// Success.
-					m_sActive	= TRUE;
+            // Add us into its list.
+            if (photParent->m_slistActiveChildren.Insert(this, &m_sPriority) == SUCCESS)
+               {
+               // Success.
+               m_sActive	= TRUE;
 					}
 				else
 					{
@@ -290,7 +278,7 @@ void RHot::SetActive(	// Returns nothing.
 		else
 			{
 			// If this item has a parent . . .
-			RHot*	photParent	= GetParent();
+         RHot* photParent = GetParent();
          if (photParent != nullptr)
 				{
 				// Remove us from list.
@@ -332,7 +320,7 @@ void RHot::SetPriority(	// Returns 0 on success.
 	if (m_sActive != FALSE)
 		{
 		// If this item has a parent . . .
-		RHot*	photParent	= GetParent();
+      RHot* photParent = GetParent();
       if (photParent != nullptr)
 			{
 			// Reposition with new priority.
@@ -360,7 +348,7 @@ void RHot::SetParent(	// Returns nothing.
    RHot* photParent)		// Hotbox to be parent of this hotbox or nullptr
 								// for none.
 	{
-	ASSERT(photParent != this);
+   ASSERT(photParent != this);
 
 	// Store activation status.
 	int16_t	sActive	= IsActive();
@@ -375,27 +363,27 @@ void RHot::SetParent(	// Returns nothing.
 		}
 
 	// If capturing . . .
-	if (sCapture != FALSE)
+   if (sCapture != FALSE)
 		{
 		// Decapture.
 		SetCapture(FALSE);
 		}
 
 	// If there's an existing parent . . .
-   if (m_photParent != nullptr)
+   if (m_photParent)
 		{
 		// Remove from its list of children.
-		m_photParent->m_listChildren.Remove(this);
+      m_photParent->m_listChildren.emplace(this);
 		}
 
 	// Set new parent.
 	m_photParent	= photParent;
 
 	// If there's a new parent . . .
-   if (m_photParent != nullptr)
+   if (m_photParent)
 		{
-		// Remove from its list of children.
-		m_photParent->m_listChildren.AddTail(this);
+      // Remove from its list of children.
+      m_photParent->m_listChildren.erase(this);
 		}
 
 	// If active . . .
@@ -428,33 +416,11 @@ void RHot::SetCapture(	// Returns nothing.
 	int16_t sActive)			// TRUE to activate, FALSE otherwise.
 	{
 	if (m_sCapture != sActive)
-		{
-		if (sActive == TRUE)
-			{
-			// Add us into list . . .
-			if (GetCaptureList()->Insert(this) == SUCCESS)
-				{
-				// Success.
-				m_sCapture	= TRUE;
-				}
-			else
-				{
-				TRACE("SetCapture(): Failed to insert into list.  Delete me; I'm useless.\n");
-				}
-			}
+      {
+      if (sActive == TRUE)
+        GetCaptureList().insert(this);
 		else
-			{
-			// Remove us from list . . .
-			if (GetCaptureList()->Remove(this) == SUCCESS)
-				{
-				// Success.
-				m_sCapture	= FALSE;
-				}
-			else
-				{
-				TRACE("SetCapture(): Failed to remove from list.\n");
-				}
-			}
+        GetCaptureList().erase(this);
 		}
 	}
 
@@ -484,20 +450,19 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 	if (pie->type == RInputEvent::Mouse)
 		{
 		// If this item is top-level . . .
-      if (m_photParent == nullptr)
+      if (!m_photParent)
 			{
 			// Process capture items.
 			// Notify all hotboxes that are capturing.
 			// Note that capture items have no priority.
          int16_t sChildPosX;
          int16_t	sChildPosY;
-			RHot* phot	= m_listCapturing.GetHead();
-         while (phot != nullptr)
+         for(RHot* phot : m_listCapturing)
 				{
 				// Notify user via callback(s).
             if (phot->m_ecUser != nullptr)
 					{
-					(*phot->m_ecUser)(phot, pie->sEvent);
+               (*phot->m_ecUser)(phot, pie->sEvent);
 					}
 
             if (phot->m_epcUser != nullptr)
@@ -508,7 +473,7 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 					// Get the child position equivalent.
 					phot->GetChildPos(&sChildPosX, &sChildPosY);
 
-					(*phot->m_epcUser)(phot, pie->sEvent, sChildPosX, sChildPosY);
+               (*phot->m_epcUser)(phot, pie->sEvent, sChildPosX, sChildPosY);
 					}
 
             if (phot->m_iecUser != nullptr)
@@ -516,7 +481,7 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 					// Get the child position equivalent.
 					phot->GetChildPos(&pie->sPosX, &pie->sPosY);
 
-					(*phot->m_iecUser)(phot, pie);
+               (*phot->m_iecUser)(phot, pie);
 
 					// Convert back to parent coords.
 					phot->GetTopPos(&pie->sPosX, &pie->sPosY);
@@ -530,9 +495,7 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 				else
 					{
 					sPriorityCalled	= MIN(sPriorityCalled, phot->m_sPriority);
-					}
-
-				phot	= m_listCapturing.GetNext();
+               }
 				}
 			}
 
@@ -577,7 +540,7 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 				// Notify user via callback(s).
             if (m_ecUser != nullptr)
 					{
-					(*m_ecUser)(this, pie->sEvent);
+               (*m_ecUser)(this, pie->sEvent);
 
 					// Store priority.
 					sPriorityCalled	= m_sPriority;
@@ -585,7 +548,7 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 
             if (m_epcUser != nullptr)
 					{
-					(*m_epcUser)(this, pie->sEvent, pie->sPosX, pie->sPosY);
+               (*m_epcUser)(this, pie->sEvent, pie->sPosX, pie->sPosY);
 
 					// Store priority.
 					sPriorityCalled	= m_sPriority;
@@ -593,7 +556,7 @@ int16_t	RHot::Do(			// Returns priority of item called back or
 
             if (m_iecUser != nullptr)
 					{
-					(*m_iecUser)(this, pie);
+               (*m_iecUser)(this, pie);
 
 					// Store priority.
 					sPriorityCalled	= m_sPriority;
@@ -620,7 +583,7 @@ void RHot::GetChildPos(	// Returns nothing.
    int16_t* psY)				// In:  Top-level position.
 								// Out: Child position.
 	{
-   RHot*	photParent	= m_photParent;
+   RHot* photParent = GetParent();
    while (photParent != nullptr)
 		{
 		// Move through parent's coordinate system.
@@ -628,7 +591,7 @@ void RHot::GetChildPos(	// Returns nothing.
 		*psY	-= photParent->m_sY;
 
 		// Get next parent.
-		photParent	= photParent->m_photParent;
+      photParent = photParent->GetParent();
 		}
 	}
 
@@ -642,8 +605,8 @@ void RHot::GetTopPos(	// Returns nothing.
 								// Out: Top-level position.
    int16_t* psY)				// In:  Child position.
 								// Out: Top-level position.    
-	{
-   RHot*	photParent	= m_photParent;
+   {
+  RHot* photParent = GetParent();
    while (photParent != nullptr)
 		{
 		// Move through parent's coordinate system.
@@ -651,7 +614,7 @@ void RHot::GetTopPos(	// Returns nothing.
 		*psY	+= photParent->m_sY;
 
 		// Get next parent.
-		photParent	= photParent->m_photParent;
+      photParent = photParent->GetParent();
 		}
 	}
 
@@ -690,21 +653,17 @@ void RHot::Init(void)
 // Gets the list appropriate for this hotbox.
 //
 //////////////////////////////////////////////////////////////////////////////
-RHot::ListHots* RHot::GetCaptureList(void)	// Returns Capture list 
+std::set<RHot*>& RHot::GetCaptureList(void)	// Returns Capture list
 															// appropriate for this RHot.
 															// Cannot fail.
 	{
-	// Go to highest level.
-	RHot*	phot			= this;
-	RHot*	photParent	= GetParent();
-   while (photParent != nullptr)
-		{
-		phot			= photParent;
-		photParent	= phot->GetParent();
-		}
+   // Go to highest level.
+  RHot* phot = this;
+   while (phot->GetParent())
+      phot = phot->GetParent();
 
 	// Use this RHot's capture list.
-	return &(phot->m_listCapturing);
+   return phot->m_listCapturing;
 	}
 
 //////////////////////////////////////////////////////////////////////////////

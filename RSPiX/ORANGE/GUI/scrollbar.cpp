@@ -834,7 +834,7 @@ void RScrollBar::Do(	// Returns nothing.
 				ie.sPosY		= sPosY;
 				ie.sUsed		= FALSE;
 				ie.lUser		= 0;
-				pguiPressed->m_hot.m_iecUser(&pguiPressed->m_hot, &ie);
+            pguiPressed->m_hot.m_iecUser(&pguiPressed->m_hot, &ie);
 				}
 			}
 

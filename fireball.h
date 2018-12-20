@@ -64,6 +64,7 @@
 #include "weapon.h"
 
 
+class CThing3d;
 /////////////////////////////////////////// CFireball /////////////////////////////////////
 
 // CFireball is a burning flame weapon class
@@ -107,7 +108,7 @@ class CFireball : public CWeapon
 		uint32_t	m_u32CollideIncludeBits;	// bits to use for collision checking
 		uint32_t	m_u32CollideDontcareBits;	// bits to use for collision checking
 		uint32_t	m_u32CollideExcludeBits;	// bits to use for collision checking
-		uint16_t	m_u16ShooterID;				// shooter's ID so you don't hit him.
+      managed_ptr<CThing3d> m_shooter;				// shooter's ID so you don't hit him.
 		bool	m_bSendMessages;				// Whether or not to send messages to other
 													// objects telling them to burn or not.
 		bool	m_bMoving;						// Once it hits a wall it will stop moving
@@ -142,24 +143,23 @@ class CFireball : public CWeapon
 			m_u32CollideIncludeBits = 0;
 			m_u32CollideDontcareBits = 0;
 			m_u32CollideExcludeBits = 0;
-			m_sTotalAlphaChannels = 0;
-			m_smash.m_pThing = nullptr;
+         m_sTotalAlphaChannels = 0;
 			m_smash.m_bits = 0;
 			m_bMoving = true;
 			m_lAnimTime = 0;
 
-			m_sprite.m_pthing = this;
+//			m_sprite.m_pthing = this;
 			}
 
       ~CFireball(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 			// Remove yourself from the collision list if it was in use
 			// (switching to smoke removes it from the smashatorium and sets
 			// the m_pThing field to nullptr)
 			if (m_smash.m_pThing)
-				m_pRealm->m_smashatorium.Remove(&m_smash);
+				realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
@@ -193,9 +193,6 @@ class CFireball : public CWeapon
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
-
 		// Suspend object
 		void Suspend(void);
 
@@ -214,7 +211,7 @@ class CFireball : public CWeapon
 			int16_t sZ,												// In: New z coord
 			int16_t sDir,												// In: Direction of travel
 			int32_t lTimeToLive,										// In: Milliseconds to burn
-			uint16_t u16ShooterID);									// In: Your ID (the shooter) so it doesn't hit you
+         managed_ptr<CThing3d> shooter);									// In: Your ID (the shooter) so it doesn't hit you
 
 		// Override base class Setup().
 		virtual				// Overridden here.
@@ -228,7 +225,7 @@ class CFireball : public CWeapon
 				sX, sY, sZ, 
 				0,
 				500, 
-				m_idParent
+            parent()
 				);
 			}
 
@@ -341,15 +338,15 @@ class CFirestream : public CWeapon
 		int32_t m_lTimeToLive;					// Total time to show this animation
 		int16_t m_sCurrentAlphaChannel;		// Use this Alpha channel
 		int16_t m_sTotalAlphaChannels;
-		uint16_t	m_u16ShooterID;				// shooter's ID so you don't hit him.
+      managed_ptr<CThing3d> m_shooter;				// shooter's ID so you don't hit him.
 		bool	m_bSendMessages;				// Whether or not to send messages to other
 													// objects telling them to burn or not.
 		int32_t m_lPrevTime;						// Previous update time
 
 		CSprite2	m_sprite;					// False sprite for positioning info
-		uint16_t m_idFireball1;
-		uint16_t m_idFireball2;
-		uint16_t m_idFireball3;
+      managed_ptr<CFireball> m_fireball1;
+      managed_ptr<CFireball> m_fireball2;
+      managed_ptr<CFireball> m_fireball3;
 
 												
 		int16_t m_sSuspend;						// Suspend flag
@@ -372,16 +369,13 @@ class CFirestream : public CWeapon
 			m_bSendMessages = true;
 			m_sTotalAlphaChannels = 0;
 
-			m_sprite.m_pthing = this;
-			m_idFireball1 = CIdBank::IdNil;
-			m_idFireball2 = CIdBank::IdNil;
-			m_idFireball3 = CIdBank::IdNil;
+//			m_sprite.m_pthing = this;
 			}
 
       ~CFirestream(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 			}
 
 	//---------------------------------------------------------------------------
@@ -412,9 +406,6 @@ class CFirestream : public CWeapon
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
-
 		// Suspend object
 		void Suspend(void);
 
@@ -433,7 +424,7 @@ class CFirestream : public CWeapon
 			int16_t sZ,												// In: New z coord
 			int16_t sDir,												// In: Direction of travel
 			int32_t lTimeToLive,										// In: Milliseconds to burn
-			uint16_t u16ShooterID);									// In: Your ID (the shooter) so it doesn't hit you
+         managed_ptr<CThing3d> shooter);									// In: Your ID (the shooter) so it doesn't hit you
 
 		// Override base class Setup().
 		virtual				// Overridden here.
@@ -447,7 +438,7 @@ class CFirestream : public CWeapon
 				sX, sY, sZ, 
 				0,
 				500, 
-				m_idParent
+            parent()
 				);
 			}
 

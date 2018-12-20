@@ -405,17 +405,17 @@ class RScrollBar : public RGuiItem
 		// instance for the scroll bar and call the equivalent instantiated
 		// (non-static) functions.
 		static void UpHotCall(
-			RHot*	phot,			// Ptr to RHot that generated event.
+         RHot* phot,			// Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
          { reinterpret_cast<RScrollBar*>(phot->m_ulUser)->UpHotCall(pie); }
 		static void DownHotCall(
-			RHot*	phot,			// Ptr to RHot that generated event.
+         RHot* phot,			// Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
          { reinterpret_cast<RScrollBar*>(phot->m_ulUser)->DownHotCall(pie); }
 		static void ThumbHotCall(
-			RHot*	phot,			// Ptr to RHot that generated event.
+         RHot* phot,			// Ptr to RHot that generated event.
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
          { reinterpret_cast<RScrollBar*>(phot->m_ulUser)->ThumbHotCall(pie); }

@@ -88,7 +88,7 @@
 //							50.0 to (360/8) which, as far as I can tell, makes the 
 //							inclusive extents of the formula [0..359].
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/03/97 BRH	Changed the cocktails so they don't bounce off of 
@@ -109,7 +109,7 @@
 //
 //		06/30/97 BRH	Added cache of sound effects in Preload function.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -283,7 +283,7 @@ void CFirebomb::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+		int32_t lThisTime = realm()->m_time.GetGameTime();
 
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
@@ -307,9 +307,9 @@ void CFirebomb::Update(void)
 				// Make sure we start in a valid position.  If we are staring
 				// inside a wall, just delete this object now.
 #ifdef UNUSED_VARIABLE
-          usAttrib = m_pRealm->GetFloorAttribute((int16_t) m_dX, (int16_t) m_dZ);
+          usAttrib = realm()->GetFloorAttribute((int16_t) m_dX, (int16_t) m_dZ);
 #endif
-				sHeight = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 				if (m_dY < sHeight)
 				{
 					delete this;
@@ -332,7 +332,7 @@ void CFirebomb::Update(void)
 				dNewY = m_dY;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 				// Check the height to see if it hit the ground
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
@@ -367,11 +367,11 @@ void CFirebomb::Update(void)
 //-----------------------------------------------------------------------
 			case CFirebomb::State_Explode:
 
-            CFire* pFire = static_cast<CFire*>(realm()->makeType(CFireID));
-            if (pFire != nullptr)
+            managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
+            if (pFire)
 				{
 					pFire->Setup(m_dX, m_dY, m_dZ, PRIMARY_BURN_TIME, true, CFire::LargeFire);
-					pFire->m_u16ShooterID = m_u16ShooterID;
+               pFire->m_shooter = m_shooter;
 					PlaySample(
 						g_smidFirebomb, 
 						SampleMaster::Destruction,
@@ -385,13 +385,13 @@ void CFirebomb::Update(void)
 
 				// Loop to create 8 fragments in a circular pattern
 				int16_t i;
-				CFirefrag* pFrag;
+            managed_ptr<CFirefrag> pFrag;
 				for (i = 0; i < 8; i++)
-				{
-              pFrag = static_cast<CFirefrag*>(realm()->makeType(CFirefragID));
-              if (pFrag != nullptr)
+            {
+              pFrag = realm()->AddThing<CFirefrag>();
+              if (pFrag)
 					{
-						pFrag->m_u16ShooterID = m_u16ShooterID;
+                  pFrag->m_shooter = m_shooter;
 						pFrag->Setup(m_dX, m_dY, m_dZ);
 						pFrag->m_dVertVel = m_dVertVel * -0.5;
 						pFrag->m_dHorizVel = 60.0;
@@ -423,7 +423,7 @@ void CFirebomb::Render(void)
 {
 	// Animate
 
-	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+	int32_t lThisTime = realm()->m_time.GetGameTime();
 
    m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
    m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
@@ -445,7 +445,7 @@ void CFirebomb::Render(void)
 	}
 
 	// If we're not a child of someone else...
-	if (m_idParent == CIdBank::IdNil)
+   if (!parent())
 	{
 		// Map from 3d to 2d coords
 		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
@@ -453,12 +453,12 @@ void CFirebomb::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		m_sprite.m_ptrans		= &m_trans;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 
 		// Draw the 2D shadow
 		CWeapon::Render();
@@ -511,7 +511,7 @@ int16_t CFirebomb::GetResources(void)						// Returns 0 if successfull, non-zero
 	sResult = m_anim.Get(ms_apszResNames);
 	if (sResult == SUCCESS)
 	{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 		if (sResult == SUCCESS)
 		{
 			// add more gets
@@ -566,23 +566,13 @@ int16_t CFirebomb::Preload(
 
 void CFirebomb::ProcessMessages(void)
 {
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-				m_MessageQueue.Empty();
-				m_eState = State_Deleted;
-				return;
-				break;
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return;
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+      m_eState = State_Deleted;
+    m_MessageQueue.clear();
+  }
 }
 
 
@@ -711,7 +701,7 @@ void CFirefrag::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime(); 
+		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
@@ -742,7 +732,7 @@ void CFirefrag::Update(void)
 				dNewY = m_dY;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 				// Check the height to see if it hit the ground
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
@@ -779,11 +769,11 @@ void CFirefrag::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Explode:
 
-            CFire* pFire = static_cast<CFire*>(realm()->makeType(CFireID));
-            if (pFire != nullptr)
+          managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
+            if (pFire)
 				{
 					pFire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
-					pFire->m_u16ShooterID = m_u16ShooterID;
+               pFire->m_shooter = m_shooter;
 //							PlaySample(g_smidGrenadeExplode);
 				}
 
@@ -799,13 +789,13 @@ void CFirefrag::Update(void)
 				}
 				else
 				{
-					m_pRealm->m_idbank.GetThingByID((CThing**) &m_pFire, m_u16FireID);
+					realm()->m_idbank.GetThingByID((CThing**) &m_pFire, m_u16FireID);
 					if (m_pFire)
 					{
 						GameMessage msg;
 						msg.msg_ObjectDelete.eType = typeObjectDelete;
 						msg.msg_ObjectDelete.sPriority = 0;
-						SendThingMessage(&msg, m_pFire);
+                  SendThingMessage(msg, m_pFire);
 					}
 					delete this;
 					return;
@@ -814,7 +804,7 @@ void CFirefrag::Update(void)
 				break;
 		}
 
-		m_pRealm->m_idbank.GetThingByID((CThing**) &m_pFire, m_u16FireID);
+		realm()->m_idbank.GetThingByID((CThing**) &m_pFire, m_u16FireID);
 		if (m_pFire)
 		{
 			m_pFire->m_dX = m_dX;
@@ -852,16 +842,16 @@ void CFirefrag::Render(void)
 
 	// Layer should be based on info we get from attribute map, but is hardwired for now
 //	m_sprite.m_sLayer = 0;
-	ASSERT(m_pRealm					!= nullptr);
-	ASSERT(m_pRealm->m_pAttribMap	!= nullptr);
+	ASSERT(realm()					!= nullptr);
+	ASSERT(realm()->m_pAttribMap	!= nullptr);
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((short) m_dX, (short) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((short) m_dX, (short) m_dZ));
 
 	// Image would normally animate, but doesn't for now
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 */
 }
 
@@ -880,18 +870,18 @@ int16_t CFirefrag::Setup(									// Returns 0 if successfull, non-zero otherwis
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_dVertVel = ms_dThrowVertVel;
 	m_dHorizVel = ms_dThrowHorizVel;
 
 	// Load resources
 //	sResult = GetResources();
 
-   m_pFire = static_cast<CFire*>(realm()->makeType(CFireID));
-   if (m_pFire != nullptr)
+   m_pFire = realm()->AddThing<CFire>();
+   if (m_pFire)
 	{
 		m_pFire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
-		m_pFire->m_u16ShooterID = m_u16ShooterID;
+      m_pFire->m_shooter = m_shooter;
 	}
 
 

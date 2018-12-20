@@ -178,7 +178,7 @@
 //		05/26/97 BRH	Added CAssaultWeapon which is just the shot gun allowed
 //							to rapid fire.
 //
-//		05/29/97	JMI	Removed references to m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed references to realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		05/30/97	JMI	Changed FireBullets() to only play the sample once (through
@@ -232,7 +232,7 @@
 //
 //		07/01/97	JMI	Now passes rigid body transform to PositionChild().
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -491,28 +491,24 @@ int16_t CCharacter::Save(									// Returns 0 if successfull, non-zero otherwis
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
 void CCharacter::Update(void)										// Returns nothing.
-	{
-	if (m_u16IdWeapon != CIdBank::IdNil)
-		{
-		CWeapon*	pweapon;
-		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
+   {
+      if (child())
 			{
          RTransform&	transWeapon	= m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 			// Position weapon.
 			PositionChild(
-				pweapon->GetSprite(),	// In:  Child sprite to position.
+            child3d()->GetSprite(),	// In:  Child sprite to position.
             &transWeapon,				// In:  Transform specifying position.
-				&(pweapon->m_dX),			// Out: New position of child. 
-				&(pweapon->m_dY),			// Out: New position of child. 
-				&(pweapon->m_dZ) );		// Out: New position of child. 
-			}
-		}
+            &(child3d()->m_dX),			// Out: New position of child.
+            &(child3d()->m_dY),			// Out: New position of child.
+            &(child3d()->m_dZ) );		// Out: New position of child.
+         }
 
 	// If we have a weapon sound play instance . . .
 	if (m_siLastWeaponPlayInstance)
 		{
 		// If time has expired . . .
-		if (m_pRealm->m_time.GetGameTime() > m_lStopLoopingWeaponSoundTime)
+      if (realm()->m_time.GetGameTime() > m_lStopLoopingWeaponSoundTime)
 			{
 			// Stop looping the sound.
 			StopLoopingSample(m_siLastWeaponPlayInstance);
@@ -577,7 +573,7 @@ bool CCharacter::WhileBurning(void)	// Returns true until state is complete.
 
 	// Get time from last call in seconds.  Should this be passed in so we don't
 	// update m_lPrevTime???
-	int32_t		lCurTime	= m_pRealm->m_time.GetGameTime();
+   int32_t		lCurTime	= realm()->m_time.GetGameTime();
 	double	dSeconds	= double(lCurTime - m_lPrevTime) / 1000.0;
 	m_lPrevTime			= lCurTime;
 
@@ -587,11 +583,11 @@ bool CCharacter::WhileBurning(void)	// Returns true until state is complete.
 	DeluxeUpdatePosVel(dSeconds);
 
 	// If the fire still exists . . .
-	CFire*	pfire;
-	if (m_pRealm->m_idbank.GetThingByID((CThing**)&pfire, m_u16IdFire) == SUCCESS)
+
+   if(m_fire)
 		{
 		// If the fire is still burning . . .
-		if (pfire->IsBurning() != FALSE)
+      if (m_fire->IsBurning() != FALSE)
 			{
 			// Brightness is the ratio of the amount of time expired to the
 			// total time multiplied by the destination brightness.
@@ -657,15 +653,14 @@ bool CCharacter::WhileHoldingWeapon(	// Returns true when weapon is released.
    uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 	// Check for show point in animation . . .
 	if (u8Event > 0)
-		{
-		CWeapon*	pweapon;
-		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
+      {
+      if (child())
 			{
 			// If hidden . . .
-			if (pweapon->m_eState == CWeapon::State_Hide)
+         if (weapon()->m_eState == CWeapon::State_Hide)
 				{
 				// Show.
-				pweapon->m_eState = CWeapon::State_Idle;
+            weapon()->m_eState = CWeapon::State_Idle;
 				}
 			// Check for release point . . .
 			else if (u8Event > 1)
@@ -697,17 +692,15 @@ bool CCharacter::WhileHoldingWeapon(	// Returns true when weapon is released.
 // entered.
 ////////////////////////////////////////////////////////////////////////////////
 void CCharacter::OnDead(void)
-	{
-	CHood*	phood	= m_pRealm->m_phood;
+   {
 	// Render current dead frame into background to stay.
-	m_pRealm->m_scene.DeadRender3D(
-		phood->m_pimBackground,		// Destination image.
+   realm()->Scene()->DeadRender3D(
+      realm()->Hood()->m_pimBackground,		// Destination image.
 		&m_sprite,						// Tree of 3D sprites to render.
-		phood);							// Dst clip rect.
+      realm()->Hood());							// Dst clip rect.
 	
 	// If we just rendered a child weapon into the background . . .
-	CThing*	pthing;
-	if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16IdWeapon) == SUCCESS)
+   if (child())
 		{
 		// It has a permanent place in the background and, therefore, is no
 		// longer needed.
@@ -718,11 +711,11 @@ void CCharacter::OnDead(void)
 		GameMessage msg;
 		msg.msg_ObjectDelete.eType = typeObjectDelete;
 		msg.msg_ObjectDelete.sPriority = 0;
-		SendThingMessage(&msg, pthing);
+      SendThingMessage(msg, child());
 		}
 
 	// Register death with the score module
-	ScoreRegisterKill(m_pRealm, m_u16InstanceId, m_u16KillerId);
+   ScoreRegisterKill(realm(), this, m_killer);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -787,8 +780,8 @@ void CCharacter::ProcessMessage(		// Returns nothing.
 void CCharacter::OnShotMsg(	// Returns nothing.
 	Shot_Message* pshotmsg)		// In:  Message to handle.
 	{
-	ASSERT(pshotmsg->u16ShooterID != 0xebeb);
-	m_u16KillerId = pshotmsg->u16ShooterID;
+   ASSERT(pshotmsg->shooter);
+   m_killer = pshotmsg->shooter;
 
 	CThing3d::OnShotMsg(pshotmsg);
 
@@ -809,8 +802,8 @@ void CCharacter::OnShotMsg(	// Returns nothing.
 void CCharacter::OnExplosionMsg(			// Returns nothing.
 	Explosion_Message* pexplosionmsg)	// In:  Message to handle.
 	{
-	ASSERT(pexplosionmsg->u16ShooterID != 0xebeb);
-	m_u16KillerId = pexplosionmsg->u16ShooterID;
+   ASSERT(pexplosionmsg->shooter);
+   m_killer = pexplosionmsg->shooter;
 
 	MakeBloody(
 		pexplosionmsg->sDamage, 
@@ -827,8 +820,8 @@ void CCharacter::OnExplosionMsg(			// Returns nothing.
 void CCharacter::OnBurnMsg(	// Returns nothing.
 	Burn_Message* pburnmsg)		// In:  Message to handle.
 	{
-	ASSERT(pburnmsg->u16ShooterID != 0xebeb);
-	m_u16KillerId = pburnmsg->u16ShooterID;
+   ASSERT(pburnmsg->shooter);
+   m_killer = pburnmsg->shooter;
 
 	CThing3d::OnBurnMsg(pburnmsg);
 
@@ -837,7 +830,7 @@ void CCharacter::OnBurnMsg(	// Returns nothing.
 		{
 		if (StatsAreAllowed) Stat_Burns++;
 		// End of burn, if we don't die of 'natural' (being on fire) causes first.
-		m_lCharacterTimer	= m_pRealm->m_time.GetGameTime() + BURN_DURATION;
+      m_lCharacterTimer	= realm()->m_time.GetGameTime() + BURN_DURATION;
 		}
 	}
 
@@ -908,7 +901,7 @@ void CCharacter::MakeBloody(
 	if (g_GameSettings.m_sKidMode == FALSE)
 	{
 #endif
-	double	dHitY	= m_dY + GetRandSway(BLOOD_SPLAT_SWAY, m_pRealm->m_phood->m_dScale3d);
+   double	dHitY	= m_dY + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
 	double	dHitX;
 	double	dHitZ;
 	// If writhing on the ground . . .
@@ -933,8 +926,8 @@ void CCharacter::MakeBloody(
 		}
 
 	// Create blood animation.
-   CAnimThing*	pat	= static_cast<CAnimThing*>(m_pRealm->makeType(::CAnimThingID));
-	if (pat != nullptr)
+   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
+   if (pat)
 		{
       std::strcpy(pat->m_szResName, BLOOD_SPLAT_RES_NAME);
 
@@ -952,9 +945,9 @@ void CCharacter::MakeBloody(
 	for (i = 0; i < sNumChunks; i++)
 		{
 		// Create blood particles . . .
-      CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
+     managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
 		// Note that this will fail if particles are disabled.
-      if (pchunk != nullptr)
+      if (pchunk)
 			{
 			pchunk->Setup(
 				dHitX,				// Source position.
@@ -989,8 +982,8 @@ void CCharacter::MakeBloodPool(void)
 	if (g_GameSettings.m_sKidMode == FALSE)
 	{
 #endif
-   CAnimThing*	pat	= static_cast<CAnimThing*>(m_pRealm->makeType(::CAnimThingID));
-	if (pat != nullptr)
+     managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
+   if (pat)
 		{
       std::strcpy(pat->m_szResName, BLOOD_POOL_RES_NAME);
 
@@ -1001,12 +994,12 @@ void CCharacter::MakeBloodPool(void)
 		// in the background.
 		pat->m_msg.msg_DrawBlood.eType		= typeDrawBlood;
 		pat->m_msg.msg_DrawBlood.sPriority	= 0;
-		pat->m_u16IdSendMsg						= m_u16InstanceId;
+      pat->m_sender = this;
 
-		double	dHitX			= m_dX + GetRandSway(BLOOD_SPLAT_SWAY, m_pRealm->m_phood->m_dScale3d);
-		double	dHitZ			= m_dZ + GetRandSway(BLOOD_SPLAT_SWAY, m_pRealm->m_phood->m_dScale3d);
+      double	dHitX			= m_dX + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
+      double	dHitZ			= m_dZ + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
 		// Make sure blood lands on the ground (terrain).
-		double	dTerrainH	= m_pRealm->GetHeight(dHitX, dHitZ);
+      double	dTerrainH	= realm()->GetHeight(dHitX, dHitZ);
 
 		Map3Dto2D(dHitX, dTerrainH, dHitZ,
 			&(pat->m_msg.msg_DrawBlood.s2dX),
@@ -1033,7 +1026,7 @@ void CCharacter::BloodToBackground(
 #endif
 	// Draw last frame of pool directly into background.
 	CAnimThing::ChannelAA*	paachannel;
-	if (rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(BLOOD_POOL_RES_NAME), &paachannel) == SUCCESS)
+   if (rspGetResource(&g_resmgrGame, realm()->Make2dResPath(BLOOD_POOL_RES_NAME), &paachannel) == SUCCESS)
 		{
 		// Get last frame.
 		CAlphaAnim*	paa = paachannel->GetItem(paachannel->NumItems() - 1);
@@ -1046,15 +1039,15 @@ void CCharacter::BloodToBackground(
 		if (paa->m_pimAlphaArray != nullptr)
 			{
 			RRect	rcClip(0, 0, 
-				m_pRealm->m_phood->m_pimBackground->m_sWidth,
-				m_pRealm->m_phood->m_pimBackground->m_sHeight);
+            realm()->Hood()->m_pimBackground->m_sWidth,
+            realm()->Hood()->m_pimBackground->m_sHeight);
 			
 			// Do the Alpha blit.
 			rspGeneralAlphaBlit(
-				m_pRealm->m_phood->m_pmaTransparency,	// Levels multialpha table.
+            realm()->Hood()->m_pmaTransparency,	// Levels multialpha table.
 				paa->m_pimAlphaArray,						// Alpha mask.
 				&(paa->m_imColor),							// Src.
-				m_pRealm->m_phood->m_pimBackground,		// Dst.
+            realm()->Hood()->m_pimBackground,		// Dst.
 				sX,												// 2D Dst coord.
 				sY,												// 2D Dst coord.
 				rcClip);											// Dst.
@@ -1064,7 +1057,7 @@ void CCharacter::BloodToBackground(
 			// Regular transparency blit.
 			rspBlit(
 				&(paa->m_imColor),							// Src.
-				m_pRealm->m_phood->m_pimBackground,		// Dst.
+            realm()->Hood()->m_pimBackground,		// Dst.
 				sX,												// 2D Dst coord.
 				sY,												// 2D Dst coord.
 				nullptr);											// Dst.
@@ -1083,31 +1076,27 @@ void CCharacter::BloodToBackground(
 // This should be done when the character starts its shoot animation.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-CWeapon* CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
+managed_ptr<CWeapon> CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
 	{
-	CWeapon*	pweapon	= nullptr;
-
-   pweapon = static_cast<CWeapon*>(realm()->makeType(m_eWeaponType));
-   if (pweapon != nullptr)
+   m_child = realm()->AddThing<CWeapon>();
+   if (child())
         {
         // Set its parent.
-        pweapon->m_idParent = GetInstanceID();
+        child()->setParent(this);
         // Set it up.
-        pweapon->Setup(0, 0, 0);
-        pweapon->m_dRot = m_dRot;
+        weapon()->Setup(0, 0, 0);
+        weapon()->m_dRot = m_dRot;
         // Set its initial state to hidden.
-        pweapon->m_eState = CWeapon::State_Hide;
+        weapon()->m_eState = CWeapon::State_Hide;
         // Let the scene know to render the weapon as a child of this.
-        m_sprite.AddChild(pweapon->GetSprite() );
-        // Store ID.
-        m_u16IdWeapon	= pweapon->GetInstanceID();
+        m_sprite.AddChild(weapon()->GetSprite() );
         }
     else
         {
         TRACE("PrepareWeapon(): Failed to construct new thing.\n");
         }
 
-	return pweapon;
+   return child();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1116,12 +1105,12 @@ CWeapon* CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
 // shooting.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
+managed_ptr<CWeapon> CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 	CSmash::Bits bitsInclude,			// Bits to use for bullet collision (enemies can specify different bits)
 	CSmash::Bits bitsDontcare,			// Bits to use for bullet colllsion
 	CSmash::Bits bitsExclude)			// Bits to use for bullet collision
 	{
-	CWeapon*	pweapon	= nullptr;
+   managed_ptr<CWeapon> pweapon = child();
 	// Detatch the weapon.
 	ASSERT(m_panimCur != nullptr);
 	
@@ -1179,37 +1168,37 @@ CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 					false);										// In:  Call ReleaseAndPurge rather than Release after playing
 				}
 
-			m_lStopLoopingWeaponSoundTime	= m_pRealm->m_time.GetGameTime() + MAX_TIME_WITHOUT_FLAMAGE;
+         m_lStopLoopingWeaponSoundTime	= realm()->m_time.GetGameTime() + MAX_TIME_WITHOUT_FLAMAGE;
 
 			// Intentional fall through.
 
 		default:
 			{
-			ASSERT(m_u16IdWeapon != CIdBank::IdNil);
+         ASSERT(child());
 
-			if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
+         if (child())
 				{
 				// Set weapon position to character's position offset by rigid body's realm offset.
-				pweapon->m_dX = m_dX + pt3WeaponRel.x();
-				pweapon->m_dY = m_dY + pt3WeaponRel.y();
-				pweapon->m_dZ = m_dZ + pt3WeaponRel.z();
+            weapon()->m_dX = m_dX + pt3WeaponRel.x();
+            weapon()->m_dY = m_dY + pt3WeaponRel.y();
+            weapon()->m_dZ = m_dZ + pt3WeaponRel.z();
 				// I guess we usually want to launch in the direction we are _currently_ facing and
 				// not the direction we were in when we prepared the weapon.
-				pweapon->m_dRot	= m_dRot;
+            weapon()->m_dRot	= m_dRot;
 
 				// Set the collision bits for the weapon
-				pweapon->SetCollideBits(bitsInclude, bitsDontcare, bitsExclude);
+            weapon()->SetCollideBits(bitsInclude, bitsDontcare, bitsExclude);
 
 				// Set Instance ID of the shooter
-				pweapon->m_u16ShooterID = m_u16InstanceId;
+            weapon()->m_shooter = this;
 
 				// Set the weapon in motion by changing its state.
-				pweapon->m_eState = CWeapon::State_Fire;
+            weapon()->m_eState = CWeapon::State_Fire;
 				
 				// Detach parent pointer
-				pweapon->m_idParent = CIdBank::IdNil;
+            child()->resetParent();
 				// Detatch weapon's sprite
-				CSprite*	pspriteWeapon	= pweapon->GetSprite();
+            CSprite*	pspriteWeapon	= weapon()->GetSprite();
 				if (pspriteWeapon)
 					{
 					// Some weapons (one weapon, the flamer) are never parented.
@@ -1218,15 +1207,12 @@ CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 						m_sprite.RemoveChild(pspriteWeapon);
 						}
 					}
-
-				// Done with weapon.
-				m_u16IdWeapon = CIdBank::IdNil;
 				
 				// Specific behavior by type.
-				switch (pweapon->GetClassID() )
+            switch (child()->type())
 					{
 					case CDeathWadID:
-						CDeathWad*	pdw	= (CDeathWad*)pweapon;
+                  managed_ptr<CDeathWad> pdw = child();
 
 						// Let it take what it needs.
 						pdw->FeedWad(&m_stockpile);
@@ -1239,7 +1225,7 @@ CWeapon* CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 	}
 
 	// No longer exists.
-	m_u16IdWeapon	= CIdBank::IdNil;
+   resetChild();
 
 	return pweapon;
 	}
@@ -1255,7 +1241,7 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 	{
 	bool	bValid	= true;	// Assume valid.
 
-	if (m_u16IdWeapon != CIdBank::IdNil)
+   if (weapon())
 		{
 		switch (m_eWeaponType)
 			{
@@ -1264,12 +1250,11 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 			case CNapalmID:
 			case CRocketID:
 			case CHeatseekerID:
-				{
-				CWeapon*	pweapon;
-				if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
+            {
+            if (weapon())
 					{
 					// If this weapon is not hidden . . .
-					if (pweapon->m_eState != CWeapon::State_Hide)
+               if (weapon()->m_eState != CWeapon::State_Hide)
 						{
                   RTransform&	transWeapon = m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 
@@ -1279,17 +1264,17 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
                   GetLinkPoint(&transWeapon, &dX, &dY, &dZ);
 
 						// Check position to make sure it's not inside terrain.
-						int16_t	sTerrainH	= m_pRealm->GetHeight(m_dX + dX, m_dZ + dZ);
+                  int16_t	sTerrainH	= realm()->GetHeight(m_dX + dX, m_dZ + dZ);
 						if (sTerrainH > m_dY + dY)
 							{
 							// Send the object a delete message.
 							GameMessage	msg;
 							msg.msg_ObjectDelete.eType		= typeObjectDelete;
 							msg.msg_ObjectDelete.sPriority	= 0;
-							SendThingMessage(&msg, pweapon);
+                     SendThingMessage(msg, weapon());
 
 							// Clear our instance ID.
-							m_u16IdWeapon	= CIdBank::IdNil;
+                     weapon().reset();
 
 							// Call the notify function.
 							OnWeaponDestroyed();
@@ -1301,7 +1286,7 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 				else
 					{
 					// Clear our instance ID.
-					m_u16IdWeapon	= CIdBank::IdNil;
+               weapon().reset();
 					}
 				break;
 				}
@@ -1335,7 +1320,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 	// Never shoot dead people or writhers.
 	bitsExclude |= (CSmash::Dead | CSmash::AlmostDead);
 
-	const bool isPlayer = (m_id == CDudeID);  // !!! FIXME: make sure it's not a remote multiplayer dude.
+   const bool isPlayer = (type() == CDudeID);  // !!! FIXME: make sure it's not a remote multiplayer dude.
 	if (isPlayer)
 		{
 		if (StatsAreAllowed)
@@ -1350,16 +1335,16 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 	for (i = 0; i < sNumShots; i ++)
 		{
 		int16_t	sX, sY, sZ;	
-		int16_t	sFireAngle	= m_dRot + GetRandSway(FIRE_ANGLE_Y_SWAY, m_pRealm->m_phood->m_dScale3d);
-		CThing*	pthingTarget;
+      int16_t	sFireAngle	= m_dRot + GetRandSway(FIRE_ANGLE_Y_SWAY, realm()->Hood()->m_dScale3d);
+      managed_ptr<CThing> pthingTarget;
 		bool bResult = m_bullets.FireDeluxe(
 			sFireAngle,				// In:  Angle of launch in degrees (on X/Z plane).
-			GetRandSway(FIRE_ANGLE_Z_SWAY, m_pRealm->m_phood->m_dScale3d),				// In:  Angle of launch in degrees (on X/Y plane).
+         GetRandSway(FIRE_ANGLE_Z_SWAY, realm()->Hood()->m_dScale3d),				// In:  Angle of launch in degrees (on X/Y plane).
 			m_dX + ppt3d->x(),		// In:  Launch position.
 			m_dY + ppt3d->y(),		// In:  Launch position.
 			m_dZ + ppt3d->z(),		// In:  Launch position.
 			sRange,					// In:  Maximum distance.
-			m_pRealm,				// In:  Realm in which to fire.
+         realm(),				// In:  Realm in which to fire.
 			bitsInclude,			// In:  Mask of CSmash masks that this bullet can hit.
 			bitsDontcare,			// In:  Mask of CSmash masks that this bullet does not care to hit.
 			bitsExclude,			// In:  Mask of CSmash masks that this bullet cannot hit.
@@ -1372,13 +1357,13 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 										// would stop if no CThing collisions occurred).
 			&sZ,						// Out: Terrain hit position (i.e., where the bullet
 										// would stop if no CThing collisions occurred).
-			&pthingTarget,			// Out: Ptr to thing hit or nullptr.
+         pthingTarget,			// Out: Ptr to thing hit or nullptr.
 			true,						// In:  Draw a tracer at random point along path.
 			(i == 0) ? smidAmmo : g_smidNil)	// In:  Use ammo sample.
 			
 			;
 		//!! FIXME: this should simply miss if we shoot ourself. Cheap hack for dude shooting himself in twinstick mode.
-		if (pthingTarget != this && bResult)
+      if (pthingTarget != this && bResult)
 			{
 
 			// Create a message.
@@ -1391,7 +1376,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 			msg.msg_Shot.eType			= typeShot;
 			msg.msg_Shot.sPriority		= 0;
 			msg.msg_Shot.sAngle			= sFireAngle;
-			msg.msg_Shot.u16ShooterID	= m_u16InstanceId;
+         msg.msg_Shot.shooter	= this;
 
 			int16_t sIndex = 0;
 			// Figure out how much damage the bullet should give
@@ -1418,17 +1403,17 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 					break;
 			}
 			// See if the shooter is a CDude
-			if (m_id == CDudeID)
+         if (type() == CDudeID)
 				sIndex |= SHOOTER_IS_DUDE;
 			// See if the target is a CDude
-			if (pthingTarget->GetClassID() == CDudeID)
+         if (pthingTarget->type() == CDudeID)
 				sIndex |= TARGET_IS_DUDE;
 
 			// Based on these parameters, look up the damage in the damage chart.
 			msg.msg_Shot.sDamage = ms_asBulletDamageChart[sIndex];
 
 			// Send it the message.
-			SendThingMessage(&msg, pthingTarget);
+			SendThingMessage(msg, pthingTarget);
 
 			if (m_eWeaponType == CDoubleBarrelID)
 				{
@@ -1443,9 +1428,9 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 				msg.msg_Explosion.sY = (int16_t) pthingTarget->GetY();
 				msg.msg_Explosion.sZ = (int16_t) pthingTarget->GetZ() + SINQ[sAngle] * 10;
 				msg.msg_Explosion.sVelocity = 100;
-				msg.msg_Explosion.u16ShooterID = GetInstanceID();
+            msg.msg_Explosion.shooter = this;
 
-				SendThingMessage(&msg, pthingTarget);
+				SendThingMessage(msg, pthingTarget);
 				}
 
 			// Note we hit something.
@@ -1464,9 +1449,10 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 		}
 
 	// Create shells/casings . . .
-   CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
+
+   managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
 	// Note that this will fail if particles are disabled.
-   if (pchunk != nullptr)
+   if (pchunk)
 		{
 		pchunk->Setup(
 			m_dX + ppt3d->x(),			// Source position.
@@ -1510,7 +1496,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	int16_t* psX,						// Out: Point of intercept, if any, on path.
 	int16_t* psY,						// Out: Point of intercept, if any, on path.
 	int16_t* psZ,						// Out: Point of intercept, if any, on path.
-	CThing** ppthing,				// Out: Thing that intercepted us or nullptr, if none.
+   managed_ptr<CThing>& ppthing,				// Out: Thing that intercepted us or nullptr, if none.
 	CSmash*	psmashExclude/*= nullptr*/)	// In:  Optional CSmash to exclude or nullptr, if none.
 	{
 	bool	bEntirelyClear	= false;	// Assume entire path is not clear.
@@ -1540,12 +1526,12 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	float	fTotalDistXZ	= 0.0F;
 
 	// Store extents.
-	int16_t	sMaxX			= m_pRealm->GetRealmWidth();
+   int16_t	sMaxX			= realm()->GetRealmWidth();
 	int16_t	sMaxY			= 512;					// Robustness: Guard against infinite loop
 														// in the remote possibility that we shoot
 														// straight up (currently one can only shoot
 														// horizontally).
-	int16_t	sMaxZ			= m_pRealm->GetRealmHeight();
+   int16_t	sMaxZ			= realm()->GetRealmHeight();
 
 	int16_t	sMinX			= 0;
 	int16_t	sMinY			= -512;
@@ -1630,7 +1616,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	CSmash*	psmashClosest	= nullptr;
 	// Determine if anything with specified smash description was hit on along each edge . . .
 	CSmash*	psmash1;
-	if (m_pRealm->m_smashatorium.QuickCheckClosest(
+   if (realm()->m_smashatorium.QuickCheckClosest(
 		&line1, 
 		bitsInclude, 
 		bitsDontCare, 
@@ -1641,7 +1627,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 		psmash1	= nullptr;
 		}
 	CSmash*	psmash2;
-	if (m_pRealm->m_smashatorium.QuickCheckClosest(
+   if (realm()->m_smashatorium.QuickCheckClosest(
 		&line2, 
 		bitsInclude, 
 		bitsDontCare, 
@@ -1683,7 +1669,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	if (psmashClosest != nullptr)
 		{
 		// Set *ppthing to thing hit.
-		*ppthing	= psmashClosest->m_pThing;
+      ppthing	= psmashClosest->m_pThing;
 
 		// Set end pt.
 		*psX		= psmashClosest->m_sphere.sphere.X;
@@ -1693,7 +1679,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	else
 		{
 		// Clear thing ptr.
-		*ppthing	= nullptr;
+      ppthing.reset();
 		// Set end pt.
 		*psX		= fPosX;
 		*psY		= fPosY;
@@ -1725,12 +1711,12 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 			&(psl2d->m_sX2End), 
 			&(psl2d->m_sY2End) );
 		psl2d->m_sPriority	= sZ;
-		psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(m_pRealm->GetLayer(sX, sZ));
+      psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sX, sZ));
 		psl2d->m_u8Color		= (bEntirelyClear == false) ? 249 : 250;
 		// Destroy when done.
 		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 		// Put 'er there.
-		m_pRealm->m_scene.UpdateSprite(psl2d);
+      realm()->Scene()->UpdateSprite(psl2d);
 		}
 #endif
 
@@ -1751,7 +1737,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 	CSmash::Bits bitsInclude,		// In:  Mask of CSmash bits that would count as a hit
 	CSmash::Bits bitsDontCare,		// In:  Mask of CSmash bits that would not affect path
 	CSmash::Bits bitsExclude,		// In:  Mask of CSmash bits that cannot affect path
-	CThing** hThing,					// Out: Handle to thing that is the Target or nullptr if none
+   managed_ptr<CThing>& hThing,					// Out: Handle to thing that is the Target or nullptr if none
 	CSmash* psmashExclude)			// In: Optional CSmash to exclude or nullptr, if none. 
 {
 	bool bTargetFound = false;
@@ -1818,7 +1804,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 	CSmash*	psmashClosest	= nullptr;
 	// Determine if anything with specified smash description was hit on along each edge . . .
 	CSmash*	psmash1;
-	if (m_pRealm->m_smashatorium.QuickCheckClosest(
+   if (realm()->m_smashatorium.QuickCheckClosest(
 		&line1, 
 		bitsInclude, 
 		bitsDontCare, 
@@ -1829,7 +1815,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 		psmash1	= nullptr;
 		}
 	CSmash*	psmash2;
-	if (m_pRealm->m_smashatorium.QuickCheckClosest(
+   if (realm()->m_smashatorium.QuickCheckClosest(
 		&line2, 
 		bitsInclude, 
 		bitsDontCare, 
@@ -1871,7 +1857,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 	if (psmashClosest != nullptr)
 		{
 		// Set *ppthing to thing hit.
-		*hThing	= psmashClosest->m_pThing;
+      hThing = psmashClosest->m_pThing;
 		bTargetFound = true;
 		// Set end pt.
 //		*psX		= psmashClosest->m_sphere.sphere.X;
@@ -1881,7 +1867,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 	else
 		{
 		// Clear thing ptr.
-		*hThing	= nullptr;
+      hThing.reset();
 		// Set end pt.
 //		*psX		= fPosX;
 //		*psY		= fPosY;
@@ -1908,12 +1894,12 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 			&(psl2d->m_sX2End), 
 			&(psl2d->m_sY2End) );
 		psl2d->m_sPriority	= sZ;
-		psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(m_pRealm->GetLayer(sX, sZ));
+      psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sX, sZ));
 		psl2d->m_u8Color		= (bEntirelyClear == false) ? 249 : 250;
 		// Destroy when done.
 		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 		// Put 'er there.
-		m_pRealm->m_scene.UpdateSprite(psl2d);
+      realm()->Scene()->UpdateSprite(psl2d);
 		}
 #endif
 

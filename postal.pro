@@ -1,4 +1,9 @@
 QT=
+CONFIG += c++14
+CONFIG += strict_c++
+
+QMAKE_CXXFLAGS_DEBUG += -O0 -g3
+QMAKE_CXXFLAGS_RELEASE += -Os
 
 DEFINES+="LOCALE=US"
 DEFINES+="TARGET=POSTAL_1997"
@@ -265,7 +270,8 @@ HEADERS += \
     update.h \
     warp.h \
     weapon.h \
-    yatime.h
+    yatime.h \
+    newpix/managedpointer.h
 
 SOURCES += \
     RSPiX/GREEN/3D/pipeline.cpp \
@@ -425,7 +431,9 @@ SOURCES += \
     update.cpp \
     warp.cpp \
     weapon.cpp \
-    yatime.cpp
+    yatime.cpp \
+    message.cpp \
+    newpix/managedpointer.cpp
 
 
 HEADERS += \
@@ -501,7 +509,6 @@ SOURCES += \
 }
 
 sdl {
-QMAKE_CXXFLAGS+= -std=c++11
 LIBS += -L/usr/lib/x86_64-linux-gnu -lSDL
 SOURCES += \
     RSPiX/CYAN/sdl/uColors.cpp \
@@ -518,7 +525,6 @@ SOURCES += \
 }
 
 sdl2 {
-QMAKE_CXXFLAGS+= -std=c++11
 LIBS += -lSDL2
 SOURCES += \
     RSPiX/CYAN/sdl2/uColors.cpp \
@@ -575,7 +581,6 @@ SOURCES += \
 }
 
 dreamcast {
-QMAKE_CXXFLAGS+= -std=c++11
 SOURCES += \
     RSPiX/CYAN/dreamcast/uColors.cpp \
     RSPiX/CYAN/dreamcast/uDialog.cpp \
@@ -591,7 +596,6 @@ SOURCES += \
 }
 
 saturn {
-QMAKE_CXXFLAGS+= -std=c++11
 SOURCES += \
     RSPiX/CYAN/saturn/uColors.cpp \
     RSPiX/CYAN/saturn/uDialog.cpp \

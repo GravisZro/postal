@@ -91,7 +91,7 @@
 //							NOT_WALKABLE attribute which caused it to blow up in
 //							the wrong places.  Now only the height is checked.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/10/97 BRH	Increased the rocket arming time from 200ms to 500ms to 
@@ -130,7 +130,7 @@
 //		07/08/97 BRH	Adjusted the position of the smoke, and cut down the trail
 //							length.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -324,7 +324,7 @@ void CRocket::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime(); 
+		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
@@ -394,19 +394,19 @@ void CRocket::Update(void)
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 
 				// Check for obstacles
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 #ifdef UNUSED_VARIABLES
-            usAttrib = m_pRealm->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
+            usAttrib = realm()->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
 #endif
 
 				// If the new position's height is too high, the new position is a ways
 				// off screen, or the path to the new position is not clear of terrain . . .
 				if (sHeight > m_dY                     || 
-					 m_dZ > ms_sOffScreenDist + m_pRealm->GetRealmHeight() ||
+					 m_dZ > ms_sOffScreenDist + realm()->GetRealmHeight() ||
 					 m_dZ < -ms_sOffScreenDist ||
-					 m_dX > ms_sOffScreenDist + m_pRealm->GetRealmWidth() ||
+					 m_dX > ms_sOffScreenDist + realm()->GetRealmWidth() ||
 					 m_dX < -ms_sOffScreenDist ||
-					 !m_pRealm->IsPathClear(	// Returns true, if the entire path is clear.                 
+					 !realm()->IsPathClear(	// Returns true, if the entire path is clear.                 
 														// Returns false, if only a portion of the path is clear.     
 														// (see *psX, *psY, *psZ).                                    
 						(int16_t) m_dX, 				// In:  Starting X.                                           
@@ -451,17 +451,17 @@ void CRocket::Update(void)
 				if (m_bArmed)
 				{
 					CSmash* pSmashed = nullptr;
-					m_pRealm->m_smashatorium.QuickCheckReset(
+					realm()->m_smashatorium.QuickCheckReset(
 						&m_smash, 
 						m_u32CollideIncludeBits,
 						m_u32CollideDontcareBits,
 						m_u32CollideExcludeBits & ~CSmash::Ducking);
 
-					while (m_pRealm->m_smashatorium.QuickCheckNext(&pSmashed))
+					while (realm()->m_smashatorium.QuickCheckNext(&pSmashed))
 					{
 						ASSERT(pSmashed->m_pThing);
 
-						const bool bIsPlayer = (pSmashed->m_pThing->GetClassID() == CDudeID);
+						const bool bIsPlayer = (pSmashed->m_pThing->type() == CDudeID);
 
 						// we need to check ducking collisions unconditionally so we can unlock an achievement, but then we carry on if it should have missed.
 						if ((m_u32CollideExcludeBits & CSmash::Ducking) && (pSmashed->m_bits & CSmash::Ducking))
@@ -474,13 +474,11 @@ void CRocket::Update(void)
 						if (bIsPlayer)
 							UnlockAchievement(ACHIEVEMENT_ROCKET_TO_THE_FACE);
 
-						CThing* pShooter;
-						m_pRealm->m_idbank.GetThingByID(&pShooter, m_u16ShooterID);
-						if (pShooter)
+                  if (m_shooter)
 						{
 							// If a Sentry gun shot this weapon, and it hit another Sentry gun, then 
 							// ignore the collision.
-							if (!(pSmashed->m_pThing->GetClassID() == CSentryID && pShooter->GetClassID() == CSentryID))
+                     if (!(pSmashed->m_pThing->type() == CSentryID && m_shooter->type() == CSentryID))
 							{
 								m_eState = CWeapon::State_Explode;
 								// Move back to previous position where expolosion should appear
@@ -502,17 +500,15 @@ void CRocket::Update(void)
 				}
 				else
 				{
-					// Check for collision with self and if no collision, then arm
-					CThing* pShooter = nullptr;
-					m_pRealm->m_idbank.GetThingByID(&pShooter, m_u16ShooterID);
+               // Check for collision with self and if no collision, then arm
 					// If the shooter is valid, then arm when it clears the shooter
-					if (pShooter)
+               if (m_shooter)
 					{
-						CSmash* pSmashed = pShooter->GetSmash();
+                  CSmash* pSmashed = m_shooter->GetSmash();
 						if (pSmashed)
 						{
-							pSmashed = (CSmash*) &(((CThing3d*) pShooter)->m_smash);
-							if (!(m_pRealm->m_smashatorium.QuickCheck(&m_smash, pSmashed)))
+                     pSmashed = (CSmash*) &(m_shooter->m_smash);
+							if (!(realm()->m_smashatorium.QuickCheck(&m_smash, pSmashed)))
 								m_bArmed = true;
 						}
 						else
@@ -533,13 +529,13 @@ void CRocket::Update(void)
 				if (lThisTime > m_lSmokeTimer)
 				{
 					m_lSmokeTimer = lThisTime + ms_lSmokeTrailInterval;
-               CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-               if (pSmoke != nullptr)
+               managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+               if (pSmoke)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
 						pSmoke->Setup(dPrevX, m_dY, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
-						pSmoke->m_u16ShooterID = m_u16ShooterID;
+						pSmoke->m_shooter = m_shooter;
 					}
 				}
 
@@ -556,7 +552,7 @@ void CRocket::Update(void)
 				m_bArmed = true;
 				{
 					CSmash* pSmashed = nullptr;
-					if (m_pRealm->m_smashatorium.QuickCheck(&m_smash, 
+					if (realm()->m_smashatorium.QuickCheck(&m_smash, 
 																	m_u32CollideIncludeBits, 
 																	m_u32CollideDontcareBits,
 																	m_u32CollideExcludeBits, &pSmashed))
@@ -567,13 +563,13 @@ void CRocket::Update(void)
 				if (lThisTime > m_lSmokeTimer)
 				{
 					m_lSmokeTimer = lThisTime + ms_lSmokeTrailInterval;
-               CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-               if (pSmoke != nullptr)
+               managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+               if (pSmoke)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
 						pSmoke->Setup(dPrevX, m_dY, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
-						pSmoke->m_u16ShooterID = m_u16ShooterID;
+						pSmoke->m_shooter = m_shooter;
 					}
 				}
 
@@ -592,10 +588,10 @@ void CRocket::Update(void)
 
 				// Start an explosion object and then kill rocket
 				// object
-            CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
-            if (pExplosion != nullptr)
+            managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+            if (pExplosion)
 				{
-					pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_u16ShooterID);
+					pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_shooter);
 					PlaySample(										// Returns nothing.
 																		// Does not fail.
 						g_smidRocketExplode,						// In:  Identifier of sample you want played.
@@ -604,15 +600,14 @@ void CRocket::Update(void)
 // Old call:	PlaySample(g_smidRocketExplode);
 				}
 
-				int16_t a;
-				CFire* pSmoke;
+            int16_t a;
 				for (a = 0; a < 8; a++)
 				{
-              pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-              if (pSmoke != nullptr)
+              managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+              if (pSmoke)
 					{
 						pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
-						pSmoke->m_u16ShooterID = m_u16ShooterID;
+						pSmoke->m_shooter = m_shooter;
 					}
 				}
 
@@ -628,7 +623,7 @@ void CRocket::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= 2 * m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save time for next time
 		m_lPrevTime = lThisTime;
@@ -641,7 +636,7 @@ void CRocket::Update(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CRocket::Render(void)
 {
-	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+	int32_t lThisTime = realm()->m_time.GetGameTime();
 
 	m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
 	m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
@@ -663,7 +658,7 @@ void CRocket::Render(void)
 		m_sprite.m_sInFlags = 0;
 
 	// If we're not a child of someone else...
-	if (m_idParent == CIdBank::IdNil)
+   if (!parent())
 	{
 		// Map from 3d to 2d coords
 		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
@@ -672,12 +667,12 @@ void CRocket::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from the attribute map
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		m_sprite.m_ptrans		= &m_trans;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 		
 		// Render the 2D shadow sprite
 		CWeapon::Render();
@@ -720,9 +715,9 @@ int16_t CRocket::Setup(									// Returns 0 if successfull, non-zero otherwise
 	m_u32CollideExcludeBits = CSmash::Ducking;
 
 	m_smash.m_bits = CSmash::Projectile;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
-	m_sCurRadius = 10 * m_pRealm->m_scene.m_dScale3d;
+	m_sCurRadius = 10 * realm()->Scene()->m_dScale3d;
 
 	m_lSmokeTimer = 0;
 
@@ -739,7 +734,7 @@ int16_t CRocket::GetResources(void)						// Returns 0 if successfull, non-zero o
 	sResult = m_anim.Get(ms_apszResNames);
 	if (sResult == SUCCESS)
 	{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 		if (sResult == SUCCESS)
 		{
 			// add more gets
@@ -794,26 +789,13 @@ int16_t CRocket::Preload(
 
 void CRocket::ProcessMessages(void)
 {
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-				m_MessageQueue.Empty();
-				m_eState = State_Deleted;
-				// Don't delete this here.  Instead make sure the state is
-				// set so Update() knows to delete us and return immediately
-				// (before something else changes our state).
-				return;
-				break;
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return;
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+      m_eState = State_Deleted;
+    m_MessageQueue.pop_front();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

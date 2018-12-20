@@ -92,7 +92,7 @@
 //							Now sends messages to Characters, Miscs, Barrels, and 
 //							Mines.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/07/97 BRH	Added smoke to the end of all explosions.
@@ -104,7 +104,7 @@
 //		06/26/97 BRH	Added CSmash::AlmostDead bits to the explosion check
 //							so that writhing guys can be blown up.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -256,16 +256,6 @@ int16_t CExplode::Startup(void)								// Returns 0 if successfull, non-zero oth
 	return SUCCESS;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CExplode::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	return SUCCESS;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +276,7 @@ void CExplode::Resume(void)
 	// the time so as to ignore any time that passed while we were suspended.
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
-		m_lPrevTime = m_pRealm->m_time.GetGameTime();
+		m_lPrevTime = realm()->m_time.GetGameTime();
 }
 
 
@@ -298,10 +288,10 @@ void CExplode::Update(void)
 	if (!m_sSuspend)
 	{
 		// Since we don't process any messages, empty the queue
-		m_MessageQueue.Empty();
+      m_MessageQueue.clear();
 
 		// Get new time
-      milliseconds_t lThisTime = m_pRealm->m_time.GetGameTime();
+      milliseconds_t lThisTime = realm()->m_time.GetGameTime();
 		
 		if (m_lTimer < m_pAnimChannel->TotalTime())
 		{
@@ -310,12 +300,11 @@ void CExplode::Update(void)
 		}
 		else
 		{
-			int16_t a;
-			CFire* pSmoke;
+         int16_t a;
 			for (a = 0; a < 8; a++)
 			{
-           pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-            if (pSmoke != nullptr)
+           managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+            if (pSmoke)
 					pSmoke->Setup(m_dX - 4 + GetRandom() % 9, MAX(m_dY-20, 0.0), m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}
 
@@ -347,7 +336,7 @@ void CExplode::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
 		m_sprite.m_pImage = &(pAnim->m_imColor);
@@ -359,7 +348,7 @@ void CExplode::Render(void)
 #endif
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 
 	}
 }
@@ -373,7 +362,7 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sX,												// In:  New x coord
 	int16_t sY,												// In:  New y coord
 	int16_t sZ,												// In:  New z coord
-	uint16_t	u16ShooterID,									// In:  Who is responsible for this explosion
+   managed_ptr<CThing3d> shooter,									// In:  Who is responsible for this explosion
 	int16_t sAnim)											// In:  Which animation to use
 {
 	int16_t sResult = SUCCESS;
@@ -382,9 +371,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-   m_lPrevTime = m_pRealm->m_time.GetGameTime();
+   m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lTimer = 0;
-	m_u16ShooterID = u16ShooterID;
+   m_shooter = shooter;
 
 	// Load resources
 	sResult = GetResources(sAnim);
@@ -396,11 +385,11 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	m_smash.m_sphere.sphere.lRadius	= ms_sBlastRadius;
 
 	// Update the smash.
-	ASSERT (m_pRealm != nullptr);
-//	m_pRealm->m_smashatorium.Update(&m_smash);
+	ASSERT (realm() != nullptr);
+//	realm()->m_smashatorium.Update(&m_smash);
 
 	m_smash.m_bits		= 0;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	// See who we blew up and send them a message
 	CSmash* pSmashed = nullptr;
@@ -412,19 +401,19 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	msg.msg_Explosion.sY = (int16_t) m_dY;
 	msg.msg_Explosion.sZ = (int16_t) m_dZ;
 	msg.msg_Explosion.sVelocity = ms_sProjectVelocity;
-	msg.msg_Explosion.u16ShooterID = m_u16ShooterID;
-	m_pRealm->m_smashatorium.QuickCheckReset(
+   msg.msg_Explosion.shooter = m_shooter;
+	realm()->m_smashatorium.QuickCheckReset(
 		&m_smash, 
 		CSmash::Character | CSmash::Misc | CSmash::Barrel | CSmash::Mine | CSmash::AlmostDead | CSmash::Sentry,
 		CSmash::Good | CSmash::Bad | CSmash::Civilian,
 		0);
-	while (m_pRealm->m_smashatorium.QuickCheckNext(&pSmashed))
+	while (realm()->m_smashatorium.QuickCheckNext(&pSmashed))
 		{
 		ASSERT(pSmashed->m_pThing);
 		// If not the excepted thing . . .
-		if (pSmashed->m_pThing->GetInstanceID() != m_u16ExceptID)
+      if (pSmashed->m_pThing != managed_ptr<CThing>(m_except))
 			{
-			SendThingMessage(&msg, pSmashed->m_pThing);
+         SendThingMessage(msg, pSmashed->m_pThing);
 			}
 		}
 
@@ -446,8 +435,8 @@ int16_t CExplode::EditNew(									// Returns 0 if successfull, non-zero otherwi
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 1000;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lTimer = realm()->m_time.GetGameTime() + 1000;
+	m_lPrevTime = realm()->m_time.GetGameTime();
 
 	// Load resources
 	sResult = GetResources();
@@ -509,9 +498,9 @@ int16_t CExplode::GetResources(int16_t sAnim)						// Returns 0 if successfull, 
 	int16_t sResult = SUCCESS;
 
 	if (sAnim == 0)
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(AA_FILE), &m_pAnimChannel, RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(AA_FILE), &m_pAnimChannel, RFile::LittleEndian);
 	else
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(GE_FILE), &m_pAnimChannel, RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(GE_FILE), &m_pAnimChannel, RFile::LittleEndian);
 
 	if (sResult != SUCCESS)
 		TRACE("CExplosion::GetResources - Error getting explosion animation\n");

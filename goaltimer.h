@@ -78,7 +78,7 @@ class CGoalTimer : public CThing
       ~CGoalTimer(void)
 		{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
@@ -102,9 +102,6 @@ class CGoalTimer : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

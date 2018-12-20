@@ -142,7 +142,7 @@ class CUnguidedMissile : public CWeapon
    public:
       CUnguidedMissile(void)
 			{
-         m_sprite.m_pthing	= this;
+//         m_sprite.m_pthing	= this;
 			m_dAnimRotY			= 0.0;	
 			m_dAnimRotZ			= 0.0;	
 			m_dAnimRotVelY		= 0.0;
@@ -153,7 +153,7 @@ class CUnguidedMissile : public CWeapon
       ~CUnguidedMissile(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();

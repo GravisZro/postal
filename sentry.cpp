@@ -379,7 +379,7 @@ void CSentry::Render(void)
 	m_spriteBase.m_sBrightness	= m_sBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
 
 	// If no parent . . .
-	if (m_u16IdParent == CIdBank::IdNil)
+   if (!parent())
 		{
 		// Reset transform back to start to set absolute rather than cummulative rotation
       m_trans.makeIdentity();
@@ -398,7 +398,7 @@ void CSentry::Render(void)
 		m_spriteBase.m_sPriority = m_dZBase;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_spriteBase);
+      realm()->Scene()->UpdateSprite(&m_spriteBase);
 		
 		// Set transform.
 		m_spriteBase.m_ptrans = &m_transBase;
@@ -418,7 +418,7 @@ void CSentry::Render(void)
 	m_sprite.m_sLayer		= m_spriteBase.m_sLayer;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+   realm()->Scene()->UpdateSprite(&m_sprite);
 		
 }
 
@@ -444,7 +444,7 @@ int16_t CSentry::Init(void)
 	m_panimCur = &m_animStand;
 	m_panimCurBase = &m_animBaseStand;
 	m_lAnimTime = 0;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+   m_lTimer = realm()->m_time.GetGameTime() + 500;
 
 	// Set up the animations that are supposed to loop.
 	m_animShoot.m_psops->SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
@@ -466,7 +466,7 @@ int16_t CSentry::Init(void)
 	m_stockpile.m_sHitPoints = ms_sHitLimit;
 
 	m_smash.m_bits = CSmash::Bad | CSmash::Sentry;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	m_sBrightness = 0;	// Default Brightness level
 
@@ -499,7 +499,7 @@ void CSentry::UpdatePosition(void)
 		Vector3D pt3Src = {0, 0, 0, 1};
 		Vector3D pt3Dst;
 		// Get last transition position by mapping origin.
-		m_pRealm->m_scene.TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
+      realm()->Scene()->TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 		// Set child position to character's position offset by rigid body's realm offset.
 		m_dX = m_dXBase + pt3Dst.x();
 		m_dY = m_dYBase + pt3Dst.y();
@@ -523,21 +523,6 @@ int16_t CSentry::Startup(void)								// Returns 0 if successfull, non-zero othe
 
 	return sResult;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CSentry::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	int16_t sResult = SUCCESS;
-
-   m_trans.makeIdentity();
-   m_transBase.makeIdentity();
-
-	return sResult;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -579,7 +564,7 @@ void CSentry::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		lThisTime = m_pRealm->m_time.GetGameTime();
+      lThisTime = realm()->m_time.GetGameTime();
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		// Calculate elapsed time in seconds
@@ -605,7 +590,7 @@ void CSentry::Update(void)
 				m_smash.m_sphere.sphere.lRadius	= 30; //m_spriteBase.m_sRadius;
 
 				// Update the smash.
-				m_pRealm->m_smashatorium.Update(&m_smash);
+            realm()->m_smashatorium.Update(&m_smash);
 				break;
 
 //-----------------------------------------------------------------------
@@ -647,7 +632,7 @@ void CSentry::Update(void)
 				lSqDistanceToDude = CDoofus::SQDistanceToDude();
 
 				if (bShootThisTime && 
-				    m_idDude != CIdBank::IdNil && 
+                m_dude &&
 				    lSqDistanceToDude < m_lSqDistRange &&
 					 lThisTime > m_lTimer &&
 					 m_sNumRounds > 0)
@@ -657,8 +642,8 @@ void CSentry::Update(void)
 					{
 						m_panimCur = &m_animShoot;
 						m_lAnimTime += lTimeDifference;
-						CWeapon* pweapon = PrepareWeapon();
-						if (pweapon != nullptr)
+                  managed_ptr<CWeapon> pweapon = PrepareWeapon();
+                  if (pweapon)
 							pweapon->SetRangeToTarget(rspSqrt(lSqDistanceToDude));
 						ShootWeapon(ms_u32WeaponIncludeBits, ms_u32WeaponDontcareBits, ms_u32WeaponExcludeBits);
 						m_sNumRounds--;
@@ -702,13 +687,12 @@ void CSentry::Update(void)
 // Dead - You are dead, so lay there and decompose, then go away
 //-----------------------------------------------------------------------
 
-				case CSentry::State_Dead:
-					CHood*	phood	= m_pRealm->m_phood;
+            case CSentry::State_Dead:
 					// Render current dead frame into background to stay.
-					m_pRealm->m_scene.DeadRender3D(
-						phood->m_pimBackground,		// Destination image.
+               realm()->Scene()->DeadRender3D(
+                  realm()->Hood()->m_pimBackground,		// Destination image.
 						&m_spriteBase,					// Tree of 3D sprites to render.
-						phood);							// Dst clip rect.
+                  realm()->Hood());							// Dst clip rect.
 
 					CDoofus::OnDead();
 					delete this;
@@ -726,7 +710,7 @@ void CSentry::Update(void)
 		if (m_siLastWeaponPlayInstance)
 			{
 			// If time has expired . . .
-			if (m_pRealm->m_time.GetGameTime() > m_lStopLoopingWeaponSoundTime)
+         if (realm()->m_time.GetGameTime() > m_lStopLoopingWeaponSoundTime)
 				{
 				// Stop looping the sound.
 				StopLoopingSample(m_siLastWeaponPlayInstance);
@@ -1078,7 +1062,7 @@ void CSentry::OnExplosionMsg(Explosion_Message* pMessage)
 		m_panimCur = &m_animDie;
 		m_lAnimTime = 0;
 		m_stockpile.m_sHitPoints = 0;
-		m_lTimer = m_pRealm->m_time.GetGameTime();
+      m_lTimer = realm()->m_time.GetGameTime();
 
 		m_dExtHorzVel *= 1.4; //2.5;
 		m_dExtVertVel *= 1.1; //1.4;

@@ -78,7 +78,7 @@ class CItem3d : public CThing3d
 
 		CAnim3D		m_anim;									// One animation.
 		char			m_szAnimBaseName[PATH_MAX];	// Name of animation.
-		ItemType		m_type;									// Item type if known.
+      ItemType		m_itemType;									// Item type if known.
 
 		char			m_szAnimRigidName[PATH_MAX];	// Rigid body transform anim name.
 		CAnim3D		m_animChild;									// Optional child anim.
@@ -115,12 +115,12 @@ class CItem3d : public CThing3d
 		void Reset(void)	// Returns nothing.
 			{
 			m_szAnimBaseName[0]	= '\0';
-			m_type					= None;
+         m_itemType					= None;
 
 			m_szAnimRigidName[0]			= '\0';
 			m_szChildAnimBaseName[0]	= '\0';
 
-			m_spriteChild.m_pthing		= this;
+//			m_spriteChild.m_pthing		= this;
 			}
 
       ~CItem3d(void)
@@ -174,10 +174,10 @@ class CItem3d : public CThing3d
 			int16_t sX,						// In:  Starting X position
 			int16_t sY,						// In:  Starting Y position
 			int16_t sZ,						// In:  Starting Z position
-			ItemType type,					// In:  Known item type or Custom.
+         ItemType itemtype,					// In:  Known item type or Custom.
          const char*	pszCustomBaseName = nullptr,	// In:  Required if type == Custom.
 														// Base name for custom type resources.
-			uint16_t	u16IdParentInstance = CIdBank::IdNil);	// In:  Parent instance ID.
+         managed_ptr<CThing3d> parentThing = managed_ptr<CThing3d>());	// In:  Parent instance ID.
 
 		// Message handling functions ////////////////////////////////////////////
 

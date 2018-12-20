@@ -567,7 +567,7 @@ CScene::Render3D(
 	int16_t			sDstX,			// Destination 2D x coord.
 	int16_t			sDstY,			// Destination 2D y coord.
 	CSprite3*	ps3Cur,			// 3D sprite to render.
-	CHood*		phood,			// Da hood, homey.
+   managed_ptr<CHood> phood,			// Da hood, homey.
 	RRect*		prcDstClip)		// Dst clip rect.
 	{
 	RAlpha* palphaLight;
@@ -999,7 +999,7 @@ if (g_bSceneDontBlit == false)
 			if (ps3Cur->m_pthing)
 				{
 				sprintf(szMsg, "Render3D(): %s with ID %d",
-					CThing::ms_aClassInfo[ps3Cur->m_pthing->GetClassID()].pszClassName,
+               CThing::ms_aClassInfo[ps3Cur->m_pthing->type()].pszClassName,
 					ps3Cur->m_pthing->GetInstanceID());
 				}
 			else
@@ -1015,7 +1015,7 @@ if (g_bSceneDontBlit == false)
 					{
 					sprintf(szMsg, "%s, child of %s with ID %d,",
 						szMsg,
-						CThing::ms_aClassInfo[psprParent->m_pthing->GetClassID()].pszClassName,
+                  CThing::ms_aClassInfo[psprParent->m_pthing->type()].pszClassName,
 						psprParent->m_pthing->GetInstanceID());
 					}
 				}
@@ -1091,7 +1091,7 @@ void DrawLine3d(			// Returns nothing.
 	int16_t		sDstX2,		// End pt.
 	int16_t		sDstY2,		// End pt.
 	int16_t		sDstZ2,		// End pt.
-	CHood*	phood,		// Da hood, homey.
+   managed_ptr<CHood> phood,			// Da hood, homey.
 	RRect*	prcDstClip)	// Dst clip rect.
 	{
 	int16_t	s2dX1, s2dY1;
@@ -1131,7 +1131,7 @@ void CScene::RenderCylinder3D(			// Returns nothing.
 	int16_t						sDstX,			// Destination 2D x coord.
 	int16_t						sDstY,			// Destination 2D y coord.
 	CSpriteCylinder3d*	psc3,				// Cylinder sprite.
-	CHood*					phood,			// Da hood, homey.
+   managed_ptr<CHood> phood,			// Da hood, homey.
 	RRect*					prcDstClip)		// Dst clip rect.
 	{
 	int16_t sX	= sDstX + psc3->m_sX2;
@@ -1301,7 +1301,7 @@ void CScene::Render2D(		// Returns nothing.
 	int16_t			sDstX,		// Destination 2D x coord.
 	int16_t			sDstY,		// Destination 2D y coord.
 	CSprite2*	ps2Cur,		// Tree of sprites to render.
-	CHood*		phood,		// Da hood, homey.
+   managed_ptr<CHood> phood,			// Da hood, homey.
 	RRect*		prcDstClip,	// Dst clip rect.
 	CSprite*		psprXRayee)	// XRayee, if not nullptr.
 	{
@@ -1482,7 +1482,7 @@ void CScene::Render(			// Returns nothing.
 	int16_t			sDstX,		// Destination 2D x coord.
 	int16_t			sDstY,		// Destination 2D y coord.
 	CSprite*		pSprite,		// Tree of sprites to render.
-	CHood*		phood,		// Da hood, homey.
+   managed_ptr<CHood> phood,			// Da hood, homey.
 	RRect*		prcDstClip,	// Dst clip rect.
 	CSprite*		psprXRayee)	// XRayee, if not nullptr.
 	{
@@ -1638,7 +1638,7 @@ void CScene::Render(
 	RImage* pimDst,										// In:  Destination image
 	int16_t sDstX,											// In:  Destination (image) x coord
 	int16_t sDstY,											// In:  Destination (image) y coord
-	CHood* phood)											// In:  The hood involved.
+   managed_ptr<CHood> phood)											// In:  The hood involved.
 	{
 	// Init dst clipping rect
 	RRect rDstClip(sDstX, sDstY, sW, sH);
@@ -1919,7 +1919,7 @@ void CScene::TransformPtsToRealm(	// Returns nothing.
 void CScene::DeadRender3D(					// Returns nothing.
 	RImage*		pimDst,						// Destination image.
 	CSprite3*	ps3,							// Tree of 3D sprites to render.
-	CHood*		phood,						// Da hood, homey.
+   managed_ptr<CHood> phood,			// Da hood, homey.
 	int16_t			sDstX /*= 0*/,				// Destination 2D x coord.
 	int16_t			sDstY /*= 0*/,				// Destination 2D y coord.
 	RRect*		prcDstClip /*= nullptr*/)	// Dst clip rect.
@@ -1929,7 +1929,7 @@ void CScene::DeadRender3D(					// Returns nothing.
 		{
 		ASSERT(pimDst	!= nullptr);
 		ASSERT(ps3		!= nullptr);
-		ASSERT(phood	!= nullptr);
+      ASSERT(phood);
 
 		RRect	rcClip;
 		// If no clipping rect specified . . .

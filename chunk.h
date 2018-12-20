@@ -113,7 +113,7 @@ class CChunk : public CThing
 			m_dVertVel			= 0.0;
 			m_sLen				= 0;
 
-			m_sprite.m_pthing		= this;
+//			m_sprite.m_pthing		= this;
 			m_sprite.m_u8Color	= 1;
 
 			m_type				= Blood;
@@ -122,7 +122,7 @@ class CChunk : public CThing
       ~CChunk(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 			}
 
 

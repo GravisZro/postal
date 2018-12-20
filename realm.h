@@ -37,7 +37,7 @@
 //		
 //		02/02/97	JMI	Added m_resmgr to load resources for each realm instance.
 //		
-//		02/04/97 BRH	Added ms_pCurrentNavNet and GetCurrentNavNet() functiion
+//		02/04/97 BRH	Added ms_pCurrentNavNet and NavNet() functiion
 //							to the realm.  Previously the current NavNet was stored
 //							in the editor which was OK for bouys but difficult to get
 //							for other game objects.
@@ -333,7 +333,7 @@
 #include "smash.h"
 #include "trigger.h"
 
-
+#include <newpix/managedpointer.h>
 #include <put/object.h>
 
 
@@ -569,20 +569,6 @@ class CRealm : Object
 		// It is false at all other times.
 		bool	m_bUpdating;
 		
-		// The scene, which is basically the visual representation of the realm
-		CScene m_scene;
-
-		// Head and tail pointers for all CThings.
-		CListNode<CThing> m_everythingHead;
-		CListNode<CThing> m_everythingTail;
-		int16_t m_sNumThings;
-
-		// Array of Head and Tail pointers to the various lists of derived CThings
-		// in the game.  The array is indexed by the class ID, and each list contains
-		// only objects of that type.		
-      CListNode<CThing> m_aclassHeads[TotalIDs];
-      CListNode<CThing> m_aclassTails[TotalIDs];
-      int16_t m_asClassNumThings[TotalIDs];
 
 		// Pointer to the attribute map.  The CHood is expected to set these
 		// as soon as it can so that other obects can use it.  This is really
@@ -593,14 +579,13 @@ class CRealm : Object
 		RMultiGrid* m_pTerrainMap;
 		RMultiGrid* m_pLayerMap;
 		RMultiGridIndirect* m_pTriggerMap; // This is a shadow reference
-		CTrigger* m_pTriggerMapHolder;	// This points to the CThing holding the actual map
+      managed_ptr<CTrigger> m_pTriggerMapHolder;	// This points to the CThing holding the actual map
 
 		// Pointer to the CHood.  The CHood is expected to set this as soon as it
 		// is allocated so that other objects can use this to access it.  Since
 		// there is only one and it is often access every iteration, this'll make
 		// it a bit quicker.
 		// The CHood should also clear this when it is destroyed.
-		CHood*			m_phood;
 
 		// Time object, which manages game time
 		CTime m_time;
@@ -632,11 +617,7 @@ class CRealm : Object
 
 		// Process progress callback.  See ProgressCall typedef for details.
 		ProgressCall	m_fnProgress;
-
-	protected:
-		CNavigationNet* m_pCurrentNavNet;
-
-	public:
+public:
 
 		// Population variables to keep track of those alive and dead.
 		int16_t m_sPopulationBirths;			// Number of enemies & victims born in this level
@@ -686,9 +667,108 @@ class CRealm : Object
 		// Destructor
 		~CRealm();
 
+private:
+      template<class T> static constexpr ClassIDType lookupType(void) { return InvalidID; }
 
       CThing* makeType(ClassIDType type);
-      CThing* makeTypeWithID(ClassIDType type);
+public: // for shitty existing code
+      std::set<managed_ptr<CThing>> m_every_thing;
+private:
+      std::map<ClassIDType, std::list<managed_ptr<CThing>>> m_thing_by_type;
+      std::map<uint16_t, managed_ptr<CThing>> m_thing_by_id;
+      std::map<managed_ptr<CThing>, uint16_t> m_id_by_thing;
+
+   managed_ptr<CNavigationNet> m_navnet;
+   managed_ptr<CHood> m_hood;
+   // The scene, which is basically the visual representation of the realm
+   managed_ptr<CScene> m_scene;
+public:
+
+   // Give the current network for this realm
+   managed_ptr<CNavigationNet> NavNet(void)
+      { return m_navnet; }
+
+   managed_ptr<CHood> Hood(void)
+      { return m_hood; }
+
+   managed_ptr<CScene> Scene(void)
+      { return m_scene; }
+
+   void setNavNet(managed_ptr<CNavigationNet> nn)
+      { m_navnet = nn; }
+
+
+      // Add thing to realm
+      template<class T = CThing>
+      managed_ptr<T> AddThing(ClassIDType classid = lookupType<T>()) noexcept
+      {
+        CThing* thing = makeType(classid);
+        if(thing != nullptr)
+        {
+          m_every_thing.insert(thing);
+          m_thing_by_type[classid].emplace_back(static_cast<T*>(thing));
+        }
+        return static_cast<T*>(thing);
+      }
+
+      // Remove thing from realm
+      template<class T>
+      void RemoveThing(managed_ptr<T> thing) noexcept
+      {
+        m_every_thing.erase(thing.pointer());
+        m_thing_by_type[thing->type()].remove(thing.pointer());
+        auto id_iter = m_id_by_thing.find(thing.pointer());
+        if(id_iter != m_id_by_thing.end())
+        {
+          m_thing_by_id.erase(id_iter->second.pointer());
+          m_id_by_thing.erase(id_iter);
+        }
+      }
+
+      std::list<managed_ptr<CThing>> GetThingsByType(ClassIDType id) const noexcept
+      {
+        auto iter = m_thing_by_type.find(id);
+        if(iter == m_thing_by_type.end())
+          return std::list<managed_ptr<CThing>>();
+        return iter->second;
+      }
+
+      void RegisterThingId(CThing* thing, uint16_t id) noexcept
+      {
+        m_thing_by_id[id] = thing;
+        m_id_by_thing[thing] = id;
+      }
+
+      template<class T>
+      managed_ptr<T> GetThingById(uint16_t id) const noexcept
+      {
+        auto iter = m_thing_by_id.find(id);
+        if(iter != m_thing_by_id.end())
+          return managed_ptr<T>(iter->second);
+        return managed_ptr<T>();
+      }
+
+      template<class T>
+      managed_ptr<T> GetOrAddThingById(uint16_t id, ClassIDType classid = lookupType<T>()) noexcept
+      {
+        auto thing = GetThingById<T>(id);
+        if(!thing)
+        {
+          thing = AddThing<T>(classid);
+          RegisterThingId(thing.pointer(), id);
+        }
+        return thing;
+      }
+
+
+      uint16_t GetIdByThing(CThing* thing) const noexcept
+      {
+        auto iter = m_id_by_thing.find(thing);
+        if(iter != m_id_by_thing.end())
+          return iter->second;
+        return UINT16_MAX;
+      }
+
 
 		// Register a birth for this realm - Each enemy and victim should call
 		// this when they are created.
@@ -701,7 +781,7 @@ class CRealm : Object
 				m_sHostiles++;
 				m_sHostileBirths++;
 			}
-		};
+      }
 
 		// Register a death for this realm
 		void RegisterDeath(bool bCivilian = false, bool bPlayerKill = true)
@@ -744,105 +824,6 @@ class CRealm : Object
 		bool IsEndOfLevelGoalMet(bool bEndLevelKey);	// Returns true, if end of level goal
 																	// has been met.
 
-/*
-		// Add thing to realm
-		void AddThing(
-			CThing* pThing,										// In:  Pointer to thing to be added
-         ClassIDType id,								// In:  Thing's class ID
-#if _MSC_VER >= 1020
-			CThing::Things::const_iterator* piterEvery,	// Out: Iterator into everything container
-			CThing::Things::const_iterator* piterClass)	// Out: Iterator into class container
-#else
-			CThing::Things::iterator* piterEvery,			// Out: Iterator into everything container
-			CThing::Things::iterator* piterClass)			// Out: Iterator into class container
-#endif
-			{
-			*piterEvery = m_everything.insert(m_everything.end(), pThing);
-			*piterClass = m_apthings[id]->insert(m_apthings[id]->end(), pThing);
-
-			// If in the update loop . . .
-			if (m_bUpdating == true)
-				{
-				// If the next is the end . . .
-				if (m_iNext == m_everything.end())
-					{
-					// Get the added thing.
-					m_iNext	= *piterEvery;
-					}
-				}
-			}
-*/
-		// Add thing to realm
-		void AddThing(
-			CThing* pThing, 
-         ClassIDType id)
-			{
-			pThing->m_everything.InsertBefore(&m_everythingTail);
-			pThing->m_nodeClass.InsertBefore(&(m_aclassTails[id]));			
-
-			m_sNumThings++;
-			m_asClassNumThings[id]++;
-
-			// If in the update loop...
-			if (m_bUpdating == true)
-				{
-				// If the next is the end...
-				if (m_pNext == &m_everythingTail)
-					{
-					// Set next to the newly added thing
-					m_pNext = &(pThing->m_everything);
-					}
-				}
-			}
-
-		// Remove thing from realm
-/*
-		void RemoveThing(
-         ClassIDType id,								// In:  Thing's class ID
-#if _MSC_VER >= 1020
-			CThing::Things::const_iterator iterEvery,		// In: Thing's iterator into everything container
-			CThing::Things::const_iterator iterClass)		// In: Thing's iterator into class container
-#else
-			CThing::Things::iterator iterEvery,				// In: Thing's iterator into everything container
-			CThing::Things::iterator iterClass)				// In: Thing's iterator into class container
-#endif
-			{
-			// If in the update loop . . .
-			if (m_bUpdating == true)
-				{
-				// If the next is thing being removed . . .
-				if (m_iNext == iterEvery)
-					{
-					// This is safe b/c the end is always available and will
-					// never be removed.
-					m_iNext++;
-					}
-				}
-
-			m_everything.erase(iterEvery);
-			m_apthings[id]->erase(iterClass);
-			}
-*/
-		// Remove thing from realm
-		void RemoveThing(
-			CThing* pThing)
-			{
-			// If in the update loop...
-			if (m_bUpdating == true)
-				{
-				// If the next is the thing being removed...
-				if (m_pNext == &(pThing->m_everything))
-					{
-					// This is save b/c the end is always available and will never be removed
-					m_pNext = pThing->m_everything.m_pnNext;
-					}
-				}
-
-			pThing->m_everything.Remove();
-			pThing->m_nodeClass.Remove();
-			m_sNumThings--;
-			m_asClassNumThings[pThing->GetClassID()]--;
-			}
 
 		// Clear
 		void Clear(void);
@@ -877,9 +858,7 @@ class CRealm : Object
 			RFile* pFile);											// In:  File to save to
 
 		// Startup
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
+      int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend
 		void Suspend(void);
@@ -907,9 +886,6 @@ class CRealm : Object
 		void EditModify(void);
 #endif // !defined(EDITOR_REMOVED)
 
-		// Give the current network for this realm
-		CNavigationNet* GetCurrentNavNet(void)
-			{ return m_pCurrentNavNet; }
 
 		int16_t GetHeight(int16_t sX, int16_t sZ);
 
@@ -1058,7 +1034,7 @@ class CRealm : Object
 		int16_t GetRealmWidth(void)	// Returns width of realm's X/Z plane.
 			{
 			int16_t	sRealmW;
-			MapY2DtoZ3D(m_phood->GetWidth(), &sRealmW);
+         MapY2DtoZ3D(m_hood->GetWidth(), &sRealmW);
 			return sRealmW;
 			}
 
@@ -1066,7 +1042,7 @@ class CRealm : Object
 		int16_t GetRealmHeight(void)	// Returns height of realm's X/Z plane.
 			{
 			int16_t	sRealmH;
-			MapY2DtoZ3D(m_phood->GetHeight(), &sRealmH);
+         MapY2DtoZ3D(m_hood->GetHeight(), &sRealmH);
 			return sRealmH;
 			}
 

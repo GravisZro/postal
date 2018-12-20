@@ -28,7 +28,7 @@
 //
 //		06/30/97 BRH	Started this file as part of the challenge levels.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		08/05/97	JMI	Changed priority to use Z position rather than 2D 
@@ -157,18 +157,9 @@ int16_t CGoalTimer::Startup(void)								// Returns 0 if successfull, non-zero o
 {
    int16_t sResult = SUCCESS;
 	// At this point we can assume the CHood was loaded, so we init our height
-	m_dY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+	m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 
    return sResult;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CGoalTimer::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-   return SUCCESS;
 }
 
 
@@ -231,7 +222,7 @@ int16_t CGoalTimer::EditNew(									// Returns 0 if successfull, non-zero other
 	if (sResult == SUCCESS)
 	{
 /*
-      CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
+      CListNode<CThing>* pEditorList = realm()->m_aclassHeads[CGameEditThingID].m_pnNext;
 		CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
 		RListBox* plb = peditor->m_plbNavNetList;
 		if (plb != nullptr)
@@ -384,13 +375,13 @@ void CGoalTimer::EditRender(void)
 	m_sprite.m_sY2	-= m_pImage->m_sHeight;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Image would normally animate, but doesn't for now
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +433,7 @@ int16_t CGoalTimer::GetResources(void)						// Returns 0 if successfull, non-zer
 
    if (m_pImage == nullptr)
 	{
-		sResult	= rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &m_pImage);
+		sResult	= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_pImage);
 		if (sResult == SUCCESS)
 		{
 			// This is a questionable action on a resource managed item, but it's

@@ -31,10 +31,10 @@
 //							call to include a max height (it just relies on 'no walk'
 //							now).
 //
-//		05/29/97	JMI	Changed m_pRealm->m_pHeightMap->GetHeight() call to 
-//							m_pRealm->GetTerrainAttributes().
+//		05/29/97	JMI	Changed realm()->m_pHeightMap->GetHeight() call to 
+//							realm()->GetTerrainAttributes().
 //
-//		06/26/97	JMI	Now uses m_prealm->Map3Dto2D() in Plot() (was using
+//		06/26/97	JMI	Now uses realm()->Map3Dto2D() in Plot() (was using
 //							the global version defined in reality.h which is no more).
 //
 //		07/01/97	JMI	Now uses GetHeightAndNoWalk() in place of 
@@ -92,8 +92,10 @@ class CCrawler
 		double m_dPushMaxX;
 		double m_dPushMaxZ;
 
-	public:
-		CRealm*	m_prealm;			// Used to access the height map, the effect map,
+
+    public:
+      CRealm* m_realm;			// Used to access the height map, the effect map,
+      CRealm* realm(void) const { return m_realm; }
 											// the scene, all that good stuff.
 		int16_t	m_sVertTolerance;		// Maximum amount crawler can step up.
 
@@ -105,8 +107,8 @@ class CCrawler
       CCrawler(void)
 			{
 			m_pnub = 0;
-			m_sNum = 0;
-			m_prealm	= 0;
+         m_sNum = 0;
+         m_realm = nullptr;
          }
 
 		~CCrawler()
@@ -492,7 +494,7 @@ class CCrawler
 			{
 			bool	bCanWalk;
 			bool	bCannotWalk;
-			*psH	= m_prealm->GetHeightAndNoWalk(sx, sz, &bCannotWalk);
+			*psH	= realm()->GetHeightAndNoWalk(sx, sz, &bCannotWalk);
 			if (bCannotWalk == true								// Not walkable
 				|| (*psH - sy > m_sVertTolerance) )			// Terrain higher by m_sVertTolerance.
 				{
@@ -519,7 +521,7 @@ class CCrawler
 			CSpriteLine2d*	psl2d	= new CSpriteLine2d;
 			if (psl2d != nullptr)
 				{
-				m_prealm->Map3Dto2D(
+				realm()->Map3Dto2D(
 					sx, 
 					sy, 
 					sz, 
@@ -530,12 +532,12 @@ class CCrawler
 				psl2d->m_sY2End		= psl2d->m_sY2;
 
 				psl2d->m_sPriority	= sz;
-				psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(m_prealm->GetLayer(sx, sz) );
+				psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sx, sz) );
 				psl2d->m_u8Color		= u8Color;
 				// Destroy when done.
 				psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 				// Put 'er there.
-				m_prealm->m_scene.UpdateSprite(psl2d);
+            realm()->Scene()->UpdateSprite(psl2d);
 				}
 			}
 #endif

@@ -383,22 +383,9 @@ CThing::CThing(void)                 // In:  Class ID
   m_sCallStartup  = TRUE;
   m_sCallShutdown = TRUE;
 
-
-  m_everything.m_powner = this;
-  m_everything.m_pnNext = nullptr;
-  m_everything.m_pnPrev = nullptr;
-  m_nodeClass.m_powner  = this;
-  m_nodeClass.m_pnNext  = nullptr;
-  m_nodeClass.m_pnPrev  = nullptr;
-
-  // Add this object to realm and save its assigned position in realm's container
-  //   pRealm->AddThing(this, id, &m_iterEvery, &m_iterClass);
-  realm()->AddThing(this, type());
-
   // Start out with no ID.
   m_u16InstanceId = CIdBank::IdNil;
-
-  // Clear editor's RHot*.
+  m_MessageQueue.clear();
   m_phot = nullptr;
 }
 
@@ -408,12 +395,6 @@ CThing::CThing(void)                 // In:  Class ID
 ////////////////////////////////////////////////////////////////////////////////
 CThing::~CThing(void)
 {
-  // Remove this object from realm
-  //   m_pRealm->RemoveThing(m_id, m_iterEvery, m_iterClass);
-  m_pRealm->RemoveThing(this);
-
-  // Release this fellow's ID.
-  m_pRealm->m_idbank.Release(m_u16InstanceId);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -500,74 +481,11 @@ int16_t CThing::Load(             // Returns 0 if successfull, non-zero otherwis
   }
 
   // If this ID is not yet claimed . . .
-  CThing*   pthing;
-  if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16InstanceId) != SUCCESS)
-  {
-    // Reserve ID.
-    m_pRealm->m_idbank.Take(this, m_u16InstanceId);
-  }
-  else
-  {
-    // No ID for you!  Currently the only way I know this happens is via the
-    // dispenser.  In that case, this is fine b/c the dispenser never uses the
-    // id from the file.
-    m_u16InstanceId = CIdBank::IdNil;
-  }
+  realm()->RegisterThingId(this, m_u16InstanceId);
 
   return pFile->Error();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// Set object instance's unique ID.
-//
-////////////////////////////////////////////////////////////////////////////////
-void CThing::SetInstanceID(       // Returns nothing.
-    uint16_t u16Id)                 // New id for this instance.
-{
-  // Safety.
-  if (m_u16InstanceId != CIdBank::IdNil)
-  {
-    //      TRACE("SetInstanceID(): This thing already had an ID!\n");
-    // Release existing ID.
-    m_pRealm->m_idbank.Release(m_u16InstanceId);
-  }
-
-  m_u16InstanceId = u16Id;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Put a message in another CThing's message queue
-//
-////////////////////////////////////////////////////////////////////////////////
-
-int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, uint16_t u16ID)
-{
-  CThing* pThing = nullptr;
-
-  m_pRealm->m_idbank.GetThingByID(&pThing, u16ID);
-  if (pThing)
-    return SendThingMessage(pMessage, sPriority, pThing);
-  else
-    return FAILURE;
-}
-
-int16_t CThing::SendThingMessage(pGameMessage pMessage, int16_t sPriority, CThing* pThing)
-{
-  int16_t sResult = SUCCESS;
-
-  // Make sure this has been initialized.
-  // If you were using 0xebeb as your priority, stop that.
-  //   ASSERT(sPriority != 0xebeb);
-
-  if (pThing != nullptr)
-    pThing->m_MessageQueue.EnQ(pMessage, &sPriority);
-  else
-    sResult = FAILURE;
-
-  return sResult;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Maps a 3D coordinate onto the viewing plane.
@@ -579,7 +497,7 @@ void CThing::Map3Dto2D(           // Returns nothing.
     int16_t* psX,                   // Out.
     int16_t* psY)                   // Out.
 {
-  m_pRealm->Map3Dto2D(sX, sY, sZ, psX, psY);
+  realm()->Map3Dto2D(sX, sY, sZ, psX, psY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -592,7 +510,7 @@ void CThing::Map3Dto2D(           // Returns nothing.
     double* pdX,                    // Out.
     double* pdY)                    // Out.
 {
-  m_pRealm->Map3Dto2D(dX, dY, dZ, pdX, pdY);
+  realm()->Map3Dto2D(dX, dY, dZ, pdX, pdY);
 }
 
 
@@ -602,7 +520,6 @@ void* CThing::operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_pt
 {
   CThing* rval = reinterpret_cast<CThing*>(::operator new(sz, std::nothrow));
   rval->m_type = type_id;
-  rval->m_pRealm = realm_ptr; // TODO: REMOVE
   rval->m_realm = realm_ptr;
   rval->m_instantiable = instantiable;
   return rval;

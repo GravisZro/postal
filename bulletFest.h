@@ -102,8 +102,7 @@ class CBulletFest
 	///////////////////////////////////////////////////////////////////////////
 	public:
       CBulletFest(void)
-			{
-			m_u16IdTarget		= CIdBank::IdNil;
+         {
 			m_sCurTracerPos	= 0;
 			}
 
@@ -149,7 +148,7 @@ class CBulletFest
 			int16_t* psX,						// Out: Hit position.
 			int16_t* psY,						// Out: Hit position.
 			int16_t* psZ,						// Out: Hit position.
-			CThing** ppthing,				// Out: Ptr to thing hit or nullptr.
+         managed_ptr<CThing>& ppthing,				// Out: Ptr to thing hit or nullptr.
 			bool	bTracer = true,		// In:  Draw a tracer at random point along path.
 			SampleMasterID	smid	= g_smidBulletFire);	// In:  Use ammo sample.
 
@@ -169,7 +168,7 @@ class CBulletFest
 			int16_t* psX,						// Out: Hit position.
 			int16_t* psY,						// Out: Hit position.
 			int16_t* psZ,						// Out: Hit position.
-			CThing** ppthing,				// Out: Ptr to thing hit or nullptr.
+         managed_ptr<CThing>& ppthing,				// Out: Ptr to thing hit or nullptr.
 			bool	bTracer = true);		// In:  Draw a tracer at random point along path.
 
 		// Create a muzzle flare effect.
@@ -220,7 +219,7 @@ class CBulletFest
 										// of 'forward' movement.
 
 		// Target info.  ***NYI***
-		uint16_t	m_u16IdTarget;		// Last known target or IdNil.
+      managed_ptr<CThing> m_target;		// Last known target or IdNil.
 		int16_t	m_sDirChanges;		// Direction changes (relative to source) over 
 										// last targeting duration.
 		int32_t	m_lSqrDistance;	// Squared distance traveled (relative to 

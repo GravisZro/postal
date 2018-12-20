@@ -270,7 +270,7 @@ class CDoofus : public CCharacter
 	//---------------------------------------------------------------------------
 	protected:
 		// General position, motion and time variables
-		uint16_t	m_idDude;						// The target CDude 
+      managed_ptr<CDude> m_dude;						// The target CDude
 
 		// Animations
 		CAnim3D	m_animStand;				// Standing animation
@@ -293,13 +293,13 @@ class CDoofus : public CCharacter
 
 
 		// Navigation Net control
-		CNavigationNet* m_pNavNet;			// The network I should use
-		uint16_t m_u16NavNetID;					// My network's ID				
+      managed_ptr<CNavigationNet> m_pNavNet;			// The network I should use
+      //uint16_t m_u16NavNetID;					// My network's ID
 		uint8_t m_ucDestBouyID;				// Destination bouy
 		uint8_t m_ucNextBouyID;				// Next bouy to go to
 		uint8_t m_ucSpecialBouy0ID;			// Starting bouy for special cases like marching
 		uint8_t m_ucSpecialBouy1ID;			// Ending bouy for special cases like marching
-		CBouy* m_pNextBouy;					// pointer to next bouy to go to.
+      managed_ptr<CBouy> m_pNextBouy;					// pointer to next bouy to go to.
       double m_sNextX;						// Position of next Bouy
       double m_sNextZ;						// Position of next Bouy
 		int16_t m_sRotateDir;					// Direction to rotate when avoiding obstacles
@@ -326,8 +326,8 @@ class CDoofus : public CCharacter
 
 		CSmash			m_smashDetect;		// Smash used to detect pylons - has large radius
 		CSmash			m_smashAvoid;		// Smash used to avoid fire
-		CPylon*			m_pPylonStart;		// Starting pylon for popout or run/shoot
-		CPylon*			m_pPylonEnd;		// Ending pylon for popout or run/shoot
+      managed_ptr<CPylon> m_pPylonStart;		// Starting pylon for popout or run/shoot
+      managed_ptr<CPylon> m_pPylonEnd;		// Ending pylon for popout or run/shoot
       double			m_sDistRemaining;	// Distance to new position for fighting.
 		bool				m_bPylonSafeAvailable;
 		bool				m_bPylonPopoutAvailable;
@@ -577,7 +577,7 @@ class CDoofus : public CCharacter
 		// Overloaded version of ShootWeapon to use m_dShootAngle
 		// and which sets the smash bits so enemy bullets won't hit other
 		// enemies.
-		virtual CWeapon* ShootWeapon(
+      virtual managed_ptr<CWeapon> ShootWeapon(
 			CSmash::Bits bitsInclude = CSmash::Character, 
 			CSmash::Bits bitsDontcare = 0,
 			CSmash::Bits bitsExclude = CSmash::Bad | CSmash::SpecialBarrel);
@@ -616,7 +616,7 @@ class CDoofus : public CCharacter
 		// This should be done when the character starts its shoot animation.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-		CWeapon* PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
+      managed_ptr<CWeapon> PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
 
 		// Implements basic functionality while holding and preparing to release
 		// a weapon.  Shows the weapon when the event hits 1 and releases the
@@ -720,13 +720,13 @@ class CDoofus : public CCharacter
 				msg.msg_Burn.eType = typeBurn;
 				msg.msg_Burn.sPriority = 0;
 				msg.msg_Burn.sDamage = 1000;
-				msg.msg_Burn.u16ShooterID = GetInstanceID();;
+            msg.msg_Burn.shooter = GetInstanceID();;
 
-				CListNode<CThing>* pNext = m_pRealm->m_everythingHead.m_pnNext;
+            CListNode<CThing>* pNext = realm()->m_everythingHead.m_pnNext;
 				while (pNext->m_powner != nullptr)
 				{
 					pThing = pNext->m_powner;
-					SendThingMessage(&msg, pThing);
+					SendThingMessage(msg, pThing);
 					pNext = pNext->m_pnNext;
 				}	
 			}

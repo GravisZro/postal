@@ -80,7 +80,7 @@ class CAnimThing : public CThing
       milliseconds_t	m_lAnimTime;						// Cummulative animation time.
       milliseconds_t	m_lAnimPrevTime;					// Last animation time.
 														
-		uint16_t			m_u16IdSendMsg;			// ID of CThing to send msg to when done.
+      managed_ptr<CThing> m_sender;			// ID of CThing to send msg to when done.
 		GameMessage	m_msg;						// Message to send to m_pthingSendMsg.
 
 	protected:
@@ -90,25 +90,21 @@ class CAnimThing : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
+   public:
       CAnimThing(void)
 			{
 			m_paachannel		= nullptr;
 			m_sSuspend			= 0;
 			m_sLoop				= TRUE;
 			m_szResName[0]		= '\0';
-			m_msg.msg_Generic.sPriority	= 0;
-			m_u16IdSendMsg		= CIdBank::IdNil;
-			m_sprite.m_pthing	= this;
+         m_msg.msg_Generic.sPriority	= 0;
+//			m_sprite.m_pthing	= this;
 			}
 
-	public:
-		// Destructor
       ~CAnimThing(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
@@ -133,9 +129,6 @@ class CAnimThing : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

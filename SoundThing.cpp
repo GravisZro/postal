@@ -38,7 +38,7 @@
 //							I forgot to actually remember the last channel played.
 //							Duh!  Fixed.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/17/97	JMI	Converted all occurrences of rand() to GetRand() and
@@ -47,7 +47,7 @@
 //		06/29/97	JMI	Converted EditRect(), EditRender(), and/or Render() to
 //							use Map3Dto2D().
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/17/97	JMI	Changed RSnd*'s to SampleMaster::SoundInstances.
@@ -288,16 +288,6 @@ int16_t CSoundThing::Startup(void)								// Returns 0 if successfull, non-zero 
    return SUCCESS;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CSoundThing::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +308,7 @@ void CSoundThing::Resume(void)
 	if (m_sSuspend == 0)
 		{
 		// This is kind of cheesy, but it will work to some degree
-		m_lLastStartTime = m_pRealm->m_time.GetGameTime();
+		m_lLastStartTime = realm()->m_time.GetGameTime();
 		}
 	}
 
@@ -331,7 +321,7 @@ void CSoundThing::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get current time
-      milliseconds_t lCurTime = m_pRealm->m_time.GetGameTime();
+      milliseconds_t lCurTime = realm()->m_time.GetGameTime();
 
 		// If enabled and (non-ambient or ambients allowed) . . .
 		if (m_bEnabled == true && (m_sAmbient == FALSE || g_GameSettings.m_sPlayAmbientSounds) )
@@ -888,12 +878,12 @@ void CSoundThing::EditRender(void)
 	m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
 	m_sprite.m_sY2	-= m_pImage->m_sHeight;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 #endif // !defined(EDITOR_REMOVED)
 
@@ -917,7 +907,7 @@ int16_t CSoundThing::Init(void)							// Returns 0 if successfull, non-zero othe
 
 	if (m_pImage == 0)
 		{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &m_pImage);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_pImage);
 		if (sResult == SUCCESS)
 			{
 			// This is a questionable action on a resource managed item, but it's
@@ -942,7 +932,7 @@ int16_t CSoundThing::Kill(void)							// Returns 0 if successfull, non-zero othe
    if (m_pImage != nullptr)
 		rspReleaseResource(&g_resmgrGame, &m_pImage);
 
-	m_pRealm->m_scene.RemoveSprite(&m_sprite);
+	realm()->Scene()->RemoveSprite(&m_sprite);
 
 	// If we have a play instance identifier . . .
 	if (m_siChannel != 0)
@@ -962,17 +952,16 @@ int16_t CSoundThing::Kill(void)							// Returns 0 if successfull, non-zero othe
 ////////////////////////////////////////////////////////////////////////////////
 void CSoundThing::ProcessMessages(void)
 	{
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-		{
+  while (!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
 		switch(msg.msg_Generic.eType)
 			{
 			case typeObjectDelete:
 				m_state	= State_Delete;
 				break;
 			}
-		
+      m_MessageQueue.pop_front();
 		}
 	}
 

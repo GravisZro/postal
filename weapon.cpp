@@ -38,7 +38,7 @@
 //		06/30/97	JMI	Now maps the Z to 3D when loading fileversions previous to
 //							24.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/21/97	JMI	Now checks upper bound on m_sAlphaLevel of shadow sprite.
@@ -50,6 +50,7 @@
 #include <RSPiX.h>
 #include "weapon.h"
 #include "reality.h"
+#include "Thing3d.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -114,7 +115,7 @@ int16_t CWeapon::Load(										// Returns 0 if successfull, non-zero otherwise
 		if (ulFileVersion < 24)
 			{
 			// Convert to 3D.
-			m_pRealm->MapY2DtoZ3D(
+			realm()->MapY2DtoZ3D(
 				m_dZ,
 				&m_dZ);
 			}
@@ -178,7 +179,7 @@ int16_t CWeapon::Startup(void)								// Returns 0 if successfull, non-zero othe
 	{
 
 	// Init other stuff
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lPrevTime = realm()->m_time.GetGameTime();
 
    return SUCCESS;
 	}
@@ -193,14 +194,6 @@ int16_t CWeapon::Setup(int16_t sX, int16_t sY, int16_t sZ)
 	m_dX = sX;
 	m_dY = sY;
 	m_dZ = sZ;
-   return SUCCESS;
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CWeapon::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
    return SUCCESS;
 	}
 
@@ -225,7 +218,7 @@ void CWeapon::Resume(void)
 	// the time so as to ignore any time that passed while we were suspended.
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
-		m_lPrevTime = m_pRealm->m_time.GetGameTime();
+		m_lPrevTime = realm()->m_time.GetGameTime();
 	}
 
 
@@ -248,7 +241,7 @@ void CWeapon::Render(void)
 	if (m_spriteShadow.m_pImage && (pSprite->m_sInFlags & CSprite::InHidden) == 0)
 	{
 		// Get the height of the terrain from the attribute map
-		int16_t sY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+		int16_t sY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 		// Map from 3d to 2d coords
 		Map3Dto2D(m_dX, (double) sY, m_dZ, &(m_spriteShadow.m_sX2), &(m_spriteShadow.m_sY2) );
 		// Offset hotspot to center of image.
@@ -280,7 +273,7 @@ void CWeapon::Render(void)
 			m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_spriteShadow);
+		realm()->Scene()->UpdateSprite(&m_spriteShadow);
 	}
 	else
 	{
@@ -387,14 +380,15 @@ double CWeapon::BounceAngle(double dRot)
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
 void CWeapon::ProcessMessages(void)
-	{
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-		{
-		ProcessMessage(&msg);
-		}
-	}
+{
+  // Check queue of messages.
+  while(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    ProcessMessage(&msg);
+    m_MessageQueue.pop_front();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Process the specified message.  For most messages, this function
@@ -494,7 +488,7 @@ int16_t CWeapon::PrepareShadow(void)
 	// If the shadow doesn't have resource loaded yet, load the default
 	if (m_spriteShadow.m_pImage == nullptr)
 	{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 	}
 
 	// If a resource is available, set the shadow to visible.

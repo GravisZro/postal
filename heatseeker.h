@@ -103,7 +103,7 @@ class CHeatseeker : public CWeapon
 	public:
       CHeatseeker(void)
 			{
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			m_lSmokeTimer = 0;
 			m_siThrust = 0;
 			}
@@ -114,8 +114,8 @@ class CHeatseeker : public CWeapon
 			StopLoopingSample(m_siThrust);
 
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->Scene()->RemoveSprite(&m_sprite);
+			realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();

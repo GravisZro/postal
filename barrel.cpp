@@ -345,7 +345,7 @@ int16_t CBarrel::Init(void)
 	// for now, ok.  Then also set his current animation.
 	m_state = CThing3d::State_Idle;
 	m_panimCur = &m_animStill;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+	m_lTimer = realm()->m_time.GetGameTime() + 500;
 
 	m_stockpile.m_sHitPoints = 2 * DefHitPoints;
 
@@ -354,7 +354,7 @@ int16_t CBarrel::Init(void)
 		m_smash.m_bits = CSmash::Barrel | CSmash::SpecialBarrel;
 	else
 		m_smash.m_bits = CSmash::Barrel;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	m_sBrightness = 0;	// Default Brightness level
 
@@ -381,21 +381,6 @@ int16_t CBarrel::Startup(void)								// Returns 0 if successfull, non-zero othe
 
 	return sResult;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CBarrel::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	// Call base class.
-	int16_t sResult = CThing3d::Shutdown();
-
-   m_trans.makeIdentity();
-
-	return sResult;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -427,7 +412,7 @@ void CBarrel::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		lThisTime = m_pRealm->m_time.GetGameTime();
+		lThisTime = realm()->m_time.GetGameTime();
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		// Calculate elapsed time in seconds
@@ -454,11 +439,11 @@ void CBarrel::Update(void)
 
 			case CBarrel::State_Wait:
 				if (lThisTime > m_lTimer)
-				{
-               CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
-               if (pExplosion != nullptr)
+            {
+              managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+               if (pExplosion)
 					{
-						pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
+                  pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
 						PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
 					}
 					m_state = State_BlownUp;
@@ -496,17 +481,17 @@ void CBarrel::Update(void)
 				if (lThisTime > m_lTimer)
 				{
 					int16_t i;
-					CFire* pFire;
+               managed_ptr<CFire> pFire;
 					for (i = 0; i < ms_sNumFires; i++)
-					{
-                 pFire = static_cast<CFire*>(realm()->makeType(CFireID));
-                  if (pFire != nullptr)
+               {
+                 pFire = realm()->AddThing<CFire>();
+                  if (pFire)
 						{
 							if (pFire->Setup(m_dX - 20 + (GetRandom() % 40), m_dY, m_dZ - 20 + (GetRandom() % 40), 
 											  4000 + (GetRandom() % 9000), false, CFire::LargeFire) != SUCCESS)
-								delete pFire;
+                        pFire.reset();
 							else
-								pFire->m_u16ShooterID = m_u16ShooterID;
+                        pFire->m_shooter = m_shooter;
 						}
 					}
 					// Delete this barrel object and just let the fire burn
@@ -525,7 +510,7 @@ void CBarrel::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save time for next time
 		m_lPrevTime = lThisTime;
@@ -659,16 +644,16 @@ void CBarrel::OnShotMsg(Shot_Message* pMessage)
 			PlaySample(g_smidShotBarrel1, SampleMaster::Weapon);
 		else
 			PlaySample(g_smidShotBarrel2, SampleMaster::Weapon);
-		m_u16ShooterID = pMessage->u16ShooterID;
+      m_shooter = pMessage->shooter;
 		m_stockpile.m_sHitPoints -= pMessage->sDamage * GetRandom() % 50;
 		if (m_stockpile.m_sHitPoints <= 0)
 		{
 			m_state = State_BlownUp;
-			m_lAnimTime = 0;
-         CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
-         if (pExplosion != nullptr)
+         m_lAnimTime = 0;
+         managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+         if (pExplosion)
 			{
-				pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
+            pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
 				PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
 			}
 		}
@@ -703,7 +688,7 @@ void CBarrel::OnExplosionMsg(Explosion_Message* pMessage)
 	// If the barrel hasn't exploded already
 	if (m_state == State_Idle)
 	{
-		m_u16ShooterID = pMessage->u16ShooterID;
+      m_shooter = pMessage->shooter;
 		// This will calculate the reaction external velocity to 
 		// the explosion.  
 		CThing3d::OnExplosionMsg(pMessage);
@@ -713,7 +698,7 @@ void CBarrel::OnExplosionMsg(Explosion_Message* pMessage)
 		m_dExtVertVel *= 1.4;
 		m_state = State_Wait;
 		m_stockpile.m_sHitPoints = 0;
-		m_lTimer = m_pRealm->m_time.GetGameTime() + ms_lExplosionDelay;
+		m_lTimer = realm()->m_time.GetGameTime() + ms_lExplosionDelay;
 		m_lAnimTime = 0;
 		// Send it spinning.
 		m_dExtRotVelY	= GetRandom() % 720;
@@ -726,7 +711,7 @@ void CBarrel::OnExplosionMsg(Explosion_Message* pMessage)
 		Vector3D	pt3dSrc	= { 0.0F, 2.0F, 0.0F, 1.0F } ;	// In:  RANDY UNITS!!!
 		Vector3D	pt3dDst;	// Out: Postal units.
 
-		m_pRealm->m_scene.TransformPtsToRealm(&m_trans, &pt3dSrc, &pt3dDst, 1 );
+		realm()->Scene()->TransformPtsToRealm(&m_trans, &pt3dSrc, &pt3dDst, 1 );
 
       m_dY	+=	pt3dDst.y();
 	}
@@ -740,17 +725,17 @@ void CBarrel::OnBurnMsg(Burn_Message* pMessage)
 {
 	if (m_state == State_Idle)
 	{
-		m_u16ShooterID = pMessage->u16ShooterID;
+      m_shooter = pMessage->shooter;
 		m_stockpile.m_sHitPoints -= pMessage->sDamage;
 		if (m_stockpile.m_sHitPoints <= 0)
 		{
 			m_state = State_BlownUp;
-			m_lTimer = m_pRealm->m_time.GetGameTime();
+			m_lTimer = realm()->m_time.GetGameTime();
 			m_lAnimTime = 0;
-         CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
-         if (pExplosion != nullptr)
+         managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+         if (pExplosion)
 			{
-				pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
+            pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
 				PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
 			}
 		}

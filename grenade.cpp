@@ -96,7 +96,7 @@
 //		05/20/97 BRH	Bumped up the ground drag to make the SetRange more
 //							accurate.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/03/97 BRH	Capped the ground velocity and decreased the drag back
@@ -125,7 +125,7 @@
 //
 //		06/30/97 BRH	Added sound effect cache to the Preload function.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -325,7 +325,7 @@ void CUnguidedMissile::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime(); 
+		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
 		ProcessMessages();
 		if (m_eState == State_Deleted)
@@ -348,8 +348,8 @@ void CUnguidedMissile::Update(void)
 				break;
 
 			case CWeapon::State_Fire:
-				sHeight = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
-				usAttrib = m_pRealm->GetFloorAttribute((int16_t) m_dX, (int16_t) m_dZ);
+				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+				usAttrib = realm()->GetFloorAttribute((int16_t) m_dX, (int16_t) m_dZ);
 				// If it starts at an invalid position like inside a wall, kill it
 				if (m_dY < sHeight)
 				{
@@ -373,7 +373,7 @@ void CUnguidedMissile::Update(void)
 				dPrevVertVel = m_dVertVel;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds/*, dAccelerationDueToGravity*/);
 				// Check the height to see if it hit the ground
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 
 				// Adjust apparent rotation.
 				m_dAnimRotY	= rspMod360(m_dAnimRotY + m_dAnimRotVelY * dSeconds); 
@@ -493,8 +493,8 @@ void CUnguidedMissile::Update(void)
 				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				// Check for obstacles
-				usAttrib = m_pRealm->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				usAttrib = realm()->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 
 				// If it hit any obstacles, make it bounce off
 				if (usAttrib & REALM_ATTR_NOT_WALKABLE || sHeight > m_dY)
@@ -533,24 +533,23 @@ void CUnguidedMissile::Update(void)
 				{
 					// Start an explosion object and then kill rocket
 					// object
-               CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));;
-               if (pExplosion != nullptr)
+               managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+               if (pExplosion)
 					{
-						pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID, 1);
+						pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter, 1);
 						PlaySample(g_smidGrenadeExplode, 
 							SampleMaster::Destruction,
 							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 
-					int16_t a;
-					CFire* pSmoke;
+               int16_t a;
 					for (a = 0; a < 4; a++)
                {
-                 pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-                  if (pSmoke != nullptr)
+                 managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+                  if (pSmoke)
 						{
 							pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::Smoke);
-							pSmoke->m_u16ShooterID = m_u16ShooterID;
+							pSmoke->m_shooter = m_shooter;
 						}
 					}
 
@@ -575,7 +574,7 @@ void CUnguidedMissile::Update(void)
 void CUnguidedMissile::Render(void)
 	{
 	// Animate.
-	int32_t	lCurTime			= m_pRealm->m_time.GetGameTime();
+	int32_t	lCurTime			= realm()->m_time.GetGameTime();
 
    m_sprite.m_pmesh		= &m_anim.m_pmeshes  ->atTime(lCurTime % m_anim.m_pmeshes->totalTime);
    m_sprite.m_psop		= &m_anim.m_psops    ->atTime(lCurTime % m_anim.m_psops->totalTime);
@@ -592,7 +591,7 @@ void CUnguidedMissile::Render(void)
 		m_sprite.m_sInFlags	= 0;
 	
 	// If we're not a child of someone else . . .
-	if (m_idParent == CIdBank::IdNil)
+   if (!parent())
 		{
 		// Map from 3d to 2d coords
 		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
@@ -601,7 +600,7 @@ void CUnguidedMissile::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		// Adjust transformation based current rotations.
 		m_trans.makeIdentity();
@@ -611,7 +610,7 @@ void CUnguidedMissile::Render(void)
 		m_sprite.m_ptrans		= &m_trans;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 
 		// Let it render the shadow sprite.
 		CWeapon::Render();
@@ -670,7 +669,7 @@ int16_t CUnguidedMissile::GetResources(void)						// Returns 0 if successfull, n
 	sResult	= m_anim.Get(ms_apszResNames[m_style], nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
 	if (sResult == SUCCESS)
 		{
-			sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+			sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 			if (sResult == SUCCESS)
 			{
 				// add more gets
@@ -743,23 +742,13 @@ int16_t CUnguidedMissile::Preload(
 
 void CUnguidedMissile::ProcessMessages(void)
 {
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-				m_MessageQueue.Empty();
-				m_eState = State_Deleted;
-				return;
-				break;
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return;
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+      m_eState = State_Deleted;
+    m_MessageQueue.clear();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -769,16 +758,16 @@ void CUnguidedMissile::Smoke(void)
 	{
 	if (m_style == Dynamite)
 		{
-		int32_t	lCurTime	= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime	= realm()->m_time.GetGameTime();
 
 		// If the timer has expired . . .
 		if (lCurTime > m_lNextSmokeTime)
 			{
-         CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-         if (pSmoke != nullptr)
+        managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+         if (pSmoke)
 				{
 				pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::SmallSmoke);
-				pSmoke->m_u16ShooterID = m_u16ShooterID;
+				pSmoke->m_shooter = m_shooter;
 				}
 			
 			m_lNextSmokeTime	= lCurTime + ms_lSmokeInterval;

@@ -73,7 +73,7 @@
 //							so that, if the bullet is exceptionally high, it will
 //							go, hopefully, entirely off screen).
 //
-//		05/29/97	JMI	Removed references to m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed references to realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/11/97	JMI	Added Preload() for loading assets used during play.
@@ -91,7 +91,7 @@
 //
 //		07/01/97	JMI	Now bases ricochets on GetRandom().
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -258,12 +258,12 @@ int16_t GetMaxHeight(
 				psl2d->m_sX2End	= sIterX + 1; 
 				psl2d->m_sY2End	= sIterZ + 1;
 				psl2d->m_sPriority	= 0;
-				psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(m_pRealm->GetLayer(sIterX, sIterZ));
+            psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sIterX, sIterZ));
 				psl2d->m_u8Color		= 250;
 				// Destroy when done.
 				psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 				// Put 'er there.
-				pRealm->m_scene.UpdateSprite(psl2d);
+            pRealm->Scene()->UpdateSprite(psl2d);
 				}
 #endif
 			}
@@ -341,7 +341,7 @@ bool GetTerrainAngle(			// true, if terrain angle determined.
 		&& fPosZ < sMaxZ
 		&& sIterations < sMaxOutIterations)
 		{
-		sTerrainH = m_pRealm->GetHeight((short) fPosX, (short) fPosZ);
+      sTerrainH = realm()->GetHeight((short) fPosX, (short) fPosZ);
 		// If above terrain . . .
 		if (sY > sTerrainH)
 			{
@@ -374,7 +374,7 @@ bool GetTerrainAngle(			// true, if terrain angle determined.
 			&& fPosZ < sMaxZ
 			&& sIterations < sMaxOutIterations)
 			{
-			sTerrainH = m_pRealm->GetHeight((short) fPosX, (short) fPosZ);
+         sTerrainH = realm()->GetHeight((short) fPosX, (short) fPosZ);
 			// If above terrain . . .
 			if (sY > sTerrainH)
 				{
@@ -455,7 +455,7 @@ bool CBulletFest::FireDeluxe(	// Returns what and as Fire() would.
 	int16_t* psX,						// Out: Hit position.
 	int16_t* psY,						// Out: Hit position.
 	int16_t* psZ,						// Out: Hit position.
-	CThing** ppthing,				// Out: Ptr to thing hit or nullptr.
+   managed_ptr<CThing>& ppthing,				// Out: Ptr to thing hit or nullptr.
 	bool	bTracer /*= true*/,	// In:  Draw a tracer at random point along path.
 	SampleMasterID	smid	/*= g_smidBulletFire*/)	// In:  Use ammo sample.
 	{
@@ -606,8 +606,8 @@ void CBulletFest::Flare(		// Returns nothing.
 	{
   UNUSED(sAngle);
 	// Create the animator . . .
-   CAnimThing*	pat	= static_cast<CAnimThing*>(pRealm->makeType(CAnimThingID));
-	ASSERT(pat != nullptr);
+   managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>();
+   ASSERT(pat);
 
    std::strcpy(pat->m_szResName, FLARE_RES_NAME);
 
@@ -639,8 +639,9 @@ void CBulletFest::Impact(	// Returns nothing.
 	{
   UNUSED(sAngle);
 	// Create the animator . . .
-   CAnimThing*	pat	= static_cast<CAnimThing*>(pRealm->makeType(CAnimThingID));
-	ASSERT(pat != nullptr);
+
+  managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>();
+   ASSERT(pat);
 
    std::strcpy(pat->m_szResName, IMPACT_RES_NAME);
 
@@ -665,9 +666,9 @@ void CBulletFest::Ricochet(	// Returns nothing.
 	CRealm* pRealm)				// In:  Realm in which to fire.
 	{
   UNUSED(sAngle);
-	// Create the animator . . .
-   CAnimThing*	pat	= static_cast<CAnimThing*>(pRealm->makeType(CAnimThingID));
-	ASSERT(pat != nullptr);
+   // Create the animator . . .
+  managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>();
+   ASSERT(pat);
 
    std::strcpy(pat->m_szResName, RICOCHET_RES_NAME);
 
@@ -704,7 +705,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 	int16_t* psX,						// Out: Hit position.
 	int16_t* psY,						// Out: Hit position.
 	int16_t* psZ,						// Out: Hit position.
-	CThing** ppthing,				// Out: Ptr to thing hit or nullptr.
+   managed_ptr<CThing>& ppthing,				// Out: Ptr to thing hit or nullptr.
 	bool	bTracer /*= true*/)	// In:  Draw a tracer at random point along path.
 	{
 	bool bHit	= false;	// Assume no collision with CThing within u32ThingMask.
@@ -805,7 +806,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 		&psmash) == true)
 		{
 		// Set *ppthing to thing hit.
-		*ppthing	= psmash->m_pThing;
+      ppthing	= psmash->m_pThing;
 
 		bHit	= true;
 
@@ -817,7 +818,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 	else
 		{
 		// Clear thing ptr.
-		*ppthing	= nullptr;
+      ppthing.reset();
 		// Set end pt.
 		*psX		= fPosX;
 		*psY		= fPosY;
@@ -903,7 +904,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 			// Destroy when done.
 			psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 			// Put 'er there.
-			pRealm->m_scene.UpdateSprite(psl2d);
+         pRealm->Scene()->UpdateSprite(psl2d);
 #if METHOD == 3
 					
 					// Done with this 'sprite'.
@@ -942,7 +943,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 		// Destroy when done.
 		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 		// Put 'er there.
-		pRealm->m_scene.UpdateSprite(psl2d);
+      pRealm->Scene()->UpdateSprite(psl2d);
 		}
 #endif
 
@@ -973,11 +974,11 @@ void CBulletFest::UpdateTarget(	// Returns nothing.
 void CBulletFest::UpdateTracerColor(
 	CRealm* prealm)							// In:  Calling realm.
 	{
-	ASSERT(prealm->m_phood);
-	ASSERT(prealm->m_phood->m_pimBackground);
-	ASSERT(prealm->m_phood->m_pimBackground->m_pPalette);
+   ASSERT(prealm->Hood());
+   ASSERT(prealm->Hood()->m_pimBackground);
+   ASSERT(prealm->Hood()->m_pimBackground->m_pPalette);
 
-	RPal*	ppal	= prealm->m_phood->m_pimBackground->m_pPalette;
+   RPal*	ppal	= prealm->Hood()->m_pimBackground->m_pPalette;
 
 	ms_u8TracerIndex	= rspMatchColorRGB(	// Out: Matched index.
 		TRACER_COLOR_RED,							// In:  Pixel's red value.                                 

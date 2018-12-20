@@ -302,10 +302,10 @@ int16_t CFlag::Init(void)
 	m_state = CFlag::State_Wait;
 	m_panimCur = &m_animFlagWave;
 	m_lAnimTime = 0;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+	m_lTimer = realm()->m_time.GetGameTime() + 500;
 
 	m_smash.m_bits = CSmash::Flag; 
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	m_u32IncludeBits = CSmash::Good | CSmash::Character;
 	m_u32DontcareBits = 0;
@@ -333,20 +333,6 @@ int16_t CFlag::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	return sResult;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CFlag::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	int16_t sResult = SUCCESS;
-
-   m_trans.makeIdentity();
-
-	return sResult;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Update object
 ////////////////////////////////////////////////////////////////////////////////
@@ -360,7 +346,7 @@ void CFlag::Update(void)
 	if (!m_sSuspend)
 	{
 		// Get new time
-		lThisTime = m_pRealm->m_time.GetGameTime();
+		lThisTime = realm()->m_time.GetGameTime();
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		m_lAnimTime += lTimeDifference;
@@ -386,25 +372,25 @@ void CFlag::Update(void)
 //-----------------------------------------------------------------------
 
 			case CFlag::State_Guard:
-				if (m_pRealm->m_smashatorium.QuickCheckClosest(&m_smash,
+				if (realm()->m_smashatorium.QuickCheckClosest(&m_smash,
 														m_u32IncludeBits,
 														m_u32DontcareBits,
 														m_u32ExcludeBits, &pSmashed))
 				{
 					// Add child to smashed
-					if (pSmashed->m_pThing->GetClassID() == CDudeID)
+               if (pSmashed->m_pThing->type() == CDudeID)
 					{
-						((CDude*) pSmashed->m_pThing)->m_sprite.AddChild(&m_sprite);
-						m_u16IdParent = pSmashed->m_pThing->GetInstanceID();
-						m_pRealm->m_scene.RemoveSprite(&m_sprite);
+                  managed_ptr<CDude>(pSmashed->m_pThing)->m_sprite.AddChild(&m_sprite);
+                  m_parent = pSmashed->m_pThing;
+						realm()->Scene()->RemoveSprite(&m_sprite);
 						m_state = State_Patrol;
 						//m_u32IncludeBits = CSmash::Flagbase;
 						m_u32IncludeBits = CSmash::FlagBase;
 						m_u32DontcareBits = CSmash::Good | CSmash::Bad;
 						m_u32ExcludeBits = 0;
 						// Add bonus time (if any) to realm timer
-						m_pRealm->m_lScoreTimeDisplay += m_lTimeBonus;
-						m_pRealm->m_sFlagsCaptured++;
+						realm()->m_lScoreTimeDisplay += m_lTimeBonus;
+						realm()->m_sFlagsCaptured++;
 						// Feedback.
 						PlaySample(
 							g_smidDemonYes2, 
@@ -421,30 +407,29 @@ void CFlag::Update(void)
 //-----------------------------------------------------------------------
 
 				case CFlag::State_Patrol:
-					if (m_pRealm->m_smashatorium.QuickCheckClosest(&m_smash, 
+					if (realm()->m_smashatorium.QuickCheckClosest(&m_smash, 
 														m_u32IncludeBits,
 														m_u32DontcareBits,
 														m_u32ExcludeBits, &pSmashed))
 					{
 						if (pSmashed)
 						{
-							if (((CFlagbase*) pSmashed->m_pThing)->m_u16FlagID == m_u16FlagID)
+                     if (managed_ptr<CFlagbase>(pSmashed->m_pThing)->m_u16FlagID == m_u16FlagID)
 							{
 								m_sSavedX = pSmashed->m_sphere.sphere.X;
 								m_sSavedY = pSmashed->m_sphere.sphere.Y + 15;
 								m_sSavedZ = pSmashed->m_sphere.sphere.Z;
 
-								m_pRealm->m_sFlagbaseCaptured++;
+								realm()->m_sFlagbaseCaptured++;
 
-								CThing3d* pParent = nullptr;
 								GameMessage msg;
 								msg.msg_PutMeDown.eType = typePutMeDown;
 								msg.msg_PutMeDown.sPriority = 0;
-								msg.msg_PutMeDown.u16FlagInstanceID = GetInstanceID();
+                        msg.msg_PutMeDown.flag = this;
 
-								if (m_pRealm->m_idbank.GetThingByID((CThing**)&pParent, m_u16IdParent) == SUCCESS)
+                        if (parent())
 								{
-									SendThingMessage(&msg, pParent);
+                           SendThingMessage(msg, parent());
 								}
 							}
 						}
@@ -485,7 +470,7 @@ void CFlag::Update(void)
 						m_u32IncludeBits = CSmash::Good | CSmash::Character;
 						m_u32DontcareBits = 0;
 						m_u32ExcludeBits = CSmash::Dead;
-						m_pRealm->m_sFlagsCaptured--;
+						realm()->m_sFlagsCaptured--;
 					}
 
 					else
@@ -510,7 +495,7 @@ void CFlag::Update(void)
 						m_u32IncludeBits = CSmash::Good | CSmash::Character;
 						m_u32DontcareBits = 0;
 						m_u32ExcludeBits = CSmash::Dead;
-						m_pRealm->m_sFlagsCaptured--;
+						realm()->m_sFlagsCaptured--;
 					}
 					break;
 
@@ -518,13 +503,12 @@ void CFlag::Update(void)
 // Dead - You are dead, so lay there and decompose, then go away
 //-----------------------------------------------------------------------
 
-				case CFlag::State_Dead:
-					CHood*	phood	= m_pRealm->m_phood;
+            case CFlag::State_Dead:
 					// Render current dead frame into background to stay.
-					m_pRealm->m_scene.DeadRender3D(
-						phood->m_pimBackground,		// Destination image.
+					realm()->Scene()->DeadRender3D(
+                  realm()->Hood()->m_pimBackground,		// Destination image.
 						&m_sprite,						// Tree of 3D sprites to render.
-						phood);							// Dst clip rect.
+                  realm()->Hood());							// Dst clip rect.
 
 					delete this;
 					return;
@@ -541,7 +525,7 @@ void CFlag::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= 30; //m_spriteBase.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save time for next time
 		m_lPrevTime = lThisTime;
@@ -753,7 +737,7 @@ void CFlag::OnExplosionMsg(Explosion_Message* pMessage)
 
 		m_state = State_BlownUp;
 		m_lAnimTime = 0;
-		m_lTimer = m_pRealm->m_time.GetGameTime();
+		m_lTimer = realm()->m_time.GetGameTime();
 
 		m_dExtHorzVel *= -1.4; //2.5;
 		m_dExtVertVel *= 1.1; //1.4;
@@ -775,7 +759,7 @@ void CFlag::OnBurnMsg(Burn_Message* pMessage)
 	// For now we made the sentry fireproof, the only
 	// way it can be destroyed is by blowing it up.
 	m_state = State_Burning;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + FLAG_BURNED_TIMEOUT;
+	m_lTimer = realm()->m_time.GetGameTime() + FLAG_BURNED_TIMEOUT;
 }
 
 

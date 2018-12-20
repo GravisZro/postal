@@ -127,10 +127,10 @@
 //		05/09/97	JMI	Update() now moves the smashatorium object when the CFire
 //							is not Smoke.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
-//		06/11/97 BRH	Pass along the m_u16ShooterID value in the Burn message.
+//		06/11/97 BRH	Pass along the m_shooter value in the Burn message.
 //
 //		06/15/97 BRH	Fixed Smoke going past animation by 1 frame.
 //
@@ -158,7 +158,7 @@
 //		07/08/97	JMI	Fixed Render() to distribute the homogeneous alpha level
 //							better.  Still needs tuning.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -185,7 +185,7 @@
 //		08/20/97	JMI	Now does a range check on m_sCurrentAlphaLevel after
 //							decrementing.
 //
-//		09/02/97	JMI	Added m_u16FireStarterID.  This is used for a special case
+//		09/02/97	JMI	Added m_fireStarter.  This is used for a special case
 //							when the starter of the fire is not the thing using the
 //							fire as a weapon (e.g., when a guy catches fire he can
 //							use the fire on other people by running into them causing
@@ -337,14 +337,6 @@ int16_t CFire::Startup(void)								// Returns 0 if successfull, non-zero otherw
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CFire::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-   return SUCCESS;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CFire::Suspend(void)
@@ -363,7 +355,7 @@ void CFire::Resume(void)
 	// the time so as to ignore any time that passed while we were suspended.
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
-		m_lPrevTime = m_pRealm->m_time.GetGameTime();
+		m_lPrevTime = realm()->m_time.GetGameTime();
 }
 
 
@@ -386,7 +378,7 @@ void CFire::Update(void)
 
 		if (m_lTimer < m_lBurnUntil)
 		{
-			lThisTime = m_pRealm->m_time.GetGameTime();
+			lThisTime = realm()->m_time.GetGameTime();
 			m_lTimer += lThisTime - m_lPrevTime;
 			// See if its time to change to the next alpha channel
 			if (m_lTimer > m_lCurrentAlphaTimeout)
@@ -416,33 +408,33 @@ void CFire::Update(void)
 					msg.msg_Burn.eType = typeBurn;
 					msg.msg_Burn.sPriority = 0;
 					msg.msg_Burn.sDamage = 10;
-					msg.msg_Burn.u16ShooterID = m_u16ShooterID;
-					m_pRealm->m_smashatorium.QuickCheckReset(&m_smash, m_u32CollideIncludeBits,
+               msg.msg_Burn.shooter = m_shooter;
+					realm()->m_smashatorium.QuickCheckReset(&m_smash, m_u32CollideIncludeBits,
 																		  m_u32CollideDontcareBits, 
 																		  m_u32CollideExcludeBits);
-					while (m_pRealm->m_smashatorium.QuickCheckNext(&pSmashed))
+					while (realm()->m_smashatorium.QuickCheckNext(&pSmashed))
 						{
 						// Default to the standard case where credit is given to the
 						// shooter.
-						msg.msg_Burn.u16ShooterID	= m_u16ShooterID;
+                  msg.msg_Burn.shooter	= m_shooter;
 
-						if ((m_bIsBurningDude) && (pSmashed->m_pThing->GetClassID() != CDudeID))
+						if ((m_bIsBurningDude) && (pSmashed->m_pThing->type() != CDudeID))
 							UnlockAchievement(ACHIEVEMENT_TOUCH_SOMEONE_WHILE_BURNING);
 
 						// If the fire starter ID is set . . .
-						if (m_u16FireStarterID != CIdBank::IdNil)
+                  if (m_fireStarter)
 							{
 							// If this is the shooter . . .
-							if (pSmashed->m_pThing->GetInstanceID() == m_u16ShooterID)
+                     if (pSmashed->m_pThing == m_shooter)
 								{
 								// The shooter is damaged by his own fire with credit
 								// given to the fire starter.
-								msg.msg_Burn.u16ShooterID	= m_u16FireStarterID;
+                        msg.msg_Burn.shooter	= m_fireStarter;
 								}
 							}
 
 						// Burn.
-						SendThingMessage(&msg, pSmashed->m_pThing);				
+                  SendThingMessage(msg, pSmashed->m_pThing);
 						}
 				}
 				// Reset collision timer for next time
@@ -461,7 +453,7 @@ void CFire::Update(void)
 
 				// Check attribute map for walls, and if you hit a wall, 
 				// set the timer so you will die off next time around.
-				int16_t sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				int16_t sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 				// If it hits a wall taller than itself, then it will rotate in the
 				// predetermined direction until it is free to move.
 				if ((int16_t) m_dY < sHeight)
@@ -485,7 +477,7 @@ void CFire::Update(void)
 				m_smash.m_sphere.sphere.Y = m_dY;
 				m_smash.m_sphere.sphere.Z = m_dZ;
 				// Update the smash.
-				m_pRealm->m_smashatorium.Update(&m_smash);
+				realm()->m_smashatorium.Update(&m_smash);
 			}
 
 			m_lPrevTime = lThisTime;
@@ -544,7 +536,7 @@ void CFire::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
 		m_sprite.m_pImage = &(pAnim->m_imColor);
@@ -574,7 +566,7 @@ void CFire::Render(void)
 		ASSERT(m_sprite.m_sAlphaLevel >= 0);
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 		
 	}
 }
@@ -597,7 +589,7 @@ int16_t CFire::Setup(									// Returns 0 if successfull, non-zero otherwise
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lCollisionTimer = m_lPrevTime + ms_lCollisionTime;
 
 	m_eFireAnim = eAnimType;
@@ -656,9 +648,9 @@ int16_t CFire::Init(void)
 			m_smash.m_sphere.sphere.Z = m_dZ;
 			m_smash.m_sphere.sphere.lRadius = ms_sLargeRadius;
 			m_smash.m_bits = CSmash::Fire;
-			m_smash.m_pThing = this;
+         m_smash.m_pThing = this;
 			// Update the smash
-			m_pRealm->m_smashatorium.Update(&m_smash);
+			realm()->m_smashatorium.Update(&m_smash);
 			break;
 
 		case SmallFire:
@@ -668,18 +660,18 @@ int16_t CFire::Init(void)
 			m_smash.m_sphere.sphere.Z = m_dZ;
 			m_smash.m_sphere.sphere.lRadius = ms_sSmallRadius;
 			m_smash.m_bits = CSmash::Fire;
-			m_smash.m_pThing = this;
+         m_smash.m_pThing = this;
 			// Update the smash
-			m_pRealm->m_smashatorium.Update(&m_smash);
+			realm()->m_smashatorium.Update(&m_smash);
 			break;
 
 		case Smoke:
-			m_smash.m_pThing = nullptr;			
+         m_smash.m_pThing.reset();
 			m_bSendMessages = false;
 			break;
 
 		case SmallSmoke:
-			m_smash.m_pThing = nullptr;			
+         m_smash.m_pThing.reset();
 			m_bSendMessages = false;
 			m_lStartTime = m_lTimer = GetRandom() % m_pAnimChannel->TotalTime() / 3;
 			m_lBurnUntil = m_lTimer + m_lTimeToLive;
@@ -707,7 +699,7 @@ int16_t CFire::Smokeout(void)
 
 	// Remove smash from the smashatorium if it was being used
 	if (m_smash.m_pThing)
-		m_pRealm->m_smashatorium.Remove(&m_smash);
+		realm()->m_smashatorium.Remove(&m_smash);
 
 	m_bSendMessages = false;
 
@@ -761,8 +753,8 @@ int16_t CFire::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-	m_lTimer = GetRandom(); //m_pRealm->m_time.GetGameTime() + 1000;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lTimer = GetRandom(); //realm()->m_time.GetGameTime() + 1000;
+	m_lPrevTime = realm()->m_time.GetGameTime();
 
 	// Load resources
 	sResult = GetResources();
@@ -826,19 +818,19 @@ int16_t CFire::GetResources(void)			// Returns 0 if successfull, non-zero otherw
 	switch (m_eFireAnim)
 	{
 		case LargeFire:
-			sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(LARGE_FILE), &m_pAnimChannel, RFile::LittleEndian);
+			sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(LARGE_FILE), &m_pAnimChannel, RFile::LittleEndian);
 			break;
 
 		case SmallFire:
-			sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_FILE), &m_pAnimChannel, RFile::LittleEndian);
+			sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_FILE), &m_pAnimChannel, RFile::LittleEndian);
 			break;
 
 		case Smoke:
-			sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMOKE_FILE), &m_pAnimChannel, RFile::LittleEndian);
+			sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMOKE_FILE), &m_pAnimChannel, RFile::LittleEndian);
 			break;
 
 		case SmallSmoke:
-			sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SMOKE_FILE), &m_pAnimChannel, RFile::LittleEndian);
+			sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SMOKE_FILE), &m_pAnimChannel, RFile::LittleEndian);
 			break;
 	}
 
@@ -893,25 +885,15 @@ int16_t CFire::Preload(
 
 CFire::CFireState CFire::ProcessMessages(void)
 {
-	CFireState eNewState = State_Idle;
-
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-				m_MessageQueue.Empty();
-				delete this;
-				return CFire::State_Deleted;
-				break;
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return eNewState;
+  CFireState eNewState = State_Idle;
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+      return CFire::State_Deleted;
+    m_MessageQueue.clear();
+  }
+  return eNewState;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

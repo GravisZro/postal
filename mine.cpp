@@ -83,7 +83,7 @@
 //		05/28/97 BRH	Increased arming time for Betty and Proximity mines to make
 //							them easier to place and get away.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/11/97 BRH	Added shooter ID's to the shot messages and passed it
@@ -95,7 +95,7 @@
 //
 //		06/30/97 BRH	Added cache sound effects to Preload function.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -133,6 +133,7 @@
 #include "SampleMaster.h"
 #include "reality.h"
 
+#include "Thing3d.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -289,12 +290,12 @@ int16_t CMine::Init(void)
 
 	m_eState = State_Idle;
 
-	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+	int32_t lThisTime = realm()->m_time.GetGameTime();
 
 	if (m_lFuseTime == 0)
 		m_lFuseTime = ms_lFuseTime;
 
-	switch (m_id)
+   switch (type())
 	{
 		case CTimedMineID:
 			m_lTimer = m_lFuseTime + lThisTime;
@@ -322,7 +323,7 @@ int16_t CMine::Init(void)
 
 	// Set up collision object
 	m_smash.m_bits = CSmash::Mine;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	// Load resources
 	sResult = GetResources();
@@ -405,13 +406,13 @@ void CMine::Update(void)
 	int16_t sShotX;
 	int16_t sShotY;
 	int16_t sShotZ;
-	CThing* pShotThing = nullptr;
+   managed_ptr<CThing> pShotThing;
 	GameMessage msg;
 
 	if (!m_sSuspend)
 	{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime(); 
+		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
 		ProcessMessages();
 		if (m_eState == State_Deleted)
@@ -439,7 +440,7 @@ void CMine::Update(void)
 						StopLoopingSample(m_siMineBeep);
 						m_siMineBeep = 0;
 					}
-					switch (m_id)
+               switch (type())
 					{
 						case CTimedMineID:
 							m_eState = State_Explode;
@@ -465,14 +466,13 @@ void CMine::Update(void)
 					int16_t	sY	= m_dY;
 					int16_t	sZ	= m_dZ;
 
-					// If we have a parent . . .
-					CThing*	pthing	= nullptr;	// Initialized for safety.
-               if (m_pRealm->m_idbank.GetThingByID(&pthing, m_idParent) == SUCCESS)
+               // If we have a parent . . .
+               if (parent())
 						{
 						// Add in its position.
-						sX	+= pthing->GetX();
-						sY	+= pthing->GetY();
-						sZ	+= pthing->GetZ();
+                  sX	+= parent3d()->GetX();
+                  sY	+= parent3d()->GetY();
+                  sZ	+= parent3d()->GetZ();
 						}
 
 					// Update sound position.
@@ -486,12 +486,12 @@ void CMine::Update(void)
 //-----------------------------------------------------------------------
 
 			case CWeapon::State_Armed:
-				if (m_pRealm->m_smashatorium.QuickCheck(&m_smash, 
+				if (realm()->m_smashatorium.QuickCheck(&m_smash, 
 															CSmash::Character, 
 														   CSmash::Good | CSmash::Bad,
 															0, &pSmashed))
 				{
-					switch (m_id)
+               switch (type())
 					{
 						case CBouncingBettyMineID:
 							m_eState = State_Go;
@@ -550,11 +550,11 @@ void CMine::Update(void)
 							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 
 						// Draw some kind of flash on the mine
-						m_bulletfest.Impact(0, m_dX, m_dY, m_dZ, m_pRealm);
-						m_bulletfest.Impact(0, m_dX + 5, m_dY, m_dZ, m_pRealm);
-						m_bulletfest.Impact(0, m_dX - 5, m_dY, m_dZ, m_pRealm);
-						m_bulletfest.Impact(0, m_dX, m_dY + 5, m_dZ, m_pRealm);
-						m_bulletfest.Impact(0, m_dX, m_dY - 5, m_dZ, m_pRealm);
+						m_bulletfest.Impact(0, m_dX, m_dY, m_dZ, realm());
+						m_bulletfest.Impact(0, m_dX + 5, m_dY, m_dZ, realm());
+						m_bulletfest.Impact(0, m_dX - 5, m_dY, m_dZ, realm());
+						m_bulletfest.Impact(0, m_dX, m_dY + 5, m_dZ, realm());
+						m_bulletfest.Impact(0, m_dX, m_dY - 5, m_dZ, realm());
 
 						// Shoot in all directions
 						for (sShootAngle = 0; sShootAngle < 360; sShootAngle += 20)
@@ -565,23 +565,23 @@ void CMine::Update(void)
 													(int16_t) m_dY, 
 													(int16_t) m_dZ,
 													ms_sBettyRange,
-													m_pRealm,
+													realm(),
 													CSmash::Character,
 													CSmash::Good | CSmash::Bad,
 													0,
 													&sShotX,
 													&sShotY,
 													&sShotZ,
-													&pShotThing);
-							if (pShotThing != nullptr)
+                                       pShotThing);
+                     if (pShotThing)
 							{
 								msg.msg_Shot.eType = typeShot;
 								msg.msg_Shot.sPriority = 0;
 								msg.msg_Shot.sDamage = 50;
 								msg.msg_Shot.sAngle = rspATan(m_dZ - sShotZ, sShotX - m_dX);
-								msg.msg_Shot.u16ShooterID = m_u16ShooterID;
+								msg.msg_Shot.shooter = m_shooter;
 								// Tell this thing that it got shot
-								SendThingMessage(&msg, pShotThing);
+								SendThingMessage(msg, pShotThing);
 							}
 						}
 						// Get rid of the mine
@@ -601,10 +601,10 @@ void CMine::Update(void)
 				{
 					// Start an explosion object and then kill rocket
 					// object
-              CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));;
-              if (pExplosion != nullptr)
+              managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+              if (pExplosion)
 					{
-						pExplosion->Setup(m_dX, m_dY, m_dZ, m_u16ShooterID);
+						pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
 						PlaySample(
 							g_smidGrenadeExplode,
 							SampleMaster::Destruction,
@@ -627,7 +627,7 @@ void CMine::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sCurRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 	}
 }
@@ -670,10 +670,10 @@ void CMine::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 }
 
@@ -733,22 +733,22 @@ int16_t CMine::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
    if (m_pImage == nullptr)
 	{
-		switch (m_id)
+      switch (type())
 		{	
 			case CTimedMineID:
-				sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(TIMEDMINE_FILE), &m_pImage, RFile::LittleEndian);
+				sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(TIMEDMINE_FILE), &m_pImage, RFile::LittleEndian);
 				break;
 
 			case CProximityMineID:
-				sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(PROXIMITYMINE_FILE), &m_pImage, RFile::LittleEndian);
+				sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(PROXIMITYMINE_FILE), &m_pImage, RFile::LittleEndian);
 				break;
 
 			case CBouncingBettyMineID:
-				sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(BOUNCINGBETTYMINE_FILE), &m_pImage, RFile::LittleEndian);
+				sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(BOUNCINGBETTYMINE_FILE), &m_pImage, RFile::LittleEndian);
 				break;
 
 			case CRemoteControlMineID:
-				sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(REMOTEMINE_FILE), &m_pImage, RFile::LittleEndian);
+				sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(REMOTEMINE_FILE), &m_pImage, RFile::LittleEndian);
 				break;
 		}
 	}
@@ -879,7 +879,7 @@ void CMine::OnExplosionMsg(Explosion_Message* pMessage)
   UNUSED(pMessage);
 	// If we got blown up, go off in whatever manner this type
 	// of mine would normally go off.
-	switch (m_id)
+   switch (type())
 	{
 		// If its a bouncing betty, and hasn't already been
 		// triggered, then trigger it to bounce up.
@@ -888,7 +888,7 @@ void CMine::OnExplosionMsg(Explosion_Message* pMessage)
 			{
 				m_eState = State_Go;
 				m_dVertVel = ms_dInitialBounceVelocity;
-				m_lTimer = m_pRealm->m_time.GetGameTime() + ms_lExplosionDelay;
+				m_lTimer = realm()->m_time.GetGameTime() + ms_lExplosionDelay;
 			}
 			break;
 
@@ -898,7 +898,7 @@ void CMine::OnExplosionMsg(Explosion_Message* pMessage)
 			if (m_eState != State_Explode)
 			{
 				m_eState = State_Explode;
-				m_lTimer = m_pRealm->m_time.GetGameTime() + ms_lExplosionDelay;
+				m_lTimer = realm()->m_time.GetGameTime() + ms_lExplosionDelay;
 			}
 			break;
 	}
@@ -913,7 +913,7 @@ void CMine::OnTriggerMsg(Trigger_Message* pMessage)
   UNUSED(pMessage);
 	// If we are a remote control mine & we got the trigger message,
 	// then blow up.
-	if (m_id == CRemoteControlMineID)
+   if (type() == CRemoteControlMineID)
 		m_eState = State_Explode;
 }
 

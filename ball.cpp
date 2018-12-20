@@ -244,30 +244,16 @@ int16_t CBall::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	int16_t sResult = SUCCESS;	// Assume success.
 
 	// At this point we can assume the CHood was loaded, so we init our height
-	m_sPrevHeight = m_pRealm->GetHeight(m_dX, m_dZ);
+	m_sPrevHeight = realm()->GetHeight(m_dX, m_dZ);
 
 	// HARD-WIRED CODE ALERT!
 	// Eventually, this should be set via the bounding sphere radius.
 	m_sCurRadius	= 64;
 
-	m_lPrevTime		= m_pRealm->m_time.GetGameTime();
+	m_lPrevTime		= realm()->m_time.GetGameTime();
 
 	return sResult;
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CBall::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-
-   m_trans.makeIdentity();
-	
-	return sResult;
-	}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -294,7 +280,7 @@ void CBall::Update(void)
 	{
 	if (!m_sSuspend)
 		{
-		int32_t	lCurTime				= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime				= realm()->m_time.GetGameTime();
 		double dDeltaSeconds		= (lCurTime - m_lPrevTime) / 1000.0;
 
 		// Adjust vertical velocity and calculate new position.
@@ -310,7 +296,7 @@ void CBall::Update(void)
 
 		// Get height and 'no walk' status at new position.
 		bool		bNoWalk;
-		int16_t		sHeight	= m_pRealm->GetHeightAndNoWalk(dNewX, dNewY, &bNoWalk);
+		int16_t		sHeight	= realm()->GetHeightAndNoWalk(dNewX, dNewY, &bNoWalk);
 
 		// If new Y position is less than terrain height or 'no walk' zone . . .
 		if (dNewY < sHeight || bNoWalk == true)
@@ -376,14 +362,14 @@ void CBall::Render(void)
 	m_sprite.m_sPriority = m_dZ;
 
 	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(
-		m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 
 	// Cheese festival rotation.
 	m_trans.Ry(rspMod360(m_dDX));
 	m_trans.Rz(rspMod360(m_dDZ));
 
-	int32_t lTime	= m_pRealm->m_time.GetGameTime();
+	int32_t lTime	= realm()->m_time.GetGameTime();
 
    m_sprite.m_pmesh		= &m_anim.m_pmeshes->atTime(lTime);
    m_sprite.m_psop		= &m_anim.m_psops->atTime(lTime);
@@ -395,7 +381,7 @@ void CBall::Render(void)
 	m_sprite.m_sRadius	= m_sCurRadius;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 
 #if !defined(EDITOR_REMOVED)
@@ -418,12 +404,10 @@ int16_t CBall::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	sResult = GetResources();
 	if (sResult == SUCCESS)
 		{
-		sResult	= Shutdown();
-		if (sResult == SUCCESS)
-			{
+
+     m_trans.makeIdentity();
 			// Attempt to startup as if in a real play . . .
-			sResult	= Startup();
-			}
+         sResult	= Startup();
 		}
 
 	return sResult;
@@ -499,13 +483,10 @@ int16_t CBall::EditModify(void)
 				// Load resources.
 				sResult = GetResources();
 				if (sResult == SUCCESS)
-					{
-					sResult	= Shutdown();
-					if (sResult == SUCCESS)
-						{
+               {
+              m_trans.makeIdentity();
 						// Attempt to startup as if in a real play . . .
-						sResult	= Startup();
-						}
+                  sResult	= Startup();
 					}
 				}
 			else

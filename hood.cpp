@@ -56,7 +56,7 @@
 //							the RResMgr.
 //
 //		02/07/97	JMI	Now allows you to setup the world transform 
-//							(m_pRealm->m_scene.m_transWorld) via the EditNew/Modify
+//							(realm()->Scene()->m_transWorld) via the EditNew/Modify
 //							dialog.
 //
 //		02/07/97	JMI	Now calls m_scene.SetupPipeline() to update the world
@@ -89,7 +89,7 @@
 //		04/18/97	JMI	Now Startup() calls rspSetPalette*() and rspUpdatePalette()
 //							instead of Init().
 //
-//		04/22/97	JMI	Now ReleaseResources() purges m_pRealm->m_resmgr after
+//		04/22/97	JMI	Now ReleaseResources() purges realm()->m_resmgr after
 //							releasing the hood's resources so we get them out of memory
 //							right away.
 //
@@ -104,7 +104,7 @@
 //							30.
 //
 //		05/26/97	JMI	Now Save()s, Load()s, and EditModify()s 
-//							m_pRealm->m_dKillsPercentGoal.
+//							realm()->m_dKillsPercentGoal.
 //							
 //		05/29/97	JMI	Changed occurences of m_pHeightMap to m_pTerrainMap.
 //							Changed occurences of m_pAttrMap to m_pLayerMap.
@@ -269,9 +269,6 @@ CHood::CHood(void)
 	
 	m_sScaleAttribHeights	= TRUE;
 
-	// Let realm have quick access to us.
-   realm()->m_phood = this;
-
 	// We want a Startup() call.
 	m_sCallStartup		= 1;
 
@@ -285,9 +282,7 @@ CHood::CHood(void)
 ////////////////////////////////////////////////////////////////////////////////
 CHood::~CHood(void)
 	{
-	Kill();
-	// Clear Realm's ptr.
-	m_pRealm->m_phood	= nullptr;
+   Kill();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +308,7 @@ int16_t CHood::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 44:
 				pFile->Read(&m_sScaleAttribHeights);
 				pFile->Read(&m_sRealmRotX);
-				pFile->Read(&(m_pRealm->m_dKillsPercentGoal) );
+				pFile->Read(&(realm()->m_dKillsPercentGoal) );
 				pFile->Read(m_acBaseName);
 				pFile->Read(&m_sSceneRotX);
 				pFile->Read(&m_dScale3d);
@@ -338,7 +333,7 @@ int16_t CHood::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 39:
 				pFile->Read(&m_sScaleAttribHeights);
 				pFile->Read(&m_sRealmRotX);
-				pFile->Read(&(m_pRealm->m_dKillsPercentGoal) );
+				pFile->Read(&(realm()->m_dKillsPercentGoal) );
 				pFile->Read(m_acBaseName);
 				pFile->Read(&m_sSceneRotX);
 				pFile->Read(&m_dScale3d);
@@ -359,7 +354,7 @@ int16_t CHood::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 30:
 				pFile->Read(&m_sScaleAttribHeights);
 				pFile->Read(&m_sRealmRotX);
-				pFile->Read(&(m_pRealm->m_dKillsPercentGoal) );
+				pFile->Read(&(realm()->m_dKillsPercentGoal) );
 				pFile->Read(m_acBaseName);
 				pFile->Read(&m_sSceneRotX);
 				break;
@@ -386,7 +381,7 @@ int16_t CHood::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 17:
 			case 16:
 			case 15:
-				pFile->Read(&(m_pRealm->m_dKillsPercentGoal) );
+				pFile->Read(&(realm()->m_dKillsPercentGoal) );
 
 			case 14:
 			case 13:
@@ -443,7 +438,7 @@ int16_t CHood::Save(								// Returns 0 if successfull, non-zero otherwise
 		// Save object data
 		pFile->Write(m_sScaleAttribHeights);
 		pFile->Write(m_sRealmRotX);
-		pFile->Write(m_pRealm->m_dKillsPercentGoal);
+		pFile->Write(realm()->m_dKillsPercentGoal);
 		pFile->Write(m_acBaseName);
 		pFile->Write(m_sSceneRotX);
 		pFile->Write(m_dScale3d);
@@ -476,16 +471,6 @@ int16_t CHood::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	{
    return SUCCESS;
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CHood::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -657,7 +642,7 @@ int16_t CHood::EditNew(									// Returns 0 if successfull, non-zero otherwise
 			RSP_SAFE_GUI_REF((REdit*)pguiShadowIntensity, m_sCaretPos = strlen(pguiShadowIntensity->m_szText) );
 			RSP_SAFE_GUI_REF_VOID(pguiShadowIntensity, Compose() );
 
-			RSP_SAFE_GUI_REF_VOID(pguiKillsPercentGoal, SetText("%g", m_pRealm->m_dKillsPercentGoal) );
+			RSP_SAFE_GUI_REF_VOID(pguiKillsPercentGoal, SetText("%g", realm()->m_dKillsPercentGoal) );
 			RSP_SAFE_GUI_REF_VOID(pguiKillsPercentGoal, Compose() );
 
 			ASSERT(pguiScaleHeights->m_type == RGuiItem::MultiBtn);
@@ -670,7 +655,7 @@ int16_t CHood::EditNew(									// Returns 0 if successfull, non-zero otherwise
 			switch (pgui2dResPaths->m_type)
 				{
 				case RGuiItem::MultiBtn:
-					RSP_SAFE_GUI_REF( (RMultiBtn*)pgui2dResPaths, m_sState = m_pRealm->m_s2dResPathIndex + 1);
+					RSP_SAFE_GUI_REF( (RMultiBtn*)pgui2dResPaths, m_sState = realm()->m_s2dResPathIndex + 1);
 					RSP_SAFE_GUI_REF_VOID(pgui2dResPaths, Compose() );
 					break;
 				case RGuiItem::ListBox:
@@ -686,7 +671,7 @@ int16_t CHood::EditNew(									// Returns 0 if successfull, non-zero otherwise
 							// Set ID to identify proper index.
 							pgui->m_ulUserData	= sIndex;
 							// If this is the current one . . .
-							if (sIndex == m_pRealm->m_s2dResPathIndex)
+							if (sIndex == realm()->m_s2dResPathIndex)
 								{
 								// Select it.
 								plb->SetSel(pgui);
@@ -741,14 +726,14 @@ int16_t CHood::EditNew(									// Returns 0 if successfull, non-zero otherwise
 					{
               UNHANDLED_SWITCH;
                case RGuiItem::MultiBtn:
-						m_pRealm->m_s2dResPathIndex	= RSP_SAFE_GUI_REF((RMultiBtn*)pgui2dResPaths, m_sState) - 1;
+						realm()->m_s2dResPathIndex	= RSP_SAFE_GUI_REF((RMultiBtn*)pgui2dResPaths, m_sState) - 1;
 						break;
 					case RGuiItem::ListBox:
 						{
 						RGuiItem*	pguiSel	= ( (RListBox*)pgui2dResPaths)->GetSel();
 						if (pguiSel)
 							{
-							m_pRealm->m_s2dResPathIndex	= pguiSel->m_ulUserData;
+							realm()->m_s2dResPathIndex	= pguiSel->m_ulUserData;
 							}
 						break;
 						}
@@ -756,7 +741,7 @@ int16_t CHood::EditNew(									// Returns 0 if successfull, non-zero otherwise
 
 				if (pguiKillsPercentGoal != nullptr)
 					{
-					m_pRealm->m_dKillsPercentGoal	= strtod(pguiKillsPercentGoal->m_szText, nullptr);
+					realm()->m_dKillsPercentGoal	= strtod(pguiKillsPercentGoal->m_szText, nullptr);
 					}
 
 				// Init the hood
@@ -845,8 +830,8 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 			{
 			// Set the realm's pointer to point at our attribute map.  This is a
 			// shortcut to make it easier and faster for objects to access the map.
-			m_pRealm->m_pTerrainMap = m_pTerrainMap;
-			m_pRealm->m_pLayerMap = m_pLayerMap;
+			realm()->m_pTerrainMap = m_pTerrainMap;
+			realm()->m_pLayerMap = m_pLayerMap;
 
 			// Background is only thing on rear-most layer
 			CSprite2* pSprite2 = new CSprite2;
@@ -856,7 +841,7 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 			pSprite2->m_pImage = m_pimBackground;
 			pSprite2->m_sLayer = CRealm::LayerBg;
 			pSprite2->m_sInFlags = CSprite::InDeleteOnClear | CSprite::InBlitOpaque;
-			m_pRealm->m_scene.UpdateSprite(pSprite2);
+			realm()->Scene()->UpdateSprite(pSprite2);
 
 			// Attempt to load all layers . . .
 			int32_t	lIndex;
@@ -878,7 +863,7 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 						pSprite2->m_pImage = pSprite->m_pImage;
 						pSprite2->m_sLayer = CRealm::LayerAlpha1 + (int16_t)lIndex * (CRealm::LayerAlpha2 - CRealm::LayerAlpha1);
 						pSprite2->m_sInFlags = CSprite::InDeleteOnClear | CSprite::InAlpha;
-						m_pRealm->m_scene.UpdateSprite(pSprite2);
+						realm()->Scene()->UpdateSprite(pSprite2);
 
 						p = m_apspryAlphas[lIndex]->m_listSprites.GetNext(p);
 						}
@@ -899,7 +884,7 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 						pSprite2->m_pImage = pSprite->m_pImage;
 						pSprite2->m_sLayer = CRealm::LayerOpaque1 + (int16_t)lIndex * (CRealm::LayerOpaque2 - CRealm::LayerOpaque1);
 						pSprite2->m_sInFlags = CSprite::InDeleteOnClear | CSprite::InOpaque;
-						m_pRealm->m_scene.UpdateSprite(pSprite2);
+						realm()->Scene()->UpdateSprite(pSprite2);
 						
 						p = m_apspryOpaques[lIndex]->m_listSprites.GetNext(p);
 						}
@@ -913,13 +898,13 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 		// This requires success in the previous ops . . .
 		if (sResult == SUCCESS)
 			{
-			// Jon has PROMISED me that there is an m_pRealm which is ACCURATE.
+			// Jon has PROMISED me that there is an realm() which is ACCURATE.
 			#define MAX_SMASHEE_W 72 // 40	once we deal with fat objects
 			#define MAX_SMASHEE_H 72 // 40	once we deal with fat objects
 			
 			// Allocate the Smashatorium:  Pick tile size greater than any normal object radius...
-			m_pRealm->m_smashatorium.Destroy();
-			m_pRealm->m_smashatorium.Alloc(m_pRealm->GetRealmWidth(),m_pRealm->GetRealmHeight(),
+			realm()->m_smashatorium.Destroy();
+			realm()->m_smashatorium.Alloc(realm()->GetRealmWidth(),realm()->GetRealmHeight(),
 				int16_t(MAX_SMASHEE_W * m_dScale3d),  // I'm assuming this scales with size
 				int16_t(MAX_SMASHEE_H * m_dScale3d) );
 			}
@@ -956,7 +941,7 @@ void CHood::SetupPipeline(void)	// Returns nothing.
 	RTransform	transScene2Realm;	// Identity.
 	transScene2Realm.Rx(m_sRealmRotX - m_sSceneRotX);
 	// Re-setup with tweakage and scaling.
-	m_pRealm->m_scene.SetupPipeline(&transScene, &transScene2Realm, m_dScale3d);
+	realm()->Scene()->SetupPipeline(&transScene, &transScene2Realm, m_dScale3d);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1041,20 +1026,20 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 		sprintf(szFileName, "res/hoods/%s.sak", m_acBaseName);
 
 		// Open SAK, if available . . .
-      if (m_pRealm->m_resmgr.OpenSak(FullPathHD(szFileName)) == SUCCESS)
+      if (realm()->m_resmgr.OpenSak(FullPathHD(szFileName)) == SUCCESS)
 			{
 			// Using SAK from HD.
 			}
 		else
 			{
-         if (m_pRealm->m_resmgr.OpenSak(FullPathHoods(szFileName)) == SUCCESS)
+         if (realm()->m_resmgr.OpenSak(FullPathHoods(szFileName)) == SUCCESS)
 				{
 				// Using SAK from hoods path.
 				}
 			else
 				{
 				// Using Disk, set path.
-				m_pRealm->m_resmgr.SetBasePath(g_GameSettings.m_szNoSakDir);
+				realm()->m_resmgr.SetBasePath(g_GameSettings.m_szNoSakDir);
 				}
 			}
 
@@ -1063,7 +1048,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 		// Load background
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimBackground) != SUCCESS)
 			{
@@ -1081,7 +1066,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			// Make alpha layer name.
 			sprintf(szFileName, "%s%02da.say", szBasePath, lIndex);
 			// Load & convert . . .
-         if (SpryLoadConv(&(m_pRealm->m_resmgr), m_apspryAlphas + lIndex, szFileName, RImage::FSPR8) == SUCCESS)
+         if (SpryLoadConv(&(realm()->m_resmgr), m_apspryAlphas + lIndex, szFileName, RImage::FSPR8) == SUCCESS)
 				{
 				sNumAlphaLayersLoaded++;
 				}
@@ -1089,7 +1074,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			// Make opaque layer name.
 			sprintf(szFileName, "%s%02do.say", szBasePath, lIndex);
 			// Load & convert . . .
-         if (SpryLoadConv(&(m_pRealm->m_resmgr), m_apspryOpaques + lIndex, szFileName, RImage::FSPR8) == SUCCESS)
+         if (SpryLoadConv(&(realm()->m_resmgr), m_apspryOpaques + lIndex, szFileName, RImage::FSPR8) == SUCCESS)
 				{
 				sNumOpaqueLayersLoaded++;
 				}
@@ -1111,7 +1096,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 		// Load new multi layer attribute maps
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr), 
+			&(realm()->m_resmgr), 
 			szFileName,
          &m_pTerrainMap) != SUCCESS)
 			{
@@ -1123,7 +1108,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 		sprintf(szFileName, "%s.mp2", szBasePath);
 
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pLayerMap) != SUCCESS)
 			{
@@ -1136,7 +1121,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 		// Make XRay mask name.
 		sprintf(szFileName, "%s.XRayMask.bmp", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimXRayMask) != SUCCESS)
 			{
@@ -1146,7 +1131,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 		sprintf(szFileName, "%s.Transparency.MultiAlpha", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pmaTransparency) != SUCCESS)
 			{
@@ -1156,7 +1141,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 		sprintf(szFileName, "%s.Ambient.alpha", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pltAmbient) != SUCCESS)
 			{
@@ -1166,7 +1151,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 		sprintf(szFileName, "%s.Spot.alpha", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pltSpot) != SUCCESS)
 			{
@@ -1177,7 +1162,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 		// Load all the assets for the toolbar
 		sprintf(szFileName, "%s.emptybar.bmp", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimEmptyBar) != SUCCESS)
 			{
@@ -1186,7 +1171,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			}
 		sprintf(szFileName, "%s.emptybarselected.bmp", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimEmptyBarSelected) != SUCCESS)
 			{
@@ -1195,7 +1180,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			}
 		sprintf(szFileName, "%s.fullbar.bmp", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimFullBar) != SUCCESS)
 			{
@@ -1204,7 +1189,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			}
 		sprintf(szFileName, "%s.fullbarselected.bmp", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimFullBarSelected) != SUCCESS)
 			{
@@ -1213,7 +1198,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 			}
 		sprintf(szFileName, "%s.topbar.bmp", szBasePath);
 		if (rspGetResource(
-			&(m_pRealm->m_resmgr),
+			&(realm()->m_resmgr),
 			szFileName,
          &m_pimTopBar) != SUCCESS)
 			{
@@ -1249,7 +1234,7 @@ int16_t CHood::GetResources(void)						// Returns 0 if successfull, non-zero oth
 Error:
 
 	// Close SAK, if open.
-	m_pRealm->m_resmgr.CloseSak();
+	realm()->m_resmgr.CloseSak();
 
 	return sResult;
 	}
@@ -1268,60 +1253,60 @@ int16_t CHood::FreeResources(void)						// Returns 0 if successfull, non-zero ot
 	// regardless of whether or not the resource was actually loaded.
 	
 	if (m_pimBackground != nullptr)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimBackground);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimBackground);
 
 	int32_t	lIndex;
 	for (lIndex	= 0; lIndex < MaxLayers; lIndex++)
 		{
 		if (m_apspryAlphas[lIndex] != nullptr)
-			rspReleaseResource(&(m_pRealm->m_resmgr), &(m_apspryAlphas[lIndex]));
+			rspReleaseResource(&(realm()->m_resmgr), &(m_apspryAlphas[lIndex]));
 
 		if (m_apspryOpaques[lIndex] != nullptr)
-			rspReleaseResource(&(m_pRealm->m_resmgr), &(m_apspryOpaques[lIndex]));
+			rspReleaseResource(&(realm()->m_resmgr), &(m_apspryOpaques[lIndex]));
 		}
 
 	if (m_pTerrainMap != nullptr)
 		{
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pTerrainMap);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pTerrainMap);
 		// Clear Realm's map ptr
-		m_pRealm->m_pTerrainMap = nullptr;
+		realm()->m_pTerrainMap = nullptr;
 		}
 
 	if (m_pLayerMap != nullptr)
 		{
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pLayerMap);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pLayerMap);
 		// Clear Realm's map ptr
-		m_pRealm->m_pLayerMap = nullptr;
+		realm()->m_pLayerMap = nullptr;
 		}
 
 	if (m_pimXRayMask != nullptr)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimXRayMask);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimXRayMask);
 
 	if (m_pmaTransparency != nullptr)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pmaTransparency);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pmaTransparency);
 
 	if (m_pltAmbient != nullptr)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pltAmbient);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pltAmbient);
 
 	if (m_pltSpot != nullptr)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pltSpot);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pltSpot);
 
 	if (m_pimEmptyBar)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimEmptyBar);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimEmptyBar);
 	if (m_pimEmptyBarSelected)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimEmptyBarSelected);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimEmptyBarSelected);
 	if (m_pimFullBar)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimFullBar);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimFullBar);
 	if (m_pimFullBarSelected)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimFullBarSelected);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimFullBarSelected);
 	if (m_pimTopBar)
-		rspReleaseResource(&(m_pRealm->m_resmgr), &m_pimTopBar);
+		rspReleaseResource(&(realm()->m_resmgr), &m_pimTopBar);
 
 	// Resources no longer exist for sure.
 	m_bResourcesExist = false;
 
 	// Let's get these out of memory right away.
-	m_pRealm->m_resmgr.Purge();
+	realm()->m_resmgr.Purge();
 
 	return sResult;
 	}

@@ -92,13 +92,13 @@ class CNapalm : public CWeapon
    public:
       CNapalm(void)
 			{
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			}
 
       ~CNapalm(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();

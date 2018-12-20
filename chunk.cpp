@@ -115,7 +115,7 @@ void CChunk::Resume(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CChunk::Update(void)
 	{
-	int32_t	lCurTime		= m_pRealm->m_time.GetGameTime();
+	int32_t	lCurTime		= realm()->m_time.GetGameTime();
 
 	double	dSeconds	= (lCurTime - m_lPrevTime) / 1000.0;
 	m_lPrevTime			= lCurTime;
@@ -131,7 +131,7 @@ void CChunk::Update(void)
 	m_dY					+= (m_dVertVel - dVertDeltaVel / 2) * dSeconds;
 
 	// If we have hit terrain . . .
-	if (m_pRealm->GetHeight(m_dX, m_dZ) >= m_dY)
+	if (realm()->GetHeight(m_dX, m_dZ) >= m_dY)
 		{
 		int16_t	sX2d, sY2d;
 		// Map from 3d to 2d coords.
@@ -142,7 +142,7 @@ void CChunk::Update(void)
         UNHANDLED_SWITCH;
          case Blood:
 				{
-				RImage*	pim	= m_pRealm->m_phood->m_pimBackground;
+            RImage*	pim	= realm()->Hood()->m_pimBackground;
 
 				if (	sX2d >= 0 && sY2d >= 0 
 					&&	sX2d < pim->m_sWidth
@@ -153,7 +153,7 @@ void CChunk::Update(void)
 					
 					*pu8Dst	= rspBlendColor(						// Alpha color/index.
 						ALPHA_LEVEL,									// Alpha level.
-						m_pRealm->m_phood->m_pmaTransparency,	// Multialpha.
+                  realm()->Hood()->m_pmaTransparency,	// Multialpha.
 						m_sprite.m_u8Color,							// Src color/index to blend.
 						*pu8Dst);										// Dst color/index to blend.
 					}
@@ -166,13 +166,13 @@ void CChunk::Update(void)
 #if 0	// Looks bad.
             rspPlot<uint8_t>(
                251,
-					m_pRealm->m_phood->m_pimBackground,
+               realm()->Hood()->m_pimBackground,
 					sX2d, 
 					sY2d);
 
 				rspLine(
 					m_sprite.m_u8Color,
-					m_pRealm->m_phood->m_pimBackground,
+               realm()->Hood()->m_pimBackground,
 					sX2d, 
 					sY2d,
 					sX2d + RAND_SWAY(BLOOD_SWAY),
@@ -202,10 +202,10 @@ void CChunk::Render(void)
 	m_sprite.m_sPriority = m_dZ;
 	
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+   realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 
 
@@ -254,7 +254,7 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 		m_dVertVel	+= RAND_SWAY(sRandVertVelSway);
 		}
 
-	m_lPrevTime	= m_pRealm->m_time.GetGameTime();
+	m_lPrevTime	= realm()->m_time.GetGameTime();
 
 	m_type		= type;
 

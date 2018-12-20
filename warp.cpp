@@ -44,7 +44,7 @@
 //		06/30/97	JMI	Now maps the Z to 3D when loading fileversions previous to
 //							24.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/19/97	JMI	Added m_sRotY, the dude's initial rotation around the Y
@@ -64,7 +64,7 @@
 //							CDude::SetPosition().
 //
 //		08/14/97	JMI	Switched references to g_GameSettings.m_sDifficulty to
-//							m_pRealm->m_flags.sDifficulty.
+//							realm()->m_flags.sDifficulty.
 //
 //		09/30/97	JMI	Filled in empty fields in ms_stockpile.  Although it is
 //							not necessary b/c of the implicit filescope zero init,
@@ -207,7 +207,7 @@ int16_t CWarp::Load(								// Returns 0 if successfull, non-zero otherwise
 		if (ulFileVersion < 24)
 			{
 			// Convert to 3D.
-			m_pRealm->MapY2DtoZ3D(
+			realm()->MapY2DtoZ3D(
 				m_dZ,
 				&m_dZ);
 			}
@@ -268,15 +268,6 @@ int16_t CWarp::Save(										// Returns 0 if successfull, non-zero otherwise
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CWarp::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CWarp::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
 	{
    return SUCCESS;
 	}
@@ -467,10 +458,10 @@ void CWarp::EditRender(void)
 	m_sprite.m_sY2	-= m_sprite.m_pImage->m_sHeight;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+   realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 #endif // !defined(EDITOR_REMOVED)
 
@@ -496,7 +487,7 @@ int16_t CWarp::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 	sResult	= rspGetResource(
 		&g_resmgrGame, 
-		m_pRealm->Make2dResPath(WARP_IMAGE_FILENAME),
+		realm()->Make2dResPath(WARP_IMAGE_FILENAME),
 		&m_sprite.m_pImage);
 
 	return sResult;
@@ -524,7 +515,7 @@ int16_t CWarp::FreeResources(void)						// Returns 0 if successfull, non-zero ot
 // function or allocated by this function.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CWarp::WarpIn(	// Returns 0 on success.
-	CDude**	ppdude,	// In:  CDude to 'warp in', *ppdude = nullptr to create one.
+   managed_ptr<CDude>& ppdude,	// In:  CDude to 'warp in', *ppdude = nullptr to create one.
 							// Out: Newly created CDude, if no CDude passed in.
 	int16_t	sOptions)	// In:  Options for 'warp in'.
 	{
@@ -532,7 +523,7 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 
 	// If we are on difficulty 11, multiply the dude's hit points by 10 so that
 	// the player can have some chance of playing.
-	if (m_pRealm->m_flags.sDifficulty == 11)
+	if (realm()->m_flags.sDifficulty == 11)
 	{
 		ms_stockpile.m_sHitPoints *= 10;
 		if (ms_stockpile.m_sHitPoints < 0)
@@ -542,37 +533,37 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 	// If we are playing multiplayer deathmatch, then set the hitpoints to the
 	// default deathmatch amount so that it is easier to kill each other 
 	// and thus more fun.
-	if (m_pRealm->m_flags.bMultiplayer == true && m_pRealm->m_flags.bCoopMode == false)
+	if (realm()->m_flags.bMultiplayer == true && realm()->m_flags.bCoopMode == false)
 	{
 		ms_stockpile.m_sHitPoints = WARP_DEATHMATCH_DEFAULT_HP;
 	}
 
 	// If no dude passed . . .
-	if (*ppdude == nullptr)
+   if (!ppdude)
 		{
-         *ppdude = static_cast<CDude*>(realm()->makeTypeWithID(CDudeID));
-         if (*ppdude != nullptr)
+         ppdude = realm()->AddThing<CDude>();
+         if (ppdude)
 			{
 			// Copy stockpile to new CDude.
-			(*ppdude)->m_stockpile.Copy(&ms_stockpile);
+         ppdude->m_stockpile.Copy(&ms_stockpile);
 			// Initialize.
-			sResult	= (*ppdude)->Init();
+         sResult	= ppdude->Init();
 			if (sResult == SUCCESS)
 				{
 				// Start up.
-				sResult	= (*ppdude)->Startup();
+            sResult	= ppdude->Startup();
 				if (sResult == SUCCESS)
 					{
 					// Successfully created and setup CDude.
 					}
 				else
 					{
-					TRACE("WarpIn(): (*ppdude)->Startup() failed.\n");
+               TRACE("WarpIn(): ppdude->Startup() failed.\n");
 					}
 				}
 			else
 				{
-				TRACE("WarpIn(): (*ppdude)->Init() failed.\n");
+            TRACE("WarpIn(): ppdude->Init() failed.\n");
 				}
 			}
 		else
@@ -586,15 +577,15 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 			{
 			case CopyStockPile:
 				// Copy stockpile to CDude.
-				(*ppdude)->m_stockpile.Copy(&ms_stockpile);
+            ppdude->m_stockpile.Copy(&ms_stockpile);
 				break;
 			case UnionStockPile:
 				// Union stockpile with CDude.
-				(*ppdude)->m_stockpile.Union(&ms_stockpile);
+            ppdude->m_stockpile.Union(&ms_stockpile);
 				break;
 			case AddStockPile:
 				// Add stockpile to CDude.
-				(*ppdude)->m_stockpile.Add(&ms_stockpile);
+            ppdude->m_stockpile.Add(&ms_stockpile);
 				break;
 			}
 		}
@@ -603,18 +594,18 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 	if (sResult == SUCCESS)
 		{
 		// Truncate to amount he can carry.
-		(*ppdude)->m_stockpile.Truncate();
+      ppdude->m_stockpile.Truncate();
 
-		if ((*ppdude)->m_stockpile.m_sHitPoints > 0)
+      if (ppdude->m_stockpile.m_sHitPoints > 0)
 			{
 			// Base original hitpoints upon new settings.
-			(*ppdude)->m_sOrigHitPoints	= (*ppdude)->m_stockpile.m_sHitPoints;
+         ppdude->m_sOrigHitPoints	= ppdude->m_stockpile.m_sHitPoints;
 			}
 
 		// Place.
-		(*ppdude)->SetPosition(m_dX, m_dY, m_dZ);
+      ppdude->SetPosition(m_dX, m_dY, m_dZ);
 		// Orient.
-		(*ppdude)->m_dRot	= m_sRotY;
+      ppdude->m_dRot	= m_sRotY;
 		}
 
 	return sResult;
@@ -627,33 +618,31 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CWarp::WarpInAnywhere(	// Returns 0 on success.
 	CRealm*	prealm,				// In:  Realm in which to choose CWarp.
-	CDude**	ppdude,				// In:  CDude to 'warp in', *ppdude = nullptr to create one.
+   managed_ptr<CDude>&	ppdude,				// In:  CDude to 'warp in', *ppdude = nullptr to create one.
 										// Out: Newly created CDude, if no CDude passed in.
 	int16_t	sOptions)				// In:  Options for 'warp in'.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
 	// Find a warp:
-	
-	int16_t	sNumWarps	= prealm->m_asClassNumThings[CWarpID];
-	if (sNumWarps > 0)
+
+   std::list<managed_ptr<CThing>> list = prealm->GetThingsByType(CWarpID);
+   if (!list.empty())
 		{
 		// Pick a random warp number.
-		int16_t	sWarpNum	= GetRand() % sNumWarps;
+      int16_t	sWarpNum	= GetRand() % list.size();
 		// Find that warp.
-		int16_t	i;
-		CListNode<CThing>*	pln		= prealm->m_aclassHeads[CWarpID].m_pnNext;
-		CListNode<CThing>*	plnTail	= &(prealm->m_aclassTails[CWarpID]);
-		for (i = 0; i < sWarpNum && pln != plnTail; i++, pln = pln->m_pnNext)
-			;
+
+      auto iter = list.begin();
+      auto end = list.end();
+      int16_t pos = 0;
+      while(pos < sWarpNum && iter != end) { ++pos, ++iter; }
 	
 		// If we found one . . .
-		if (pln != plnTail)
-			{
-			ASSERT(pln->m_powner != nullptr);
-
+      if (iter != end)
+         {
 			// Do it.
-         sResult	= static_cast<CWarp*>(pln->m_powner)->WarpIn(ppdude, sOptions);
+         sResult	= managed_ptr<CWarp>(*iter)->WarpIn(ppdude, sOptions);
 			}
 		else
 			{
@@ -676,29 +665,29 @@ int16_t CWarp::WarpInAnywhere(	// Returns 0 on success.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CWarp::CreateWarpFromDude(	// Returns 0 on success.
 	CRealm*	prealm,					// In:  Realm in which to choose CWarp.
-	CDude*	pdude,					// In:  Dude to create warp from.
-	CWarp**	ppwarp,					// Out: New warp on success.
+   managed_ptr<CDude> pdude,					// In:  Dude to create warp from.
+   managed_ptr<CWarp>&	ppwarp,					// Out: New warp on success.
 	bool		bCopyStockPile)		// In:  true to copy stockpile, false otherwise.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
 	// Create warp . . .
 
-   *ppwarp = static_cast<CWarp*>(prealm->makeTypeWithID(CWarpID));
-   if (*ppwarp != nullptr)
+   ppwarp = prealm->AddThing<CWarp>();
+   if (ppwarp)
 		{
 		// Copy dude's position and orientation.
-		(*ppwarp)->m_dX		= pdude->m_dX;
-		(*ppwarp)->m_dY		= pdude->m_dY;
-		(*ppwarp)->m_dZ		= pdude->m_dZ;
-		(*ppwarp)->m_sRotY	= pdude->m_dRot;
+      ppwarp->m_dX		= pdude->m_dX;
+      ppwarp->m_dY		= pdude->m_dY;
+      ppwarp->m_dZ		= pdude->m_dZ;
+      ppwarp->m_sRotY	= pdude->m_dRot;
 
 		if (bCopyStockPile == true)
 			{
 			// Copy dude's stockpile.
 			// Note that this is static member of warp so this only needs to be for
 			// one, but the question is which one.
-			(*ppwarp)->ms_stockpile.Copy( &(pdude->m_stockpile) );
+         ppwarp->ms_stockpile.Copy( &(pdude->m_stockpile) );
 			}
 		}
 	else

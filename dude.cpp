@@ -71,7 +71,7 @@
 //
 //		02/17/97	JMI	Now uses actual standing anim for standing state.
 //							Changed resource filenames to not use two '.'s.
-//							Now uses new m_pRealm->m_scene.TransformPtsToRealm() func
+//							Now uses new realm()->Scene()->TransformPtsToRealm() func
 //							to get relative position of grenade on release.
 //							For the mapping from 3D to 2D, now does not take radius
 //							into account b/c the scene actually draws relative to the
@@ -593,7 +593,7 @@
 //		06/12/97	JMI	Made launch and throw anims use the events to show and
 //							release weapons.
 //							Now registers suicide death with Score module (but will
-//							probably have to add m_pRealm as a parm once that accepts
+//							probably have to add realm() as a parm once that accepts
 //							it).
 //							Now napalm launches from the missile launcher.
 //							Also, re-enabled idle animation.
@@ -743,7 +743,7 @@
 //		07/09/97	JMI	Changed MAX_STEPUP_THRESHOLD to use CThing3d's macro enum
 //							MaxStepUpThreshold.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/10/97	JMI	Now uses "lfhand" for main rigid body for pick put anim.
@@ -751,7 +751,7 @@
 //		07/10/97	JMI	Changed names of loaded textures from "main_color%02d" to
 //							"main_%d".  Also, now it's zero based instead of 1 based.
 //
-//		07/12/97	JMI	Now m_pRealm->m_bMultiplayer must be true in order to
+//		07/12/97	JMI	Now realm()->m_bMultiplayer must be true in order to
 //							Revive() a CDude.
 //
 //		07/13/97	JMI	Set ms_dAccUser and ms_dAccDrag to 1000.0 each so the Dude
@@ -912,8 +912,8 @@
 //		08/04/97	JMI	Now uses Jeff's rspDegDelta() to better determine which
 //							direction to turn when executing.
 //
-//		08/05/97	JMI	Changed reference of m_pRealm->m_bMultiplayer to 
-//							m_pRealm->m_flags.bMultiplayer.
+//		08/05/97	JMI	Changed reference of realm()->m_bMultiplayer to
+//							realm()->m_flags.bMultiplayer.
 //							Changed "rthand" to "gun" for right hand rigid body trans-
 //							form.
 //
@@ -983,7 +983,7 @@
 //							setting in multiplayer mode.
 //
 //		08/14/97	JMI	Switched references to g_GameSettings.m_sDifficulty to
-//							m_pRealm->m_flags.sDifficulty.
+//							realm()->m_flags.sDifficulty.
 //
 //		08/14/97 BRH	Added static collision bits to be passed as the default
 //							bits for weapons that the dude shoots.  The default
@@ -1296,8 +1296,8 @@ extern bool GetDudeFireAngle(double* d_Angle);
 #define BACKPACK_RES_NAME					"3d/backpack"
 
 #define COLLISION_BITS_INCLUDE		(ms_u32CollideBitsInclude)
-#define COLLISION_BITS_DONTCARE		(ms_u32CollideBitsDontcare | (m_pRealm->m_flags.bCoopMode ? 0 : CSmash::Good) )
-#define COLLISION_BITS_EXCLUDE		(ms_u32CollideBitsExclude | (m_pRealm->m_flags.bCoopMode ? CSmash::Good : 0) )
+#define COLLISION_BITS_DONTCARE		(ms_u32CollideBitsDontcare | (realm()->m_flags.bCoopMode ? 0 : CSmash::Good) )
+#define COLLISION_BITS_EXCLUDE		(ms_u32CollideBitsExclude | (realm()->m_flags.bCoopMode ? CSmash::Good : 0) )
 
 ////////////////////////////////////////////////////////////////////////////////
 // Variables/data
@@ -1622,13 +1622,9 @@ CDude::CDude(void)
 	m_lLastShotTime	= 0;
 	m_lLastYellTime	= 0;
 
-	m_u16IdChild		= CIdBank::IdNil;
-
 	m_sTextureIndex	= 0;
 
-	m_u8LastEvent		= 0;
-
-	m_idVictim			= CIdBank::IdNil;
+   m_u8LastEvent		= 0;
 
 	m_bDead				= false;
 
@@ -1636,10 +1632,10 @@ CDude::CDude(void)
 
 	// Base the dude number of the number of dude's in the realm.  Note that
 	// this number already includes this dude, so we subtract 1 from so the
-	// assigned dude numbers will start at 0.
-	ASSERT(m_pRealm->m_asClassNumThings[CDudeID] > 0);
-	m_sDudeNum = m_pRealm->m_asClassNumThings[CDudeID] - 1;
-	}
+   // assigned dude numbers will start at 0.
+   ASSERT(!realm()->GetThingsByType(CDudeID).empty());
+   m_sDudeNum = realm()->GetThingsByType(CDudeID).size() - 1;
+   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
@@ -1795,22 +1791,12 @@ int16_t CDude::Startup(void)						// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult	= CCharacter::Startup();
 	
 	// Init other stuff
-	m_lNextBulletTime = m_pRealm->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
+   m_lNextBulletTime = realm()->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
 
 	// Set start position for crawler verification.
 	m_dLastCrawledToPosX	= m_dX; 
 	m_dLastCrawledToPosZ	= m_dZ; 
 
-	return sResult;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CDude::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult	= CCharacter::Shutdown();
 	return sResult;
 	}
 
@@ -1822,7 +1808,7 @@ void CDude::Suspend(void)
 	if (m_sSuspend == 0)
 		{
 		// Store current delta so we can restore it.
-		int32_t	lCurTime		= m_pRealm->m_time.GetGameTime();
+      int32_t	lCurTime		= realm()->m_time.GetGameTime();
 		m_lNextBulletTime	= lCurTime - m_lNextBulletTime;
 		}
 
@@ -1838,7 +1824,7 @@ void CDude::Resume(void)
 
 	if (m_sSuspend == 0)
 		{
-		int32_t	lCurTime		= m_pRealm->m_time.GetGameTime();
+      int32_t	lCurTime		= realm()->m_time.GetGameTime();
 		m_lNextBulletTime	= lCurTime - m_lNextBulletTime;
 		}
 	}
@@ -1852,7 +1838,7 @@ void CDude::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-      milliseconds_t lThisTime = m_pRealm->m_time.GetGameTime();
+      milliseconds_t lThisTime = realm()->m_time.GetGameTime();
 
 		// Advance the animation timer.
       milliseconds_t	lDifTime		= lThisTime - m_lAnimPrevUpdateTime;
@@ -2071,14 +2057,13 @@ void CDude::Update(void)
             uint8_t u8Event = m_panimCur->m_pevent->atTime(m_lAnimTime);
 				// Check for release point in animation . . .
 				if (u8Event > 0)
-					{
-					CWeapon*	pweapon;
-               if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
+               {
+               if (child())
 						{
-						if (pweapon->m_eState == CWeapon::State_Hide)
+                  if (weapon()->m_eState == CWeapon::State_Hide)
 							{
 							// Unhide grenade.
-							pweapon->m_eState = CWeapon::State_Idle;
+                     weapon()->m_eState = CWeapon::State_Idle;
 							}
 						else if (u8Event > 1)
 							{
@@ -2255,7 +2240,8 @@ void CDude::Update(void)
 					m_bBrainSplatted	= true;
 
 					// Register the kill.
-					ScoreRegisterKill(m_pRealm, GetInstanceID(), m_u16InstanceId);
+               auto self = this;
+               ScoreRegisterKill(realm(), self, self);
 
 					// Note that he's dead
 					m_bDead = true;
@@ -2291,14 +2277,12 @@ void CDude::Update(void)
 				// Play step noise if event has changed.
 				PlayStep();
 
-				CThing*	pthingFire;
 				// If the fire's gone . . .
-            if (m_pRealm->m_idbank.GetThingByID(&pthingFire, m_u16IdFire) == SUCCESS)
-					{
-					if (!((CFire*) (pthingFire))->IsBurning())
-					// Stand.
-					SetState(State_Stand);
-					}
+            if (m_fire)
+            {
+               if (!m_fire->IsBurning())
+                 SetState(State_Stand);
+            }
 					else
 					{
 					// Stand.
@@ -2312,14 +2296,13 @@ void CDude::Update(void)
             uint8_t u8Event = *m_panimCur->m_pevent->atTime(m_lAnimTime);
 				// Check for launch point in animation . . .
 				if (u8Event > 0)
-					{
-					CWeapon*	pweapon;
-               if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS)
+               {
+               if (child())
 						{
-						if (pweapon->m_eState == CWeapon::State_Hide)
+                  if (weapon()->m_eState == CWeapon::State_Hide)
 							{
 							// Unhide missile.
-							pweapon->m_eState = CWeapon::State_Idle;
+                     weapon()->m_eState = CWeapon::State_Idle;
 							}
 						else if (u8Event > 1)
 							{
@@ -2460,7 +2443,7 @@ void CDude::Update(void)
 					// Check for drop point in animation . . .
 					if (u8Event > 1)
 						{
-						if (m_u16IdWeapon != CIdBank::IdNil)
+                  if (weapon())
 							{
 							ShootWeapon();
 							}
@@ -2487,16 +2470,16 @@ void CDude::Update(void)
 				break;
 			case State_PickUp:
 				{
-				CPowerUp*	ppowerup;
+            managed_ptr<CPowerUp> ppowerup;
 				// Check for end of anim . . .
             if (m_lAnimTime > m_panimCur->m_psops->totalTime)
 					{
 					// If we still have the picked up item . . .
-               if (m_pRealm->m_idbank.GetThingByID((CThing**)&ppowerup, m_u16IdChild) == SUCCESS)
-						{
-						TakePowerUp(&ppowerup);
+               if (child())
+                  {
+                  TakePowerUp(child());
 
-						m_u16IdChild	= CIdBank::IdNil;
+                  resetChild();
 						}
 
 					// Go to last persistent state.  Usually stand.
@@ -2506,31 +2489,32 @@ void CDude::Update(void)
 					{
 					// This should be QuickCheckClosest, when available . . .
 					CSmash*	psmash	= nullptr;	// Safety.
-					if (m_pRealm->m_smashatorium.QuickCheck(	// Returns true if collision detected, false otherwise
+               if (realm()->m_smashatorium.QuickCheck(	// Returns true if collision detected, false otherwise
 						&m_smash,										// In:  CSmash to check
 						CSmash::PowerUp,								// In:  Bits that must be 1 to collide with a given CSmash
 						0,													// In:  Bits that you don't care about
 						0,													// In:  Bits that must be 0 to collide with a given CSmash
 						&psmash) == true)								// Out: Thing being smashed into if any (unless 0)
 						{
-						ASSERT(psmash->m_pThing != nullptr);
+                  ASSERT(psmash->m_pThing);
 
 						// Make it blit as a child.
-						ASSERT(psmash->m_pThing->GetClassID() == CPowerUpID);
-						ppowerup	= (CPowerUp*)psmash->m_pThing;
+                  ASSERT(psmash->m_pThing->type() == CPowerUpID);
+                  ppowerup	= psmash->m_pThing;
                   if (ppowerup->Grab(&m_sprite) == SUCCESS)
 							{
 							// Store/Identify child.
-							m_u16IdChild	= ppowerup->GetInstanceID();
+                     setChild(ppowerup);
 							}
 
 						// Note we already did this.
 						m_bGenericEvent1	= true;
 						}
 					}
-            else if (m_pRealm->m_idbank.GetThingByID((CThing**)&ppowerup, m_u16IdChild) == SUCCESS)
+            else if (ppowerup)
 					{
-					// Position powerup.
+               setChild(ppowerup);
+              // Position powerup.
 					PositionChild(
 						&(ppowerup->m_sprite),	// In:  Child sprite to detach.
                   &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying position.
@@ -2551,26 +2535,26 @@ void CDude::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+      realm()->m_smashatorium.Update(&m_smash);
 
 		// Check for powerups.
 		CSmash*	psmash	= nullptr;	// Safety.
-		if (m_pRealm->m_smashatorium.QuickCheck(	// Returns true if collision detected, false otherwise
+      if (realm()->m_smashatorium.QuickCheck(	// Returns true if collision detected, false otherwise
 			&m_smash,										// In:  CSmash to check
 			CSmash::PowerUp,								// In:  Bits that must be 1 to collide with a given CSmash
 			0,													// In:  Bits that you don't care about
 			0,													// In:  Bits that must be 0 to collide with a given CSmash
 			&psmash) == true)								// Out: Thing being smashed into if any (unless 0)
 			{
-			ASSERT(psmash->m_pThing != nullptr);
-			ASSERT(psmash->m_pThing->GetClassID() == CPowerUpID);
+         ASSERT(psmash->m_pThing);
+         ASSERT(psmash->m_pThing->type() == CPowerUpID);
 
-			CPowerUp* ppowerup	= (CPowerUp*)psmash->m_pThing;
+         managed_ptr<CPowerUp> ppowerup	= psmash->m_pThing;
 
 			// If we're not dead or the powerup contains health . . .
 			if (m_bDead == false || ppowerup->m_stockpile.m_sHitPoints > 0)
 				{
-				TakePowerUp(&ppowerup);
+            TakePowerUp(ppowerup);
 				}
 			}
 
@@ -2748,7 +2732,7 @@ if (!demoCompat)
          CStockPile	stockpile	= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sHitPoints	= MAX(0, m_sOrigHitPoints - m_stockpile.m_sHitPoints);
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 			break;
 			}
 		case INPUT_CHEAT_12:	// Full kevlar.
@@ -2756,7 +2740,7 @@ if (!demoCompat)
          CStockPile	stockpile		= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sKevlarLayers	= CStockPile::ms_stockpileBackPackMax.m_sKevlarLayers;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 			break;
 			}
 		case INPUT_CHEAT_13:	// Backpack.
@@ -2764,7 +2748,7 @@ if (!demoCompat)
          CStockPile	stockpile	= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sBackpack	= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 			break;
 			}
 		case INPUT_CHEAT_14:	// Full weaponry, full ammo, backpack, and full kevlar.
@@ -2793,7 +2777,7 @@ if (!demoCompat)
 
 			stockpile.m_sBackpack			= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 			break;
 			}
 		case INPUT_CHEAT_15:	// Revive.
@@ -2806,9 +2790,9 @@ if (!demoCompat)
 			GameMessage msg;
 			msg.msg_Cheater.eType = typeCheater;
 			msg.msg_Cheater.sPriority = 0;
-			CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-			if (pDemon)
-				SendThingMessage(&msg, pDemon);				
+         auto list = realm()->GetThingsByType(CDemonID);
+         if (!list.empty())
+            SendThingMessage(msg, list.front());
 			break;
 			}
 		case INPUT_CHEAT_16:	// DeathWadLauncher and ammo.
@@ -2820,7 +2804,7 @@ if (!demoCompat)
 			stockpile.m_sNumFuel				= CStockPile::ms_stockpileBackPackMax.m_sNumFuel;
 			stockpile.m_sDeathWadLauncher	= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			// Enable death wad launcher in editor as well.
 			CStockPile::ms_sEnableDeathWad	= TRUE;
@@ -2832,7 +2816,7 @@ if (!demoCompat)
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sDoubleBarrel		= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			// Enable Double Barrel in editor as well.
 			CStockPile::ms_sEnableDoubleBarrel	= TRUE;
@@ -2844,10 +2828,10 @@ if (!demoCompat)
 			Flag_Achievements |= FLAG_USED_CHEATS;
 
 			// Modify hood's scale.
-			m_pRealm->m_phood->m_dScale3d -= 0.10;
+         realm()->Hood()->m_dScale3d -= 0.10;
 
 			// Let the hood setup the pipeline. 
-			m_pRealm->m_phood->SetupPipeline();
+         realm()->Hood()->SetupPipeline();
 
 			break;
 			}
@@ -2858,7 +2842,7 @@ if (!demoCompat)
 			stockpile.m_sShotGun				= 1;
 			stockpile.m_sSprayCannon		= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2870,7 +2854,7 @@ if (!demoCompat)
 			stockpile.m_sNumHeatseekers	= CStockPile::ms_stockpileBackPackMax.m_sNumHeatseekers;
 			stockpile.m_sMissileLauncher	= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2883,7 +2867,7 @@ if (!demoCompat)
 			stockpile.m_sNapalmLauncher	= 1;
 			stockpile.m_sFlameThrower		= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2893,7 +2877,7 @@ if (!demoCompat)
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sShotGun				= 1;
 			
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2903,7 +2887,7 @@ if (!demoCompat)
 			stockpile.m_sNumShells			= CStockPile::ms_stockpileBackPackMax.m_sNumShells;
 			stockpile.m_sSprayCannon		= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2913,7 +2897,7 @@ if (!demoCompat)
 			stockpile.m_sNumGrenades		= CStockPile::ms_stockpileBackPackMax.m_sNumGrenades;
 			stockpile.m_sNumFireBombs		= CStockPile::ms_stockpileBackPackMax.m_sNumFireBombs;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2924,7 +2908,7 @@ if (!demoCompat)
 			stockpile.m_sNumHeatseekers	= CStockPile::ms_stockpileBackPackMax.m_sNumHeatseekers;
 			stockpile.m_sMissileLauncher	= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2934,7 +2918,7 @@ if (!demoCompat)
 			stockpile.m_sNumNapalms			= CStockPile::ms_stockpileBackPackMax.m_sNumNapalms;
 			stockpile.m_sNapalmLauncher	= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2944,7 +2928,7 @@ if (!demoCompat)
 			stockpile.m_sNumFuel				= CStockPile::ms_stockpileBackPackMax.m_sNumFuel;
 			stockpile.m_sFlameThrower		= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2953,7 +2937,7 @@ if (!demoCompat)
          CStockPile	stockpile			= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			stockpile.m_sNumMines			= CStockPile::ms_stockpileBackPackMax.m_sNumMines;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			break;
 			}
@@ -2984,7 +2968,7 @@ if (!demoCompat)
 
 			stockpile.m_sBackpack			= 1;
 
-			CreateCheat(&stockpile);
+         CreateCheat(stockpile);
 
 			// Also, make invincible.
 			m_bInvincible							= true;
@@ -3470,9 +3454,9 @@ else
 		// (it is created by the user in the editor parallel with the
 		// screen).
 		double	dTriggerY;
-		m_pRealm->MapZ3DtoY2D(m_dZ, &dTriggerY);
+      realm()->MapZ3DtoY2D(m_dZ, &dTriggerY);
 		// Spew triggers.
-		SpewTriggers(m_pRealm, GetInstanceID(), m_dX, dTriggerY);
+      SpewTriggers(realm(), GetInstanceID(), m_dX, dTriggerY);
 
 		UpdateFirePosition();
 		}
@@ -3660,7 +3644,7 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 	{
 	int16_t sResult = SUCCESS;
 
-	m_lPrevTime			= m_pRealm->m_time.GetGameTime();
+   m_lPrevTime			= realm()->m_time.GetGameTime();
 	m_lNextBulletTime	= m_lPrevTime;
 	
 	// Get resources
@@ -3673,7 +3657,7 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 	SetState(State_Stand);
 
 	m_smash.m_bits		= CSmash::Good | CSmash::Character;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	// No special flags.
 	m_sprite.m_sInFlags = 0;
@@ -3688,16 +3672,16 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 
 	// Setup weapon sprite.
 	m_spriteWeapon.m_sInFlags	= 0;
-	m_spriteWeapon.m_pthing		= this;
+//	m_spriteWeapon.m_pthing		= this;
 	m_sprite.AddChild(&m_spriteWeapon);
 
 	// Setup backpack sprite.
 	m_spriteBackpack.m_sInFlags	= 0;
-	m_spriteBackpack.m_pthing		= this;
+//	m_spriteBackpack.m_pthing		= this;
 	m_sprite.AddChild(&m_spriteBackpack);
 
 	// Setup our crawler.
-	m_crawler.m_prealm			= m_pRealm;
+   m_crawler.m_realm			= realm();
 	m_crawler.m_sVertTolerance	= MaxStepUpThreshold;
 	m_crawler.Setup(
 		sizeof(ms_anubs)/sizeof(ms_anubs[0]), 
@@ -3739,7 +3723,7 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 void CDude::Kill(void)
 	{
 	// Remove the target sprite, if there.
-	m_pRealm->m_scene.RemoveSprite(&m_TargetSprite);
+   realm()->Scene()->RemoveSprite(&m_TargetSprite);
 
 	// Free resources
 	FreeResources();
@@ -3796,7 +3780,7 @@ int16_t CDude::GetResources(void)						// Returns 0 if successfull, non-zero oth
 	sResult	|= m_animBackpack.Get(BACKPACK_RES_NAME, nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
 
 	// Get the targeting sprite
-	sResult |= rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(TARGETING_FILE), &(m_TargetSprite.m_pImage), RFile::LittleEndian);
+   sResult |= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(TARGETING_FILE), &(m_TargetSprite.m_pImage), RFile::LittleEndian);
 	
 	return sResult;
 	}
@@ -3970,7 +3954,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					break;
 				default:
 					// Check for minimum duration since last shot time . . .
-					if (m_pRealm->m_time.GetGameTime() < m_lLastShotTime + MIN_SHOT_DURATION)
+               if (realm()->m_time.GetGameTime() < m_lLastShotTime + MIN_SHOT_DURATION)
 						{
 						bRealizeNewState = false;
 						}
@@ -4095,27 +4079,24 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 						// Keep the fire.
 						}
 					else
-						{
-						// If there's a fire burning . . .
-						CThing*	pthingFire;
-                  if (m_pRealm->m_idbank.GetThingByID(&pthingFire, m_u16IdFire) == SUCCESS)
+                  {
+                  if (m_fire)
 							{
 							// Send it a delete message.
 							GameMessage	msg;
 							msg.msg_ObjectDelete.eType		= typeObjectDelete;
 							msg.msg_ObjectDelete.sPriority	= 0;
-							SendThingMessage(&msg, pthingFire);
+                     SendThingMessage(msg, m_fire);
 							}
 						}
 					}
 				break;
 			case State_PickUp:
 				{
-				// If there's a powerup that we haven't let go of . . .
-				CPowerUp*	ppowerup;
-            if (m_pRealm->m_idbank.GetThingByID((CThing**)&ppowerup, m_u16IdChild) == SUCCESS)
+            // If there's a powerup that we haven't let go of . . .
+            if (child())
 					{
-					ppowerup->Drop(m_dX, m_dY, m_dZ);
+              managed_ptr<CPowerUp>(child())->Drop(m_dX, m_dY, m_dZ);
 					}
 				break;
 				}
@@ -4126,18 +4107,17 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 			case State_PutDown:
 				{
 				// If there's a weapon that we haven't let go of . . .
-				CWeapon*	pweapon;
-            if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS && state != State_ThrowRelease)
+            if (child() && state != State_ThrowRelease)
 					{
 					// It should drop like a rock.
-					pweapon->m_dHorizVel	= (GetRand() % (int16_t)CGrenade::ms_dThrowHorizVel);	// NOTE:   ****USING RAND()****
-					pweapon->m_dRot	= GetRand() % 360;
+               weapon()->m_dHorizVel	= (GetRand() % (int16_t)CGrenade::ms_dThrowHorizVel);	// NOTE:   ****USING RAND()****
+               weapon()->m_dRot	= GetRand() % 360;
 					ShootWeapon();
 					// Delete it!
 					GameMessage msg;
 					msg.msg_ObjectDelete.eType = typeObjectDelete;
-					msg.msg_ObjectDelete.sPriority = 0;
-					SendThingMessage(&msg, pweapon);
+               msg.msg_ObjectDelete.sPriority = 0;
+               SendThingMessage(msg, child());
 					}
 				break;
 				}
@@ -4151,16 +4131,15 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 				{
 				// Abort weapon launch.
 				// If there's a weapon that we haven't launched . . .
-				CWeapon*	pweapon;
-            if (m_pRealm->m_idbank.GetThingByID((CThing**)&pweapon, m_u16IdWeapon) == SUCCESS && state != State_LaunchRelease)
+            if (child() && state != State_LaunchRelease)
 					{
 					// Done with it.
 					ShootWeapon();
 					// Delete it!
 					GameMessage msg;
 					msg.msg_ObjectDelete.eType = typeObjectDelete;
-					msg.msg_ObjectDelete.sPriority = 0;
-					SendThingMessage(&msg, pweapon);
+               msg.msg_ObjectDelete.sPriority = 0;
+               SendThingMessage(msg, child());
 					}
 
 				break;
@@ -4174,7 +4153,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					}
 				break;
 			case State_Execute:
-				m_idVictim	= CIdBank::IdNil;
+            m_victim.reset();
 				break;
 			}
 
@@ -4186,13 +4165,13 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
          case State_Idle:
 				m_panimCur	= nullptr;
 				// Make sure we're not in the render list.
-				m_pRealm->m_scene.RemoveSprite(&m_sprite);
+            realm()->Scene()->RemoveSprite(&m_sprite);
 				break;
 			case State_Stand:
 				m_statePersistent			= State_Stand;
 				m_panimCur					= &m_animStand;
 				m_lAnimTime					= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				m_lNextIdleTime			= IDLE_ANIM_TIMEOUT;
 				break;
 			case State_Run:
@@ -4200,7 +4179,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur			= &m_animRun;
 					m_lAnimTime			= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					
 					m_u8LastEvent		= 0;
 					}
@@ -4208,7 +4187,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 			case State_Throw:
 				m_panimCur			= &m_animThrow;
 				m_lAnimTime			= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				break;
 			case State_ThrowDone:
 				// This state is transitional only.
@@ -4223,7 +4202,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 			case State_Die:
 				m_panimCur			= &m_animDie;
 				m_lAnimTime			= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				// Ahhhhhhhhhh....
 				PlaySample(g_smidDyingYell, SampleMaster::Voices);
 
@@ -4246,11 +4225,11 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 				m_smash.m_bits	|= CSmash::Dead;
 
 				// If in multiplayer . . .
-				if (m_pRealm->m_flags.bMultiplayer == true)
+            if (realm()->m_flags.bMultiplayer == true)
 					{
 					// Drop powerup.
 					// Create powerup . . .
-					CPowerUp*	ppowerup	= DropPowerUp(&m_stockpile, true);
+               managed_ptr<CPowerUp> ppowerup = DropPowerUp(m_stockpile, true);
 					if (ppowerup)
 						{
 						// Clear my stockpile.
@@ -4268,7 +4247,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur			= &m_animShoot;
 					m_lAnimTime			= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					}
 				break;
 			case State_RunAndShoot:
@@ -4277,19 +4256,19 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur			= &m_animRunShoot;
 					m_lAnimTime			= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					m_u8LastEvent		= 0;
 					}
 				break;
 			case State_Shot:
 				m_panimCur			= &m_animDamage;
 				m_lAnimTime			= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				break;
 			case State_BlownUp:
 				m_panimCur					= &m_animBlownUp;
 				m_lAnimTime					= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				
 				m_bGenericEvent1			= false;
 				break;
@@ -4299,7 +4278,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur			= &m_animBurning;
 					m_lAnimTime			= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				
 					m_u8LastEvent		= 0;
 					}
@@ -4310,7 +4289,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur			= &m_animStrafe;
 					m_lAnimTime			= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				
 					m_u8LastEvent		= 0;
 					}
@@ -4321,7 +4300,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur			= &m_animStrafeShoot;
 					m_lAnimTime			= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				
 					m_u8LastEvent		= 0;
 					}
@@ -4333,7 +4312,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 
 				m_panimCur					= &m_animSuicide;
 				m_lAnimTime					= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				m_bBrainSplatted			= false;
 				m_bGenericEvent1			= false;
 				m_dVel						= 0.0;
@@ -4342,16 +4321,16 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 				GameMessage msg;
 				msg.msg_Suicide.eType = typeSuicide;
 				msg.msg_Suicide.sPriority = 0;
-				CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-				if (pDemon)
-					SendThingMessage(&msg, pDemon);				
+            auto list = realm()->GetThingsByType(CDemonID);
+            if (!list.empty())
+               SendThingMessage(msg, list.front());
 
 				break;
 				}
 			case State_Launch:
 				m_panimCur					= &m_animLaunch;
 				m_lAnimTime					= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				break;
 			case State_LaunchRelease:
 				// This state marks the release of the launched object.
@@ -4366,7 +4345,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 			case State_GetUp:
 				m_panimCur					= &m_animGetUp;
 				m_lAnimTime					= 0;
-				m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+            m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 				break;
 			case State_Duck:
 				// Set the ducking bits so missiles won't hit him.
@@ -4375,7 +4354,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur					= &m_animDuck;
 					m_lAnimTime					= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					}
 				break;
 			case State_Rise:
@@ -4410,7 +4389,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 						}
 
 					m_panimCur					= &m_animRise;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					}
 				break;
 			case State_Jump:
@@ -4419,7 +4398,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 //					m_panimCur	= &m_animJump;
 					ASSERT(0);	// No longer a valid state.
 					m_lAnimTime	= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					// Clear trigger.
 					m_bJumpVerticalTrigger	= false;
 					}
@@ -4430,7 +4409,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 //					m_panimCur	= &m_animJumpForward;
 					ASSERT(0);	// No longer a valid state.
 					m_lAnimTime	= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					// Clear trigger.
 					m_bJumpVerticalTrigger	= false;
 					}
@@ -4440,7 +4419,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur	= &m_animExecute;
 					m_lAnimTime	= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					m_bGenericEvent1	= false;
 					PlaySample(g_smidExecution, SampleMaster::UserFeedBack);
 					}
@@ -4450,7 +4429,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur	= &m_animPickPut;
 					m_lAnimTime	= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					}
 				break;
 			case State_ObjectReleased:
@@ -4461,7 +4440,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					{
 					m_panimCur	= &m_animPickPut;
 					m_lAnimTime	= 0;
-					m_lAnimPrevUpdateTime	= m_pRealm->m_time.GetGameTime();
+               m_lAnimPrevUpdateTime	= realm()->m_time.GetGameTime();
 					m_bGenericEvent1			= false;
 					}
 				break;
@@ -4558,23 +4537,23 @@ void CDude::GetWeaponInfo(		// Returns nothing.
 // Fire specified weapon type.
 ////////////////////////////////////////////////////////////////////////////////
 void CDude::ArmWeapon(							// Returns nothing.
-	WeaponType weapon /*= CurrentWeapon*/)	// In:  Weapon to fire.
+   WeaponType weaponType /*= CurrentWeapon*/)	// In:  Weapon to fire.
 	{
 	// If firing not in progress . . .
-	if (m_u16IdWeapon == CIdBank::IdNil)
+   if (!child())
 		{
 		// If no specific weapon . . .
-		if (weapon == CurrentWeapon)
+      if (weaponType == CurrentWeapon)
 			{
-			weapon	= m_weapontypeCur;
+         weaponType	= m_weapontypeCur;
 			}
 
 		// Get current weapon and stockpile.
 		int16_t*	psNumLeft;
-		GetWeaponInfo(weapon, &m_eWeaponType, &psNumLeft);
+      GetWeaponInfo(weaponType, &m_eWeaponType, &psNumLeft);
 
 		uint32_t weaponFlag = 0;
-		switch (weapon)
+      switch (weaponType)
 			{
         UNHANDLED_SWITCH;
 			case Grenade: weaponFlag = FLAG_USED_GRENADE; break;
@@ -4595,7 +4574,7 @@ void CDude::ArmWeapon(							// Returns nothing.
 			}
 
 		State	stateShoot	= State_Throw;
-		switch (weapon)
+      switch (weaponType)
 			{
         UNHANDLED_SWITCH;
          case FlameThrower:
@@ -4645,7 +4624,7 @@ void CDude::ArmWeapon(							// Returns nothing.
 			}
 
 		// If we have any of this weapon . . .
-		if (*psNumLeft >= ms_awdWeapons[weapon].sMinAmmoRequired)
+      if (*psNumLeft >= ms_awdWeapons[weaponType].sMinAmmoRequired)
 			{
 			// Enter our weapon launch state.
 			if (SetState(stateShoot) == true)
@@ -4658,18 +4637,18 @@ void CDude::ArmWeapon(							// Returns nothing.
 					}
 
 				// Remember the type of ammo we're shooting.
-				m_weaponShooting	= weapon;
+            m_weaponShooting	= weaponType;
 
-				CWeapon*	pweapon	= PrepareWeapon();
-				if (pweapon != nullptr)
+            managed_ptr<CWeapon> pweapon = PrepareWeapon();
+            if (pweapon)
 					{
 					GameMessage msg;
 					msg.msg_WeaponFire.eType = typeWeaponFire;
 					msg.msg_WeaponFire.sPriority = 0;
-					msg.msg_WeaponFire.sWeapon = (int16_t) weapon;
-					CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-					if (pDemon)
-						SendThingMessage(&msg, pDemon);				
+               msg.msg_WeaponFire.sWeapon = (int16_t) weaponType;
+               auto list = realm()->GetThingsByType(CDemonID);
+               if (!list.empty())
+                  SendThingMessage(msg, list.front());
 					}
 				}
 			else
@@ -4693,7 +4672,7 @@ void CDude::ArmWeapon(							// Returns nothing.
 // This should be done when the character releases the weapon it's
 // shooting.
 ////////////////////////////////////////////////////////////////////////////////
-CWeapon* CDude::ShootWeapon(void)		// Returns the weapoin ptr or nullptr.
+managed_ptr<CWeapon> CDude::ShootWeapon(void)		// Returns the weapoin ptr or nullptr.
 	{
 	return ShootWeapon(
 		COLLISION_BITS_INCLUDE,
@@ -4707,13 +4686,13 @@ CWeapon* CDude::ShootWeapon(void)		// Returns the weapoin ptr or nullptr.
 // shooting.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
+managed_ptr<CWeapon> CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 	CSmash::Bits bitsInclude /*= ms_u32CollideBitsInclude*/,
 	CSmash::Bits bitsDontcare /*= ms_u32CollideBitsDontcare*/,
 	CSmash::Bits bitsExclude /*= ms_u32CollideBitsExclude*/)
 	{
 	bool	bShootWeapon	= true;	// Assume we should shoot the weapon.
-	CWeapon*	pweapon		= nullptr;	// Assume nothing.
+   managed_ptr<CWeapon> pweapon;	// Assume nothing.
 
 	// If the weapon is in an invalid position . . .
 	if (ValidateWeaponPosition() == false)
@@ -4734,7 +4713,7 @@ CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 		switch (m_eWeaponType)
 			{
 			case CFirestreamID: //CFireballID:
-				if (m_u16IdWeapon != CIdBank::IdNil)
+            if (child())
 					{
 					}
 				else
@@ -4768,12 +4747,12 @@ CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 				if (m_stockpile.m_sNumShells > 0)
 					{
 					// Note time of next fire.
-					m_lNextBulletTime	= m_pRealm->m_time.GetGameTime() + MS_BETWEEN_SPRAYS;
+               m_lNextBulletTime	= realm()->m_time.GetGameTime() + MS_BETWEEN_SPRAYS;
 					}
 				else
 					{
 					// Note time of next fire.
-					m_lNextBulletTime	= m_pRealm->m_time.GetGameTime() + MS_BETWEEN_SPRAYS * 3;
+               m_lNextBulletTime	= realm()->m_time.GetGameTime() + MS_BETWEEN_SPRAYS * 3;
 					// Feedback.
 					PlaySample(g_smidOutOfBullets, SampleMaster::Weapon);
 					// Don't fire.
@@ -4783,7 +4762,7 @@ CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 			case CMachineGunID:
 				// Cannot run out of bullets.
 				// Note time of next fire.
-				m_lNextBulletTime	= m_pRealm->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
+            m_lNextBulletTime	= realm()->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
 				// If we have any of this weapon . . .
 				if (m_stockpile.m_sNumBullets < CStockPile::ms_stockpileMax.m_sNumBullets)
 					{
@@ -4799,7 +4778,7 @@ CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 			// Deduct ammo.
 			*psNumLeft	= *psNumLeft - 1;
 
-			pweapon	= CCharacter::ShootWeapon(bitsInclude, bitsDontcare, bitsExclude);
+         pweapon = CCharacter::ShootWeapon(bitsInclude, bitsDontcare, bitsExclude);
 
 			// If a weapon was returned . . .
 			if (pweapon)
@@ -4809,7 +4788,7 @@ CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 				pweapon->SetDetectionBits(
 					CSmash::Character,
 					0,
-					m_pRealm->m_flags.bCoopMode ? CSmash::Good : 0);
+               realm()->m_flags.bCoopMode ? CSmash::Good : 0);
 				}
 			}
 		}
@@ -4822,7 +4801,7 @@ CWeapon* CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 ////////////////////////////////////////////////////////////////////////////////
 void CDude::Damage(			// Returns nothing.
 	int16_t	sHitPoints,			// Hit points of damage to do.
-	uint16_t	u16ShooterId)		// In:  Thing responsible for damage.
+   managed_ptr<CThing3d> shooter)		// In:  Thing responsible for damage.
 	{
 	// Remember if already dead . . .
 	bool	bDead	= m_bDead;
@@ -4848,7 +4827,7 @@ void CDude::Damage(			// Returns nothing.
 				
 				// If he wasn't already dead when he entered here, then register the kill.
 				if (bDead == false)
-					ScoreRegisterKill(m_pRealm, GetInstanceID(), u16ShooterId);
+               ScoreRegisterKill(realm(), this, shooter);
 				}
 			}
 		}
@@ -4876,8 +4855,8 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 	for (i = 0; i < BRAIN_SPLAT_NUM_CHUNKS; i++)
 		{
 		// Create blood particles . . .
-      CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
-      if (pchunk != nullptr)
+      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
+      if (pchunk)
 			{
 			pchunk->Setup(
 				dBrainX,				// Source position.
@@ -5022,15 +5001,15 @@ void CDude::OnShotMsg(			// Returns nothing.
 	// If we're taking damage . . .
 	if (pshotmsg->sDamage > 0)
 		{
-		Damage(pshotmsg->sDamage, pshotmsg->u16ShooterID);
+      Damage(pshotmsg->sDamage, pshotmsg->shooter);
 
 		// Check for mininum duration since last shot time . . .
-		if (	m_pRealm->m_time.GetGameTime() > m_lLastShotTime + MIN_CANNOT_BE_SHOT_DURATION
+      if (	realm()->m_time.GetGameTime() > m_lLastShotTime + MIN_CANNOT_BE_SHOT_DURATION
 			||	m_state == State_Stand)
 			{
 			if (SetState(State_Shot) == true)
 				{
-				m_lLastShotTime	= m_pRealm->m_time.GetGameTime();
+            m_lLastShotTime	= realm()->m_time.GetGameTime();
 				}
 			}
 		}
@@ -5049,8 +5028,8 @@ void CDude::OnShotMsg(			// Returns nothing.
 		StartAnim(VEST_HIT_RES_NAME, dHitX, dHitY, dHitZ, false);
 
 		// Create a kevlar peice.
-      CChunk* pchunk = static_cast<CChunk*>(realm()->makeType(CChunkID));
-      if (pchunk != nullptr)
+      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
+      if (pchunk)
 			{
 			pchunk->Setup(
 				dHitX,						// Source position.
@@ -5069,14 +5048,14 @@ void CDude::OnShotMsg(			// Returns nothing.
 	// If still alive . . .
 	if (m_bDead == false)
 		{
-		if (m_pRealm->m_time.GetGameTime() > m_lLastYellTime + MIN_BETWEEN_YELLS)
+      if (realm()->m_time.GetGameTime() > m_lLastYellTime + MIN_BETWEEN_YELLS)
 			{
 			// If we took damage . . .
 			if (pshotmsg->sDamage > 0)
 				{
 				PlaySample(g_smidBlownupYell, SampleMaster::Voices);
 
-				m_lLastYellTime	= m_pRealm->m_time.GetGameTime();
+            m_lLastYellTime	= realm()->m_time.GetGameTime();
 				}
 			}
 		}
@@ -5088,7 +5067,7 @@ void CDude::OnShotMsg(			// Returns nothing.
 			// Ahhhhhhhhhh....
 			PlaySample(g_smidDyingYell, SampleMaster::Voices);
 
-			m_lLastYellTime	= m_pRealm->m_time.GetGameTime();
+         m_lLastYellTime	= realm()->m_time.GetGameTime();
 			}
 		}
 	}
@@ -5110,7 +5089,7 @@ void CDude::OnExplosionMsg(				// Returns nothing.
 		// Let's increase his vertical just a bit.
 		m_dExtVertVel	*= EXPLOSION_VERTICAL_VEL_MULTIPLIER;
 
-		Damage(pexplosionmsg->sDamage, pexplosionmsg->u16ShooterID);
+      Damage(pexplosionmsg->sDamage, pexplosionmsg->shooter);
 
 		// If he is carying a flag item, then he should drop it and
 		// pass the explosion message on to the flags so they can react.
@@ -5119,11 +5098,11 @@ void CDude::OnExplosionMsg(				// Returns nothing.
 		// If still alive . . .
 		if (m_bDead == false)
 			{
-			if (m_pRealm->m_time.GetGameTime() > m_lLastYellTime + MIN_BETWEEN_YELLS)
+         if (realm()->m_time.GetGameTime() > m_lLastYellTime + MIN_BETWEEN_YELLS)
 				{
 				PlaySample(g_smidBlownupYell, SampleMaster::Voices);
 
-				m_lLastYellTime	= m_pRealm->m_time.GetGameTime();
+            m_lLastYellTime	= realm()->m_time.GetGameTime();
 				}
 			}
 		else
@@ -5134,13 +5113,13 @@ void CDude::OnExplosionMsg(				// Returns nothing.
 				// Ahhhhhhhhhh....
 				PlaySample(g_smidDyingYell, SampleMaster::Voices);
 
-				m_lLastYellTime	= m_pRealm->m_time.GetGameTime();
+            m_lLastYellTime	= realm()->m_time.GetGameTime();
 				}
 			}
 
 		}
 
-	m_lLastShotTime	= m_pRealm->m_time.GetGameTime();
+   m_lLastShotTime	= realm()->m_time.GetGameTime();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5160,8 +5139,8 @@ void CDude::OnBurnMsg(			// Returns nothing.
 		DropAllFlags( (GameMessage*)pburnmsg);
 		}
 
-	int16_t sDamage = MAX((int16_t) 1, (int16_t) ((double) pburnmsg->sDamage * (((double) m_pRealm->m_flags.sDifficulty) / 10.0)));
-	Damage(sDamage, pburnmsg->u16ShooterID);
+   int16_t sDamage = MAX((int16_t) 1, (int16_t) ((double) pburnmsg->sDamage * (((double) realm()->m_flags.sDifficulty) / 10.0)));
+   Damage(sDamage, pburnmsg->shooter);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5173,19 +5152,16 @@ void CDude::OnPutMeDownMsg(		// Returns nothing
 	PutMeDown_Message* pputmedownmsg)
 	{
 	// If he is carrying the flag item, then he should put it down
-	if (pputmedownmsg->u16FlagInstanceID != CIdBank::IdNil)
+   if (pputmedownmsg->flag)
 		{
 		// Detatch child and update its position
-		CThing3d* pthing3d = DetachChild(
-			&(pputmedownmsg->u16FlagInstanceID),
+      DetachChild(
+         pputmedownmsg->flag,
          & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime) );
-		if (pthing3d)
-			{
-			pthing3d->m_dX		= m_dX;
-			pthing3d->m_dY		= m_dY;
-			pthing3d->m_dZ		= m_dZ;
-			pthing3d->m_state = State_Die;
-			}
+         pputmedownmsg->flag->m_dX		= m_dX;
+         pputmedownmsg->flag->m_dY		= m_dY;
+         pputmedownmsg->flag->m_dZ		= m_dZ;
+         pputmedownmsg->flag->m_state = State_Die;
 		}
 	}
 
@@ -5224,7 +5200,7 @@ bool CDude::WhileBlownUp(void)	// Returns true until state is complete.
 	double	dNewX, dNewY, dNewZ;
 
 	// Get time from last call in seconds.
-	int32_t		lCurTime	= m_pRealm->m_time.GetGameTime();
+   int32_t		lCurTime	= realm()->m_time.GetGameTime();
 	double	dSeconds	= double(lCurTime - m_lPrevTime) / 1000.0;
 
 	// Update Velocities ////////////////////////////////////////////////////////
@@ -5303,21 +5279,21 @@ void CDude::OnExecute(void)		// Returns nothing.
 			m_dX + dMuzzleX,
 			m_dY + dMuzzleY,
 			m_dZ + dMuzzleZ,
-			m_pRealm);
+         realm());
 
 		// Shoot this thing.
 		GameMessage	msg;
 		msg.msg_Shot.eType			= typeShot;
 		msg.msg_Shot.sPriority		= 0;
 		msg.msg_Shot.sAngle			= m_dRot;
-		msg.msg_Shot.u16ShooterID	= m_u16InstanceId;
+      msg.msg_Shot.shooter	= this;
 		msg.msg_Shot.sDamage			= 10;
 
 		// Send it the message.
-		SendThingMessage(&msg, m_idVictim);
+      SendThingMessage(msg, m_victim);
 
 		// Note time of next fire.
-		m_lNextBulletTime	= m_pRealm->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
+      m_lNextBulletTime	= realm()->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
 		// Deduct a shot.
 		*psNumLeft	= *psNumLeft - 1;
 		}
@@ -5373,20 +5349,20 @@ void CDude::Revive(				// Returns nothing.
 	{
 	// Must be dead, lying there still in multiplayer mode (or we could be cheating) . . .
 	if (	m_bDead == true 
-		&&	(m_pRealm->m_flags.bMultiplayer == true || bWarpIn == false) )
+      &&	(realm()->m_flags.bMultiplayer == true || bWarpIn == false) )
 		{
 		// Drop that fire.
-		m_u16IdFire	= CIdBank::IdNil;
+      m_fire.reset();
 
 		// Let's not be responding to old news.
-		m_MessageQueue.Empty();
+      m_MessageQueue.clear();
 
 		// Create powerup . . .
 		// NOTE that if the dude is going to be warped in (that is, he is going to get
 		// reloaded with stuff from the warp), he only drops his current weapon and all
 		// his ammo.  If he is not going to be warped in (that is, he will NOT get
 		// any stuff from a warp), he drops all his stuff so he can pick it back up.
-		DropPowerUp(&m_stockpile, bWarpIn);
+      DropPowerUp(m_stockpile, bWarpIn);
 		// Clear my stockpile.
 		m_stockpile.Zero();
 
@@ -5396,7 +5372,7 @@ void CDude::Revive(				// Returns nothing.
 		m_bDead							= false;
 		m_sBrightness					= 0;
 
-		CDude*	pdude	= this;
+      managed_ptr<CDude> pdude(this);
 		if (bWarpIn == true)
 			{
 			// It would be best if this only occurred when we're in the dead state
@@ -5405,15 +5381,15 @@ void CDude::Revive(				// Returns nothing.
 			ASSERT(m_state == State_Dead);
 
 			// Render current dead frame into background to stay.
-			m_pRealm->m_scene.DeadRender3D(
-				m_pRealm->m_phood->m_pimBackground,	// Destination image.
+         realm()->Scene()->DeadRender3D(
+            realm()->Hood()->m_pimBackground,	// Destination image.
 				&m_sprite,									// Tree of 3D sprites to render.
-				m_pRealm->m_phood);						// Dst clip rect.
+            realm()->Hood());						// Dst clip rect.
 
 			// First try to find a warp in point . . .
 			if (CWarp::WarpInAnywhere(
-				m_pRealm,
-				&pdude, 
+            realm(),
+            pdude,
             CWarp::CopyStockPile) == SUCCESS)
 				{
 				// Force to base weapon
@@ -5702,9 +5678,9 @@ bool CDude::SetWeapon(					// Returns true if weapon could be set as current.
 				msg.msg_WeaponSelect.eType = typeWeaponSelect;
 				msg.msg_WeaponSelect.sPriority = 0;
 				msg.msg_WeaponSelect.sWeapon = (int16_t) m_weapontypeCur;
-				CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-				if (pDemon)
-					SendThingMessage(&msg, pDemon);				
+            auto list = realm()->GetThingsByType(CDemonID);
+            if (!list.empty())
+               SendThingMessage(msg, list.front());
 				}
 			}
 		}
@@ -5723,22 +5699,22 @@ bool CDude::SetWeapon(					// Returns true if weapon could be set as current.
 ////////////////////////////////////////////////////////////////////////////////
 // Drop a powerup with the settings described by the specified stockpile.
 ////////////////////////////////////////////////////////////////////////////////
-CPowerUp* CDude::DropPowerUp(		// Returns new powerup on success; nullptr on failure.
-	CStockPile*	pstockpile,			// In:  Settings for powerup.
+managed_ptr<CPowerUp> CDude::DropPowerUp(		// Returns new powerup on success; nullptr on failure.
+   CStockPile& pstockpile,			// In:  Settings for powerup.
 	bool			bCurWeaponOnly)	// In:  true, if only the current weapon should be
 											// in the powerup; false, if all.
 	{
-	CPowerUp*	ppowerup	= nullptr;
+   managed_ptr<CPowerUp> ppowerup;
 
 	// If not empty . . .
-	if (pstockpile->IsEmpty() == false)
+   if (pstockpile.IsEmpty() == false)
 		{
 		// Create powerup . . .
-     ppowerup = static_cast<CPowerUp*>(realm()->makeTypeWithID(CPowerUpID));
-      if (ppowerup != nullptr)
+     ppowerup = realm()->AddThing<CPowerUp>();
+      if (ppowerup)
 			{
 			// Put stockpile into powerup.
-			ppowerup->m_stockpile.Copy(pstockpile);
+         ppowerup->m_stockpile.Copy(&pstockpile);
 
 			if (bCurWeaponOnly)
 				{
@@ -5798,7 +5774,7 @@ bool CDude::FindExecutee(void)		// Returns true, if we found one; false, otherwi
 	CSmash*	psmashee	= nullptr;	// Safety.
 
 	// Find the closest person including writhers.
-	if (m_pRealm->m_smashatorium.QuickCheckClosest(
+   if (realm()->m_smashatorium.QuickCheckClosest(
 		&m_smash,					// In:  CSmash to check
 /*		CSmash::Character		
 		| CSmash::Misc 
@@ -5819,7 +5795,7 @@ bool CDude::FindExecutee(void)		// Returns true, if we found one; false, otherwi
 			// Found one.
 			bFoundOne	= true;
 			// Remember who.
-			m_idVictim	= psmashee->m_pThing->GetInstanceID();
+         m_victim = psmashee->m_pThing;
 			}
 		}
 
@@ -5834,15 +5810,13 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
 			double dSeconds)		// In:  Seconds since last iteration.
 	{
 	bool	bPersist	= true;	// Assume we'll persist.
-	
-	// Get pointer to target.
-	CThing*	pthing;
-   if (m_pRealm->m_idbank.GetThingByID(&pthing, m_idVictim) == SUCCESS)
+
+   if (m_victim)
 		{
 		double	dVictimX;
 		double	dVictimZ;		
 		// Try to use smash position first, then resort to thing position.
-		CSmash*	psmash	= pthing->GetSmash();
+      CSmash*	psmash	= m_victim->GetSmash();
 		if (psmash != nullptr)
 			{
 			// This is generally more accurate for an execution point.
@@ -5852,8 +5826,8 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
 		else
 			{
 			// This'll do though.
-			dVictimX	= pthing->GetX();
-			dVictimZ	= pthing->GetZ();
+         dVictimX	= m_victim->GetX();
+         dVictimZ	= m_victim->GetZ();
 			}
 
       double sDistX         = dVictimX - m_dX;
@@ -5888,7 +5862,7 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
 	else
 		{
 		// Lost our target.  Continuing is futile.
-		m_idVictim	= CIdBank::IdNil;
+      m_victim.reset();
 		bPersist	= false;
 		}
 
@@ -5899,12 +5873,12 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
 // Take a powerup.
 ////////////////////////////////////////////////////////////////////////////////
 void CDude::TakePowerUp(		// Returns nothing.
-	CPowerUp**	pppowerup)		// In:  Power up to take from.
+   managed_ptr<CPowerUp> pppowerup)		// In:  Power up to take from.
 										// Out: Ptr to powerup, if it persisted; nullptr otherwise.
 	{
-	CStockPile*	pspMax;
+   CStockPile* pspMax;
 	// Note if we do or will have the backpack.
-	if (m_stockpile.m_sBackpack || (*pppowerup)->m_stockpile.m_sBackpack)
+   if (m_stockpile.m_sBackpack || pppowerup->m_stockpile.m_sBackpack)
 		{
 		pspMax	= &CStockPile::ms_stockpileBackPackMax;
 		}
@@ -5918,7 +5892,7 @@ void CDude::TakePowerUp(		// Returns nothing.
 	spTake.Copy(pspMax);
 	spTake.Sub(&m_stockpile);
 	// Intersect the amount we can take with the amount available.
-	spTake.Intersect( &( (*pppowerup)->m_stockpile) );
+   spTake.Intersect(&pppowerup->m_stockpile);
 
 	// If we got anything . . .
 	if (spTake.IsEmpty() == false)
@@ -5927,29 +5901,25 @@ void CDude::TakePowerUp(		// Returns nothing.
 		m_stockpile.Add( &spTake );
 
 		// If in MP mode, empty the powerup so it goes away.  Otherwise, just remove what we took
-		if (m_pRealm->m_flags.bMultiplayer)
-			(*pppowerup)->m_stockpile.Zero();
+      if (realm()->m_flags.bMultiplayer)
+         pppowerup->m_stockpile.Zero();
 		else
-			(*pppowerup)->m_stockpile.Sub( &spTake );
+         pppowerup->m_stockpile.Sub( &spTake );
 
 		// Play feedback.
-		(*pppowerup)->PickUpFeedback();
+      pppowerup->PickUpFeedback();
 
 		// Store its ID so we can attempt to get it if it does persist.
-		uint16_t	idInstance	= (*pppowerup)->GetInstanceID();
+//      uint16_t	idInstance	= pppowerup->GetInstanceID();
 
 		// Let powerup decide if it should persist.
-		(*pppowerup)->RepaginateNow();
+      pppowerup->RepaginateNow();
 
 		// If it persisted . . .
-      if (m_pRealm->m_idbank.GetThingByID((CThing**)pppowerup, idInstance) == SUCCESS)
+      if (pppowerup)
 			{
-			ASSERT( (*pppowerup)->GetClassID() == CPowerUpID);
-			}
-		else
-			{
-			*pppowerup	= nullptr;
-			}
+         ASSERT( pppowerup->type() == CPowerUpID);
+         }
 		}
 	else
 		{
@@ -5957,32 +5927,28 @@ void CDude::TakePowerUp(		// Returns nothing.
 		PlaySample(g_smidOutOfBullets, SampleMaster::UserFeedBack);
 
 		// If in MP mode, eat the powerup
-		if (m_pRealm->m_flags.bMultiplayer)
+      if (realm()->m_flags.bMultiplayer)
 			{
-			(*pppowerup)->m_stockpile.Zero();
-			(*pppowerup)->RepaginateNow();
-			*pppowerup	= nullptr;
+         pppowerup->m_stockpile.Zero();
+         pppowerup->RepaginateNow();
+         pppowerup.reset();
 			}
 		}
 
 	// If it still exists . . .
-	if (*pppowerup)
+   if (pppowerup)
 		{
 		// Store its ID so we can attempt to get it if it does persist.
-		uint16_t	idInstance	= (*pppowerup)->GetInstanceID();
+      //uint16_t	idInstance	= pppowerup->GetInstanceID();
 
 		// Toss it.
-		TossPowerUp(*pppowerup, 130);
+      TossPowerUp(pppowerup, 130);
 
 		// If it persisted . . .
-      if (m_pRealm->m_idbank.GetThingByID((CThing**)pppowerup, idInstance) == SUCCESS)
+      if(pppowerup)
 			{
-			ASSERT( (*pppowerup)->GetClassID() == CPowerUpID);
-			}
-		else
-			{
-			*pppowerup	= nullptr;
-			}
+         ASSERT( pppowerup->type() == CPowerUpID);
+         }
 		}
 	}
 
@@ -5990,8 +5956,8 @@ void CDude::TakePowerUp(		// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 // Create a cheat powerup.
 ////////////////////////////////////////////////////////////////////////////////
-CPowerUp* CDude::CreateCheat(	// Returns new powerup on success; nullptr on failure.
-	CStockPile*	pstockpile)		// In:  Settings for powerup.
+managed_ptr<CPowerUp> CDude::CreateCheat(	// Returns new powerup on success; nullptr on failure.
+   CStockPile&	pstockpile)		// In:  Settings for powerup.
 	{
 	// First deduct from the cheat powerup what we cannot use.
 	CStockPile	spUsable;
@@ -5999,26 +5965,22 @@ CPowerUp* CDude::CreateCheat(	// Returns new powerup on success; nullptr on fail
 	spUsable.Sub( &m_stockpile );
 
 	// Intersect with the supplied.
-	spUsable.Intersect(pstockpile);
+   spUsable.Intersect(&pstockpile);
 
 	// Finally, drop it.
 
 	// If it contains anything . . .
-	CPowerUp*	ppowerup;
+   managed_ptr<CPowerUp> ppowerup;
 	if (spUsable.IsEmpty() == false)
 		{
-		ppowerup	= DropPowerUp( &spUsable, false );
+      ppowerup	= DropPowerUp(spUsable, false );
 
 		if (ppowerup)
 			{
 			// Take it right away.
-			TakePowerUp(&ppowerup);
+         TakePowerUp(ppowerup);
 			}
-		}
-	else
-		{
-		ppowerup	= nullptr;
-		}
+      }
 
 	UnlockAchievement(ACHIEVEMENT_ENABLE_CHEATS);
 	Flag_Achievements |= FLAG_USED_CHEATS;
@@ -6027,9 +5989,9 @@ CPowerUp* CDude::CreateCheat(	// Returns new powerup on success; nullptr on fail
 	GameMessage msg;
 	msg.msg_Cheater.eType = typeCheater;
 	msg.msg_Cheater.sPriority = 0;
-	CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-	if (pDemon)
-		SendThingMessage(&msg, pDemon);				
+   auto list = realm()->GetThingsByType(CDemonID);
+   if (!list.empty())
+      SendThingMessage(msg, list.front());
 
 	return ppowerup;
 	}
@@ -6038,21 +6000,20 @@ CPowerUp* CDude::CreateCheat(	// Returns new powerup on success; nullptr on fail
 // Break a powerup open and toss it.
 ////////////////////////////////////////////////////////////////////////////////
 void CDude::TossPowerUp(		// Returns nothing.
-	CPowerUp*	ppowerup,		// In:  Powerup to toss.
+   managed_ptr<CPowerUp> ppowerup,		// In:  Powerup to toss.
 	int16_t			sVelocity)		// In:  Velocity of toss.
 	{
 	// Blow it up.
 	GameMessage	msg;
-	msg.msg_Explosion.eType				= typeExplosion;
-	msg.msg_Explosion.sPriority		= 0;
+   msg.msg_Explosion.eType				= typeExplosion;
 	msg.msg_Explosion.sDamage			= 0;
 	msg.msg_Explosion.sX					= m_dX;
 	msg.msg_Explosion.sY					= m_dY;
 	msg.msg_Explosion.sZ					= m_dZ;
 	msg.msg_Explosion.sVelocity		= sVelocity;
-	msg.msg_Explosion.u16ShooterID	= GetInstanceID();
+   msg.msg_Explosion.shooter = this;
 
-	SendThingMessage(&msg, msg.msg_Explosion.sPriority, ppowerup);
+   SendThingMessage(msg, ppowerup);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6085,9 +6046,9 @@ void CDude::SetPosition(		// Returns nothing.
 CFlag* CDude::GetNextFlag(			// Returns the next flag item after pflag.
 	CFlag*	pflag)					// In:  The flag to get the follower of.
 											// nullptr for first child flag.
-	{
-	CFlag*	pflagNext	= nullptr;
-
+   {
+	CFlag*	pflagNext	= nullptr;   
+#if defined(RELEASE)
 	CSprite*	psprite	= pflag ? pflag->m_sprite.m_psprNext : m_sprite.m_psprHeadChild;
 	while (psprite && pflagNext == nullptr)
 		{
@@ -6096,7 +6057,7 @@ CFlag* CDude::GetNextFlag(			// Returns the next flag item after pflag.
 		if (pthing)
 			{
 			// If it is a flag . . .
-			if (pthing->GetClassID() == CFlagID)
+         if (pthing->type() == CFlagID)
 				{
 				pflagNext	= (CFlag*)pthing;
 				}
@@ -6105,7 +6066,7 @@ CFlag* CDude::GetNextFlag(			// Returns the next flag item after pflag.
 		// Next Please.
 		psprite	= psprite->m_psprNext;
 		}
-
+#endif
 	return pflagNext;
 	}
 
@@ -6127,7 +6088,7 @@ void CDude::DropAllFlags(	// Returns nothing.
 		msg.msg_Explosion.sY = (int16_t) m_dY;
 		msg.msg_Explosion.sZ = (int16_t) m_dZ;
 		msg.msg_Explosion.sVelocity = 30;
-		msg.msg_Explosion.u16ShooterID = GetInstanceID();
+      msg.msg_Explosion.shooter = this;
 
 		pmsg	=	&msg;
 		}
@@ -6137,10 +6098,11 @@ void CDude::DropAllFlags(	// Returns nothing.
 		if (pmsg->msg_Generic.eType == typeExplosion)
 			{
 			// Copy it so we can tweak it.
-			msg	= *pmsg;
+         //msg	= *pmsg;
+         std::memcpy(&msg, pmsg, sizeof(GameMessage));
 			}
 		}
-
+#if defined(RELEASE)
 	// Loop through all child flags and send them a message and remove them.
 	CFlag*	pflag	= GetNextFlag(nullptr);
 	CFlag*	pflagNext;
@@ -6179,6 +6141,7 @@ void CDude::DropAllFlags(	// Returns nothing.
 		// Next please.
 		pflag	= pflagNext;
 		}
+#endif
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

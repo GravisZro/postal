@@ -218,7 +218,7 @@
 //							base class version.
 //							Also, m_bClearedStatus.
 //
-//		06/16/97	JMI	Added m_u16KillerId to track who killed this dude.
+//		06/16/97	JMI	Added m_killer to track who killed this dude.
 //
 //		06/17/97	JMI	Added m_u8LastEvent to track the last animation event
 //							and PlayStep() to play a step noise at the proper time.
@@ -559,17 +559,14 @@ class CDude : public CCharacter
 		CCrawler		m_crawler;							// The device that allows us to slide
 																// along edges and stuff.
 
-		uint16_t			m_u16IdChild;						// ID of generic child item.
-																// Used by State_PickUp currently.
-
 		CSprite2		m_TargetSprite;					// Targeting sprite to show what he is aiming
 																// at.
 
-		uint16_t			m_u16KillerId;						// Instance ID of our killer.
+		uint16_t			m_killer;						// Instance ID of our killer.
 
 		uint8_t				m_u8LastEvent;						// Last anim event.
 
-		uint16_t			m_idVictim;							// Instance ID of victim to be executed or
+      managed_ptr<CThing> m_victim;							// Instance ID of victim to be executed or
 																// used as human shield.
 
 		bool			m_bDead;								// true, if dead; false otherwise.
@@ -618,6 +615,7 @@ class CDude : public CCharacter
       CDude(void);
       ~CDude(void);
 
+
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
 	//---------------------------------------------------------------------------
@@ -636,9 +634,6 @@ class CDude : public CCharacter
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -706,12 +701,12 @@ class CDude : public CCharacter
 		// This should be done when the character releases the weapon it's
 		// shooting.
 		virtual			// Overriden here.
-		CWeapon* ShootWeapon(				// Returns the weapon ptr or nullptr.
+      managed_ptr<CWeapon> ShootWeapon(				// Returns the weapon ptr or nullptr.
 			CSmash::Bits bitsInclude,
 			CSmash::Bits bitsDontcare,
 			CSmash::Bits bitsExclude);
 
-		CWeapon* ShootWeapon(void);		// Returns the weapoin ptr or nullptr.
+      managed_ptr<CWeapon> ShootWeapon(void);		// Returns the weapoin ptr or nullptr.
 
 		// Determine if the dude is dead.
       bool IsDead(void)	const // Returns true, if dead; false otherwise.
@@ -817,12 +812,12 @@ class CDude : public CCharacter
 
 		// Fire specified weapon type.
 		void ArmWeapon(								// Returns nothing.
-			WeaponType weapon = CurrentWeapon);	// In:  Weapon to fire.
+         WeaponType weaponType = CurrentWeapon);	// In:  Weapon to fire.
 
 		// Receive damage.
 		void Damage(						// Returns nothing.
 			int16_t	sHitPoints,				// Hit points of damage to do.
-			uint16_t	u16ShooterId);			// In:  Thing responsible for damage.
+         managed_ptr<CThing3d> shooter);			// In:  Thing responsible for damage.
 
 		// Start the brain splat anim on its way.
 		void StartBrainSplat(void);	// Returns nothing.
@@ -845,14 +840,14 @@ class CDude : public CCharacter
 		void ShowTarget(void);
 
 		// Drop a powerup with the settings described by the specified stockpile.
-		CPowerUp* DropPowerUp(				// Returns new powerup on success; nullptr on failure.
-			CStockPile*	pstockpile,			// In:  Settings for powerup.
+      managed_ptr<CPowerUp> DropPowerUp(				// Returns new powerup on success; nullptr on failure.
+         CStockPile& pstockpile,			// In:  Settings for powerup.
 			bool			bCurWeaponOnly);	// In:  true, if only the current weapon should be
 													// in the powerup; false, if all.
 
 		// Create a cheat powerup.
-		CPowerUp* CreateCheat(			// Returns new powerup on success; nullptr on failure.
-			CStockPile*	pstockpile);	// In:  Settings for powerup.
+      managed_ptr<CPowerUp> CreateCheat(			// Returns new powerup on success; nullptr on failure.
+         CStockPile& pstockpile);	// In:  Settings for powerup.
 
 		// Play a step noise if the event is different from the last.
 		void PlayStep(void);				// Returns nothing.
@@ -866,12 +861,12 @@ class CDude : public CCharacter
 
 		// Take a powerup.
 		void TakePowerUp(					// Returns nothing.
-			CPowerUp**	pppowerup);		// In:  Power up to take from.
+         managed_ptr<CPowerUp> pppowerup);		// In:  Power up to take from.
 												// Out: Ptr to powerup, if it persisted; nullptr otherwise.
 
 		// Break a powerup open and toss it.
 		void TossPowerUp(					// Returns nothing.
-			CPowerUp*	ppowerup,		// In:  Powerup to toss.
+         managed_ptr<CPowerUp> ppowerup,		// In:  Powerup to toss.
 			int16_t			sVelocity);		// In:  Velocity of toss.
 
 		// Make sure warp can access this function.

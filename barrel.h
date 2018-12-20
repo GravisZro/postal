@@ -31,7 +31,7 @@
 //		04/04/97	JMI	Added barrel spin animation which has the origin at the
 //							barrel's center of gravity for better spinning.
 //
-//		06/11/97 BRH	Added m_u16ShooterID so it can pass along the information
+//		06/11/97 BRH	Added m_shooter so it can pass along the information
 //							for scoring purposes.
 //
 //		06/25/97 BRH	Added shadow sprite and alpha animation for the shadow
@@ -69,7 +69,7 @@ class CBarrel : public CThing3d
 	// Variables
 	//---------------------------------------------------------------------------
 	public:
-		uint16_t		m_u16ShooterID;				// Variable for storing the shooter ID
+      managed_ptr<CThing3d> m_shooter;				// Variable for storing the shooter ID
 														// to pass along in the messages.
 
 	protected:
@@ -107,16 +107,16 @@ class CBarrel : public CThing3d
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
 			m_sScreenRadius = 20;
 			m_panimCur = m_pPreviousAnim = nullptr;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			m_bSpecial = false;
          }
 
       ~CBarrel(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_scene.RemoveSprite(&m_spriteShadow);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->Scene()->RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_spriteShadow);
+			realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
@@ -140,9 +140,6 @@ class CBarrel : public CThing3d
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

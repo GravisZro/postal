@@ -299,7 +299,7 @@ class CScene
 			RImage* pimDst,										// In:  Destination image
 			int16_t sDstX,											// In:  Destination (image) x coord
 			int16_t sDstY,											// In:  Destination (image) y coord
-			CHood* phood);											// In:  The hood involved.
+         managed_ptr<CHood> phood);											// In:  The hood involved.
 
 		// Render a single sprite tree.
 		void Render(						// Returns nothing.
@@ -307,7 +307,7 @@ class CScene
 			int16_t			sDstX,			// Destination 2D x coord.
 			int16_t			sDstY,			// Destination 2D y coord.
 			CSprite*		pSprite,			// Tree of sprites to render.
-			CHood*		phood,			// Da hood, homey.
+         managed_ptr<CHood> phood,			// Da hood, homey.
 			RRect*		prcDstClip,		// Dst clip rect.
 			CSprite*		psXRayee);		// XRayee, if not nullptr.
 
@@ -317,7 +317,7 @@ class CScene
 			int16_t			sDstX,		// Destination 2D x coord.
 			int16_t			sDstY,		// Destination 2D y coord.
 			CSprite2*	ps2Cur,		// Tree of sprites to render.
-			CHood*		phood,		// Da hood, homey.
+         managed_ptr<CHood> phood,			// Da hood, homey.
 			RRect*		prcDstClip,	// Dst clip rect.
 			CSprite*		psXRayee);	// XRayee, if not nullptr.
 
@@ -335,7 +335,7 @@ class CScene
 			int16_t						sDstX,			// Destination 2D x coord.
 			int16_t						sDstY,			// Destination 2D y coord.
 			CSpriteCylinder3d*	psc3,				// Cylinder sprite.
-			CHood*					phood,			// Da hood, homey.
+         managed_ptr<CHood> phood,			// Da hood, homey.
 			RRect*					prcDstClip);	// Dst clip rect.
 
 		void									// Returns nothing.
@@ -354,7 +354,7 @@ class CScene
 			int16_t			sDstX,			// Destination 2D x coord.
 			int16_t			sDstY,			// Destination 2D y coord.
 			CSprite3*	ps3Cur,			// 3D sprite to render.
-			CHood*		phood,			// Da hood, homey.
+         managed_ptr<CHood> phood,			// Da hood, homey.
 			RRect*		prcDstClip);	// Dst clip rect.
 
 		// Setup render pipeline.  Use this function to setup or alter the pipeline.
@@ -394,7 +394,7 @@ class CScene
 		void DeadRender3D(						// Returns nothing.
 			RImage*		pimDst,					// Destination image.
 			CSprite3*	ps3Cur,					// Tree of 3D sprites to render.
-			CHood*		phood,					// Da hood, homey.
+         managed_ptr<CHood> phood,			// Da hood, homey.
 			int16_t			sDstX = 0,				// Destination 2D x coord.
 			int16_t			sDstY = 0,				// Destination 2D y coord.
 			RRect*		prcDstClip = nullptr);	// Dst clip rect.

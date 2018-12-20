@@ -132,8 +132,8 @@ class CMine : public CWeapon
 			StopLoopingSample(m_siMineBeep);
 
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->Scene()->RemoveSprite(&m_sprite);
+			realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
@@ -147,9 +147,9 @@ class CMine : public CWeapon
 		void Reset(void)
 			{
 			m_pImage = nullptr;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			m_lFuseTime = 0;
-			m_u16ShooterID = CIdBank::IdNil;
+         m_shooter.reset();
 			m_siMineBeep = 0;
 			}
 

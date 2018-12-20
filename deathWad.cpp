@@ -231,7 +231,7 @@ void CDeathWad::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime(); 
+		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
@@ -287,9 +287,9 @@ void CDeathWad::Update(void)
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 
 				// If the new position is a ways off screen
-				if (	m_dZ > ms_sOffScreenDist + m_pRealm->GetRealmHeight()
+				if (	m_dZ > ms_sOffScreenDist + realm()->GetRealmHeight()
 					||	m_dZ < -ms_sOffScreenDist
-					||	m_dX > ms_sOffScreenDist + m_pRealm->GetRealmWidth() 
+					||	m_dX > ms_sOffScreenDist + realm()->GetRealmWidth() 
 					||	m_dX < -ms_sOffScreenDist)
 					{
 					// Blow Up
@@ -321,7 +321,7 @@ void CDeathWad::Update(void)
 					{
 					// If we hit someone . . .
 					CSmash* pSmashed = nullptr;
-					if (m_pRealm->m_smashatorium.QuickCheck(
+					if (realm()->m_smashatorium.QuickCheck(
 						&m_smash, 
 						m_u32CollideIncludeBits, 
 						m_u32CollideDontcareBits,
@@ -330,7 +330,7 @@ void CDeathWad::Update(void)
 						{
 						ASSERT(pSmashed->m_pThing);
 						// Protect the launcher of the death wad . . .
-						if (pSmashed->m_pThing->GetInstanceID() != m_u16ShooterID)
+                  if (pSmashed->m_pThing != m_shooter)
 							{
 							m_stockpile.m_sNumGrenades--;
 							Explosion();
@@ -393,8 +393,8 @@ void CDeathWad::Update(void)
 				else
 					{
 					// Otherwise, persist as powerup.
-               CPowerUp* ppowerup = static_cast<CPowerUp*>(realm()->makeType(CPowerUpID));
-               if (ppowerup != nullptr)
+               managed_ptr<CPowerUp> ppowerup = realm()->AddThing<CPowerUp>();
+               if (ppowerup)
 						{
 						// Copy whatever's left.
 						ppowerup->m_stockpile.Copy(&m_stockpile);
@@ -415,9 +415,9 @@ void CDeathWad::Update(void)
 						msg.msg_Explosion.sY					= m_dY;
 						msg.msg_Explosion.sZ					= m_dZ;
 						msg.msg_Explosion.sVelocity		= 130;
-						msg.msg_Explosion.u16ShooterID	= m_u16ShooterID;
+                  msg.msg_Explosion.shooter	= m_shooter;
 
-						SendThingMessage(&msg, msg.msg_Explosion.sPriority, ppowerup);
+                  SendThingMessage(msg, msg.msg_Explosion.sPriority, ppowerup);
 						}
 					else
 						{
@@ -438,7 +438,7 @@ void CDeathWad::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save time for next time
 		m_lPrevTime = lThisTime;
@@ -451,7 +451,7 @@ void CDeathWad::Update(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CDeathWad::Render(void)
 {
-	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+	int32_t lThisTime = realm()->m_time.GetGameTime();
 
    m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
    m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
@@ -477,7 +477,7 @@ void CDeathWad::Render(void)
 		}
 
 	// If we're not a child of someone else...
-	if (m_idParent == CIdBank::IdNil)
+   if (!parent())
 	{
 		// Map from 3d to 2d coords
 		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
@@ -486,12 +486,12 @@ void CDeathWad::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from the attribute map
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		m_sprite.m_ptrans		= &m_trans;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 		
 		// Render the 2D shadow sprite
 		CWeapon::Render();
@@ -532,7 +532,7 @@ int16_t CDeathWad::Setup(									// Returns 0 if successfull, non-zero otherwis
 	m_u32CollideExcludeBits = 0;
 
 	m_smash.m_bits = CSmash::Projectile;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	return sResult;
 }
@@ -547,7 +547,7 @@ int16_t CDeathWad::GetResources(void)						// Returns 0 if successfull, non-zero
 	sResult = m_anim.Get(RES_BASE_NAME, nullptr, nullptr, nullptr, 0);
 	if (sResult == SUCCESS)
 		{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 		if (sResult == SUCCESS)
 			{
 			// add more gets
@@ -614,26 +614,23 @@ int16_t CDeathWad::Preload(
 
 void CDeathWad::ProcessMessages(void)
 {
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
+   if(!m_MessageQueue.empty())
+   {
+     GameMessage& msg = m_MessageQueue.front();
 		switch(msg.msg_Generic.eType)
 		{
 			case typeObjectDelete:
-				m_MessageQueue.Empty();
+            m_MessageQueue.clear();
 				m_eState = State_Deleted;
 				// Don't delete this here.  Instead make sure the state is
 				// set so Update() knows to delete us and return immediately
 				// (before something else changes our state).
 				return;
 				break;
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return;
+      }
+      // Dump the rest of the messages
+      m_MessageQueue.clear();
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -677,7 +674,7 @@ bool CDeathWad::TraversePath(	// Returns true, when destination reached; false,
 		dDistance > 0 &&
 		*pbInTerrain == bInitiallyInTerrain)
 		{
-		if (m_pRealm->GetHeight(dX, dZ) > sSrcY)
+		if (realm()->GetHeight(dX, dZ) > sSrcY)
 			*pbInTerrain	= true;
 		else
 			*pbInTerrain	= false;
@@ -717,13 +714,13 @@ void CDeathWad::Explosion(void)
 	{
 	// Start an explosion object and some smoke (doesn't an explosion object
 	// automatically make smoke??).
-   CExplode* pExplosion = static_cast<CExplode*>(realm()->makeType(CExplodeID));
-   if (pExplosion != nullptr)
+   managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+   if (pExplosion)
 		{
 		// Don't blow us up.
-		pExplosion->m_u16ExceptID	= m_u16ShooterID;
+      pExplosion->m_except = m_shooter;
 
-		pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_u16ShooterID);
+      pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_shooter);
 		PlaySample(										// Returns nothing.
 															// Does not fail.
 			g_smidDeathWadExplode,					// In:  Identifier of sample you want played.
@@ -731,15 +728,14 @@ void CDeathWad::Explosion(void)
 			DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 		}
 	
-	int16_t a;
-	CFire* pSmoke;
-	for (a = 0; a < 8; a++)
-		{
-      pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-      if (pSmoke != nullptr)
+   int16_t a;
+   for (a = 0; a < 8; a++)
+   {
+     managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+      if (pSmoke)
 			{
 			pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, ms_lSmokeTimeToLive, true, CFire::Smoke);
-			pSmoke->m_u16ShooterID = m_u16ShooterID;
+         pSmoke->m_shooter = m_shooter;
 			}
 		}
 
@@ -761,20 +757,20 @@ void CDeathWad::Thrust(void)
 
 	if (m_bInsideTerrain == false)
 		{
-      CFire* pSmoke = static_cast<CFire*>(realm()->makeType(CFireID));
-      if (pSmoke != nullptr)
+      managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+      if (pSmoke)
 			{
 			// This needs to be fixed by calculating the position of the back end of
 			// the deathwad in 3D based on the rotation.  
 			pSmoke->Setup(m_dX, m_dY, m_dZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
-			pSmoke->m_u16ShooterID = m_u16ShooterID;
+         pSmoke->m_shooter = m_shooter;
 			}
 
 		// Also, create a fire (moving at the wad's velocity?).
-      CFireball* pfireball	= static_cast<CFireball*>(realm()->makeType(CFireballID));
-      if (pfireball != nullptr)
+      managed_ptr<CFireball> pfireball = realm()->AddThing<CFireball>();
+      if (pfireball)
 			{
-			pfireball->Setup(m_dX, m_dY, m_dZ, m_dRot, ms_lFireBallTimeToLive, m_u16ShooterID);
+         pfireball->Setup(m_dX, m_dY, m_dZ, m_dRot, ms_lFireBallTimeToLive, m_shooter);
 			pfireball->m_dHorizVel	= m_dHorizVel / 4.0;
 			pfireball->m_eState		= State_Fire;
 			}
@@ -810,16 +806,14 @@ void CDeathWad::Launch(void)
 
 	Explosion();
 
-	CThing*	pthing	= nullptr;
 	// Get the launcher . . .
-	if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16ShooterID) == SUCCESS)
+   if(m_shooter)
 		{
 		// If it's a dude . . .
-		if (pthing->GetClassID() == CDudeID)
-			{
-			CDude*	pdude	= (CDude*)pthing;
+      if (m_shooter->type() == CDudeID)
+         {
 			// Add force vector for kick.  See ya.
-			pdude->AddForceVector(ms_dKickVelocity, m_dRot - 180);
+         managed_ptr<CDude>(m_shooter)->AddForceVector(ms_dKickVelocity, m_dRot - 180);
 			}
 		}
 	}

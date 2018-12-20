@@ -35,7 +35,7 @@
 //							collide with anything (I guess it might've collided with
 //							things hovering around the upper, left corner of the realm).
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/11/97 BRH	Passed on shooter ID to the message it sends when it burns
@@ -60,7 +60,7 @@
 //
 //					JMI	Made heavier again.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -125,7 +125,7 @@
 #include "fireball.h"
 #include "game.h"
 #include "reality.h"
-
+#include "Thing3d.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -242,14 +242,6 @@ int16_t CFirestream::Startup(void)								// Returns 0 if successfull, non-zero 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CFirestream::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	return SUCCESS;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CFirestream::Suspend(void)
@@ -268,7 +260,7 @@ void CFirestream::Resume(void)
 	// the time so as to ignore any time that passed while we were suspended.
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
-		m_lPrevTime = m_pRealm->m_time.GetGameTime();
+		m_lPrevTime = realm()->m_time.GetGameTime();
 }
 
 
@@ -284,7 +276,7 @@ void CFirestream::Update(void)
 	if (!m_sSuspend)
 	{
 #ifdef UNUSED_VARIABLES
-      lThisTime = m_pRealm->m_time.GetGameTime();
+      lThisTime = realm()->m_time.GetGameTime();
 #endif
 
 		// See if we killed ourselves
@@ -294,55 +286,51 @@ void CFirestream::Update(void)
 			return;
 			}
 
-		CFireball*	pfireball1	= nullptr;
-		CFireball*	pfireball2	= nullptr;
-		CFireball*	pfireball3	= nullptr;
-
 		// Update the other fireballs
-		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pfireball1, m_idFireball1) == SUCCESS)
+      if (m_fireball1)
 			{
-			pfireball1->m_dX		= m_dX;
-			pfireball1->m_dY		= m_dY;
-			pfireball1->m_dZ		= m_dZ;
-			pfireball1->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
+         m_fireball1->m_dX		= m_dX;
+         m_fireball1->m_dY		= m_dY;
+         m_fireball1->m_dZ		= m_dZ;
+         m_fireball1->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
 			}
 		else
 			{
-			m_idFireball1	= CIdBank::IdNil;
+         m_fireball1.reset();
 			}
 
-		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pfireball2, m_idFireball2) == SUCCESS)
+      if (m_fireball2)
 			{
-			pfireball2->m_dX		= m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;
-			pfireball2->m_dY		= m_dY;
-			pfireball2->m_dZ		= m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;
-			pfireball2->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
+         m_fireball2->m_dX		= m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;
+         m_fireball2->m_dY		= m_dY;
+         m_fireball2->m_dZ		= m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;
+         m_fireball2->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
 			}
 		else
-			{
-			m_idFireball2	= CIdBank::IdNil;
+         {
+        m_fireball2.reset();
 			}
 
-		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pfireball3, m_idFireball3) == SUCCESS)
+      if (m_fireball3)
 			{
-			pfireball3->m_dX		= m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;
-			pfireball3->m_dY		= m_dY;
-			pfireball3->m_dZ		= m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;
-			pfireball3->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
+         m_fireball3->m_dX		= m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;
+         m_fireball3->m_dY		= m_dY;
+         m_fireball3->m_dZ		= m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;
+         m_fireball3->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
 			}
 		else
-			{
-			m_idFireball3	= CIdBank::IdNil;
+         {
+        m_fireball3.reset();
 			}
 
 		if (m_eState == CWeapon::State_Fire)
 		{
-			if (pfireball1)
-				pfireball1->m_eState = CWeapon::State_Fire;
-			if (pfireball2)
-				pfireball2->m_eState = CWeapon::State_Fire;
-			if (pfireball3)
-				pfireball3->m_eState = CWeapon::State_Fire;
+         if (m_fireball1)
+            m_fireball1->m_eState = CWeapon::State_Fire;
+         if (m_fireball2)
+            m_fireball2->m_eState = CWeapon::State_Fire;
+         if (m_fireball3)
+            m_fireball3->m_eState = CWeapon::State_Fire;
 			delete this;
 			return;
 		}
@@ -377,7 +365,7 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 	int16_t sZ,												// In:  New z coord
 	int16_t sDir,												// In:  Direction of travel
 	int32_t lTimeToLive,										// In:  Number of milliseconds to burn, default 1sec
-	uint16_t u16ShooterID)										// In:  Shooter's ID so you don't hit him
+   managed_ptr<CThing3d> shooter)										// In:  Shooter's ID so you don't hit him
 {
 	int16_t sResult = SUCCESS;
 	double dX;
@@ -388,14 +376,14 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
 	m_dRot = sDir;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
-	m_u16ShooterID = u16ShooterID;
+	m_lPrevTime = realm()->m_time.GetGameTime();
+   m_shooter = shooter;
 
 	// Make sure that the starting positions are valid before creating
 	// fireballs here, otherwise they will shoot through walls.
 	dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
 	dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
-	if (m_pRealm->IsPathClear(		// Returns true, if the entire path is clear.                 
+	if (realm()->IsPathClear(		// Returns true, if the entire path is clear.                 
 											// Returns false, if only a portion of the path is clear.     
 											// (see *psX, *psY, *psZ).                                    
 			(int16_t) m_dX, 				// In:  Starting X.                                           
@@ -418,32 +406,23 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 											// inhibitor.  If false, reaching the edge of the realm    
 											// indicates a clear path.                                 
 	{
-		m_lTimeToLive = m_pRealm->m_time.GetGameTime() + lTimeToLive;
+		m_lTimeToLive = realm()->m_time.GetGameTime() + lTimeToLive;
 
-      CFireball* pfireball = static_cast<CFireball*>(realm()->makeTypeWithID(CFireballID));
-      if (pfireball != nullptr)
-		{
-			pfireball->Setup(m_dX, m_dY, m_dZ, sDir, lTimeToLive, u16ShooterID);
-			m_idFireball1	= pfireball->GetInstanceID();
-		}
+      m_fireball1 = realm()->AddThing<CFireball>();
+      if (m_fireball1)
+         m_fireball1->Setup(m_dX, m_dY, m_dZ, sDir, lTimeToLive, shooter);
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;	// First interval
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;	
-      pfireball = static_cast<CFireball*>(realm()->makeTypeWithID(CFireballID));
-      if (pfireball != nullptr)
-		{
-			pfireball->Setup(dX, m_dY, dZ, sDir, lTimeToLive, u16ShooterID);
-			m_idFireball2	= pfireball->GetInstanceID();
-		}
+      m_fireball2 = realm()->AddThing<CFireball>();
+      if (m_fireball2)
+         m_fireball2->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
-      pfireball = static_cast<CFireball*>(realm()->makeTypeWithID(CFireballID));
-      if (pfireball != nullptr)
-		{
-			pfireball->Setup(dX, m_dY, dZ, sDir, lTimeToLive, u16ShooterID);
-			m_idFireball3	= pfireball->GetInstanceID();
-		}
+      m_fireball3 = realm()->AddThing<CFireball>();
+      if (m_fireball3)
+         m_fireball3->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
 
 		if (sResult == SUCCESS)
 			sResult = Init();
@@ -478,8 +457,8 @@ int16_t CFirestream::EditNew(									// Returns 0 if successfull, non-zero othe
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-	m_lTimer = GetRand(); //m_pRealm->m_time.GetGameTime() + 1000;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lTimer = GetRand(); //realm()->m_time.GetGameTime() + 1000;
+	m_lPrevTime = realm()->m_time.GetGameTime();
 
 	return sResult;
 }
@@ -550,31 +529,21 @@ return SUCCESS;
 
 CFirestream::CFirestreamState CFirestream::ProcessFireballMessages(void)
 {
-	CFirestreamState eNewState = State_Idle;
+  CFirestreamState eNewState = State_Idle;
 
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-				{
-				// Pass the message on . . .
-				SendThingMessage(&msg, m_idFireball1);
-				SendThingMessage(&msg, m_idFireball2);
-				SendThingMessage(&msg, m_idFireball3);
-
-				m_MessageQueue.Empty();
-				return State_Deleted;
-				break;
-				}
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return eNewState;
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+    {
+      SendThingMessage(msg, m_fireball1);
+      SendThingMessage(msg, m_fireball2);
+      SendThingMessage(msg, m_fireball3);
+      eNewState = State_Deleted;
+    }
+    m_MessageQueue.clear();
+  }
+  return eNewState;
 }
 
 
@@ -691,14 +660,6 @@ int16_t CFireball::Startup(void)								// Returns 0 if successfull, non-zero ot
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CFireball::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	return SUCCESS;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CFireball::Suspend(void)
@@ -717,7 +678,7 @@ void CFireball::Resume(void)
 	// the time so as to ignore any time that passed while we were suspended.
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
-		m_lPrevTime = m_pRealm->m_time.GetGameTime();
+		m_lPrevTime = realm()->m_time.GetGameTime();
 }
 
 
@@ -734,7 +695,7 @@ void CFireball::Update(void)
 
 	if (!m_sSuspend)
 	{
-		lThisTime = m_pRealm->m_time.GetGameTime();
+		lThisTime = realm()->m_time.GetGameTime();
 		m_lAnimTime += lThisTime - m_lPrevTime;
 
 		// See if we killed ourselves
@@ -760,11 +721,11 @@ void CFireball::Update(void)
 
 						// Check attribute map for walls, and if you hit a wall, 
 						// set the timer so you will die off next time around.
-						int16_t sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+						int16_t sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 						// If it hits a wall taller than itself, then it will rotate in the
 						// predetermined direction until it is free to move.
 						if ((int16_t) m_dY < sHeight ||
-							!m_pRealm->IsPathClear(	// Returns true, if the entire path is clear.                 
+							!realm()->IsPathClear(	// Returns true, if the entire path is clear.                 
 															// Returns false, if only a portion of the path is clear.     
 															// (see *psX, *psY, *psZ).                                    
 							(int16_t) m_dX, 				// In:  Starting X.                                           
@@ -815,13 +776,13 @@ void CFireball::Update(void)
 							msg.msg_Burn.eType = typeBurn;
 							msg.msg_Burn.sPriority = 0;
 							msg.msg_Burn.sDamage = 10;
-							msg.msg_Burn.u16ShooterID = m_u16ShooterID;
-							m_pRealm->m_smashatorium.QuickCheckReset(&m_smash, m_u32CollideIncludeBits,
+                     msg.msg_Burn.shooter = m_shooter;
+							realm()->m_smashatorium.QuickCheckReset(&m_smash, m_u32CollideIncludeBits,
 																				  m_u32CollideDontcareBits, 
 																				  m_u32CollideExcludeBits);
-							while (m_pRealm->m_smashatorium.QuickCheckNext(&pSmashed))
-								if (pSmashed->m_pThing->GetInstanceID() != m_u16ShooterID)
-									SendThingMessage(&msg, pSmashed->m_pThing);				
+							while (realm()->m_smashatorium.QuickCheckNext(&pSmashed))
+                        if (pSmashed->m_pThing != m_shooter)
+                           SendThingMessage(msg, pSmashed->m_pThing);
 						}
 					}
 
@@ -866,7 +827,7 @@ void CFireball::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 //		m_sprite.m_sAlphaLevel = 200;
 		if (m_lTotalFlameTime == 0)
@@ -875,7 +836,7 @@ void CFireball::Render(void)
 			m_lTotalFlameTime = 500;
 			}
 
-//		m_sprite.m_sAlphaLevel = MIN((long)255, (long) (((m_lTimeToLive - m_pRealm->m_time.GetGameTime()) / m_lTotalFlameTime) * 255));
+//		m_sprite.m_sAlphaLevel = MIN((long)255, (long) (((m_lTimeToLive - realm()->m_time.GetGameTime()) / m_lTotalFlameTime) * 255));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
 		m_sprite.m_pImage = &(pAnim->m_imColor);
@@ -884,7 +845,7 @@ void CFireball::Render(void)
 		m_sCurrentAlphaChannel = 0; //MIN(m_sCurrentAlphaChannel, (short) (m_sTotalAlphaChannels - 1));
 		m_sprite.m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
 		// Adjust level between 0 and max so it gets more opaque with time.
-		m_sprite.m_sAlphaLevel = MIN_ALPHA + MAX_ALPHA - (MAX_ALPHA * (m_lTimeToLive - m_pRealm->m_time.GetGameTime()) ) / m_lTotalFlameTime ;
+		m_sprite.m_sAlphaLevel = MIN_ALPHA + MAX_ALPHA - (MAX_ALPHA * (m_lTimeToLive - realm()->m_time.GetGameTime()) ) / m_lTotalFlameTime ;
 		// Keep in range.
 		if (m_sprite.m_sAlphaLevel < 0)
 			m_sprite.m_sAlphaLevel = 0;
@@ -892,7 +853,7 @@ void CFireball::Render(void)
 			m_sprite.m_sAlphaLevel = MAX_ALPHA;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 		
 	}
 }
@@ -907,7 +868,7 @@ int16_t CFireball::Setup(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sZ,												// In:  New z coord
 	int16_t sDir,												// In:  Direction of travel
 	int32_t lTimeToLive,										// In:  Number of milliseconds to burn, default 1sec
-	uint16_t u16ShooterID)										// In:  Shooter's ID so you don't hit him
+   managed_ptr<CThing3d> shooter)										// In:  Shooter's ID so you don't hit him
 {
 	int16_t sResult = SUCCESS;
 	
@@ -916,14 +877,14 @@ int16_t CFireball::Setup(									// Returns 0 if successfull, non-zero otherwis
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
 	m_dRot = sDir;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lCollisionTimer = m_lPrevTime + ms_lCollisionTime;
-	m_u16ShooterID = u16ShooterID;
+   m_shooter = shooter;
 	m_lAnimTime = GetRandom();
 	m_dHorizVel	= ms_dFireVelocity; 
 
 	m_lTotalFlameTime = lTimeToLive;
-	m_lTimeToLive = m_pRealm->m_time.GetGameTime() + lTimeToLive;
+	m_lTimeToLive = realm()->m_time.GetGameTime() + lTimeToLive;
 	m_sCurrentAlphaChannel = 0;
 	
 	// Load resources
@@ -951,9 +912,9 @@ int16_t CFireball::Init(void)
 	m_smash.m_sphere.sphere.Z = m_dZ;
 	m_smash.m_sphere.sphere.lRadius = ms_sSmallRadius;
 	m_smash.m_bits = CSmash::Fire;
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 	// Update the smash
-	m_pRealm->m_smashatorium.Update(&m_smash);
+	realm()->m_smashatorium.Update(&m_smash);
 	m_eState = CWeapon::State_Idle;
 
 	// Set the collision bits
@@ -979,8 +940,8 @@ int16_t CFireball::EditNew(									// Returns 0 if successfull, non-zero otherw
 	m_dX = (double)sX;
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
-	m_lTimer = GetRand(); //m_pRealm->m_time.GetGameTime() + 1000;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lTimer = GetRand(); //realm()->m_time.GetGameTime() + 1000;
+	m_lPrevTime = realm()->m_time.GetGameTime();
 
 	// Load resources
 	sResult = GetResources();
@@ -1041,7 +1002,7 @@ int16_t CFireball::GetResources(void)			// Returns 0 if successfull, non-zero ot
 {
 	int16_t sResult = SUCCESS;
 
-	sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_FILE), &m_pAnimChannel, RFile::LittleEndian);
+	sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_FILE), &m_pAnimChannel, RFile::LittleEndian);
 
 	if (sResult != SUCCESS)
 		TRACE("CFireball::GetResources - Error getting fire animation resource\n");
@@ -1087,20 +1048,19 @@ CFireball::CFireballState CFireball::ProcessFireballMessages(void)
 {
 	CFireballState eNewState = State_Idle;
 
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
+   if(!m_MessageQueue.empty())
+   {
+     GameMessage& msg = m_MessageQueue.front();
 		switch(msg.msg_Generic.eType)
 		{
 			case typeObjectDelete:
-				m_MessageQueue.Empty();
+            m_MessageQueue.clear();
 				return State_Deleted;
 				break;
 		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
+      // Dump the rest of the messages
+      m_MessageQueue.clear();
+   }
 
 	return eNewState;
 }

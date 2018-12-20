@@ -211,7 +211,7 @@
 //							again.
 //
 //		08/14/97	JMI	Switched references to g_GameSettings.m_sDifficulty to
-//							m_pRealm->m_flags.sDifficulty.
+//							realm()->m_flags.sDifficulty.
 //
 //		08/17/97 BRH	Slowed writhing crawl velocity from 5 to 2.5
 //
@@ -488,7 +488,7 @@ int16_t CPerson::Init(void)
 	m_eCurrentAction = m_eSuggestedAction = CDoofus::Action_Guard;
 	m_dAcc = ms_dAccUser;
 	m_panimCur = &m_animStand;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+   m_lTimer = realm()->m_time.GetGameTime() + 500;
 
 	// Stock up.
 	m_stockpile.Copy(&CStockPile::ms_stockpileMax);
@@ -510,7 +510,7 @@ int16_t CPerson::Init(void)
 		m_smash.m_bits = CSmash::Civilian | CSmash::Character;
 		}
 
-	m_smash.m_pThing = this;
+   m_smash.m_pThing = this;
 
 	// Special case for the kids who cannot be hit.
 	if (strncmp(g_apersons[m_ePersonType].pszDescription, "Kid", 3) == 0)
@@ -518,7 +518,7 @@ int16_t CPerson::Init(void)
 
 	m_sBrightness = 0;	// Default Brightness level
 
-	m_lCommentTimer = m_pRealm->m_time.GetGameTime() + ms_lMinCommentTime + GetRandom() % ms_lCommentTimeVariance;
+   m_lCommentTimer = realm()->m_time.GetGameTime() + ms_lMinCommentTime + GetRandom() % ms_lCommentTimeVariance;
 
 	// Override the Doofus set timeout defaults by replacing the values with the
 	// personatorium values.
@@ -529,7 +529,7 @@ int16_t CPerson::Init(void)
 	// If the difficulty is set up to its highest level, then upgrade
 	// guns to spray cannons and missiles to heatseekers.
 	// Note we only do this if not in edit mode.
-	if (m_pRealm->m_flags.sDifficulty == 11 && m_pRealm->m_flags.bEditing == false)
+   if (realm()->m_flags.sDifficulty == 11 && realm()->m_flags.bEditing == false)
 	{
 		switch (m_eWeaponType)
 		{
@@ -562,11 +562,9 @@ int16_t CPerson::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CPerson::Update(void)
 {
-	CThing* pDemon = nullptr;
-
 	if (!m_sSuspend)
 	{
-      milliseconds_t lThisTime = m_pRealm->m_time.GetGameTime();
+      milliseconds_t lThisTime = realm()->m_time.GetGameTime();
 
 		// See if its time to reevaluate the states
 		if (lThisTime > m_lEvalTimer)
@@ -681,19 +679,21 @@ void CPerson::Update(void)
 				break;
 
 			case State_Dead:
+        {
 				if ((m_ePersonType == Personatorium::Nude1) || (m_ePersonType == Personatorium::Nude2))
 					UnlockAchievement(ACHIEVEMENT_KILL_A_NAKED_PERSON);
 
 				GameMessage msg;
 				msg.msg_Death.eType = typeDeath;
 				msg.msg_Death.sPriority = 0;
-				pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-				if (pDemon)
-					SendThingMessage(&msg, pDemon);				
+            auto list = realm()->GetThingsByType(CDemonID);
+            if (!list.empty())
+               SendThingMessage(msg, list.front());
 				CDoofus::OnDead();
 				delete this;  
 				return;
 				break;
+        }
 
 			case State_PanicBegin:
 				Logic_PanicBegin();
@@ -788,7 +788,7 @@ void CPerson::Update(void)
 		PositionSmash();
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+      realm()->m_smashatorium.Update(&m_smash);
 		
 		m_lPrevTime = lThisTime;
 
@@ -872,7 +872,7 @@ void CPerson::Logic_Writhing(void)
 		double dNewX;
 		double dNewY;
 		double dNewZ;
-		double dSeconds = (m_pRealm->m_time.GetGameTime() - m_lPrevTime) / 1000.0;
+      double dSeconds = (realm()->m_time.GetGameTime() - m_lPrevTime) / 1000.0;
 
 		m_dAcc = ms_dAccUser;
 		UpdateVelocities(dSeconds, ms_dMaxCrawlVel, ms_dMaxCrawlVel);
@@ -970,14 +970,6 @@ void CPerson::Logic_Writhing(void)
 		}
 #endif
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CPerson::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-   return SUCCESS;
 }
 
 #if !defined(EDITOR_REMOVED)
@@ -1227,7 +1219,7 @@ int16_t CPerson::EditModify(void)
 						strFile	+= ".tex";
 
 						CTexEdit	te;
-						te.DoModal(&m_animStand, m_pRealm->m_phood->m_pltAmbient, m_pRealm->m_phood->m_pltSpot, strFile);
+                  te.DoModal(&m_animStand, realm()->Hood()->m_pltAmbient, realm()->Hood()->m_pltSpot, strFile);
 						}
 					break;
 				}
@@ -1723,7 +1715,7 @@ SampleMaster::SoundInstance CPerson::PlaySoundShot(void)
 {
 	m_siPlaying = 0;
 	SampleMasterID*	psmid	= &g_smidNil;
-   milliseconds_t lThisTime = m_pRealm->m_time.GetGameTime();
+   milliseconds_t lThisTime = realm()->m_time.GetGameTime();
    milliseconds_t	lSampleDuration	= 0;	// Safety.
 
 	if (lThisTime > m_lSampleTimeIsPlaying)
@@ -1859,7 +1851,7 @@ SampleMaster::SoundInstance CPerson::PlaySoundShooting(void)
 	m_siPlaying = 0;
 	SampleMasterID*	psmid	= &g_smidNil;
 
-	if (++m_usCommentCounter % 10 == 0 && m_idDude != CIdBank::IdNil)
+   if (++m_usCommentCounter % 10 == 0 && m_dude)
 	{
 		switch (GetRandom() % 4)
 		{
@@ -1941,19 +1933,15 @@ SampleMaster::SoundInstance CPerson::PlaySoundRandom(void)
 		n = 10;
 	else
 		n = 20;
-	if (++m_usCommentCounter % n == 0 && m_idDude != CIdBank::IdNil)
+   if (++m_usCommentCounter % n == 0 && m_dude)
 //#else
-	//if (++m_usCommentCounter % 10 == 0 && m_idDude != CIdBank::IdNil)
+   //if (++m_usCommentCounter % 10 == 0 && m_dude)
 //#endif
 	{
 		// Make sure the dude you are tracking is not dead before making any
 		// stupid comments about him, like "where did he go?", "Get that guy"
-		if (m_idDude != CIdBank::IdNil)
-		{
-			CDude* pdude;
-         if (m_pRealm->m_idbank.GetThingByID((CThing**) &pdude, m_idDude) == SUCCESS)
-			{
-				if (pdude && pdude->m_state != State_Dead)
+
+            if (m_dude && m_dude->m_state != State_Dead)
 				{
 					switch (GetRandom() % 4)
 					{
@@ -1982,9 +1970,7 @@ SampleMaster::SoundInstance CPerson::PlaySoundRandom(void)
 																		// Negative indicates to use the distance to the ear.
 						&m_siPlaying);											// Out: Handle for adjusting sound volume
 				}
-			}
-		}
-	}
+         }
 
 	return m_siPlaying;
 }

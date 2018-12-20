@@ -53,8 +53,8 @@ CTrigger::CTrigger(void)
 	{
 	// Insert a default instance into the realm:
 	m_pmgi = nullptr;
-	m_pRealm->m_pTriggerMapHolder = this;
-	m_pRealm->m_pTriggerMap = m_pmgi;
+   realm()->m_pTriggerMapHolder = this;
+	realm()->m_pTriggerMap = m_pmgi;
 
 	// Assume we don't know the UID's fdor the pylons yet, so clear them all out:
 	for (int16_t i=0;i < 256;i++)
@@ -73,8 +73,8 @@ CTrigger::~CTrigger()
 	m_pmgi = nullptr;
 
 	// Clear it from the realm:
-	m_pRealm->m_pTriggerMap = nullptr;
-	m_pRealm->m_pTriggerMapHolder = nullptr;
+	realm()->m_pTriggerMap = nullptr;
+   realm()->m_pTriggerMapHolder.reset();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,10 +93,10 @@ int16_t CTrigger::Load(								// Returns 0 if successfull, non-zero otherwise
 	if (sResult == SUCCESS)
 		{
 		// Load object data
-		m_pRealm->m_pTriggerMap = nullptr; // clear the shadow
+		realm()->m_pTriggerMap = nullptr; // clear the shadow
 		// ASSUME THERE WILL ALREADY BE AN EMPTY TRIGGER MAP HOLDER!
-      if (m_pRealm->m_pTriggerMapHolder == nullptr)
-        m_pRealm->m_pTriggerMapHolder = static_cast<CTrigger*>(realm()->makeType(CTriggerID));
+      if (!realm()->m_pTriggerMapHolder)
+        realm()->m_pTriggerMapHolder = realm()->AddThing<CTrigger>();
 
 		if (m_pmgi) delete m_pmgi;
 		m_pmgi = nullptr;
@@ -126,11 +126,11 @@ int16_t CTrigger::Load(								// Returns 0 if successfull, non-zero otherwise
 					else
 						{
 						// Install into the Realm
-						m_pRealm->m_pTriggerMapHolder = this;
-						m_pRealm->m_pTriggerMap = m_pmgi;
+                  realm()->m_pTriggerMapHolder = this;
+						realm()->m_pTriggerMap = m_pmgi;
 						
 						// Copy the Pylons to the realm!
-						for (int16_t i=0;i < 256;i++) m_pRealm->m_asPylonUIDs[i] = m_ausPylonUIDs[i];
+						for (int16_t i=0;i < 256;i++) realm()->m_asPylonUIDs[i] = m_ausPylonUIDs[i];
 						}
 					}
 				}
@@ -225,15 +225,6 @@ int16_t CTrigger::Startup(void)								// Returns 0 if successfull, non-zero oth
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CTrigger::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CTrigger::Suspend(void)
@@ -320,10 +311,10 @@ void CTrigger::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void	CTrigger::AddData(RMultiGridIndirect* pmgi)
 	{
-	m_pRealm->m_pTriggerMap = m_pmgi = pmgi;
+	realm()->m_pTriggerMap = m_pmgi = pmgi;
 
 	// Copy my Pylon Data into the Realm's:
-	for (int16_t i=0;i < 256;i++) m_pRealm->m_asPylonUIDs[i] = m_ausPylonUIDs[i];
+	for (int16_t i=0;i < 256;i++) realm()->m_asPylonUIDs[i] = m_ausPylonUIDs[i];
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

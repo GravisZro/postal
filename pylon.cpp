@@ -42,7 +42,7 @@
 //		05/17/97 BRH	Moved the clearing of the triggered flag to the top of
 //							Update so that it will stay alive an entire interation.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/17/97 MJR	Moved some vars that were CPylon statics into the realm
@@ -56,7 +56,7 @@
 //		06/30/97	JMI	Now maps the Z to 3D when loading fileversions previous to
 //							24.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/14/97	JMI	Fixed two spots that did not check the return value from
@@ -151,7 +151,7 @@ int16_t CPylon::Load(										// Returns 0 if successfull, non-zero otherwise
 		if (ulFileVersion < 24)
 			{
 			// Convert to 3D.
-			m_pRealm->MapY2DtoZ3D(
+			realm()->MapY2DtoZ3D(
 				m_dZ,
 				&m_dZ);
 			}
@@ -223,7 +223,7 @@ int16_t CPylon::Startup(void)								// Returns 0 if successfull, non-zero other
 	int16_t sResult = SUCCESS;
 
 	// At this point we can assume the CHood was loaded, so we init our height
-	m_dY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+	m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 
 	// Init other stuff
 	sResult = GetResources();
@@ -234,21 +234,12 @@ int16_t CPylon::Startup(void)								// Returns 0 if successfull, non-zero other
 	m_smash.m_sphere.sphere.Z			= m_dZ;
 	m_smash.m_sphere.sphere.lRadius	= m_sprite.m_pImage->m_sWidth;
 	m_smash.m_bits		= CSmash::Pylon;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	// Update the smash.
-	m_pRealm->m_smashatorium.Update(&m_smash);
+	realm()->m_smashatorium.Update(&m_smash);
 
 	return sResult;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CPylon::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-   return SUCCESS;
 }
 
 
@@ -323,10 +314,10 @@ int16_t CPylon::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	m_smash.m_sphere.sphere.Z			= m_dZ;
 	m_smash.m_sphere.sphere.lRadius	= m_sprite.m_pImage->m_sWidth;
 	m_smash.m_bits		= CSmash::Pylon;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	// Update the smash.
-	m_pRealm->m_smashatorium.Update(&m_smash);
+	realm()->m_smashatorium.Update(&m_smash);
 
 	return sResult;
 }
@@ -424,7 +415,7 @@ int16_t CPylon::EditModify(void)
 										m_msg.msg_Popout.ucIDNext = pSecondaryGui->GetVal(3);
 										m_msg.msg_Popout.u16UniquePylonID = GetPylonUniqueID(m_msg.msg_Popout.ucIDNext);
 										CPylon* pPylon;
-                              if (m_pRealm->m_idbank.GetThingByID((CThing**) &pPylon, m_msg.msg_Popout.u16UniquePylonID) == SUCCESS)
+                              if (realm()->m_idbank.GetThingByID((CThing**) &pPylon, m_msg.msg_Popout.u16UniquePylonID) == SUCCESS)
 										{
 											m_msg.msg_Popout.sNextPylonX = pPylon->GetX();
 											m_msg.msg_Popout.sNextPylonZ = pPylon->GetZ();
@@ -452,7 +443,7 @@ int16_t CPylon::EditModify(void)
 										m_msg.msg_ShootCycle.ucIDNext = pSecondaryGui->GetVal(3);
 										m_msg.msg_ShootCycle.u16UniquePylonID = GetPylonUniqueID(m_msg.msg_ShootCycle.ucIDNext);
 										CPylon* pPylon;
-                              if (m_pRealm->m_idbank.GetThingByID((CThing**) &pPylon, m_msg.msg_ShootCycle.u16UniquePylonID) == SUCCESS)
+                              if (realm()->m_idbank.GetThingByID((CThing**) &pPylon, m_msg.msg_ShootCycle.u16UniquePylonID) == SUCCESS)
 										{
 											m_msg.msg_ShootCycle.sNextPylonX = pPylon->GetX();
 											m_msg.msg_ShootCycle.sNextPylonZ = pPylon->GetZ();
@@ -496,10 +487,10 @@ int16_t CPylon::EditMove(									// Returns 0 if successfull, non-zero otherwis
 	m_smash.m_sphere.sphere.Z			= m_dZ;
 	m_smash.m_sphere.sphere.lRadius	= m_sprite.m_pImage->m_sWidth;
 	m_smash.m_bits		= CSmash::Pylon;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	// Update the smash.
-	m_pRealm->m_smashatorium.Update(&m_smash);
+	realm()->m_smashatorium.Update(&m_smash);
 
    return SUCCESS;
 }
@@ -537,13 +528,13 @@ void CPylon::EditRender(void)
 	m_sprite.m_sY2	-= m_pImage->m_sHeight;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Image would normally animate, but doesn't for now
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -596,7 +587,7 @@ int16_t CPylon::GetResources(void)						// Returns 0 if successfull, non-zero ot
    if (m_pImage == nullptr)
 		{
 		RImage*	pimBouyRes;
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &pimBouyRes);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &pimBouyRes);
 		if (sResult == SUCCESS)
 			{
 			// Allocate image . . .
@@ -685,14 +676,15 @@ int16_t CPylon::FreeResources(void)						// Returns 0 if successfull, non-zero o
 ////////////////////////////////////////////////////////////////////////////////
 // MessageRequest - Other Things can ask for the hint message from this bouy
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 void CPylon::MessageRequest(CThing* pRequestingThing)
 {
 	if (pRequestingThing)
 	{
-		SendThingMessage(&m_msg, pRequestingThing);
+      SendThingMessage(m_msg, pRequestingThing);
 	}
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // GetFreePylonID - Scan the list of CPylons and make sure that the ID is
@@ -701,26 +693,22 @@ void CPylon::MessageRequest(CThing* pRequestingThing)
 
 uint8_t CPylon::GetFreePylonID(void)
 {
-	uint8_t id = m_pRealm->m_ucNextPylonID;
+	uint8_t id = realm()->m_ucNextPylonID;
 
-	if (m_pRealm->m_sNumPylons >= PYLON_MAX_PYLONS)
+	if (realm()->m_sNumPylons >= PYLON_MAX_PYLONS)
       return SUCCESS;
 
-	CListNode<CThing>* pNext = nullptr; 
 	bool bIdInUse = false;
 
 	do
 	{
 		bIdInUse = false;
 		// Loop through list of CPylons and see if they already have this ID
-		pNext = m_pRealm->m_aclassHeads[CPylonID].m_pnNext;
-		while (pNext && pNext->m_powner && !bIdInUse)
-		{
-			if (((CPylon*) pNext->m_powner)->m_ucID == id)
-				bIdInUse = true;
-			else
-				pNext = pNext->m_pnNext;
-		}
+      for(managed_ptr<CThing>& pThing : realm()->GetThingsByType(CPylonID))
+      {
+        if(managed_ptr<CPylon>(pThing)->m_ucID == id)
+          bIdInUse = true;
+      }
 
 		if (bIdInUse)
 		{
@@ -736,7 +724,7 @@ uint8_t CPylon::GetFreePylonID(void)
 	// limited to PYLON_MAX_PYLONS, this var just keeps counting up, so if
 	// you delete a bunch and then create a bunch more, this could wrap past
 	// PYLON_MAX_PYLONS.  The point is that it's safe.
-	m_pRealm->m_ucNextPylonID = id + 1;
+	realm()->m_ucNextPylonID = id + 1;
 
 	return id;
 }
@@ -745,13 +733,11 @@ uint8_t CPylon::GetFreePylonID(void)
 // GetPylon
 ////////////////////////////////////////////////////////////////////////////////
 
-CPylon* CPylon::GetPylon(uint8_t ucPylonID)
+managed_ptr<CPylon> CPylon::GetPylon(uint8_t ucPylonID)
 {
-	CPylon* pPylon = nullptr;;
-
-	if (m_pRealm->m_idbank.GetThingByID((CThing**) &pPylon, GetPylonUniqueID(ucPylonID)) != SUCCESS)
-		pPylon = this;
-
+   managed_ptr<CPylon> pPylon = realm()->GetOrAddThingById<CPylon>(GetPylonUniqueID(ucPylonID));
+   if(!pPylon)
+      pPylon = this;
 	return pPylon;
 }
 
@@ -761,23 +747,10 @@ CPylon* CPylon::GetPylon(uint8_t ucPylonID)
 
 uint16_t CPylon::GetPylonUniqueID(uint8_t ucPylonID)
 {
-	uint16_t u16UniqueID = CIdBank::IdNil;
-	CListNode<CThing>* pNext = m_pRealm->m_aclassHeads[CPylonID].m_pnNext;
-	
-	bool bSearching = true;
-
-	while (pNext && pNext->m_powner && bSearching)
-	{
-		if (((CPylon*) pNext->m_powner)->m_ucID == ucPylonID)
-		{
-			u16UniqueID = ((CThing*) pNext->m_powner)->GetInstanceID();			
-			bSearching = false;
-		}
-		else
-			pNext = pNext->m_pnNext;
-	}		
-
-	return u16UniqueID;
+  for(managed_ptr<CThing>& pThing : realm()->GetThingsByType(CPylonID))
+    if(managed_ptr<CPylon>(pThing)->m_ucID == ucPylonID)
+      return pThing->GetInstanceID();
+  return CIdBank::IdNil;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -786,30 +759,24 @@ uint16_t CPylon::GetPylonUniqueID(uint8_t ucPylonID)
 
 void CPylon::ProcessMessages(void)
 {
-	double dMinSqDistance = 1.0e200;
-	double dTempSqDistance = 0;
+  double dMinSqDistance = 1.0e200;
+  double dTempSqDistance = 0;
 
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-	{
-
-		switch(msg.msg_Generic.eType)
-		{
-			case typeDudeTrigger:
-				dTempSqDistance = (m_dX-msg.msg_DudeTrigger.dX) * (m_dX-msg.msg_DudeTrigger.dX) +
-				                  (m_dZ-msg.msg_DudeTrigger.dZ) * (m_dZ-msg.msg_DudeTrigger.dZ);
-				if (dTempSqDistance < dMinSqDistance)
-				{
-					m_msg.msg_Popout.u16UniqueDudeID = m_u16TargetDudeID = msg.msg_DudeTrigger.u16DudeUniqueID;
-					dMinSqDistance = dTempSqDistance;
-				}
-				break;
-				
-		}
-
-	}
-
+  while (!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeDudeTrigger)
+    {
+      dTempSqDistance = (m_dX-msg.msg_DudeTrigger.dX) * (m_dX-msg.msg_DudeTrigger.dX) +
+                        (m_dZ-msg.msg_DudeTrigger.dZ) * (m_dZ-msg.msg_DudeTrigger.dZ);
+      if (dTempSqDistance < dMinSqDistance)
+      {
+        m_msg.msg_Popout.u16UniqueDudeID = m_u16TargetDudeID = msg.msg_DudeTrigger.u16DudeUniqueID;
+        dMinSqDistance = dTempSqDistance;
+      }
+    }
+    m_MessageQueue.pop_front();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

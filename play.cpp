@@ -612,7 +612,7 @@ class CPlayInfo
 
 	//------------------------------------------------------------------------------
 	// Variables
-	//------------------------------------------------------------------------------
+   //------------------------------------------------------------------------------
 	private:
 		CNetClient*		m_pclient;						// Client object or nullptr if not network game
 		CNetServer*		m_pserver;						// Server object or nullptr if not server or not network game
@@ -621,7 +621,7 @@ class CPlayInfo
       char				m_szRealm[PATH_MAX+1];	// Realm file
 		bool				m_bJustOneRealm;				// Play just this one realm (ignored if sRealmNum < 0)
 
-		CRealm*			m_prealm;
+      CRealm*			m_realm;
 		CCamera*			m_pcamera;
 		CGrip*			m_pgrip;
 
@@ -642,7 +642,8 @@ class CPlayInfo
 
 
 	public:
-		uint16_t				m_idLocalDude;					// Local dude's ID
+      managed_ptr<CDude> m_localDude;
+      //uint16_t				m_idLocalDude;					// Local dude's ID
 		uint16_t				m_idGripTarget;				// Grip target's ID
 		bool				m_bDoRealmFrame;				// Whether to do a realm frame
       milliseconds_t				m_lSumUpdateDisplayTimes;
@@ -675,7 +676,7 @@ class CPlayInfo
 			m_szRealm[0] = 0;
 			m_bJustOneRealm = false;
 			
-			m_prealm = new CRealm;
+         m_realm = new CRealm;
 			m_pcamera = new CCamera;
 			m_pgrip = new CGrip;
 			
@@ -692,7 +693,7 @@ class CPlayInfo
 
 			m_gamestate = Game_Ok;
 
-			m_idLocalDude = CIdBank::IdNil;
+//			m_idLocalDude = CIdBank::IdNil;
 			m_idGripTarget = CIdBank::IdNil;
 			m_bDoRealmFrame = false;
 			m_lSumUpdateDisplayTimes = 0;
@@ -712,7 +713,7 @@ class CPlayInfo
 		////////////////////////////////////////////////////////////////////////////////
 		~CPlayInfo()
 			{
-			delete m_prealm;
+         delete realm();
 			delete m_pcamera;
 			delete m_pgrip;
 			}
@@ -726,7 +727,7 @@ class CPlayInfo
 		int16_t			RealmNum(void)					{ return m_sRealmNum; }
 		const char*	RealmName(void)				{ return m_szRealm; }
 		bool			JustOneRealm(void)			{ return m_bJustOneRealm; }
-		CRealm*		Realm(void)						{ return m_prealm; }
+      CRealm*		realm(void)						{ return m_realm; }
 		CCamera*		Camera(void)					{ return m_pcamera; }
 		CGrip*		Grip(void)						{ return m_pgrip; }
 		bool			Gauntlet(void)					{ return m_bGauntlet; }
@@ -766,19 +767,6 @@ class CPlayInfo
 		////////////////////////////////////////////////////////////////////////////////
 		bool PurgeSaks(void)
 			{ return m_bPurgeSaks; }
-
-
-		////////////////////////////////////////////////////////////////////////////////
-		// Get pointer to local dude if one exists, otherwise returns 0.
-		////////////////////////////////////////////////////////////////////////////////
-		CDude* LocalDudePointer(void)
-			{
-			CDude* pdudeLocal;
-         if (m_prealm->m_idbank.GetThingByID((CThing**)&pdudeLocal, m_idLocalDude) != SUCCESS)
-				m_idLocalDude = CIdBank::IdNil;
-			return pdudeLocal;
-			}
-
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Query the game mode
@@ -2119,7 +2107,7 @@ class CPlayNet : public CPlay
 					if (pclient->IsLocalInputNeeded())
 						{
 						if (!pinfo->m_bInMenu && !pinfo->m_bChatting)
-							pclient->SetLocalInput(GetLocalInput(pinfo->Realm()) );
+                     pclient->SetLocalInput(GetLocalInput(pinfo->realm()) );
 						else
 							pclient->SetLocalInput(INPUT_IDLE);
 						}
@@ -2445,7 +2433,7 @@ class CPlayStatus : public CPlay
 				rspLockBuffer();
 
 				// Init the tool bar
-				ToolBarInit(pinfo->Realm()->m_phood);
+            ToolBarInit(pinfo->realm()->Hood());
 
 				// Setup print	utilizing some values initialized by ToolBarInit().
 				m_print.SetFont(DISP_INFO_FONT_HEIGHT, &g_fontBig);
@@ -2460,23 +2448,23 @@ class CPlayStatus : public CPlay
 				if (!g_bLastLevelDemo)
 					{
 					ToolBarRender(
-						pinfo->Realm()->m_phood, 
+                  pinfo->realm()->Hood(),
 						g_pimScreenBuf, 
 						m_rectDude.sX, 
 						m_rectDude.sY,
-						pinfo->LocalDudePointer(),TRUE);
+                  pinfo->m_localDude,TRUE);
 
 					// Draw the top bar just once.  I'm assuming all the rest of the updates are
 					// partial and, therefore, this only needs to be done once.
 					rspBlit(
-						pinfo->Realm()->m_phood->m_pimTopBar,
+                  pinfo->realm()->Hood()->m_pimTopBar,
 						g_pimScreenBuf,
 						0,
 						0,
 						REALM_STATUS_RECT_X,
 						REALM_STATUS_RECT_Y,
-						pinfo->Realm()->m_phood->m_pimTopBar->m_sWidth,
-						pinfo->Realm()->m_phood->m_pimTopBar->m_sHeight);
+                  pinfo->realm()->Hood()->m_pimTopBar->m_sWidth,
+                  pinfo->realm()->Hood()->m_pimTopBar->m_sHeight);
 
 					}
 
@@ -2489,8 +2477,8 @@ class CPlayStatus : public CPlay
 				rspUpdateDisplay(
 					REALM_STATUS_RECT_X,
 					REALM_STATUS_RECT_Y,
-					pinfo->Realm()->m_phood->m_pimTopBar->m_sWidth,
-					pinfo->Realm()->m_phood->m_pimTopBar->m_sHeight);
+               pinfo->realm()->Hood()->m_pimTopBar->m_sWidth,
+               pinfo->realm()->Hood()->m_pimTopBar->m_sHeight);
 				}
          return SUCCESS;
 			}
@@ -2529,20 +2517,19 @@ class CPlayStatus : public CPlay
 
 				//==============================================================================
 				// Check for death stuff
-				//==============================================================================
-				CDude* pdudeLocal = pinfo->LocalDudePointer();
+            //==============================================================================
 				// If the local dude is dead . . .
-				if (pdudeLocal != nullptr)
+            if (pinfo->m_localDude)
 					{
-					if (pdudeLocal->IsDead() )
+               if (pinfo->m_localDude->IsDead() )
 						{
 						// Make sure X Ray is on so we can see him.
-						pinfo->Realm()->m_scene.SetXRayAll(TRUE);
+                  pinfo->realm()->Scene()->SetXRayAll(TRUE);
 						}
 					else
 						{
 						// If alive, use user setting.
-						pinfo->Realm()->m_scene.SetXRayAll( (pinfo->m_bXRayAll == true) ? TRUE : FALSE);
+                  pinfo->realm()->Scene()->SetXRayAll( (pinfo->m_bXRayAll == true) ? TRUE : FALSE);
 						}
 					}
 				}
@@ -2589,11 +2576,11 @@ class CPlayStatus : public CPlay
 							bUpdateRealm	= ScoreUpdateDisplay(
 								g_pimScreenBuf, 
 								&m_rectRealm, 
-								pinfo->Realm(), 
-								pinfo->Client(),
+                        pinfo->realm(),
+                        pinfo->Client(),
 								REALM_STATUS_RECT_X,
 								REALM_STATUS_RECT_Y,
-								pinfo->Realm()->m_phood);
+                        pinfo->realm()->Hood());
 							if (bUpdateRealm == true)
 								{
 								pinfo->m_drl.Add(m_rectRealm.sX, m_rectRealm.sY, m_rectRealm.sW, m_rectRealm.sH);
@@ -2601,11 +2588,11 @@ class CPlayStatus : public CPlay
 
 							// Generate TooL Bar
 							if (ToolBarRender(
-								pinfo->Realm()->m_phood, 
+                        pinfo->realm()->Hood(),
 								g_pimScreenBuf, 
 								m_rectDude.sX, 
 								m_rectDude.sY,
-								pinfo->LocalDudePointer()) == true)
+                        pinfo->m_localDude) == true)
 								{
 								pinfo->m_drl.Add(m_rectDude.sX, m_rectDude.sY, m_rectDude.sW, m_rectDude.sH);
 								}
@@ -2812,9 +2799,8 @@ class CPlayInput : public CPlay
 				}
 			else
 				{
-				// Get usefull pointers
-				CDude* pdudeLocal = pinfo->LocalDudePointer();
-				CRealm* prealm = pinfo->Realm();
+            // Get usefull pointers
+            CRealm* prealm = pinfo->realm();
 
 				//==============================================================================
 				// A system-specific quit ends the game (MP mode is handled elsewhere)
@@ -2920,7 +2906,7 @@ class CPlayInput : public CPlay
 										// Only allow pause if we're NOT in MP mode and we're in live mode
 										if (!pinfo->IsMP() && (GetInputMode() == INPUT_MODE_LIVE))
 											{
-											PauseGame(pinfo->Realm(), "Press <Pause> key to resume", KEY_PAUSE);
+                                 PauseGame(pinfo->realm(), "Press <Pause> key to resume", KEY_PAUSE);
 
 											pie->sUsed	= TRUE;
 											}
@@ -2945,8 +2931,8 @@ class CPlayInput : public CPlay
 										g_GameSettings.m_sCrossHair = !g_GameSettings.m_sCrossHair;
 
 										// Toggle local dude's flag (if he exists)
-										if (pdudeLocal != nullptr)
-											pdudeLocal->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;
+                              if (pinfo->m_localDude)
+                                 pinfo->m_localDude->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;
 
 										pie->sUsed	= TRUE;
 										break;
@@ -3087,7 +3073,7 @@ class CPlayInput : public CPlay
 								// Toggle user choice for XRay all.
 								pinfo->m_bXRayAll	= !pinfo->m_bXRayAll;
 								// Set new value to the scene.
-								prealm->m_scene.SetXRayAll( (pinfo->m_bXRayAll == true) ? TRUE : FALSE);
+                        prealm->Scene()->SetXRayAll( (pinfo->m_bXRayAll == true) ? TRUE : FALSE);
 								// Clear key's status.
 								m_pau8KeyStatus[KEY_XRAY_ALL]	= 0;
 								}
@@ -3129,10 +3115,10 @@ class CPlayInput : public CPlay
 									bool	bRestart	= false;
 
 									// If there's a local dude . . .
-									if (pdudeLocal)
+                           if (pinfo->m_localDude)
 										{
 										// If he's dead . . .
-										if (pdudeLocal->IsDead() == true)
+                              if (pinfo->m_localDude->IsDead() == true)
 											{
 											// Restart the realm
 											bRestart	= true;
@@ -3210,9 +3196,9 @@ class CPlayInput : public CPlay
 					if (GetInputMode() != INPUT_MODE_LIVE)
 						{
 						// If the local dude dies, we wait a short period of time and then end the game.
-						if (pdudeLocal != nullptr)
+                  if (pinfo->m_localDude)
 							{
-							if (pdudeLocal->IsDead() == true)
+                     if (pinfo->m_localDude->IsDead() == true)
 								{
 								// If this is the first time here, reset the timer
                         if (!m_lDemoDeadTime)
@@ -3464,7 +3450,7 @@ class CPlayInput : public CPlay
 			{
 			// If not in multiplayer mode, suspend the realm while on the menu
 			if (!pinfo->IsMP())
-				pinfo->Realm()->Suspend();
+            pinfo->realm()->Suspend();
 
 			// Fade out colors -- for MP do it fast to avoid hanging the game up
 			if (pinfo->IsMP())
@@ -3476,7 +3462,7 @@ class CPlayInput : public CPlay
 			rspClearAllInputEvents();
 
 #if defined(__ANDROID__)
-			if (pinfo->LocalDudePointer()->IsDead()) //Only enable RETRY if player is dead
+         if (pinfo->m_localDude->IsDead()) //Only enable RETRY if player is dead
 				menuClientGame.ami[0].sEnabled = TRUE;
 			else
 				menuClientGame.ami[0].sEnabled = FALSE;
@@ -3571,7 +3557,7 @@ class CPlayInput : public CPlay
 						// and settings.  Note that this modifies the m_action (that's how we get
 						// out this state...this confused me for a while but it seems like a good
 						// way to choose the appropriate original action).
-						if (Game_SavePlayersGame(szFile, pinfo->Realm()->m_flags.sDifficulty) == SUCCESS)
+                  if (Game_SavePlayersGame(szFile, pinfo->realm()->m_flags.sDifficulty) == SUCCESS)
 						{
 							#if defined(STEAM_CONNECTED)
 							if ((EnableSteamCloud) && (strncmp(szFile, "steamcloud/", 11) == 0))
@@ -3602,7 +3588,7 @@ class CPlayInput : public CPlay
                int16_t sResult = rspSaveBox(g_pszSaveGameTitle, szFile, szFile, sizeof(szFile), SAVEGAME_EXT);
                if (sResult == SUCCESS)
 						{
-						if (Game_SavePlayersGame(szFile, pinfo->Realm()->m_flags.sDifficulty) != SUCCESS)
+                  if (Game_SavePlayersGame(szFile, pinfo->realm()->m_flags.sDifficulty) != SUCCESS)
 							{
 							rspMsgBox(RSP_MB_ICN_EXCLAIM | RSP_MB_BUT_OK, g_pszSaveGameErrorTitle,
 							 g_pszSaveGameErrorText);
@@ -3647,8 +3633,7 @@ class CPlayInput : public CPlay
 		////////////////////////////////////////////////////////////////////////////////
 		void StopMenu(
 			CPlayInfo* pinfo)										// I/O: Play info
-			{
-			CDude* pdudeLocal = pinfo->LocalDudePointer();
+         {
 			
 			// End the menu
 			::StopMenu();
@@ -3663,10 +3648,9 @@ class CPlayInput : public CPlay
 			// mode we have to ignore this because we currently don't support the messages that
 			// would be necessary to tell all the other players about the color change.
 			if (!pinfo->IsMP())
-				{
-				CDude* pdudeLocal = pinfo->LocalDudePointer();
-				if (pdudeLocal)
-					pdudeLocal->m_sTextureIndex = MAX((int16_t)0, MIN((int16_t)(CDude::MaxTextures - 1), (int16_t)g_GameSettings.m_sPlayerColorIndex));
+            {
+            if (pinfo->m_localDude)
+               pinfo->m_localDude->m_sTextureIndex = MAX((int16_t)0, MIN((int16_t)(CDude::MaxTextures - 1), (int16_t)g_GameSettings.m_sPlayerColorIndex));
 				}
 
 			// Re-enable 'Organ' on 'Audio Options' menu.
@@ -3685,7 +3669,7 @@ class CPlayInput : public CPlay
 
 			// If not in multiplayer mode, resume the realm
 			if (!pinfo->IsMP())
-				pinfo->Realm()->Resume();
+            pinfo->realm()->Resume();
 
 			// Restore camera's screen access.
 			pinfo->Camera()->SetViewSize(
@@ -3695,8 +3679,8 @@ class CPlayInput : public CPlay
 			// If the user toggled the crosshair via the options menu,
 			// they'll want their changes to take effect immediately,
 			// so we update the Dude's value to the global value here.
-			if (pdudeLocal != nullptr)
-				pdudeLocal->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;
+         if (pinfo->m_localDude)
+            pinfo->m_localDude->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;
 
 			// Clear flag
 			pinfo->m_bInMenu = false;
@@ -3765,7 +3749,7 @@ class CPlayRealm : public CPlay
 			CPlayInfo* pinfo)										// I/O: Play info
 			{
 			// Note whether multiplayer.
-			pinfo->Realm()->m_flags.bMultiplayer = pinfo->IsMP();
+         pinfo->realm()->m_flags.bMultiplayer = pinfo->IsMP();
 
 			// Array of LevelPersist to carry players' ammo, health, kevlar, current
 			// weapon, etc. from level to level.  Using CDudes in this manner was 
@@ -3801,7 +3785,7 @@ class CPlayRealm : public CPlay
 			{
 			int16_t sResult = SUCCESS;
 
-			CRealm* prealm = pinfo->Realm();
+         CRealm* prealm = pinfo->realm();
 
 			// Clear realm (in case there's any crap left over from last realm)
 			prealm->Clear();
@@ -3853,7 +3837,7 @@ class CPlayRealm : public CPlay
 							g_bTransferStockpile = false;
 
 							// Set up as many dudes as needed and get pointer to local dude
-							sResult = SetupDudes(pinfo, m_alevelpersist);
+                     //sResult = SetupDudes(pinfo, m_alevelpersist);
 							}
 						else
 							{
@@ -3911,18 +3895,18 @@ class CPlayRealm : public CPlay
 			if (!pinfo->m_bBadRealmMP)
 				{
 				// Get realm
-				CRealm* prealm = pinfo->Realm();
+            CRealm* prealm = pinfo->realm();
 
 				// Setup camera
-				pinfo->Camera()->SetScene(&(prealm->m_scene));
-            pinfo->Camera()->SetHood(static_cast<CHood*>(prealm->m_aclassHeads[CHoodID].GetNext()) );
+            pinfo->Camera()->SetScene(prealm->Scene());
+            pinfo->Camera()->SetHood(pinfo->realm()->GetThingsByType(CHoodID).front());
 				pinfo->Camera()->SetView(VIEW_X, VIEW_Y, VIEW_W, VIEW_H);
 
 				// Set grip to control camera.
 				pinfo->Grip()->SetCamera(pinfo->Camera());
 
 				// Set hood's palette.
-				prealm->m_phood->SetPalette();
+            prealm->Hood()->SetPalette();
 
 				// Setup initial film scaling
 				ScaleFilm(pinfo, false);
@@ -3976,7 +3960,7 @@ class CPlayRealm : public CPlay
 					{
 
 					// Get realm pointer
-					CRealm* prealm = pinfo->Realm();
+               CRealm* prealm = pinfo->realm();
 
 					// Adjust realm time.  How we do it depends on the mode we're in.
 					if (GetInputMode() == INPUT_MODE_LIVE)
@@ -4026,17 +4010,16 @@ class CPlayRealm : public CPlay
 							m_lNumSeqSkippedFrames	= 0;
 						}
 
-					// Track the local dude with the grip/camera and adjust the sound, too
-					CDude* pdudeLocal = pinfo->LocalDudePointer();
-					if (pdudeLocal != nullptr)
+               // Track the local dude with the grip/camera and adjust the sound, too
+               if (pinfo->m_localDude)
 						{
 						// Update grip/camera
 						int16_t	sX, sY;
-						prealm->Map3Dto2D(pdudeLocal->GetX(), pdudeLocal->GetY(), pdudeLocal->GetZ(), &sX, &sY);
+                  prealm->Map3Dto2D(pinfo->m_localDude->GetX(), pinfo->m_localDude->GetY(), pinfo->m_localDude->GetZ(), &sX, &sY);
 						pinfo->Grip()->TrackTarget(sX, sY, 30);
 
 						// Set coordinates for the "ear"
-						SetSoundLocation(pdudeLocal->GetX(), pdudeLocal->GetY(), pdudeLocal->GetZ());
+                  SetSoundLocation(pinfo->m_localDude->GetX(), pinfo->m_localDude->GetY(), pinfo->m_localDude->GetZ());
 						}
 
 					// Snap picture of scene.  Even if we DON'T want to draw this frame, we still
@@ -4109,39 +4092,36 @@ class CPlayRealm : public CPlay
 			{
 			if (!pinfo->m_bBadRealmMP)
 				{
-				CRealm* prealm = pinfo->Realm();
+            CRealm* prealm = pinfo->realm();
 
 				// If we're not simply restarting the level . . .
 				if (pinfo->IsRestartingRealm() == false)
 					{
 					// Update players' stockpiles.
-					CListNode<CThing>*	plnDude		= prealm->m_aclassHeads[CDudeID].m_pnNext;
-					CListNode<CThing>*	plnDudeTail	= &(prealm->m_aclassTails[CDudeID]);
-					while (plnDude != plnDudeTail)
-						{
-						CDude* pdude = (CDude*)plnDude->m_powner;
+              for(managed_ptr<CThing>& pThing : pinfo->realm()->GetThingsByType(CDudeID))
+              {
+                  managed_ptr<CDude> pdude = pThing;
 						m_alevelpersist[pdude->m_sDudeNum].stockpile.Copy( &(pdude->m_stockpile) );
-						m_alevelpersist[pdude->m_sDudeNum].weapon = pdude->GetCurrentWeapon();
-						plnDude	= plnDude->m_pnNext;
-						}
+                  m_alevelpersist[pdude->m_sDudeNum].weapon = pdude->GetCurrentWeapon();
 					}
+            }
 
 				// Shutdown realm
-				prealm->Shutdown();
+//				prealm->Shutdown();
 				}
 			}
 
 
 	private:
+/*
 		////////////////////////////////////////////////////////////////////////////////
 		// Setup local dude
 		////////////////////////////////////////////////////////////////////////////////
 		void SetupLocalDude(
 			CPlayInfo*		pinfo,								// I/O: Play info
-			CDude* pdude)											// In:  Dude to setup
+         managed_ptr<CDude> pdude)											// In:  Dude to setup
 			{
-			// Get local dude's ID
-			pinfo->m_idLocalDude = pdude->GetInstanceID();
+        m_localDude = pdude;
 
 			// Turn on local dude's xray effect
 			pdude->m_sprite.m_sInFlags |= CSprite::InXrayee;
@@ -4149,7 +4129,7 @@ class CPlayRealm : public CPlay
 			// Set local dude's targeting status
 			pdude->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;
 			}
-
+*/
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Setup general dude
@@ -4185,13 +4165,14 @@ class CPlayRealm : public CPlay
 		// will exist (no more, no less).
 		//
 		////////////////////////////////////////////////////////////////////////////////
-		int16_t SetupDudes(
+#if 0
+      int16_t SetupDudes(
 			CPlayInfo*		pinfo,								// I/O: Play info
 			LevelPersist*	palevelpersist)					// In:  Players' level persistent data.
 			{
 			int16_t sResult = SUCCESS;
 
-			CRealm* prealm = pinfo->Realm();
+         CRealm* prealm = pinfo->realm();
 
 			// Always default to nil for safety!
 			pinfo->m_idLocalDude = CIdBank::IdNil;
@@ -4333,6 +4314,7 @@ class CPlayRealm : public CPlay
 
 			return sResult;
 			}
+#endif
 
 
 		////////////////////////////////////////////////////////////////////////////////
@@ -4407,10 +4389,9 @@ class CPlayRealm : public CPlay
 				GRIP_ALIGN_Y,
 				true);
 
-			// If local dude exists, reset the grip's targetting
-			CDude* pdudeLocal = pinfo->LocalDudePointer();
-			if (pdudeLocal)
-				pgrip->ResetTarget(pdudeLocal->GetX(), pdudeLocal->GetZ(), 30);
+         // If local dude exists, reset the grip's targetting
+         if (pinfo->m_localDude)
+            pgrip->ResetTarget(pinfo->m_localDude->GetX(), pinfo->m_localDude->GetZ(), 30);
 
 			// Clear any portion of the screen that was revealed by the change in scale
 			if (bRedraw == true)
@@ -4621,10 +4602,10 @@ class CPlayRealm : public CPlay
 
 					// If there was an error, close file to turn off demo movie mode
 					if (bDemoErr)
-						pfileDemoModeDebugMovie->Close();
-					}
+                  pfileDemoModeDebugMovie->Close();
 				}
 			}
+      }
 	};
 
 
@@ -4697,8 +4678,8 @@ class CPlayScore : public CPlay
 				if (pinfo->IsMP())
 					{
 					ScoreSetMode(CScoreboard::MultiPlayer);
-					if (pinfo->Realm()->m_ScoringMode == 0)
-						pinfo->Realm()->m_ScoringMode = CRealm::MPFrag;
+               if (pinfo->realm()->m_ScoringMode == 0)
+                  pinfo->realm()->m_ScoringMode = CRealm::MPFrag;
 					}
 				else
 					{
@@ -4793,7 +4774,7 @@ class CPlayCutscene : public CPlay
 			// Start cutscene
 			RString strSection;
 			RString strEntry;
-			Play_GetRealmSectionAndEntry(pinfo->IsMP(), pinfo->CoopLevels(), pinfo->Gauntlet(), pinfo->AddOn(), pinfo->RealmNum(), pinfo->Realm()->m_flags.sDifficulty, &strSection, &strEntry);
+         Play_GetRealmSectionAndEntry(pinfo->IsMP(), pinfo->CoopLevels(), pinfo->Gauntlet(), pinfo->AddOn(), pinfo->RealmNum(), pinfo->realm()->m_flags.sDifficulty, &strSection, &strEntry);
 			CutSceneStart(m_bSimple, &strSection, &strEntry, 24, 24);
 			}
 
@@ -4986,8 +4967,8 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 	info.m_bAddOn = bAddOn;
 	info.m_sFrameTime = sFrameTime;
 	info.m_sCoopLevels = sCoopLevels;
-	info.Realm()->m_flags.bCoopMode = sCoopMode ? true : false;
-	info.Realm()->m_flags.sDifficulty = sDifficulty;	// MUST be set before Play_GetRealmInfo() calls.
+   info.realm()->m_flags.bCoopMode = sCoopMode ? true : false;
+   info.realm()->m_flags.sDifficulty = sDifficulty;	// MUST be set before Play_GetRealmInfo() calls.
 	if (info.m_sRealmNum < 0)
 		{
 		strncpy(info.m_szRealm, pszRealmFile, sizeof(info.m_szRealm));
@@ -4996,7 +4977,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 		}
 	else
 		{
-      if (Play_GetRealmInfo(info.IsMP(), info.CoopLevels(), info.Gauntlet(), info.AddOn(), info.m_sRealmNum, info.Realm()->m_flags.sDifficulty, info.m_szRealm, sizeof(info.m_szRealm)) == SUCCESS)
+      if (Play_GetRealmInfo(info.IsMP(), info.CoopLevels(), info.Gauntlet(), info.AddOn(), info.m_sRealmNum, info.realm()->m_flags.sDifficulty, info.m_szRealm, sizeof(info.m_szRealm)) == SUCCESS)
 			{
 			info.m_bJustOneRealm = bJustOneRealm;
 			}
@@ -5114,41 +5095,41 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 								// the flags passed into play.
 								if (pclient)
 								{
-									info.Realm()->m_sKillsGoal = sKillLimit;
-									info.Realm()->m_lScoreInitialTime = info.Realm()->m_lScoreTimeDisplay = (int32_t)sTimeLimit * (int32_t)60000;
+                           info.realm()->m_sKillsGoal = sKillLimit;
+                           info.realm()->m_lScoreInitialTime = info.realm()->m_lScoreTimeDisplay = (int32_t)sTimeLimit * (int32_t)60000;
 									
 									// If Rejuvenate is allowed, then its not last man standing
 									if (bRejuvenate)
 									{
 										if (sKillLimit > 0 && sTimeLimit > 0)
-											info.Realm()->m_ScoringMode = CRealm::MPTimedFrag;
+                                 info.realm()->m_ScoringMode = CRealm::MPTimedFrag;
 
 										if (sKillLimit <= 0 && sTimeLimit > 0)
-											info.Realm()->m_ScoringMode = CRealm::MPTimed;
+                                 info.realm()->m_ScoringMode = CRealm::MPTimed;
 
 										if (sKillLimit > 0 && sTimeLimit <= 0)
-											info.Realm()->m_ScoringMode = CRealm::MPFrag;
+                                 info.realm()->m_ScoringMode = CRealm::MPFrag;
 
 										if (sKillLimit <= 0 && sTimeLimit <= 0)
 										{
-											info.Realm()->m_sKillsGoal = KILLS_LIMIT_DEFAULT;
-											info.Realm()->m_ScoringMode = CRealm::MPFrag;
+                                 info.realm()->m_sKillsGoal = KILLS_LIMIT_DEFAULT;
+                                 info.realm()->m_ScoringMode = CRealm::MPFrag;
 										}
 									}
 									// Last man standing mode
 									else
 									{
 										if (sKillLimit > 0 && sTimeLimit > 0)
-											info.Realm()->m_ScoringMode = CRealm::MPLastManTimedFrag;
+                                 info.realm()->m_ScoringMode = CRealm::MPLastManTimedFrag;
 
 										if (sKillLimit > 0 && sTimeLimit <= 0)
-											info.Realm()->m_ScoringMode = CRealm::MPLastManFrag;
+                                 info.realm()->m_ScoringMode = CRealm::MPLastManFrag;
 
 										if (sKillLimit <= 0 && sTimeLimit > 0)
-											info.Realm()->m_ScoringMode = CRealm::MPLastManTimed;
+                                 info.realm()->m_ScoringMode = CRealm::MPLastManTimed;
 
 										if (sKillLimit <= 0 && sTimeLimit <= 0)
-											info.Realm()->m_ScoringMode = CRealm::MPLastMan;
+                                 info.realm()->m_ScoringMode = CRealm::MPLastMan;
 									}
 								}
 								// Start realm
@@ -5188,7 +5169,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 										TRACE("Doing autosave");
 										char  szFile[256];
 										snprintf(szFile, sizeof (szFile), "%s/auto.gme", SAVEGAME_DIR);
-										if (Game_SavePlayersGame(szFile, info.Realm()->m_flags.sDifficulty) == SUCCESS)
+                              if (Game_SavePlayersGame(szFile, info.realm()->m_flags.sDifficulty) == SUCCESS)
 										{
 											TRACE("Auto Save success");
 										}
@@ -5202,7 +5183,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 									RInputEvent	ie;
 									do	{
 
-										if ((info.Realm()->m_flags.sDifficulty != 11) && (!g_bLastLevelDemo))
+                              if ((info.realm()->m_flags.sDifficulty != 11) && (!g_bLastLevelDemo))
 											Flag_Achievements &= ~FLAG_HIGHEST_DIFFICULTY;
 
 										// As always...
@@ -5214,7 +5195,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 										playgroup.CoreLoopUserInput(&info, &ie);
 
 #if defined(__ANDROID__) //Tap screen to show menu
-										if (info.LocalDudePointer()->IsDead())
+                              if (info.m_localDude->IsDead())
 										{
 											if (!info.m_bInMenu)
 												AndroidSetScreenMode(TOUCH_SCREEN_BLANK_TAP);
@@ -5281,7 +5262,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 									if (info.IsMP() && !rspGetQuitStatus() && !info.IsGameAborted())
 										{
 										// Display the high scores.  Currently, this is MODAL (but has a timeout)!
-										ScoreDisplayHighScores(info.Realm(), info.Client(), MP_HIGH_SCORES_MAX_TIME );
+                              ScoreDisplayHighScores(info.realm(), info.Client(), MP_HIGH_SCORES_MAX_TIME );
 										}
 
 									// End realm
@@ -5310,7 +5291,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 						if (StatsAreAllowed)
 							{
 							Stat_LevelsPlayed++;
-							if ((!sResult) && (info.LocalDudePointer()->IsDead()))
+                     if ((!sResult) && (info.m_localDude->IsDead()))
 								Stat_Deaths++;
 							}
 						StatsAreAllowed = false;
@@ -5327,21 +5308,20 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 								info.SetGameState_GameOver();
 								}
 							else if (info.IsNextRealm())
-								{
-								CDude *pDude = info.LocalDudePointer();
+                        {
 								// this is how the toolbar display calculates health.
-								const double health = (pDude->GetHealth()*100/pDude->m_sOrigHitPoints);
+                        const double health = (info.m_localDude->GetHealth()*100/info.m_localDude->m_sOrigHitPoints);
 								if (health < 10)
 									UnlockAchievement(ACHIEVEMENT_COMPLETE_LEVEL_ON_LOW_HEALTH);
 
-								if (info.Realm()->m_sPopulation != 0)
+                        if (info.realm()->m_sPopulation != 0)
 									Flag_Achievements &= ~FLAG_KILLED_EVERYTHING;
 
 								if (info.m_sRealmNum == 9)
 									UnlockAchievement(ACHIEVEMENT_COMPLETE_LEVEL_10);
 
 								info.m_sRealmNum++;
-								switch (Play_GetRealmInfo(info.IsMP(), info.CoopLevels(), info.Gauntlet(), info.AddOn(), info.m_sRealmNum, info.Realm()->m_flags.sDifficulty, info.m_szRealm, sizeof(info.m_szRealm)))
+                        switch (Play_GetRealmInfo(info.IsMP(), info.CoopLevels(), info.Gauntlet(), info.AddOn(), info.m_sRealmNum, info.realm()->m_flags.sDifficulty, info.m_szRealm, sizeof(info.m_szRealm)))
 									{
 									case 0:	// Got info
 #if defined(__ANDROID__)
@@ -5355,7 +5335,7 @@ extern int16_t Play(										// Returns 0 if successfull, non-zero otherwise
 											{
 											// Multiplayer just keeps wrapping around
 											info.m_sRealmNum = 0;
-                                 if (Play_GetRealmInfo(info.IsMP(), info.CoopLevels(), info.Gauntlet(), info.AddOn(), info.m_sRealmNum, info.Realm()->m_flags.sDifficulty, info.m_szRealm, sizeof(info.m_szRealm)) != SUCCESS)
+                                 if (Play_GetRealmInfo(info.IsMP(), info.CoopLevels(), info.Gauntlet(), info.AddOn(), info.m_sRealmNum, info.realm()->m_flags.sDifficulty, info.m_szRealm, sizeof(info.m_szRealm)) != SUCCESS)
 												{
 												// 09/12/97 MJR - We don't want to exit the loop if this happens.  Instead,
 												// we set the bad realm flag and let the core loop handle the abort process.

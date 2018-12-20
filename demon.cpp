@@ -40,7 +40,7 @@
 //							calls to PlaySampleThenPurge to keep the memory usage
 //							down.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -525,16 +525,6 @@ int16_t CDemon::Startup(void)								// Returns 0 if successfull, non-zero other
 	return SUCCESS;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CDemon::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	return SUCCESS;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
@@ -756,12 +746,12 @@ void CDemon::EditRender(void)
 	m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
 	m_sprite.m_sY2	-= m_pImage->m_sHeight;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 }
 #endif // !defined(EDITOR_REMOVED)
 
@@ -776,7 +766,7 @@ int16_t CDemon::Init(void)							// Returns 0 if successfull, non-zero otherwise
 
 	if (m_pImage == 0)
 	{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &m_pImage);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_pImage);
 		if (sResult == SUCCESS)
 		{
 			// This is a questionable action on a resource managed item, but it's
@@ -801,7 +791,7 @@ int16_t CDemon::Kill(void)							// Returns 0 if successfull, non-zero otherwise
    if (m_pImage != nullptr)
 		rspReleaseResource(&g_resmgrGame, &m_pImage);
 
-	m_pRealm->m_scene.RemoveSprite(&m_sprite);
+	realm()->Scene()->RemoveSprite(&m_sprite);
 
 	return SUCCESS;
 }
@@ -814,12 +804,12 @@ void CDemon::ProcessMessages(void)
 {
 	SampleMasterID* psmid = &g_smidNil;
 	bool bFoundSample = false;
-	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+	int32_t lThisTime = realm()->m_time.GetGameTime();
 
 	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-	{
+   while (!m_MessageQueue.empty())
+   {
+     GameMessage& msg = m_MessageQueue.front();
 		if (msg.msg_Generic.eType == typeCheater)
 		{
 			psmid = &g_smidDemonSissy2;
@@ -1181,6 +1171,7 @@ void CDemon::ProcessMessages(void)
 					break;
 			}	
 		}
+      m_MessageQueue.pop_front();
 	}		
 
 	if (lThisTime > m_lIdleTime + ms_lMinIdleTime)

@@ -214,9 +214,6 @@ class CSoundThing : public CThing
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
-
 		// Suspend object
 		void Suspend(void);
 

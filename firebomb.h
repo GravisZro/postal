@@ -96,13 +96,13 @@ class CFirebomb : public CWeapon
       CFirebomb(void)
 			{
 			m_sSuspend = 0;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
          }
 
       ~CFirebomb(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
@@ -192,7 +192,7 @@ class CFirefrag : public CWeapon
 
 	protected:
 		int16_t m_sPrevHeight;										// Previous height
-		CFire*  m_pFire;											// Pointer to controlled fire object
+      managed_ptr<CFire> m_pFire;											// Pointer to controlled fire object
 		uint16_t	  m_u16FireID;										// ID for fire.
 		RImage* m_pImage;											// Pointer to only image (replace with 3d anim, soon)
 		CSprite2 m_sprite;										// 2D sprite to render this object.
@@ -227,7 +227,7 @@ class CFirefrag : public CWeapon
       ~CFirefrag(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();

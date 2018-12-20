@@ -415,16 +415,14 @@ void ScoreResetDisplay(void)
 // ScoreRegisterKill - Characters should call this when they die
 //////////////////////////////////////////////////////////////////////////////
 
-void ScoreRegisterKill(CRealm* pRealm, uint16_t u16DeadGuy, uint16_t u16Killer)
+void ScoreRegisterKill(CRealm* pRealm, managed_ptr<CThing3d> deadguy, managed_ptr<CThing3d> killer)
 {
-	CThing* pShooter = nullptr;
-	pRealm->m_idbank.GetThingByID(&pShooter, u16Killer);
-	if (pShooter && pShooter->GetClassID() == CDudeID)
+   if (killer && killer->type() == CDudeID)
 	{
-		if (u16DeadGuy == u16Killer)
-			g_scoreboard.SubtractOne(((CDude*) pShooter)->m_sDudeNum);
+      if (deadguy == killer)
+         g_scoreboard.SubtractOne(managed_ptr<CDude>(killer)->m_sDudeNum);
 		else
-			g_scoreboard.AddOne(((CDude*) pShooter)->m_sDudeNum);
+         g_scoreboard.AddOne(managed_ptr<CDude>(killer)->m_sDudeNum);
 	}
 }
 
@@ -434,7 +432,7 @@ void ScoreRegisterKill(CRealm* pRealm, uint16_t u16DeadGuy, uint16_t u16Killer)
 //////////////////////////////////////////////////////////////////////////////
 
 bool ScoreUpdateDisplay(RImage* pim, RRect* prc, CRealm* pRealm, CNetClient* pclient,
-								int16_t sDstX,int16_t sDstY,CHood* pHood)
+                        int16_t sDstX,int16_t sDstY,managed_ptr<CHood> pHood)
 {
 #if defined(MULTIPLAYER_REMOVED)
   UNUSED(pclient);
@@ -699,7 +697,7 @@ bool ScoreUpdateDisplay(RImage* pim, RRect* prc, CRealm* pRealm, CNetClient* pcl
 					sMinutes,
 					sSeconds,
 					pRealm->m_sFlagsCaptured,
-					pRealm->m_asClassNumThings[CFlagID] - pRealm->m_sFlagsCaptured
+                pRealm->GetThingsByType(CFlagID).size() - pRealm->m_sFlagsCaptured
 					);
 				break;
 
@@ -1482,7 +1480,7 @@ void ScoreDisplayHighScores(	// Returns nothing.
 int16_t ScoreHighestKills(CRealm* pRealm)
 {
 	int16_t sHighest = 0;
-	int16_t sNumDudes = pRealm->m_asClassNumThings[CDudeID];	
+   int16_t sNumDudes = pRealm->GetThingsByType(CDudeID).size();
 	int16_t i;
 
 	for (i = 0; i < sNumDudes; i++)

@@ -102,10 +102,9 @@ class CDeathWad : public CWeapon
 	public:
       CDeathWad(void)
 			{
-			m_sprite.m_pthing				= this;
-			m_smash.m_pThing				= this;
-			m_siThrust						= 0;
-			m_u16ShooterID					= CIdBank::IdNil;
+//			m_sprite.m_pthing				= this;
+         m_smash.m_pThing = this;
+         m_siThrust						= 0;
 			m_stockpile.Zero();
 			m_bInsideTerrain				= false;
 			m_u32CollideIncludeBits		= 0;
@@ -120,8 +119,8 @@ class CDeathWad : public CWeapon
 			StopLoopingSample(m_siThrust);
 
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->Scene()->RemoveSprite(&m_sprite);
+			realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();

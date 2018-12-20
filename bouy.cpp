@@ -94,7 +94,7 @@
 //		05/01/97 BRH	Removed messages for logic suggestions and put those
 //							into the CPylon class instead.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/06/97 BRH	Freed three arrays used in BuildRouteTable that had
@@ -125,7 +125,7 @@
 //							number of direct links so it was expecting more direct
 //							links when the file was reloaded.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/25/97 BRH	Fixed the problem of bouys greater than 254 being
@@ -223,13 +223,14 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 		pFile->Read(&u16NumLinks);
 		for (i = 0; i < u16NumLinks; i++)
 		{
-			pFile->Read(&u16Data);
-			m_LinkInstanceID.InsertTail(u16Data);
+         pFile->Read(&u16Data);
+         m_aplDirectLinks.insert(realm()->GetOrAddThingById<CBouy>(u16Data, CBouyID));
 		}
 
 		// Get the instance ID for the NavNet
 		pFile->Read(&u16Data);
-		m_u16ParentInstanceID = u16Data;
+      m_pParentNavNet = realm()->GetOrAddThingById<CNavigationNet>(u16Data, CNavigationNetID);
+      ASSERT(m_pParentNavNet);
 
 		// Switch on the parts that have changed
 		switch (ulFileVersion)
@@ -252,7 +253,7 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 		if (ulFileVersion < 24)
 			{
 			// Convert to 3D.
-			m_pRealm->MapY2DtoZ3D(
+         realm()->MapY2DtoZ3D(
 				m_dZ,
 				&m_dZ);
 			}
@@ -310,16 +311,13 @@ int16_t CBouy::Save(										// Returns 0 if successfull, non-zero otherwise
 	pFile->Write(&m_dY);
 	pFile->Write(&m_dZ);
 
-	uint16_t u16Data = m_sNumDirectLinks;
-	// Save the number of links that will follow in the file
-	pFile->Write(&u16Data);
-	CBouy* pLinkedBouy = m_aplDirectLinks.GetHead();
-	while (pLinkedBouy != nullptr)
-	{
-		u16Data = pLinkedBouy->GetInstanceID();
-		pFile->Write(&u16Data);
-		pLinkedBouy = m_aplDirectLinks.GetNext();
-	}
+   uint16_t u16Data = m_aplDirectLinks.size();
+   pFile->Write(&u16Data); // Save the number of links that will follow in the file
+   for(const managed_ptr<CBouy>& pLinkedBouy : m_aplDirectLinks)
+   {
+     u16Data = pLinkedBouy->GetInstanceID();
+     pFile->Write(&u16Data);
+   }
 
 	// Save the instance ID for the parent NavNet so it can be connected
 	// again after load
@@ -341,50 +339,24 @@ int16_t CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherw
    int16_t sResult = SUCCESS;
 
 	// At this point we can assume the CHood was loaded, so we init our height
-	m_dY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+   m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 
 	// Init other stuff
 	// Get pointer to Navigation Net
 	// If we don't have a pointer to the nav net yet, get it from the ID
-	if (m_pParentNavNet == nullptr)
-	{
-		m_pRealm->m_idbank.GetThingByID((CThing**) &m_pParentNavNet, m_u16ParentInstanceID); 
-		// Re-register yourself with the network.
-		m_pParentNavNet->AddBouy(this);
+
+   // Re-register yourself with the network.
+   if(m_pParentNavNet)
+    m_pParentNavNet->AddBouy(this);
 	
-
-		linkinstanceid::Pointer i;
-		CBouy* pBouy = nullptr;
-      for (i = m_LinkInstanceID.GetHead(); i != nullptr; i = m_LinkInstanceID.GetNext(i))
-		{
-			m_pRealm->m_idbank.GetThingByID((CThing**) &pBouy, m_LinkInstanceID.GetData(i));		
-			// If its not already linked, then add it.
-			if (!m_aplDirectLinks.Find(pBouy))
-			{
-				m_aplDirectLinks.AddTail(pBouy);
-				m_sNumDirectLinks++;
-			}
-		}
-
 		// Only in edit mode . . .
-		if (m_pRealm->m_flags.bEditing == true)
+      if (realm()->m_flags.bEditing == true)
 		{
 			sResult = GetResources();
-		}
-	}
+      }
 
 	return sResult;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CBouy::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-{
-	return SUCCESS;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -420,15 +392,11 @@ void CBouy::Update(void)
 // AddLink - Add a 1 hop direct link to the routing table
 ////////////////////////////////////////////////////////////////////////////////
 
-int16_t CBouy::AddLink(CBouy* pBouy)
+int16_t CBouy::AddLink(managed_ptr<CBouy> pBouy)
 {
    int16_t sResult = SUCCESS;
 	
-	if (!m_aplDirectLinks.Find(pBouy))
-	{
-		m_aplDirectLinks.AddTail(pBouy);
-		m_sNumDirectLinks++;
-	}
+   m_aplDirectLinks.insert(pBouy);
 	
    return sResult;
 }
@@ -449,6 +417,7 @@ int16_t CBouy::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
+  ASSERT(realm()->NavNet());
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
@@ -457,7 +426,7 @@ int16_t CBouy::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	m_dZ = (double)sZ;
 
 	// Since we were created in the editor, set our Nav Net
-	m_pParentNavNet = m_pRealm->GetCurrentNavNet();
+   m_pParentNavNet = realm()->NavNet();
 	if (m_pParentNavNet->AddBouy(this) == SUCCESS)
 		sResult = FAILURE;
 	else
@@ -508,7 +477,7 @@ void CBouy::EditRender(void)
 	// No special flags
 	if (ms_bShowBouys)
 	{
-		if (m_pParentNavNet == m_pRealm->GetCurrentNavNet())
+      if (m_pParentNavNet == realm()->NavNet())
 		{
 			m_sprite.m_sInFlags = 0;
 			m_phot->SetActive(TRUE);
@@ -538,13 +507,13 @@ void CBouy::EditRender(void)
 	m_sprite.m_sPriority = m_dZ;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+   m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Image would normally animate, but doesn't for now
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+   realm()->Scene()->UpdateSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -597,7 +566,7 @@ int16_t CBouy::GetResources(void)						// Returns 0 if successfull, non-zero oth
 	if (m_pImage == 0)
 		{
 		RImage*	pimBouyRes;
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &pimBouyRes);
+      sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &pimBouyRes);
 		if (sResult == SUCCESS)
 			{
 			// Allocate image . . .
@@ -685,17 +654,11 @@ int16_t CBouy::FreeResources(void)						// Returns 0 if successfull, non-zero ot
 void CBouy::Unlink(void)
 {
 	// Follow all of this bouy's direct links and unlink this bouy
-	CBouy* pLinkedBouy = m_aplDirectLinks.GetHead();
-	while (pLinkedBouy)
-	{
-		pLinkedBouy->m_aplDirectLinks.Remove(this);
-		pLinkedBouy->m_sNumDirectLinks--;
-		pLinkedBouy = m_aplDirectLinks.GetNext();
-	}
+   for(const managed_ptr<CBouy>& pLinkedBouy : m_aplDirectLinks)
+      pLinkedBouy->m_aplDirectLinks.erase(this);
 
 	// Erase all of your own links to other bouys
-	m_aplDirectLinks.Reset();
-	m_sNumDirectLinks = 0;
+   m_aplDirectLinks.clear();
 
 	// Remove this bouy from the network
 	m_pParentNavNet->RemoveBouy(m_ucID);
@@ -716,9 +679,9 @@ int16_t CBouy::BuildRoutingTable(void)
 	uint8_t* aParent = nullptr;
 	uint8_t* pucCurrentNode = nullptr;
 	uint8_t* pucAdjNode = nullptr;
-	CBouy* pTraverseBouy = nullptr;
+   managed_ptr<CBouy> pTraverseBouy = nullptr;
 
-	ASSERT(m_pParentNavNet != nullptr);
+   ASSERT(m_pParentNavNet);
 	int16_t sCurrentNumNodes = m_pParentNavNet->GetNumNodes();
 	RQueue <uint8_t, 256> bfsQueue;
 
@@ -758,10 +721,8 @@ int16_t CBouy::BuildRoutingTable(void)
 		{
 			pucCurrentNode = bfsQueue.DeQ();
 			pTraverseBouy = m_pParentNavNet->GetBouy(*pucCurrentNode);
-
-			CBouy* pLinkedBouy = pTraverseBouy->m_aplDirectLinks.GetHead();
-			while (pLinkedBouy)
-			{
+         for(const managed_ptr<CBouy>& pLinkedBouy : pTraverseBouy->m_aplDirectLinks)
+         {
 				pucAdjNode = &(pLinkedBouy->m_ucID);
 				if (aVisited[*pucAdjNode] == FALSE)
 				{
@@ -769,8 +730,7 @@ int16_t CBouy::BuildRoutingTable(void)
 					aParent[*pucAdjNode] = *pucCurrentNode;
 					aDistance[*pucAdjNode] = aDistance[*pucCurrentNode] + 1;
 					bfsQueue.EnQ(pucAdjNode);
-				}
-				pLinkedBouy = pTraverseBouy->m_aplDirectLinks.GetNext();
+            }
 			}
 		}
 

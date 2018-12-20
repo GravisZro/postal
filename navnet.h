@@ -45,26 +45,13 @@
 
 // CNavigationNet is the class for navigation
 class CNavigationNet : public CThing
-	{
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	public:
-
-		#if _MSC_VER >= 1020 || __MWERKS__ >= 0x1100
-			#if __MWERKS__ >= 0x1100
-				ITERATOR_TRAITS(const CBouy*);
-			#endif
-      typedef std::map<uint8_t, CBouy*, std::less<uint8_t>, std::allocator<CBouy*> > nodeMap;
-		#else
-      typedef std::map<uint8_t, CBouy*, std::less<uint8_t> > nodeMap;
-		#endif
+   {
 
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
 	public:
-		nodeMap	m_NodeMap;										// Map of ID's to CBouy nodes
+      std::map<uint8_t, managed_ptr<CBouy>>	m_NodeMap;										// Map of ID's to CBouy nodes
 
 	protected:
 		double m_dX;												// x coord
@@ -114,7 +101,7 @@ class CNavigationNet : public CThing
       ~CNavigationNet(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
@@ -138,9 +125,6 @@ class CNavigationNet : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -207,7 +191,7 @@ class CNavigationNet : public CThing
 		void RemoveBouy(uint8_t ucBouyID);
 
 		// Get the address of the Bouy with this ID
-		CBouy* GetBouy(uint8_t ucBouy);
+      managed_ptr<CBouy> GetBouy(uint8_t ucBouy);
 
 		// Find the bouy closest to this location in the world
 		uint8_t FindNearestBouy(int16_t sX, int16_t sZ);
@@ -228,10 +212,8 @@ class CNavigationNet : public CThing
 		// Set this NavNet as the default one for the Realm.  
 		int16_t SetAsDefault(void)
          {  int16_t sResult = SUCCESS;
-				if (m_pRealm)
-				{
-					m_pRealm->m_pCurrentNavNet = this;
-				}
+            if (realm())
+               realm()->setNavNet(this);
 				else
                sResult = FAILURE;
             return sResult;

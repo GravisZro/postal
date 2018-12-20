@@ -172,7 +172,7 @@ class CPerson : public CDoofus
 			m_ePersonType = Personatorium::Grenader;
          m_eWeaponType = CGrenadeID;
 			m_panimCur = m_panimPrev = nullptr;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			m_rstrLogicFile = "res/logics/default.lgk";
 			m_sShowState		= FALSE;
 			m_sUserState1 = 0; // Uninitialized
@@ -182,7 +182,7 @@ class CPerson : public CDoofus
       ~CPerson(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
          realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
@@ -208,9 +208,6 @@ class CPerson : public CDoofus
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Init - set up object before running
 		int16_t Init(void);

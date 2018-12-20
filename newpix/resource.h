@@ -8,14 +8,14 @@ struct Resource : shared_arr<T>
 {
   T& operator ->(void) const noexcept
   {
-    ASSERT(std::shared_ptr<T>::operator bool()); // must already be allocated
-    return *std::shared_ptr<T>::get()->data;
+    ASSERT(managed_ptr<T>::operator bool()); // must already be allocated
+    return *managed_ptr<T>::get()->data;
   }
 
-  std::shared_ptr<filedata_t>& operator =(std::shared_ptr<filedata_t>& other) noexcept
+  managed_ptr<filedata_t>& operator =(managed_ptr<filedata_t>& other) noexcept
   {
-    std::shared_ptr<filedata_t>::operator =(other);
-    std::shared_ptr<T>::get()->load();
+    managed_ptr<filedata_t>::operator =(other);
+    managed_ptr<T>::get()->load();
     return other;
   }
 };

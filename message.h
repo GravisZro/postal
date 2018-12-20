@@ -91,7 +91,7 @@
 //		06/10/97 BRH	Added Death and Writhing messages so CPerson can send
 //							CDemon messsages for comments.
 //
-//		06/11/97 BRH	Added u16ShooterID to the weapon messages so that we can
+//		06/11/97 BRH	Added shooter to the weapon messages so that we can
 //							identify the shooter of the weapon so that credit can
 //							be given to whoever gets a kill using a weapon.
 //
@@ -110,6 +110,8 @@
 
 #include <RSPiX.h>
 //#include "dude.h"
+
+#include <newpix/managedpointer.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Message Types
@@ -153,22 +155,25 @@ enum
 // Message structures
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef struct tag_MESSAGE_GENERIC
+class CThing3d;
+class CFlag;
+
+struct Generic_Message
 {
 	MessageType eType; // = typeGeneric
 	int16_t			sPriority;
-} Generic_Message, *pGeneric_Message;
+};
 
-typedef struct tag_MESSAGE_SHOT
+struct Shot_Message
 {
 	MessageType eType;// = typeShot;
 	int16_t			sPriority;
 	int16_t			sDamage;
 	int16_t			sAngle;
-	uint16_t			u16ShooterID; // Instance ID of the shooter (for scoring)
-} Shot_Message, *pShot_Message;
+   managed_ptr<CThing3d> shooter; // Instance ID of the shooter (for scoring)
+};
 
-typedef struct tag_MESSAGE_EXPLOSION
+struct Explosion_Message
 {
 	MessageType eType; // = typeExplosion;
 	int16_t			sPriority;
@@ -177,24 +182,25 @@ typedef struct tag_MESSAGE_EXPLOSION
 	int16_t			sY;			// Center of explosion
 	int16_t			sZ;			// Center of explosion
 	int16_t			sVelocity;	// Relative size of explosion 
-	uint16_t			u16ShooterID;// Instance ID of the shooter
-} Explosion_Message, *pExplosion_Message;
 
-typedef struct tag_MESSAGE_BURN
+   managed_ptr<CThing3d> shooter;// Instance ID of the shooter
+};
+
+struct Burn_Message
 {
 	MessageType eType; // = typeBurn;
 	int16_t			sPriority;
 	int16_t			sDamage;
-	uint16_t			u16ShooterID;	// Instance ID of the shooter
-} Burn_Message, *pBurn_Message;
+   managed_ptr<CThing3d> shooter;	// Instance ID of the shooter
+};
 
-typedef struct tag_MESSAGE_OBJECTDELETE
+struct ObjectDelete_Message
 {
 	MessageType eType; // = typeObjectDelete
 	int16_t			sPriority;
-} ObjectDelete_Message, *pObjectDelte_Message;
+};
 
-typedef struct tag_MESSAGE_POPOUT
+struct Popout_Message
 {
 	MessageType eType; // = typePopout
 	int16_t			sPriority;
@@ -203,9 +209,9 @@ typedef struct tag_MESSAGE_POPOUT
 	uint16_t			u16UniquePylonID;	// Easier way to get to pylon data
 	int16_t			sNextPylonX;		// Next pylon X position
 	int16_t			sNextPylonZ;		// Next pylon Z position
-} Popout_Message, *pPopout_Message;
+};
 
-typedef struct tag_MESSAGE_SHOOTCYCLE
+struct ShootCycle_Message
 {
 	MessageType eType; // = typeShootCycle
 	int16_t			sPriority;
@@ -214,98 +220,98 @@ typedef struct tag_MESSAGE_SHOOTCYCLE
 	uint16_t			u16UniquePylonID;	// Easier way to get to pylon data
 	int16_t			sNextPylonX;		// Next pylon X position
 	int16_t			sNextPylonZ;		// Next pylon Z position
-} ShootCycle_Message, *pShootCycle_Message;
+};
 
-typedef struct tag_MESSAGE_SAFESPOT
+struct SafeSpot_Message
 {
 	MessageType eType; // = typeSafeSpot
 	int16_t			sPriority;
-} SafeSpot_Message, *pSafeSpot_Message;
+};
 
-typedef struct tag_MESSAGE_PANIC
+struct Panic_Message
 {
 	MessageType eType;	//typePanic
 	int16_t			sPriority;
 	int16_t			sX;		// Center of panic
 	int16_t			sY;		// Center of panic
 	int16_t			sZ;		// Center of panic
-} Panic_Message, *pPanic_Message;
+};
 
-typedef struct
+struct DrawBlood_Message
 {
 	MessageType	eType;	// = typeDrawBlood
 	int16_t			sPriority;
 	int16_t			s2dX;		// 2D X position on background to draw blood.
 	int16_t			s2dY;		// 2D Y position on background to draw blood.
-} DrawBlood_Message;
+};
 
-typedef struct
+struct Suicide_Message
 {
 	MessageType	eType;	// = typeSuicide
 	int16_t			sPriority;
-} Suicide_Message;
+};
 
-typedef struct tag_MESSAGE_TRIGGER
+struct Trigger_Message
 {
 	MessageType eType;	// = typeTrigger
 	int16_t			sPriority;
-} Trigger_Message;
+};
 
-typedef struct tag_MESSAGE_DUDETRIGGER
+struct DudeTrigger_Message
 {
 	MessageType eType; // = typeDudeTrigger
 	int16_t		   sPriority;
 	uint16_t			u16DudeUniqueID;
 	double		dX;
 	double		dZ;
-} DudeTrigger_Message;
+};
 
-typedef struct tag_MESSAGE_WEAPONSELECT
+struct WeaponSelect_Message
 {
 	MessageType	eType; // = typeWeaponSelect
 	int16_t			sPriority;
 	int16_t			sWeapon; //CDude::WeaponType eWeapon;
-} WeaponSelect_Message;
+};
 
-typedef struct tag_MESSAGE_WEAPONFIRE
+struct WeaponFire_Message
 {
 	MessageType	eType; // = typeWeaponFire
 	int16_t			sPriority;
 	int16_t			sWeapon; //CDude::WeaponType	eWeapon;
-} WeaponFire_Message;
+};
 
-typedef struct tag_MESSAGE_WRITHING
+struct Writhing_Message
 {
 	MessageType	eType; // = typeWrithing
 	int16_t			sPriority;	
-} Writhing_Message;
+};
 
-typedef struct tag_MESSAGE_DEATH
+struct Death_Message
 {
 	MessageType	eType; // = typeDeath
 	int16_t			sPriority;
-} Death_Message;
+};
 
-typedef struct tag_MESSAGE_CHEATER
+struct Cheater_Message
 {
 	MessageType eType;// = typeCheater
 	int16_t			sPriority;
-} Cheater_Message;
+};
 
-typedef struct tag_MESSAGE_HELP
+struct Help_Message
 {
 	MessageType eType; // = typeHelp
 	int16_t			sPriority;
-} Help_Message;
+};
 
-typedef struct tag_MESSAGE_PUTMEDOWN
+struct PutMeDown_Message
 {
 	MessageType eType;// = typePutMeDown
 	int16_t			sPriority;
-	uint16_t			u16FlagInstanceID;
-} PutMeDown_Message;
+   managed_ptr<CFlag> flag;
+};
 
-typedef struct tag_GameMessage
+struct GameMessage
 {
 union
 	{
@@ -332,162 +338,16 @@ union
 
 	};
 
+  GameMessage(void) noexcept  { }
+  ~GameMessage(void) noexcept { }
+  GameMessage(const GameMessage& other) noexcept;
+
 	// Function to save whatever type of message this is.
-	int16_t Save(RFile* pFile)
-	{
-		int16_t sResult = SUCCESS;
-
-		if (pFile && pFile->IsOpen())
-		{
-			pFile->Write(&msg_Generic.eType);
-			pFile->Write(&msg_Generic.sPriority);
-
-			switch (msg_Generic.eType)
-			{
-				case typeGeneric:
-				case typeObjectDelete:
-				case typeSafeSpot:
-				case typeSuicide:
-				case typeTrigger:
-				case typeWeaponSelect:
-				case typeWeaponFire:
-				case typeWrithing:
-				case typeDeath:
-				case typeCheater:
-				case typeHelp:
-					break;
-
-				case typeShot:
-					pFile->Write(&msg_Shot.sDamage);
-					pFile->Write(&msg_Shot.sAngle);
-					break;
-
-				case typeExplosion:
-					pFile->Write(&msg_Explosion.sDamage);
-					pFile->Write(&msg_Explosion.sX);
-					pFile->Write(&msg_Explosion.sY);
-					pFile->Write(&msg_Explosion.sZ);
-					pFile->Write(&msg_Explosion.sVelocity);
-					break;
-
-				case typeBurn:
-					pFile->Write(&msg_Burn.sDamage);
-					break;
-
-				case typePopout:
-				case typeShootCycle:
-					pFile->Write(&msg_Popout.ucIDNext);
-					pFile->Write(&msg_Popout.u16UniqueDudeID);
-					pFile->Write(&msg_Popout.u16UniquePylonID);
-					pFile->Write(&msg_Popout.sNextPylonX);
-					pFile->Write(&msg_Popout.sNextPylonZ);
-					break;
-
-				case typePanic:
-					pFile->Write(&msg_Panic.sX);
-					pFile->Write(&msg_Panic.sY);
-					pFile->Write(&msg_Panic.sZ);
-					break;
-
-				case typeDrawBlood:
-					pFile->Write(&msg_DrawBlood.s2dX);
-					pFile->Write(&msg_DrawBlood.s2dY);
-					break;
-
-				case typeDudeTrigger:
-					pFile->Write(&msg_DudeTrigger.u16DudeUniqueID);
-					pFile->Write(&msg_DudeTrigger.dX);
-					pFile->Write(&msg_DudeTrigger.dZ);
-					break;
-
-				case typePutMeDown:
-					pFile->Write(&msg_PutMeDown.u16FlagInstanceID);
-					break;
-			}		
-		}
-		else
-		{
-			sResult = FAILURE;
-		}
-
-		return sResult;
-	}
+   int16_t Save(RFile* pFile);
 
 	// Function to load whatever type of message was saved
-	int16_t Load(RFile* pFile)
-	{
-		int16_t sResult = SUCCESS;
-
-		if (pFile && pFile->IsOpen())
-		{
-			pFile->Read(&msg_Generic.eType);
-			pFile->Read(&msg_Generic.sPriority);
-
-			switch (msg_Generic.eType)
-			{
-				case typeGeneric:
-				case typeObjectDelete:
-				case typeSafeSpot:
-				case typeSuicide:
-				case typeTrigger:
-					break;
-					
-				case typeShot:
-					pFile->Read(&msg_Shot.sDamage);
-					pFile->Read(&msg_Shot.sAngle);
-					break;
-
-				case typeExplosion:
-					pFile->Read(&msg_Explosion.sDamage);
-					pFile->Read(&msg_Explosion.sX);
-					pFile->Read(&msg_Explosion.sY);
-					pFile->Read(&msg_Explosion.sZ);
-					pFile->Read(&msg_Explosion.sVelocity);
-					break;
-
-				case typeBurn:
-					pFile->Read(&msg_Burn.sDamage);
-					break;
-
-				case typePopout:
-				case typeShootCycle:
-					pFile->Read(&msg_Popout.ucIDNext);
-					pFile->Read(&msg_Popout.u16UniqueDudeID);
-					pFile->Read(&msg_Popout.u16UniquePylonID);
-					pFile->Read(&msg_Popout.sNextPylonX);
-					pFile->Read(&msg_Popout.sNextPylonZ);
-					break;
-
-				case typePanic:
-					pFile->Read(&msg_Panic.sX);
-					pFile->Read(&msg_Panic.sY);
-					pFile->Read(&msg_Panic.sZ);
-					break;
-
-				case typeDrawBlood:
-					pFile->Read(&msg_DrawBlood.s2dX);
-					pFile->Read(&msg_DrawBlood.s2dY);
-					break;
-
-				case typeDudeTrigger:
-					pFile->Read(&msg_DudeTrigger.u16DudeUniqueID);
-					pFile->Read(&msg_DudeTrigger.dX);
-					pFile->Read(&msg_DudeTrigger.dZ);
-					break;
-
-				case typePutMeDown:
-					pFile->Read(&msg_PutMeDown.u16FlagInstanceID);
-					break;
-			}
-		}
-		else
-		{
-			sResult = FAILURE;
-		}
-
-		return sResult;
-	}
-} GameMessage, *pGameMessage;
+   int16_t Load(RFile* pFile);
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -159,7 +159,7 @@
 //
 //		05/01/97	JMI	Made m_everything and m_nodeClass public.
 //
-//		05/02/97	JMI	Moved m_pRealm into the public section.
+//		05/02/97	JMI	Moved realm() into the public section.
 //
 //		05/04/97 BRH	Removed STL references since the new CListNode method
 //							seems to be working.  Took Tkachuk out of the project
@@ -259,7 +259,7 @@
 
 #include <RSPiX.h>
 #include <ORANGE/Channel/channel.h>
-#include <ORANGE/CDT/PQueue.h>
+#include <deque>
 
 #include "game.h"
 #include "message.h"
@@ -399,8 +399,8 @@ enum ClassIDType : uint8_t
   CDynamiteID,
   CSndRelayID,
 
-  // This must be the last entry so it gets set to the total number of ID's
-  TotalIDs,
+  TotalIDs, // total number of ID's
+  InvalidID = 0xFF,
 };
 
 // This abstract class is the root of all objects that are part of a CRealm.
@@ -467,14 +467,11 @@ class CThing
 	//---------------------------------------------------------------------------
 	public:
 		// Prioritized Message queue for Things to use to communicate with each other
-		RPQueue <GameMessage, int16_t> m_MessageQueue;
-
-		// Pointer to the realm this object belongs to
-		CRealm* m_pRealm;
+      std::deque<GameMessage> m_MessageQueue;
 
 		// This is intended for the editor.  It would probably be a bad idea to use
 		// this pointer outside of gameedit.cpp.
-		RHot*	m_phot;
+      RHot* m_phot;
 
 	protected:
 		// Flag indicating whether object wants it's Startup() to be called
@@ -496,7 +493,7 @@ class CThing
 */
 
 		// Class ID is stored here for instant access
-		ClassIDType m_id;
+//		ClassIDType m_id;
 
 		// Unique ID specific to this instance of CThing (set in constructor,
 		// released in destructor).
@@ -507,26 +504,33 @@ class CThing
 	//---------------------------------------------------------------------------
 	public:
 	
-		CListNode<CThing>	m_everything;	
-		CListNode<CThing> m_nodeClass;	
+//		CListNode<CThing>	m_everything;
+//		CListNode<CThing> m_nodeClass;
 
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	protected:
-		// Constructor
-      CThing(void);
+public:
+  CThing(void);
+  virtual ~CThing(void);
 
-	public:
-		// Destructor (must be virtual so derived class destructors are always called!)
-		virtual ~CThing();
+  constexpr const managed_ptr<CThing>& child (void) const noexcept { return m_child; }
+  constexpr const managed_ptr<CThing>& parent(void) const noexcept { return m_parent; }
+  constexpr void setChild (const managed_ptr<CThing>& nc) noexcept { m_child = nc; }
+  constexpr void setParent(const managed_ptr<CThing>& np) noexcept { m_parent = np; }
+  constexpr void resetChild (void) noexcept { m_child.reset(); }
+  constexpr void resetParent(void) noexcept { m_parent.reset(); }
 
   constexpr CRealm* realm(void) const noexcept { return m_realm; }
   constexpr ClassIDType type(void) const noexcept { return m_type; }
   constexpr bool instantiable(void) const noexcept { return m_instantiable; }
 
   void* operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept;
+
+protected:
+  managed_ptr<CThing> m_child;
+  managed_ptr<CThing> m_parent;
  private:
   CRealm* m_realm;
   ClassIDType m_type;
@@ -539,21 +543,13 @@ class CThing
       {
         return "";
       }
-		// Get object's class ID (must NOT be virtual!)
-		ClassIDType GetClassID(void)							// Returns object's class ID
-			{
-         return m_type;
-			}
 
 		// Get object instance's unique ID.
-		uint16_t GetInstanceID(void)
+      uint16_t GetInstanceID(void)
 			{
 			return m_u16InstanceId;
 			}
 
-		// Set object instance's unique ID.
-		void SetInstanceID(	// Returns nothing.
-			uint16_t	u16Id);		// New id for this instance.
 
 		// Helper for processing your GUIs.
 		// Will be made visible by calling pguiRoot->SetVisible(TRUE).
@@ -582,19 +578,14 @@ class CThing
 												// to continue.                          
 			RInputEvent*	pie);			// Out: Next input event to process.     
 
-		int16_t SendThingMessage(pGameMessage pMessage, uint16_t u16ID)
-			{
-				return SendThingMessage(pMessage, pMessage->msg_Generic.sPriority, u16ID);
-			}
-
-		int16_t SendThingMessage(pGameMessage pMessage, CThing* pThing)
-			{
-				return SendThingMessage(pMessage, pMessage->msg_Generic.sPriority, pThing);
-			}
-
-		int16_t SendThingMessage(pGameMessage pMessage, int16_t sPriority, uint16_t u16ID);
-
-		int16_t SendThingMessage(pGameMessage pMessage, int16_t sPriority, CThing* pThing);
+      template<typename T>
+      int16_t SendThingMessage(GameMessage& pMessage, managed_ptr<T> pThing)
+      {
+        if(!pThing)
+          return false;
+        pThing->m_MessageQueue.push_back(pMessage);
+        return true;
+      }
 
 		// Maps a 3D coordinate onto the viewing plane.
 		void Map3Dto2D(		// Returns nothing.
@@ -643,11 +634,6 @@ class CThing
          return SUCCESS;
 			}
 
-		// Shutdown object
-		virtual int16_t Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-			{
-         return SUCCESS;
-			}
 
 		// Suspend object
 		virtual void Suspend(void)

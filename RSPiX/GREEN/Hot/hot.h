@@ -57,7 +57,10 @@
 
 #include <GREEN/InputEvent/InputEvent.h>
 #include <ORANGE/CDT/slist.h>
-#include <ORANGE/CDT/List.h>
+
+#include <memory>
+#include <set>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Macros.
@@ -74,13 +77,13 @@ class RHot
 	{
 	public:	// Typedefs.
 		typedef void (*REventCall)(	// Returns nothing.
-						RHot*	phot,			// Ptr to the RHot that generated the
+                  RHot* phot,				// In:  Ptr to RHot that generated the
 												// callback.
                   int16_t sEvent);		// Event that occurred.
 												// Uses blue.h macros (RSP_MB?_*).
 
 		typedef void (*REventPosCall)(	// Returns nothing.
-						RHot*	phot,				// Ptr to the RHot that generated the
+                  RHot* phot,				// In:  Ptr to RHot that generated the
 													// callback.
                   int16_t sEvent,			// Event that occurred.
 													// Uses blue.h macros (RSP_MB?_*).
@@ -92,7 +95,7 @@ class RHot
 													// corner.
 
 		typedef void (*InputEventCall)(	// Returns nothing.
-						RHot* phot,				// In:  Ptr to RHot that generated the
+                  RHot* phot,				// In:  Ptr to RHot that generated the
 													// callback.
                   RInputEvent*	pie);	// In:  Ptr to input event that generated
 													// the callback.  Note that the coordinates
@@ -106,7 +109,6 @@ class RHot
 													// the RInputEvent passed to RHot::Do().
 
       typedef RSList <RHot, int16_t>	SListHots;	// Sorted list of RHots.
-		typedef RList <RHot>				ListHots;	// List of RHots.
 
 	public:
 		// Default constructor.
@@ -244,7 +246,7 @@ class RHot
          int16_t* psY);	// In:  Child position.
 								// Out: Top-level position.    
 
-      RHot*	GetParent(void)	// Returns ptr to RHot that is parent to this Rhot.
+      RHot* GetParent(void)	// Returns ptr to RHot that is parent to this Rhot.
 			{
 			return m_photParent;
 			}
@@ -259,7 +261,7 @@ class RHot
 		void Init(void);
 
 		// Gets the list appropriate for this hotbox.
-		ListHots* GetCaptureList(void);	// Returns Capture list appropriate for this hotbox.
+      std::set<RHot*>& GetCaptureList(void);	// Returns Capture list appropriate for this hotbox.
 
 	public:	// Static members.
 
@@ -271,7 +273,7 @@ class RHot
 										// RHOT_NO_PRIORITY(default) indicates non-prioritized.
 										// See CPP comment header in regards to specifics
 										// of this value.
-      RHot*		m_photParent;	// Pointer to parent RHot or nullptr, if none.
+      RHot* m_photParent;	// Pointer to parent RHot or nullptr, if none.
 
 	
 	public:	// To be modified by the User.
@@ -292,10 +294,10 @@ class RHot
 											// All callbacks can be used simultaneously.
       uintptr_t		m_ulUser;			// User value passed to callbacks.
 
-		SListHots	m_slistActiveChildren;	// List of active child RHots.
-		ListHots		m_listChildren;			// List of all child RHots.
+      SListHots	m_slistActiveChildren;	// List of active child RHots.
+      std::set<RHot*> m_listChildren;			// List of all child RHots.
 		// List of hots that always receive events.
-		ListHots		m_listCapturing;			// List of all capturing child RHots
+      std::set<RHot*> m_listCapturing;			// List of all capturing child RHots
 														// and self, if capturing.
 
 

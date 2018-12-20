@@ -35,7 +35,7 @@
 //							time left before the fire goes out or the smoke thins
 //							out.
 //
-//		06/11/97 BRH	Added m_u16ShooterID to store the shooter ID which
+//		06/11/97 BRH	Added m_shooter to store the shooter ID which
 //							will get passed along in the Burn Message.
 //
 //		06/17/97	JMI	Converted all occurrences of rand() to GetRand() and
@@ -56,7 +56,7 @@
 //		07/23/97 BRH	Changed the limits on the wind velocity so it can
 //							be higher.
 //
-//		09/02/97	JMI	Added m_u16FireStarterID.  This is used for a special case
+//		09/02/97	JMI	Added m_fireStarter.  This is used for a special case
 //							when the starter of the fire is not the thing using the
 //							fire as a weapon (e.g., when a guy catches fire he can
 //							use the fire on other people by running into them causing
@@ -77,6 +77,7 @@
 #include "smash.h"
 
 
+class CThing3d;
 // CFire is a burning flame weapon class
 class CFire : public CThing
 	{
@@ -121,8 +122,8 @@ class CFire : public CThing
 													// obstacle.
         bool m_bIsBurningDude;
 
-		uint16_t	m_u16ShooterID;				// Store the shooter ID to pass along in the burn message
-		uint16_t	m_u16FireStarterID;			// Fire's creator.  The ID of the thing that
+      managed_ptr<CThing3d> m_shooter;				// Store the shooter ID to pass along in the burn message
+      managed_ptr<CThing3d> m_fireStarter;			// Fire's creator.  The ID of the thing that
 													// caused this fire to be created.  Generally
 													// used by a thing3d when creating an internal
 													// fire in response to Burn messages.
@@ -182,22 +183,20 @@ class CFire : public CThing
 			m_u32CollideIncludeBits = 0;
 			m_u32CollideDontcareBits = 0;
 			m_u32CollideExcludeBits = 0;
-			m_sTotalAlphaChannels = 0;
-			m_smash.m_pThing = nullptr;
+         m_sTotalAlphaChannels = 0;
 			m_smash.m_bits = 0;
-			m_lStartTime = 0;
-			m_u16FireStarterID = CIdBank::IdNil;
+         m_lStartTime = 0;
 			}
 
       ~CFire(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 			// Remove yourself from the collision list if it was in use
 			// (switching to smoke removes it from the smashatorium and sets
 			// the m_pThing field to nullptr)
 			if (m_smash.m_pThing)
-				m_pRealm->m_smashatorium.Remove(&m_smash);
+				realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
@@ -230,9 +229,6 @@ class CFire : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -309,7 +305,7 @@ class CFire : public CThing
 		// the smoke.
 		int32_t GetTimeLeftToLive(void)
 			{
-			return m_lBurnUntil - m_pRealm->m_time.GetGameTime();
+			return m_lBurnUntil - realm()->m_time.GetGameTime();
 			}
 
 	//---------------------------------------------------------------------------

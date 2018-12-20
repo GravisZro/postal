@@ -79,7 +79,7 @@
 //		06/25/97	JMI	Uses smaller shadow now....If we need multiple sizes later,
 //							we can make an additional array.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		08/07/97	JMI	Added ability to optionally load a rigid body and child
@@ -246,9 +246,11 @@ int16_t CItem3d::Load(										// Returns 0 if successfull, non-zero otherwise
 
 				uint32_t	u32Temp;
 				pFile->Read(&u32Temp);
-				m_type	= (ItemType)u32Temp;
+            m_itemType	= (ItemType)u32Temp;
 
-				pFile->Read(&m_u16IdParent);
+            uint16_t parent_id = 0;
+            pFile->Read(&parent_id);
+            m_parent = realm()->GetOrAddThingById<CThing>(parent_id, type());
 				break;
 			}
 		
@@ -303,9 +305,9 @@ int16_t CItem3d::Save(										// Returns 0 if successfull, non-zero otherwise
 
 		pFile->Write(m_szAnimBaseName);
 
-		pFile->Write((uint32_t)m_type);
+      pFile->Write((uint32_t)m_itemType);
 
-		pFile->Write(m_u16IdParent);
+      pFile->Write(parent()->GetInstanceID());
 		
 		sResult	= pFile->Error();
 		}
@@ -325,7 +327,7 @@ void CItem3d::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+		int32_t lThisTime = realm()->m_time.GetGameTime();
 
 		// Advance the animation timer.
 		int32_t	lDifTime		= lThisTime - m_lAnimPrevUpdateTime;
@@ -351,7 +353,7 @@ void CItem3d::Update(void)
 					}
 				break;
 			default:
-				if (m_u16IdParent == CIdBank::IdNil)
+            if (!parent())
 					{
 					// Get time from last call in seconds.
 					double	dSeconds	= double(lThisTime - m_lPrevTime) / 1000.0;
@@ -369,7 +371,7 @@ void CItem3d::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save time for next time
 		m_lPrevTime = lThisTime;
@@ -459,10 +461,10 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 			peditRotZ->Compose();
 
 			// If no type . . .
-			if (m_type == None)
+         if (m_itemType == None)
 				{
 				// Default to custom for ease of user interface.
-				m_type	= Custom;
+            m_itemType	= Custom;
 				}
 
 			int16_t	i;
@@ -475,7 +477,7 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 					// Set item number.
 					pguiItem->m_ulUserData	= i;
 					// If this item is the current type . . .
-					if (m_type == i)
+               if (m_itemType == i)
 						{
 						// Select it.
 						plb->SetSel(pguiItem);
@@ -490,10 +492,10 @@ int16_t CItem3d::EditModify(void)					// Returns 0 if successfull, non-zero othe
 				RGuiItem*	pguiSel	= plb->GetSel();
 				if (pguiSel != nullptr)
 					{
-					m_type	= (ItemType)pguiSel->m_ulUserData;
-					if (m_type != Custom)
+               m_itemType	= (ItemType)pguiSel->m_ulUserData;
+               if (m_itemType != Custom)
 						{
-						std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_type]);
+                  std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_itemType]);
 						}
 					else
 						{
@@ -550,7 +552,7 @@ int16_t CItem3d::Init(void)									// Returns 0 if successfull, non-zero otherw
 	{
 	int16_t sResult = SUCCESS;
 
-	m_lPrevTime			= m_pRealm->m_time.GetGameTime();
+	m_lPrevTime			= realm()->m_time.GetGameTime();
 
 	// Get resources
 	sResult = GetResources();
@@ -559,7 +561,7 @@ int16_t CItem3d::Init(void)									// Returns 0 if successfull, non-zero otherw
 	sResult	|= PrepareShadow();
 
 	m_smash.m_bits		= CSmash::Misc;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 	m_panimCur			= &m_anim;
 	m_lAnimTime			= 0;
 
@@ -596,12 +598,12 @@ int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero o
 	// Free existing resources, if any.
 	FreeResources();
 
-	ASSERT(m_type > None && m_type < NumTypes);
+   ASSERT(m_itemType > None && m_itemType < NumTypes);
 
 	// If a known type . . .
-	if (m_type != Custom)
+   if (m_itemType != Custom)
 		{
-		std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_type]);
+      std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_itemType]);
 		}
 
 	// Load main anim.
@@ -615,14 +617,14 @@ int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero o
 		}
 
 	// Get shadow.
-	sResult	|= rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SHADOW_RES_NAME), &m_spriteShadow.m_pImage);
+	sResult	|= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SHADOW_RES_NAME), &m_spriteShadow.m_pImage);
 
 	// If errors . . .
 	if (sResult)
 		{
 		// Remove just in case we're already in scene.  Can happen in editor after
 		// a failed EditModify().
-		m_pRealm->m_scene.RemoveSprite(&m_sprite);
+		realm()->Scene()->RemoveSprite(&m_sprite);
 		}
 		
 	return sResult;
@@ -702,10 +704,10 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
 	int16_t sX,						// In: Starting X position
 	int16_t sY,						// In: Starting Y position
 	int16_t sZ,						// In: Starting Z position
-	ItemType type,					// In:  Known item type or Custom.
+   ItemType itemtype,					// In:  Known item type or Custom.
    const char*	pszCustomBaseName /*= nullptr*/,	// In:  Required if type == Custom.
 													// Base name for custom type resources.
-	uint16_t	u16IdParentInstance /*= CIdBank::IdNil*/)	// In:  Parent instance ID.
+   managed_ptr<CThing3d> parentThing /*= CIdBank::IdNil*/)	// In:  Parent instance ID.
 	{
 	int16_t sResult = SUCCESS;
 
@@ -713,14 +715,14 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
 	m_dY	= sY;
 	m_dZ	= sZ;
 
-	m_type	= type;
+   m_itemType	= itemtype;
 
 	if (pszCustomBaseName != nullptr)
 		{
 		std::strcpy(m_szAnimBaseName, pszCustomBaseName);
 		}
 
-	m_u16IdParent	= u16IdParentInstance;
+   m_parent = parentThing;
 
 	sResult	= Init();
 

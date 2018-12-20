@@ -177,12 +177,12 @@ void ScoreReset(void);
 void ScoreResetDisplay(void);
 
 // Function called by Characters when they die
-void ScoreRegisterKill(CRealm* pRealm, uint16_t u16DeadGuy, uint16_t u16Killer);
+void ScoreRegisterKill(CRealm* pRealm, managed_ptr<CThing3d> deadguy, managed_ptr<CThing3d> killer);
 
 // Function called by play to update the score display
 // Returns true, if pImage was updated; false otherwise.
 bool ScoreUpdateDisplay(RImage* pImage, RRect* pRect, CRealm* pRealm, 
-								CNetClient* pclient, int16_t sDstX, int16_t sDstY, CHood* pHood);
+                        CNetClient* pclient, int16_t sDstX, int16_t sDstY, managed_ptr<CHood> pHood);
 
 // Function to set the scoring mode (ie multiplayer, single, timed etc)
 void ScoreSetMode(CScoreboard::ScoringMode Mode);

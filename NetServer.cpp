@@ -38,7 +38,7 @@
 
 #include <RSPiX.h>
 
-#if !defined(MULTIPLAYER_REMOVED)
+#if 0 && !defined(MULTIPLAYER_REMOVED)
 
 #include "netserver.h"
 

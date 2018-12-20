@@ -116,7 +116,7 @@ class CDispenser : public CThing
 		int16_t			m_sNumDispensees;						// Number of dispensees already
 																	// dispensed.
 
-		uint16_t			m_u16IdDispensee;						// ID of the last dispensee
+      managed_ptr<CThing> m_dispensee;						// ID of the last dispensee
 																	// we created.
 
 		int32_t			m_lNextUpdate;							// Time of next update.
@@ -155,8 +155,7 @@ class CDispenser : public CThing
 			m_sSuspend			= FALSE;
          std::memset(m_alLogicParms, 0, sizeof(m_alLogicParms) );
 			m_sMaxDispensees	= 10;
-			m_sNumDispensees	= 0;
-			m_u16IdDispensee	= CIdBank::IdNil;
+         m_sNumDispensees	= 0;
 			m_logictype			= Timed;
 			m_bEditMode			= false;
 			m_sDispenseeHotSpotX	= 0;
@@ -188,9 +187,6 @@ class CDispenser : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -274,16 +270,16 @@ class CDispenser : public CThing
 
 		// Create a dispensee from the memfile, if open.
 		int16_t InstantiateDispensee(	// Returns 0 on success.
-			CThing**	ppthing,				// Out: New thing loaded from m_fileDispensee.
+         managed_ptr<CThing>& ppthing,				// Out: New thing loaded from m_fileDispensee.
 			bool		bEditMode);			// In:  true if in edit mode.
 
 		// Write dispensee to the memfile.
 		int16_t SaveDispensee(		// Returns 0 on success.
-			CThing*	pthing);		// In:  Instance of Dispensee to save.
+         managed_ptr<CThing> pthing);		// In:  Instance of Dispensee to save.
 
 		// Render dispensee to m_imRender.
 		int16_t RenderDispensee(	// Returns 0 on success.
-			CThing*	pthing);		// In:  Instance of Dispensee to render.
+         managed_ptr<CThing> pthing);		// In:  Instance of Dispensee to render.
 
 		// Get the closest dude.
 		int16_t GetClosestDudeDistance(	// Returns 0 on success.  Fails, if no dudes.
@@ -291,7 +287,7 @@ class CDispenser : public CThing
 
 		// Destroy an instantiated dispensee.
 		void DestroyDispensee(	// Returns nothing.
-			CThing**	ppthing);	// In:  Ptr to the instance.
+         managed_ptr<CThing>& ppthing);	// In:  Ptr to the instance.
 	};
 
 

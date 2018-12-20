@@ -79,11 +79,11 @@
 //							forces.  Fixed.
 //							OnShotMsg() now provides momentum from the bullets.
 //
-//		05/29/97	JMI	Changed m_pRealm->m_pHeightMap->GetVal() calls to
-//							m_pRealm->GetFloorMapValue() and 
-//							m_pRealm->m_pAttrMap->GetVal() calls to 
-//							m_pRealm->GetEffectAttribute().
-//							Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Changed realm()->m_pHeightMap->GetVal() calls to
+//							realm()->GetFloorMapValue() and 
+//							realm()->m_pAttrMap->GetVal() calls to 
+//							realm()->GetEffectAttribute().
+//							Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //							Also, added a GetLayer().
 //
@@ -144,7 +144,7 @@
 //		08/09/97	JMI	Converted from macro MAX_STEPUP_THRESHOLD to enum 
 //							MaxStepUpThreshold macro.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/12/97 BRH	Added additional text strings for the new states.
@@ -472,7 +472,7 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 		if (ulFileVersion < 24)
 			{
 			// Convert to 3D.
-			m_pRealm->MapY2DtoZ3D(
+			realm()->MapY2DtoZ3D(
 				m_dZ,
 				&m_dZ);
 			}
@@ -522,7 +522,7 @@ int16_t CThing3d::Save(									// Returns 0 if successfull, non-zero otherwise
 int16_t CThing3d::Startup(void)						// Returns 0 if successfull, non-zero otherwise
 	{
 	// Init other stuff
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lAnimPrevUpdateTime	= m_lPrevTime;
 
 	// No special flags
@@ -530,16 +530,6 @@ int16_t CThing3d::Startup(void)						// Returns 0 if successfull, non-zero other
 
    return SUCCESS;
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CThing3d::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -549,7 +539,7 @@ void CThing3d::Suspend(void)
 	if (m_sSuspend == 0)
 		{
 		// Store current delta so we can restore it.
-		int32_t	lCurTime				= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime				= realm()->m_time.GetGameTime();
 		m_lPrevTime					= lCurTime - m_lPrevTime;
 		m_lAnimPrevUpdateTime	= lCurTime - m_lAnimPrevUpdateTime;
 		}
@@ -569,7 +559,7 @@ void CThing3d::Resume(void)
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
 		{
-		int32_t	lCurTime				= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime				= realm()->m_time.GetGameTime();
 		m_lPrevTime					= lCurTime - m_lPrevTime;
 		m_lAnimPrevUpdateTime	= lCurTime - m_lAnimPrevUpdateTime;
 		}
@@ -588,7 +578,7 @@ void CThing3d::Render(void)
 	m_sprite.m_sBrightness	= m_sBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
 
 	// If no parent . . .
-	if (m_u16IdParent == CIdBank::IdNil)
+   if (!parent())
 		{
 		// Reset transform back to start to set absolute rather than cummulative rotation
 		m_trans.makeIdentity();
@@ -616,7 +606,7 @@ void CThing3d::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 		
 		// Set transform.
 		m_sprite.m_ptrans = &m_trans;
@@ -631,7 +621,7 @@ void CThing3d::Render(void)
 		if (!(m_spriteShadow.m_sInFlags & CSprite::InHidden) && m_spriteShadow.m_pImage != nullptr)
 			{
 			// Get the height of the terrain from the attribute map
-			int16_t sY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+			int16_t sY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 			// Map from 3d to 2d coords
 			Map3Dto2D(m_dX, (double) sY, m_dZ, &(m_spriteShadow.m_sX2), &(m_spriteShadow.m_sY2) );
 			// Offset hotspot to center of image.
@@ -642,7 +632,7 @@ void CThing3d::Render(void)
 			m_spriteShadow.m_sPriority = MAX(m_sprite.m_sPriority - 1, 0);//m_dZ;
 
 			// Layer should be based on info we get from attribute map.
-			m_spriteShadow.m_sLayer = m_sprite.m_sLayer; //CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((short) m_dX, (short) m_dZ));
+			m_spriteShadow.m_sLayer = m_sprite.m_sLayer; //CRealm::GetLayerViaAttrib(realm()->GetLayer((short) m_dX, (short) m_dZ));
 
 			// Set the alpha level based on the height difference
 			m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) m_dY - sY);
@@ -657,7 +647,7 @@ void CThing3d::Render(void)
 				}
 
 			// Update sprite in scene
-			m_pRealm->m_scene.UpdateSprite(&m_spriteShadow);
+			realm()->Scene()->UpdateSprite(&m_spriteShadow);
 			}
 		}
 
@@ -746,7 +736,7 @@ void CThing3d::EditRect(RRect* pRect)
          apt3dSrc[0].setW(1.0);
          apt3dSrc[1].setW(1.0);
 
-			m_pRealm->m_scene.TransformPtsToRealm(&trans, apt3dSrc, apt3dDst, 2);
+			realm()->Scene()->TransformPtsToRealm(&trans, apt3dSrc, apt3dDst, 2);
          m_sprite.m_sRadius = (apt3dDst[1] - apt3dDst[0]).magnatude();
 
 			Map3Dto2D(
@@ -835,7 +825,7 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 	double	dNewX, dNewY, dNewZ;
 
 	// Get time from last call in seconds.
-	int32_t		lCurTime	= m_pRealm->m_time.GetGameTime();
+	int32_t		lCurTime	= realm()->m_time.GetGameTime();
 	double	dSeconds	= double(lCurTime - m_lPrevTime) / 1000.0;
 
 	// Update Velocities ////////////////////////////////////////////////////////
@@ -1275,12 +1265,12 @@ void CThing3d::DeluxeUpdatePosVel(	// Returns nothing.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::ProcessMessages(void)
-	{
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-		{
+   {
+  while (!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
 		ProcessMessage(&msg);
+      m_MessageQueue.pop_front();
 		}
 	}
 
@@ -1389,20 +1379,17 @@ void CThing3d::OnExplosionMsg(			// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::OnBurnMsg(	// Returns nothing.
 	Burn_Message* pburnmsg)		// In:  Message to handle.
-	{
-   CFire*	pFire;
+   {
 	// If we don't already have a fire . . .
-   if (m_pRealm->m_idbank.GetThingByID((CThing**)&pFire, m_u16IdFire) != SUCCESS)
+   if (!m_fire)
 		{
 		// Make a fire and remember its ID.
-      pFire = static_cast<CFire*>(realm()->makeType(CFireID));
-      if (pFire != nullptr)
-			{
-			// Store its ID.
-         m_u16IdFire	= pFire->GetInstanceID();
+      m_fire = realm()->AddThing<CFire>();
+      if (m_fire)
+         {
 
 			// Put it in the thing3d's midsection.
-         pFire->Setup(
+         m_fire->Setup(
 				m_dX, 							// In:  New x coord
 				m_dY + m_sprite.m_sRadius, // In:  New y coord
 				m_dZ, 							// In:  New z coord
@@ -1411,12 +1398,12 @@ void CThing3d::OnBurnMsg(	// Returns nothing.
 				CFire::SmallFire);			// In:  Animation type to use default = LargeFire
 
 			// We use this object as a weapon against others so we are the shooter.
-         pFire->m_u16ShooterID		 = m_u16InstanceId;
+         m_fire->m_shooter		 = this;
 			// Note though who caused the creation of this fire so we know who's
 			// responsible for this thing's damage.
-         pFire->m_u16FireStarterID	= pburnmsg->u16ShooterID;
+         m_fire->m_fireStarter	= pburnmsg->shooter;
 
-         pFire->m_bIsBurningDude = (GetClassID() == CDudeID);
+         m_fire->m_bIsBurningDude = (type() == CDudeID);
 
 //			pFire->MessagesOff();
 			}
@@ -1457,28 +1444,23 @@ void CThing3d::OnPutMeDownMsg(			// Returns nothing
 // Update fire animation's position.
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::UpdateFirePosition(void)
-	{
-	CFire*	pfire;
+   {
 	// If there is a fire . . .
-   if (m_pRealm->m_idbank.GetThingByID((CThing**)&pfire, m_u16IdFire) == SUCCESS)
+   if (m_fire)
 		{
 		// Update its position.
-		pfire->m_dX	= m_dX;
-		pfire->m_dY	= m_dY;
+      m_fire->m_dX	= m_dX;
+      m_fire->m_dY	= m_dY;
 		// Always put fire slightly in front of thing3d so we can see alpha
 		// effect.
-		pfire->m_dZ	= m_dZ + 1.0;
+      m_fire->m_dZ	= m_dZ + 1.0;
 		// If dead or dying . . .
 		if (m_state == State_Die || m_state == State_Dead)
 			{
 			// Char the guy.
 			m_sBrightness	= BURNT_BRIGHTNESS;
 			}
-		}
-	else
-		{
-		m_u16IdFire	= CIdBank::IdNil;
-		}
+      }
 	}
 
 
@@ -1499,7 +1481,7 @@ void CThing3d::GetFloorAttributes(	// Returns nothing.
 
    for(const Point2D& point : *m_pap2dAttribCheckPoints)
    {
-      u16CurAttrib = m_pRealm->GetFloorMapValue(sX + point.sX,
+      u16CurAttrib = realm()->GetFloorMapValue(sX + point.sX,
                                                 sZ + point.sZ,
 																 REALM_ATTR_NOT_WALKABLE | 0x0000);
 
@@ -1521,7 +1503,7 @@ void CThing3d::GetFloorAttributes(	// Returns nothing.
 	if (psHeight)
 		{
 		// Map into realm.
-		m_pRealm->MapAttribHeight(sMaxHeight * 4, psHeight);
+		realm()->MapAttribHeight(sMaxHeight * 4, psHeight);
 		}
 	
 	SET(pu16Attrib, u16CombinedAttrib);
@@ -1542,7 +1524,7 @@ void CThing3d::GetEffectAttributes(	// Returns nothing.
 
    for(const Point2D& point : *m_pap2dAttribCheckPoints)
 		{
-		u16CurAttrib = m_pRealm->GetEffectAttribute(
+		u16CurAttrib = realm()->GetEffectAttribute(
          sX + point.sX,
          sZ + point.sZ
 			);
@@ -1572,13 +1554,13 @@ void CThing3d::GetLayer(	// Returns nothing.
 
    for(const Point2D& point : *m_pap2dAttribCheckPoints)
 		{
-		u16CombinedLayer	|= m_pRealm->GetLayer(
+		u16CombinedLayer	|= realm()->GetLayer(
          sX + point.sX,
          sZ + point.sZ
 			);
 		}
 
-	SET(psLayer, m_pRealm->GetLayerViaAttrib(u16CombinedLayer) );
+	SET(psLayer, realm()->GetLayerViaAttrib(u16CombinedLayer) );
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1598,7 +1580,7 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
    Vector3D pt3Src = {0, 0, 0, 1};
    Vector3D pt3Dst;
 	// Get last transition position by mapping origin.
-	m_pRealm->m_scene.TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
+	realm()->Scene()->TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 
 	// Output link point.
 	*pdX	= pt3Dst.x();
@@ -1610,34 +1592,24 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 // Detach the specified Thing3d.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-CThing3d* CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
-	uint16_t*		pu16InstanceId,		// In:  Instance ID of child to detach.
+void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
+   managed_ptr<CThing3d> childThing,		// In:  Instance ID of child to detach.
 											// Out: CIdBank::IdNil.
 	RTransform*	ptrans)				// In:  Transform for positioning child.
 	{
-	CThing3d*	pthing3d;
-   if (m_pRealm->m_idbank.GetThingByID((CThing**)&pthing3d, *pu16InstanceId) == SUCCESS)
+   managed_ptr<CThing3d> pthing3d;
+   if (childThing)
 		{
 		DetachChild(
-			&(pthing3d->m_sprite),		// In:  Child sprite to detach.
+         &(childThing->m_sprite),		// In:  Child sprite to detach.
 			ptrans,							// In:  Transform for positioning child.
-			&(pthing3d->m_dX),			// Out: Position of child.
-			&(pthing3d->m_dY),			// Out: Position of child.
-			&(pthing3d->m_dZ) );			// Out: Position of child.
+         &(childThing->m_dX),			// Out: Position of child.
+         &(childThing->m_dY),			// Out: Position of child.
+         &(childThing->m_dZ) );			// Out: Position of child.
 
-		// Done with child.
-		*pu16InstanceId = CIdBank::IdNil;
 		// Child is done with us.
-		pthing3d->m_u16IdParent	= CIdBank::IdNil;
-		}
-	else
-		{
-		// No longer exists.
-		*pu16InstanceId	= CIdBank::IdNil;
-		pthing3d				= nullptr;
-		}
-
-	return pthing3d;
+      childThing->resetParent();
+      }
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1778,7 +1750,7 @@ int16_t CThing3d::PrepareShadow(void)
 	// If the shadow doesn't have resource loaded yet, load the default
 	if (m_spriteShadow.m_pImage == nullptr)
 	{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 	}
 
 	// If a resource is available, set the shadow to visible.
@@ -1837,7 +1809,7 @@ void CThing3d::PlaySample(									// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 // Start a CAnimThing.
 ////////////////////////////////////////////////////////////////////////////////
-CAnimThing* CThing3d::StartAnim(		// Returns ptr to CAnimThing on success; nullptr otherwise.
+managed_ptr<CAnimThing> CThing3d::StartAnim(		// Returns ptr to CAnimThing on success; nullptr otherwise.
    const char* pszAnimResName,				// In:  Animation's resource name.
 	int16_t	sX,								// In:  Position.
 	int16_t	sY,								// In:  Position.
@@ -1845,8 +1817,8 @@ CAnimThing* CThing3d::StartAnim(		// Returns ptr to CAnimThing on success; nullp
 	bool	bLoop)							// In:  true to loop animation.
 	{
    // Create the animator . . .
-   CAnimThing* pat = static_cast<CAnimThing*>(realm()->makeTypeWithID(CAnimThingID));
-   if (pat != nullptr)
+   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
+   if (pat)
 		{
       std::strcpy(pat->m_szResName, pszAnimResName);
 

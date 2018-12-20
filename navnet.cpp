@@ -103,7 +103,7 @@
 //							which would be off if some bouys were deleted from the
 //							network.  Changed it to save the size of the m_NodeMap.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/27/97 BRH	Changed FindNearestBouy to use the new bouy tree nodes
@@ -120,7 +120,7 @@
 //		06/30/97 BRH	Fixed bug where the wrong overloaded version of IsPathClear
 //							was being called.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/14/97	JMI	FindNearestBouy() was deleting a NULL tree, if no bouys.  
@@ -271,9 +271,9 @@ int16_t CNavigationNet::Startup(void)								// Returns 0 if successfull, non-ze
 	{
    int16_t sResult = SUCCESS;
 	// At this point we can assume the CHood was loaded, so we init our height
-	m_dY = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+   m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 	// Set yourself to be the new current Nav Net
-	m_pRealm->m_pCurrentNavNet = this;
+   realm()->setNavNet(this);
 
 	// Init other stuff
 	if (m_ucNextID <= m_ucNumSavedBouys)
@@ -285,15 +285,6 @@ int16_t CNavigationNet::Startup(void)								// Returns 0 if successfull, non-ze
 		UpdateRoutingTables();
 
    return sResult;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CNavigationNet::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
 	}
 
 
@@ -344,9 +335,7 @@ int16_t CNavigationNet::EditPostLoad(void)
 {
    int16_t sResult = SUCCESS;
 
-	CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
-	CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
-	RListBox* plb = peditor->m_plbNavNetList;
+   RListBox* plb = managed_ptr<CGameEditThing>(realm()->GetThingsByType(CGameEditThingID).front())->m_plbNavNetList;
 	if (plb != nullptr)
 	{
       RGuiItem* pgui = plb->AddString(m_rstrNetName);
@@ -385,9 +374,7 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
 
 	if (sResult == SUCCESS)
 	{
-		CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
-		CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
-		RListBox* plb = peditor->m_plbNavNetList;
+     RListBox* plb = managed_ptr<CGameEditThing>(realm()->GetThingsByType(CGameEditThingID).front())->m_plbNavNetList;
 		if (plb != nullptr)
 		{
          RGuiItem* pgui = plb->AddString(m_rstrNetName);
@@ -439,9 +426,7 @@ int16_t CNavigationNet::EditModify(void)
          pGui->GetText(3, m_rstrNetName.Data(), 255);
 			m_rstrNetName.Update();
 
-			CListNode<CThing>* pEditorList = m_pRealm->m_aclassHeads[CGameEditThingID].m_pnNext;
-			CGameEditThing* peditor = (CGameEditThing*) pEditorList->m_powner;
-			RListBox* plb = peditor->m_plbNavNetList;			
+         RListBox* plb = managed_ptr<CGameEditThing>(realm()->GetThingsByType(CGameEditThingID).front())->m_plbNavNetList;
          SetText(plb, GetInstanceID(), m_rstrNetName.operator const char *());
 			plb->SetSel(plb->GetItemFromId(GetInstanceID()));
 //			RGuiItem* pguiRemove = plb->GetItemFromId(GetInstanceID());
@@ -518,13 +503,13 @@ void CNavigationNet::EditRender(void)
 	m_sprite.m_sY2	-= m_pImage->m_sHeight;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+   m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Image would normally animate, but doesn't for now
 	m_sprite.m_pImage = m_pImage;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+   realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -576,7 +561,7 @@ int16_t CNavigationNet::GetResources(void)						// Returns 0 if successfull, non
 
    if (m_pImage == nullptr)
 		{
-		sResult	= rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &m_pImage);
+      sResult	= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_pImage);
 		if (sResult == SUCCESS)
 			{
 			// This is a questionable action on a resource managed item, but it's
@@ -619,8 +604,8 @@ uint8_t CNavigationNet::AddBouy(CBouy* pBouy)
 	if (m_ucNextID < 254)
 	{
 		pBouy->m_ucID = m_ucNextID;
-		pBouy->m_pParentNavNet = this;
-		m_NodeMap.insert(nodeMap::value_type(m_ucNextID, pBouy));
+      pBouy->m_pParentNavNet = this;
+      m_NodeMap.emplace(m_ucNextID, pBouy);
 		m_ucNextID++;
 		ucID = pBouy->m_ucID;
 	}
@@ -642,14 +627,13 @@ void CNavigationNet::RemoveBouy(uint8_t ucBouyID)
 // GetBouy
 ////////////////////////////////////////////////////////////////////////////////
 
-CBouy* CNavigationNet::GetBouy(uint8_t ucBouyID)
+managed_ptr<CBouy> CNavigationNet::GetBouy(uint8_t ucBouyID)
 {
-	CBouy* pBouy = nullptr;
-	nodeMap::iterator i;
+   managed_ptr<CBouy> pBouy;
 
-	i = m_NodeMap.find(ucBouyID);
-	if (i != m_NodeMap.end())
-		pBouy = (*i).second;
+   auto iter = m_NodeMap.find(ucBouyID);
+   if (iter != m_NodeMap.end())
+      pBouy = iter->second;
 
 	return pBouy;
 }
@@ -664,19 +648,18 @@ CBouy* CNavigationNet::GetBouy(uint8_t ucBouyID)
 
 uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 {
-	nodeMap::iterator i;
 	double dSqDist;
 	double dX;
 	double dZ;
-	CBouy* pBouy;
+   managed_ptr<CBouy> pBouy;
 	TreeListNode* pRoot = nullptr;
 	TreeListNode* pCurrent = nullptr;
 	uint8_t	ucNode = 0;
-
+#if defined(RELEASE)
 	// Build the sorted list of bouys
-	for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
+   for (auto iter = m_NodeMap.begin(); iter != m_NodeMap.end(); ++iter)
 	{
-		pBouy = (CBouy*) (*i).second;
+      pBouy = iter->second;
 		dX = pBouy->m_dX - sX;
 		dZ = pBouy->m_dZ - sZ;
 		dSqDist = (dX * dX) + (dZ * dZ);
@@ -695,7 +678,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 	pCurrent = m_BouyTreeListHead.m_pnNext;
 	bool bSearching = true;
 	// Get the height at the startling location for path checking
-	int16_t sY = m_pRealm->GetHeight(sX, sZ);
+   int16_t sY = realm()->GetHeight(sX, sZ);
 
 	// Go through the sorted list of bouys and check to see if you could
 	// get to it from where you are standing.  If not, check the next one.
@@ -705,7 +688,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 //		ASSERT(pBouy != nullptr);
 		if (pBouy)
 		{
-			if (m_pRealm->IsPathClear(sX, sY, sZ, 4.0, (int16_t) pBouy->GetX(), (int16_t) pBouy->GetZ()))
+         if (realm()->IsPathClear(sX, sY, sZ, 4.0, (int16_t) pBouy->GetX(), (int16_t) pBouy->GetZ()))
 			{
 				ucNode = pBouy->m_ucID;
 				bSearching = false;
@@ -723,7 +706,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 		// Get rid of the tree, its useless now
 		pRoot->DeleteTree();
 	}
-
+#endif
 	return ucNode;
 }
 
@@ -763,10 +746,8 @@ uint8_t CNavigationNet::FindNearestBouy(short sX, short sZ)
 
 void CNavigationNet::UpdateRoutingTables(void)
 {
-	nodeMap::iterator i;
-// orig
-	for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
-		((*i).second)->BuildRoutingTable();
+   for (auto iter = m_NodeMap.begin(); iter != m_NodeMap.end(); ++iter)
+      iter->second->BuildRoutingTable();
 
 #if 0
 	char szLine[256];
@@ -794,18 +775,17 @@ void CNavigationNet::UpdateRoutingTables(void)
 
 void CNavigationNet::PrintRoutingTables(void)
 {
-	nodeMap::iterator i;
 	char szLine[256];
 	FILE* fp;
 	fp = fopen("c:\\temp\\links.txt", "wt");
 	if (fp != nullptr)
 	{
-		for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
+      for (auto iter = m_NodeMap.begin(); iter != m_NodeMap.end(); ++iter)
 		{
-			sprintf(szLine, "\nNode %d\n----------------------\n", ((*i).second)->m_ucID);
+         sprintf(szLine, "\nNode %d\n----------------------\n", iter->second->m_ucID);
 			fwrite(szLine, sizeof(char), strlen(szLine), fp);
-			((*i).second)->PrintRouteTable(fp);
-//			((*i).second)->PrintDirectLinks(fp);
+         iter->second->PrintRouteTable(fp);
+//			iter->second->PrintDirectLinks(fp);
 		}	 
 		fclose(fp);
 
@@ -825,12 +805,6 @@ void CNavigationNet::PrintRoutingTables(void)
 int16_t CNavigationNet::DeleteNetwork(void)
 {
    int16_t sResult = SUCCESS;
-
-	nodeMap::iterator i;
-	for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
-	{
-		delete (*i).second;
-	}
 
 	m_NodeMap.erase(m_NodeMap.begin(), m_NodeMap.end());
 

@@ -28,7 +28,7 @@
 //							there's no parent.
 //							Also, increased COLLISION_RADIUS from 5 to 10.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/06/97	JMI	Now hotspot is bottom center of image (was center of 
@@ -355,7 +355,7 @@ void CPowerUp::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+		int32_t lThisTime = realm()->m_time.GetGameTime();
 
 		// Advance the animation timer.
 		int32_t	lDifTime		= lThisTime - m_lAnimPrevUpdateTime;
@@ -382,7 +382,7 @@ void CPowerUp::Update(void)
 					}
 				break;
 			default:
-				if (m_u16IdParent == CIdBank::IdNil)
+            if (!parent())
 					{
 					// Get time from last call in seconds.
 					double	dSeconds	= double(lThisTime - m_lPrevTime) / 1000.0;
@@ -400,7 +400,7 @@ void CPowerUp::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+		realm()->m_smashatorium.Update(&m_smash);
 
 		// Save time for next time
 		m_lPrevTime = lThisTime;
@@ -614,7 +614,7 @@ int16_t CPowerUp::Grab(		// Returns 0 on success..
 		ASSERT(0);
 
 		// Remove collision thinger.
-		m_pRealm->m_smashatorium.Remove(&m_smash);
+		realm()->m_smashatorium.Remove(&m_smash);
 		}
 	else
 		{
@@ -713,8 +713,8 @@ void CPowerUp::OnExplosionMsg(			// Returns nothing.
 			{
 			if (bFirst == false)
 				{
-            CPowerUp* ppowerup = static_cast<CPowerUp*>(realm()->makeTypeWithID(CPowerUpID));
-            if (ppowerup != nullptr)
+            managed_ptr<CPowerUp> ppowerup = realm()->AddThing<CPowerUp>();
+            if(ppowerup)
 					{
 					// Transfer item.
 					ppowerup->m_stockpile.GetItem(sTypeIndex)	= m_stockpile.GetItem(sTypeIndex);

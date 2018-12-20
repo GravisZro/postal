@@ -1253,7 +1253,7 @@ void RGuiItem::SetParent(RGuiItem* pguiParent)
 			}
 
 		// Set this item's RHot as a child of its parent's.
-		m_hot.SetParent(&(m_pguiParent->m_hot) );
+      m_hot.SetParent(&(m_pguiParent->m_hot));
 
 		// Activate item based on new parent.
 		// NOTE that this can screw up the ordering.

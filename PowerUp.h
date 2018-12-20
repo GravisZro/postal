@@ -115,21 +115,21 @@ class CPowerUp : public CItem3d
 
 			m_stockpile.m_sHitPoints	= 0;
 
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 
-			m_smash.m_pThing	= this;
+         m_smash.m_pThing = this;
 			}
 
       ~CPowerUp(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
 
 			// Remove collision thinger.
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->m_smashatorium.Remove(&m_smash);
 			}
 
 	//---------------------------------------------------------------------------
@@ -145,32 +145,32 @@ class CPowerUp : public CItem3d
 	public:
 		
 		// Load object (should call base class version!)
-		int16_t Load(													// Returns 0 if successfull, non-zero otherwise
+      int16_t Load(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile,											// In:  File to load from
 			bool bEditMode,										// In:  True for edit mode, false otherwise
 			int16_t sFileCount,										// In:  File count (unique per file, never 0)
 			uint32_t	ulFileVersion);								// In:  Version of file format to load.
 
 		// Save object (should call base class version!)
-		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
+      int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile,											// In:  File to save to
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Update object
-		void Update(void);
+      void Update(void);
 
 		// Render object
 		void Render(void);
 
 #if !defined(EDITOR_REMOVED)
 		// Called by editor to init new object at specified position
-		int16_t EditNew(												// Returns 0 if successfull, non-zero otherwise
+      int16_t EditNew(												// Returns 0 if successfull, non-zero otherwise
 			int16_t sX,												// In:  New x coord
 			int16_t sY,												// In:  New y coord
 			int16_t sZ);												// In:  New z coord
 
 		// Called by editor to modify object
-		int16_t EditModify(void);									// Returns 0 if successfull, non-zero otherwise
+      int16_t EditModify(void);									// Returns 0 if successfull, non-zero otherwise
 #endif // !defined(EDITOR_REMOVED)
 
 	//---------------------------------------------------------------------------
@@ -178,10 +178,10 @@ class CPowerUp : public CItem3d
 	//---------------------------------------------------------------------------
 	public:
 
-		int16_t Setup(												// Returns 0 on success.
+      int16_t Setup(												// Returns 0 on success.
 			int16_t sX,												// In: New x coord
 			int16_t sY,												// In: New y coord
-			int16_t sZ);												// In: New z coord
+         int16_t sZ);												// In: New z coord
 
 		// Call to grab this item.
 		int16_t Grab(						// Returns 0 on success.
@@ -215,7 +215,7 @@ class CPowerUp : public CItem3d
 		// Handles a Shot_Message.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-		void OnShotMsg(					// Returns nothing.
+      void OnShotMsg(					// Returns nothing.
 			Shot_Message* pshotmsg);	// In:  Message to handle.
 
 		// Handles an Explosion_Message.

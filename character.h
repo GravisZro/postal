@@ -142,23 +142,16 @@
 #include "bulletFest.h"
 
 class CCharacter : public CThing3d
-	{
-	/////////////////////////////////////////////////////////////////////////////
-	// Typedefs/enums.
-	/////////////////////////////////////////////////////////////////////////////
-	public:
-
-	//---------------------------------------------------------------------------
-	// Variables
-	//---------------------------------------------------------------------------
-	public:
-		uint16_t	m_u16IdWeapon;						// ID of your generic weapon.
+   {
+public:
+      managed_ptr<CWeapon> weapon(void) noexcept { return child(); }
+public:
       ClassIDType m_eWeaponType;	// Type of weapon to be shot
 		CBulletFest	m_bullets;					// Generic bullet interface.
 
 		int32_t	m_lCharacterTimer;				// This timer is intended for use by
 														// CCharacter's On/While* functions.
-		uint16_t	m_u16KillerId;						// ID of the person who killed you
+      managed_ptr<CThing3d> m_killer;						// ID of the person who killed you
 		// Used to track the current channel
 		// playing our sound so we can update
 		// its looping parameters.
@@ -181,7 +174,6 @@ class CCharacter : public CThing3d
       CCharacter(void)
 			{
          m_eWeaponType = CRocketID;
-			m_u16IdWeapon	= CIdBank::IdNil;
 			m_siLastWeaponPlayInstance	= 0;
 			m_lStopLoopingWeaponSoundTime	= 0;
          }
@@ -378,14 +370,14 @@ class CCharacter : public CThing3d
 		// This should be done when the character starts its shoot animation.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-		CWeapon* PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
+      managed_ptr<CWeapon> PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
 
 		// Shoot current weapon.
 		// This should be done when the character releases the weapon it's
 		// shooting.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-		CWeapon* ShootWeapon(	// Returns the weapon ptr or nullptr.
+      managed_ptr<CWeapon> ShootWeapon(	// Returns the weapon ptr or nullptr.
 					CSmash::Bits bitsInclude = 0,
 					CSmash::Bits bitsDontcare = CSmash::Bad | CSmash::Good,
 					CSmash::Bits bitsExclude = 0);
@@ -430,7 +422,7 @@ class CCharacter : public CThing3d
 			int16_t* psX,						// Out: Last clear point on path.
 			int16_t* psY,						// Out: Last clear point on path.
 			int16_t* psZ,						// Out: Last clear point on path.
-			CThing** ppthing,				// Out: Thing that intercepted us or nullptr, if none.
+         managed_ptr<CThing>& ppthing,				// Out: Thing that intercepted us or nullptr, if none.
 			CSmash*	psmashExclude = nullptr);// In:  Optional CSmash to exclude or nullptr, if none.
 
 			// Show a target sprite on whoever you would hit when aiming in the given
@@ -447,7 +439,7 @@ class CCharacter : public CThing3d
 			CSmash::Bits bitsInclude,	// In:  Mask of CSmash bits that would count as a hit
 			CSmash::Bits bitsDontCare,	// In:  Mask of CSmash bits that would not affect path
 			CSmash::Bits bitsExclude,	// In:  Mask of CSmash bits that cannot affect path
-			CThing** hThing,				// Out: Handle to thing that is the Target or nullptr if none
+         managed_ptr<CThing>& hThing,				// Out: Handle to thing that is the Target or nullptr if none
 			CSmash* psmashExclude = nullptr);// In: Optional CSmash to exclude or nullptr, if none. 
 
 		// Give the angle from yourself to this x,z position

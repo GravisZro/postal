@@ -194,15 +194,6 @@ int16_t CSndRelay::Startup(void)								// Returns 0 if successfull, non-zero ot
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CSndRelay::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CSndRelay::Suspend(void)
@@ -232,10 +223,10 @@ void CSndRelay::Update(void)
 			{
 			// Attempt to get ptr to our parent . . .
 			CSoundThing*	pst	= nullptr;	// Safety.
-			if (m_pRealm->m_idbank.GetThingByID((CThing**)&pst, m_idParent) == SUCCESS)
+			if (realm()->m_idbank.GetThingByID((CThing**)&pst, m_idParent) == SUCCESS)
 				{
 				// Make sure this is what we think it is . . .
-				if (pst->GetClassID() == CSoundThingID)
+				if (pst->type() == CSoundThingID)
 					{
 					// Report volume based on our distance to the ear.
 					pst->RelayVolume(DistanceToVolume(m_dX, m_dY, m_dZ, pst->m_lVolumeHalfLife) );
@@ -244,8 +235,8 @@ void CSndRelay::Update(void)
 					{
 #if defined (RELEASE)
 					TRACE("Update(): ID %hu is not a \"SoundThing\", it is a \"%s\".\n",
-						pst->GetClassID(),
-						ms_aClassInfo[pst->GetClassID()].pszClassName);
+						pst->type(),
+						ms_aClassInfo[pst->type()].pszClassName);
 #endif
 					}
 				}
@@ -498,10 +489,10 @@ void CSndRelay::EditRender(void)
 	m_sprite.m_sX2	-= m_sprite.m_pImage->m_sWidth / 2;
 	m_sprite.m_sY2	-= m_sprite.m_pImage->m_sHeight;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+	realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 #endif // !defined(EDITOR_REMOVED)
 
@@ -518,7 +509,7 @@ int16_t CSndRelay::Init(void)							// Returns 0 if successfull, non-zero otherw
 
 	if (m_sprite.m_pImage == 0)
 		{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(IMAGE_FILE), &m_sprite.m_pImage);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_sprite.m_pImage);
 		if (sResult == SUCCESS)
 			{
 			// This is a questionable action on a resource managed item, but it's
@@ -543,7 +534,7 @@ int16_t CSndRelay::Kill(void)							// Returns 0 if successfull, non-zero otherw
    if (m_sprite.m_pImage != nullptr)
 		rspReleaseResource(&g_resmgrGame, &m_sprite.m_pImage);
 
-	m_pRealm->m_scene.RemoveSprite(&m_sprite);
+	realm()->Scene()->RemoveSprite(&m_sprite);
 
    return SUCCESS;
 	}
@@ -553,18 +544,17 @@ int16_t CSndRelay::Kill(void)							// Returns 0 if successfull, non-zero otherw
 // Process our message queue.
 ////////////////////////////////////////////////////////////////////////////////
 void CSndRelay::ProcessMessages(void)
-	{
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
-		{
+   {
+  while (!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
 		switch(msg.msg_Generic.eType)
 			{
 			case typeObjectDelete:
 				m_state	= State_Delete;
 				break;
 			}
-		
+      m_MessageQueue.pop_front();
 		}
 	}
 

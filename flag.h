@@ -86,7 +86,7 @@ class CFlag : public CThing3d
 			m_dRot = 0;
 			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
 			m_panimCur = nullptr;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			m_u16FlagID = 1;
 			m_lTimeBonus = 0;
 			m_u16FlagColor = Red;
@@ -98,8 +98,8 @@ class CFlag : public CThing3d
       ~CFlag(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
-			m_pRealm->m_smashatorium.Remove(&m_smash);
+			realm()->Scene()->RemoveSprite(&m_sprite);
+			realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources
 			FreeResources();
@@ -123,9 +123,6 @@ class CFlag : public CThing3d
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Update object
 		void Update(void);

@@ -110,13 +110,13 @@ class CWarp : public CThing
 			m_sSuspend					= 0;
 			m_sRotY						= 0;
 
-			m_sprite.m_pthing			= this;
+//			m_sprite.m_pthing			= this;
 			}
 
 		~CWarp()
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+			realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
@@ -140,9 +140,6 @@ class CWarp : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -210,7 +207,7 @@ class CWarp : public CThing
 		// Stocks, rejuvenates, and places a CDude.  The dude can be passed to this
 		// function or allocated by this function.
 		int16_t WarpIn(			// Returns 0 on success.
-			CDude**	ppdude,	// In:  CDude to 'warp in', *ppdude = nullptr to create one.
+         managed_ptr<CDude>&	ppdude,	// In:  CDude to 'warp in', *ppdude = nullptr to create one.
 									// Out: Newly created CDude, if no CDude passed in.
 			int16_t	sOptions);	// In:  Options for 'warp in'.
 
@@ -218,15 +215,15 @@ class CWarp : public CThing
 		// be passed to this function or allocated by this function.
 		static int16_t WarpInAnywhere(	// Returns 0 on success.
 			CRealm*	prealm,				// In:  Realm in which to choose CWarp.
-			CDude**	ppdude,				// In:  CDude to 'warp in', *ppdude = nullptr to create one.
+         managed_ptr<CDude>&	ppdude,				// In:  CDude to 'warp in', *ppdude = nullptr to create one.
 												// Out: Newly created CDude, if no CDude passed in.
 			int16_t	sOptions);				// In:  Options for 'warp in'.
 
 		// Creates a warp based on a dude's settings.
 		static int16_t CreateWarpFromDude(	// Returns 0 on success.
 			CRealm*	prealm,					// In:  Realm in which to choose CWarp.
-			CDude*	pdude,					// In:  Dude to create warp from.
-			CWarp**	ppwarp,					// Out: New warp on success.
+         managed_ptr<CDude>	pdude,					// In:  Dude to create warp from.
+         managed_ptr<CWarp>&	ppwarp,					// Out: New warp on success.
 			bool		bCopyStockPile);		// In:  true to copy stockpile, false otherwise.
 
 

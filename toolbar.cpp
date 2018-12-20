@@ -273,7 +273,7 @@ public:
 		}
 
 	//=======================================================================
-	static int16_t	Init(CHood* pHood)	// do color matching & asset loading
+   static int16_t	Init(managed_ptr<CHood> pHood)	// do color matching & asset loading
 		{
 		// Use the current hood palette to color match the text indicies
 		ms_sSmallFontColor = rspMatchColorRGB(
@@ -376,7 +376,7 @@ public:
 		}
 
 	// Assume the entire bar needs to be redrawn.
-	static void	RenderBar(CHood* pHood,RImage* pimDst,int16_t sDstX,int16_t sDstY)
+   static void	RenderBar(managed_ptr<CHood> pHood,RImage* pimDst,int16_t sDstX,int16_t sDstY)
 		{
 		// First Draw all the weapons...
 		int16_t i;
@@ -507,7 +507,7 @@ public:
 
 	// Handle dude events, including graphical updates
 	// Wil return true if a change of state has occurred
-	static bool	UpdateStatus(CDude* pDude)
+   static bool	UpdateStatus(managed_ptr<CDude> pDude)
 		{
 		// Fist, try to get all the status possible from the CDude:
 		// Use the stockpile for most:
@@ -946,17 +946,17 @@ public:
 /////////////////////////////////////////
 // aliased functions "for her pleasure."
 /////////////////////////////////////////
-int16_t	ToolBarInit(CHood* pHood)
+int16_t	ToolBarInit(managed_ptr<CHood> pHood)
 	{
 	return CToolItem::Init(pHood);
 	}
 
-bool	ToolBarRender(CHood* pHood,RImage* pimDst,int16_t sDstX,int16_t sDstY,
-						  CDude* pDude,bool bForceRender)
+bool	ToolBarRender(managed_ptr<CHood> pHood,RImage* pimDst,int16_t sDstX,int16_t sDstY,
+                    managed_ptr<CDude> pDude,bool bForceRender)
 	{
 	bool bRender = true;
 
-	if (pDude == nullptr) 
+   if (!pDude)
 		{
 		TRACE("ToolBarRender: Dude doesn't exist!\n"); 
 		return false;

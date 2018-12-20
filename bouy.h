@@ -209,28 +209,21 @@ typedef CTreeListNode<CBouy, double> TreeListNode;
 // CBouy is the class for navigation
 class CBouy : public CThing
 	{
-	friend class CNavigationNet;
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	public:
-		typedef RFList<uint16_t> linkinstanceid;
-		typedef RList<CBouy> linklist;
+   friend class CNavigationNet;
 
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
 	public:
 		uint8_t	m_ucID;								// Bouy ID (or address)
-		linklist m_aplDirectLinks;
-		int16_t		m_sNumDirectLinks;
+      std::set<managed_ptr<CBouy>> m_aplDirectLinks;
 		TreeListNode m_TreeNode;
 
 	protected:
 		double m_dX;								// x coord
 		double m_dY;								// y coord
 		double m_dZ;								// z coord
-		CNavigationNet* m_pParentNavNet;		// Pointer to its navigation network
+      managed_ptr<CNavigationNet> m_pParentNavNet;		// Pointer to its navigation network
 													
 		RImage* m_pImage;							// Pointer to only image (replace with 3d anim, soon)
 		CSprite2 m_sprite;						// Sprite (replace with CSprite3, soon)
@@ -238,14 +231,7 @@ class CBouy : public CThing
 		int16_t m_sSuspend;							// Suspend flag
 
 		uint8_t* m_paucRouteTable;				// Routing table (new non-STL way)
-		int16_t m_sRouteTableSize;
-
-		linkinstanceid m_LinkInstanceID;		// Used to relink the network after a load
-
-		uint16_t	m_u16ParentInstanceID;			// InstanceID used to relink to correct
-														// Network after a load			
-																		
-
+      int16_t m_sRouteTableSize;
 
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
@@ -263,21 +249,20 @@ class CBouy : public CThing
 			m_sSuspend = 0;
 			m_pParentNavNet = nullptr;
 			m_paucRouteTable = nullptr;
-			m_sRouteTableSize = 0;
-			m_sNumDirectLinks = 0;
+         m_sRouteTableSize = 0;
          }
 
-		~CBouy()
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+      ~CBouy()
+         {
+         // Remove sprite from scene (this is safe even if it was already removed!)
+         realm()->Scene()->RemoveSprite(&m_sprite);
 
-			if (m_paucRouteTable != nullptr)
-				free(m_paucRouteTable);
+         if (m_paucRouteTable != nullptr)
+            free(m_paucRouteTable);
 
-			// Free resources
-			FreeResources();
-			}
+         // Free resources
+         FreeResources();
+         }
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -297,9 +282,6 @@ class CBouy : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -357,7 +339,7 @@ class CBouy : public CThing
       double GetZ(void)	const { return m_dZ; }
 
 		// Add a link to this bouy - it is directly connected, ie, 1 hop away
-		int16_t AddLink(CBouy* pBouy);
+      int16_t AddLink(managed_ptr<CBouy> pBouy);
 
 		// Get the next link to follow to get to this destination.  This is
 		// normally a routing table lookup unless the entry is not in the routing

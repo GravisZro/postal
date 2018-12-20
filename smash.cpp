@@ -144,13 +144,13 @@ CSmash::~CSmash()
 	// As a back up, if not removed . . .
 	if (m_link1.m_pLast != nullptr)
 		{
-		if (m_pThing != nullptr)
+      if (m_pThing)
 			{
 			// Use the pthing to get to the realm and finally the smashatorium that
 			// we are in.
 			// Remove this smash.  This is for safety for uncaught release mode
 			// bugs.
-			m_pThing->m_pRealm->m_smashatorium.Remove(this);
+			m_pThing->realm()->m_smashatorium.Remove(this);
 			}
 		}
 
@@ -168,7 +168,7 @@ CSmash::~CSmash()
 int16_t	CSmashatorium::CollideCyl(CSmash* pSmashee,RSphere* pSphere) // sphere of Smasher
 	{
 	if (!pSmashee->m_pThing) return SUCCESS;	// not a dude
-	if (pSmashee->m_pThing->GetClassID() != CDudeID) return SUCCESS;	// not a dude
+   if (pSmashee->m_pThing->type() != CDudeID) return SUCCESS;	// not a dude
 	// it's a dude !  see if the cylinder collides:
 	int32_t	lCylR = pSmashee->m_sphere.sphere.lRadius / 3;	// go with half the sphere radius
 	// NOTE that if it's a DUDE colliding with a DUDE, only one uses a cylinder:
@@ -189,7 +189,7 @@ int16_t	CSmashatorium::CollideCyl(CSmash* pSmashee,RSphere* pSphere) // sphere o
 int16_t	CSmashatorium::CollideCyl(CSmash* pSmashee,R3DLine* pLine) // sphere of Smasher
 	{
 	if (!pSmashee->m_pThing) return SUCCESS;	// not a dude
-	if (pSmashee->m_pThing->GetClassID() != CDudeID) return SUCCESS;	// not a dude
+   if (pSmashee->m_pThing->type() != CDudeID) return SUCCESS;	// not a dude
 	// it's a dude !  see if the cylinder collides:
 	int32_t	lCylR = pSmashee->m_sphere.sphere.lRadius / 3;	// go with half the sphere radius
 	int32_t	lOldR = pSmashee->m_sphere.sphere.lRadius;
@@ -1317,8 +1317,8 @@ void CSmashatorium::Update(CSmash* pSmash)	// In:  CSmash to be updated
 
 	// Check the flag in the realm to see if we're editing.
 	// If so, DO NOT actually let things go in the smashatorium:
-	if (pSmash->m_pThing->m_pRealm->m_flags.bEditing
-		&& (!pSmash->m_pThing->m_pRealm->m_flags.bEditPlay))
+	if (pSmash->m_pThing->realm()->m_flags.bEditing
+		&& (!pSmash->m_pThing->realm()->m_flags.bEditPlay))
 		{
 		return;	// pretend you're in the smash
 		}

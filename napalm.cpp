@@ -82,7 +82,7 @@
 //
 //		05/04/97 BRH	Took out an old unused reference to an STL iterator.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/11/97 BRH	Added shooter ID passing to the fire that is created.
@@ -101,7 +101,7 @@
 //
 //		07/01/97	JMI	Replaced GetFloorMapValue() with GetHeight() call.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/09/97	JMI	Changed Preload() to take a pointer to the calling realm
@@ -279,7 +279,7 @@ void CNapalm::Update(void)
 	if (!m_sSuspend)
 		{
 		// Get new time
-		int32_t lThisTime = m_pRealm->m_time.GetGameTime(); 
+		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
 		// If elapsed time is too short, skip this update.
 
@@ -305,7 +305,7 @@ void CNapalm::Update(void)
 			case CWeapon::State_Fire:
 				// Make sure it starts in a valid location.  If it is inside
 				// a wall, delete it now.
-				sHeight = m_pRealm->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 				if (m_dY < sHeight)
 				{
 					delete this;
@@ -333,7 +333,7 @@ void CNapalm::Update(void)
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 
 				// Check the height to see if it hit the ground
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
@@ -390,14 +390,14 @@ void CNapalm::Update(void)
 					m_dFireX = m_dX;
 					m_dFireZ = m_dZ;
 					// Start a fire here
-               CFire* pFire = static_cast<CFire*>(realm()->makeType(CFireID));
-               if (pFire != nullptr)
+               managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
+               if (pFire)
 					{
 						if (pFire->Setup(m_dX - 20 + (GetRand() % 40), m_dY, m_dZ - 20 + (GetRand() % 40), 
 						                 4000 + (GetRand() % 9000), false, CFire::LargeFire) != SUCCESS)
-							delete pFire;
+                     pFire.reset();
 						else
-							pFire->m_u16ShooterID = m_u16ShooterID;
+							pFire->m_shooter = m_shooter;
 					}
 				}
 				// Ground causes drag
@@ -421,7 +421,7 @@ void CNapalm::Update(void)
 				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				// Check for obstacles
-				sHeight = m_pRealm->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
 				// If it hit any obstacles, make it bounce off
 				if (sHeight > m_dY)
 				{
@@ -472,7 +472,7 @@ void CNapalm::Update(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CNapalm::Render(void)
 {
-	int32_t lThisTime = m_pRealm->m_time.GetGameTime();
+	int32_t lThisTime = realm()->m_time.GetGameTime();
 
 	m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
 	m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
@@ -500,7 +500,7 @@ void CNapalm::Render(void)
 	}
 
 	// If we're not a child of someone else...
-	if (m_idParent == CIdBank::IdNil)
+   if (!parent())
 	{
 		// Map from 3d to 2d coords
 		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
@@ -510,12 +510,12 @@ void CNapalm::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 
 		// Layer should be based on info we get from attribute map
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		m_sprite.m_ptrans		= &m_trans;
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 
 		// Render the 2D shadow sprite
 		CWeapon::Render();
@@ -575,7 +575,7 @@ int16_t CNapalm::GetResources(void)						// Returns 0 if successfull, non-zero o
 	sResult = m_anim.Get(ms_apszResNames);
 	if (sResult == SUCCESS)
 	{
-		sResult = rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
+		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
 		if (sResult == SUCCESS)
 		{
 			// add more gets
@@ -633,23 +633,13 @@ int16_t CNapalm::Preload(
 
 void CNapalm::ProcessMessages(void)
 {
-	GameMessage msg;
-
-	if (m_MessageQueue.DeQ(&msg) == true)
-	{
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-				m_MessageQueue.Empty();
-				m_eState = State_Deleted;
-				return;
-				break;
-		}
-	}
-	// Dump the rest of the messages
-	m_MessageQueue.Empty();
-
-	return;
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+      m_eState = State_Deleted;
+    m_MessageQueue.clear();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

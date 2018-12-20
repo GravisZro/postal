@@ -361,11 +361,10 @@ class CLogTabVar_DudeHealth : CLogTabVar<CPerson*>
 			int16_t sResult = SUCCESS;
 
 			if (pPerson->SelectDude() == SUCCESS)
-			{
-				CDude*	pdude;
-				if (pPerson->m_pRealm->m_idbank.GetThingByID((CThing**)&pdude, pPerson->m_idDude) == SUCCESS)
+         {
+            if (pPerson->m_dude)
 				{
-					int16_t sHitPoints = pdude->GetHealth();
+               int16_t sHitPoints = pPerson->m_dude->GetHealth();
 					if (sHitPoints > 80)
 					{
 						sResult = FAILURE * 3;
@@ -409,7 +408,7 @@ class CLogTabVar_IsTriggered : CLogTabVar<CPerson*>
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			return (pPerson->m_pPylonStart != nullptr && pPerson->m_pPylonStart->Triggered());
+         return (pPerson->m_pPylonStart && pPerson->m_pPylonStart->Triggered());
 			}
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
@@ -466,7 +465,7 @@ class CLogTabVar_RecentlyShot : CLogTabVar<CPerson*>
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			return (pPerson->m_pRealm->m_time.GetGameTime() < pPerson->m_lShotTimeout);
+			return (pPerson->realm()->m_time.GetGameTime() < pPerson->m_lShotTimeout);
 			}
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
@@ -494,17 +493,17 @@ class CLogTabVar_RecentlyStuck : CLogTabVar<CPerson*>
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			return (pPerson->m_pRealm->m_time.GetGameTime() < pPerson->m_lStuckTimeout);
+			return (pPerson->realm()->m_time.GetGameTime() < pPerson->m_lStuckTimeout);
 			}
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{
 			// Set to false
 			if (sVal == 0)
-				pPerson->m_lStuckTimeout = pPerson->m_pRealm->m_time.GetGameTime();
+				pPerson->m_lStuckTimeout = pPerson->realm()->m_time.GetGameTime();
 			// Set to true
 			else
-				pPerson->m_lStuckTimeout = pPerson->m_pRealm->m_time.GetGameTime() + pPerson->ms_lStuckRecoveryTime;
+				pPerson->m_lStuckTimeout = pPerson->realm()->m_time.GetGameTime() + pPerson->ms_lStuckRecoveryTime;
 			}		
 
 	} givename_recentlystuck;
@@ -556,7 +555,7 @@ class CLogTabVar_HelpCall : CLogTabVar<CPerson*>
 
 		int16_t GetVal(CPerson* pPerson)
 			{
-			if (pPerson->m_pRealm->m_time.GetGameTime() < pPerson->m_lLastHelpCallTime + pPerson->ms_lHelpTimeout && pPerson->m_lLastHelpCallTime > 0)
+			if (pPerson->realm()->m_time.GetGameTime() < pPerson->m_lLastHelpCallTime + pPerson->ms_lHelpTimeout && pPerson->m_lLastHelpCallTime > 0)
 				return 1;
 			else
 				return 0;

@@ -95,13 +95,13 @@ class CBall : public CThing
 			m_dDX			= 0;
 			m_dDY			= 0;
 			m_dDZ			= 0;
-			m_sprite.m_pthing	= this;
+//			m_sprite.m_pthing	= this;
 			}
 
       ~CBall(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-			m_pRealm->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
 
 			// Free resources
 			FreeResources();
@@ -126,9 +126,6 @@ class CBall : public CThing
 
 		// Startup object
 		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Shutdown object
-		int16_t Shutdown(void);									// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

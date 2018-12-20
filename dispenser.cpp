@@ -49,7 +49,7 @@
 //		04/23/97	JMI	Added new logic type Exists and added a max for the number
 //							of dispensees and a current number of dispensees dispensed.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/14/97	JMI	Upgraded to use new DoGui() method for sub dialogs 
@@ -87,7 +87,7 @@
 //		07/03/97	JMI	Now uses SetGuiToNotify() to make a button able to end a
 //							DoGui() session.
 //
-//		07/09/97	JMI	Now uses m_pRealm->Make2dResPath() to get the fullpath
+//		07/09/97	JMI	Now uses realm()->Make2dResPath() to get the fullpath
 //							for 2D image components.
 //
 //		07/10/97	JMI	Added GetClosestDude().
@@ -393,7 +393,7 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 		if (ulFileVersion < 24)
 			{
 			// Convert to 3D.
-			m_pRealm->MapY2DtoZ3D(
+			realm()->MapY2DtoZ3D(
 				m_sZ,
 				&m_sZ);
 			}
@@ -452,8 +452,8 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 		// be slow when on every iteration, it allocates a CWhatever,
 		// loads it, sets the new position, saves it and deletes it.
 		// Update position . . .
-		CThing*	pthing;
-		if (InstantiateDispensee(&pthing, false) == SUCCESS)
+      managed_ptr<CThing> pthing;
+      if (InstantiateDispensee(pthing, false) == SUCCESS)
 			{
 #if !defined(EDITOR_REMOVED)
 			// Update position.
@@ -462,7 +462,7 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 			// Resave.
 			SaveDispensee(pthing);
 			// Get rid of.
-			DestroyDispensee(&pthing);
+         DestroyDispensee(pthing);
 			}
 
 		pFile->Write(m_ulFileVersion);
@@ -488,28 +488,18 @@ int16_t CDispenser::Startup(void)						// Returns 0 if successfull, non-zero oth
 		{
 		case Timed:
 		case Exists:
-			m_lNextUpdate = m_pRealm->m_time.GetGameTime() + m_alLogicParms[2];
+			m_lNextUpdate = realm()->m_time.GetGameTime() + m_alLogicParms[2];
 			break;
 		case DistanceToDude:
-			m_lNextUpdate = m_pRealm->m_time.GetGameTime() + m_alLogicParms[3];
+			m_lNextUpdate = realm()->m_time.GetGameTime() + m_alLogicParms[3];
 			break;
 		default:
-			m_lNextUpdate = m_pRealm->m_time.GetGameTime();
+			m_lNextUpdate = realm()->m_time.GetGameTime();
 			break;
 		}
 
    return SUCCESS;
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CDispenser::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -519,7 +509,7 @@ void CDispenser::Suspend(void)
 	if (m_sSuspend == 0)
 		{
 		// Store current delta so we can restore it.
-		int32_t	lCurTime				= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime				= realm()->m_time.GetGameTime();
 		m_lNextUpdate				= lCurTime - m_lNextUpdate;
 		}
 
@@ -538,7 +528,7 @@ void CDispenser::Resume(void)
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
 		{
-		int32_t	lCurTime				= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime				= realm()->m_time.GetGameTime();
 		m_lNextUpdate				= lCurTime - m_lNextUpdate;
 		}
 	}
@@ -550,7 +540,7 @@ void CDispenser::Update(void)
 	{
 	if (!m_sSuspend)
 		{
-		int32_t	lCurTime	= m_pRealm->m_time.GetGameTime();
+		int32_t	lCurTime	= realm()->m_time.GetGameTime();
 
 		if (m_sNumDispensees < m_sMaxDispensees || m_sMaxDispensees < 0)
 			{
@@ -562,8 +552,8 @@ void CDispenser::Update(void)
 					if (lCurTime >= m_lNextUpdate)
 						{
 						// Create a thing . . .
-						CThing*	pthing;
-						if (InstantiateDispensee(&pthing, false) == SUCCESS)
+                  managed_ptr<CThing> pthing;
+                  if (InstantiateDispensee(pthing, false) == SUCCESS)
 							{
 							// Wahoo.
 							m_sNumDispensees++;
@@ -584,13 +574,13 @@ void CDispenser::Update(void)
 				case Exists:
 					{
 					// If we don't have one . . .
-					if (m_u16IdDispensee == CIdBank::IdNil)
+               if (m_dispensee)
 						{
 						if (lCurTime >= m_lNextUpdate)
 							{
 							// Create a thing . . .
-							CThing*	pthing;
-							if (InstantiateDispensee(&pthing, false) == SUCCESS)
+                     managed_ptr<CThing> pthing;
+                     if (InstantiateDispensee(pthing, false) == SUCCESS)
 								{
 								// Wahoo.
 								m_sNumDispensees++;
@@ -600,11 +590,11 @@ void CDispenser::Update(void)
 					else
 						{
 						// If the last one no longer exists . . .
-						CThing* pthing;
-						if (m_pRealm->m_idbank.GetThingByID(&pthing, m_u16IdDispensee) != SUCCESS)
+                  managed_ptr<CThing> pthing = m_dispensee;
+                  if (pthing)
 							{
 							// Clear our ID.
-							m_u16IdDispensee	= CIdBank::IdNil;
+                     m_dispensee.reset();
 							// Set the next update time.
 							if (m_alLogicParms[1] - m_alLogicParms[0] > 0)
 								{
@@ -631,8 +621,8 @@ void CDispenser::Update(void)
 							if ( (lDudeDist >= m_alLogicParms[0] || m_alLogicParms[0] == 0) && (lDudeDist <= m_alLogicParms[1] || m_alLogicParms[1] == 0) )
 								{
 								// Create a thing . . .
-								CThing*	pthing;
-								if (InstantiateDispensee(&pthing, false) == SUCCESS)
+                        managed_ptr<CThing> pthing;
+                        if (InstantiateDispensee(pthing, false) == SUCCESS)
 									{
 									// Wahoo.
 									m_sNumDispensees++;
@@ -1009,15 +999,15 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 	if (sResult == SUCCESS)
 		{
 		// If we have a dispensee . . .
-		CThing*	pthing	= nullptr;
+      managed_ptr<CThing> pthing;
 		// Instantiate it so we get its current settings . . . 
-		if (InstantiateDispensee(&pthing, true) == SUCCESS)
+      if (InstantiateDispensee(pthing, true) == SUCCESS)
 			{
 			// If the current dispensee has a different type than the desired one . . .
-			if (pthing->GetClassID() != idNewThingType)
+			if (pthing->type() != idNewThingType)
 				{
 				// Be done with this one.
-				DestroyDispensee(&pthing);
+            DestroyDispensee(pthing);
 				m_fileDispensee.Close();
 				}
 			}
@@ -1025,11 +1015,11 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 		m_idDispenseeType	= idNewThingType;
 
 		// If no current thing . . .
-		if (pthing == nullptr)
+      if (pthing)
 			{
 			// Allocate the desired thing . . .
-        pthing = realm()->makeTypeWithID(m_idDispenseeType);
-         if (pthing != nullptr)
+        pthing = realm()->AddThing<CThing>(m_idDispenseeType);
+         if (!pthing)
 				{
 				// New it in the correct location.
 				sResult	= pthing->EditNew(m_sX, m_sY, m_sZ);
@@ -1045,7 +1035,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 				// If any errors occurred after allocation . . .
 				if (sResult != SUCCESS)
 					{
-					DestroyDispensee(&pthing);
+               DestroyDispensee(pthing);
 					}
 				}
 			else
@@ -1055,7 +1045,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 				}
 			}
 
-		if (pthing != nullptr)
+      if (pthing)
 			{
 			// If editing was specified . . .
 			if (bModifyDispensee == true)
@@ -1071,7 +1061,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 			SaveDispensee(pthing);
 
 			// Now that we have one in cold storage, we're done with this one.
-			DestroyDispensee(&pthing);
+         DestroyDispensee(pthing);
 			}
 		}
 
@@ -1118,13 +1108,13 @@ void CDispenser::EditRender(void)
 	m_sprite.m_sY2	-= m_sDispenseeHotSpotY;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer(m_sX, m_sZ));
+	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(m_sX, m_sZ));
 
 	// Image would normally animate, but doesn't for now
 	m_sprite.m_pImage = &m_imRender;
 
 	// Update sprite in scene
-	m_pRealm->m_scene.UpdateSprite(&m_sprite);
+   realm()->Scene()->UpdateSprite(&m_sprite);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1196,8 +1186,8 @@ int16_t CDispenser::Init(	// Returns 0 if successfull, non-zero otherwise
 		// NOTE:  We MUST do this in both edit mode and non-edit mode
 		// b/c it affects the dispensee's ms_sFileCount which can affect
 		// the load process; therefore, we must be consistent.
-		CThing*	pthing	= nullptr;
-		InstantiateDispensee(&pthing, false);
+      managed_ptr<CThing> pthing;
+      InstantiateDispensee(pthing, false);
 
 		// If in edit mode . . .
 		if (bEditMode == true)
@@ -1206,7 +1196,7 @@ int16_t CDispenser::Init(	// Returns 0 if successfull, non-zero otherwise
 			RenderDispensee(pthing);
 			}
 
-		DestroyDispensee(&pthing);
+      DestroyDispensee(pthing);
 		}
 
 	// No special flags.
@@ -1222,7 +1212,7 @@ int16_t CDispenser::Init(	// Returns 0 if successfull, non-zero otherwise
 void CDispenser::Kill(void)
 	{
 	// Remove sprite from scene (this is safe even if it was already removed!)
-	m_pRealm->m_scene.RemoveSprite(&m_sprite);
+   realm()->Scene()->RemoveSprite(&m_sprite);
 
 	// Free resources.
 	FreeResources();
@@ -1242,7 +1232,7 @@ int16_t CDispenser::GetResources(void)						// Returns 0 if successfull, non-zer
 
 	if (m_pim == nullptr)
 		{
-		sResult	= rspGetResource(&g_resmgrGame, m_pRealm->Make2dResPath(RES_FILE), &m_pim, RFile::LittleEndian);
+		sResult	= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(RES_FILE), &m_pim, RFile::LittleEndian);
 		if (sResult == SUCCESS)
 			{
 			if (m_pim->Convert(RImage::FSPR8) == RImage::FSPR8)
@@ -1275,7 +1265,7 @@ void CDispenser::FreeResources(void)
 // Create a dispensee from the memfile, if open.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
-	CThing**	ppthing,								// Out: New thing loaded from m_fileDispensee.
+   managed_ptr<CThing>& ppthing,								// Out: New thing loaded from m_fileDispensee.
 	bool		bEditMode)							// In:  true if in edit mode.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
@@ -1284,43 +1274,37 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 	if (m_idDispenseeType > 0 && m_idDispenseeType < TotalIDs)
 		{
 		// Allocate the desired thing . . .
-     *ppthing = realm()->makeType(m_idDispenseeType);
-      if (*ppthing != nullptr)
+     ppthing = realm()->AddThing<CThing>(m_idDispenseeType);
+      if (ppthing)
 			{
 			if (m_fileDispensee.IsOpen() != FALSE)
 				{
 				m_fileDispensee.Seek(0, SEEK_SET);
-				if ((*ppthing)->Load(
+            if (ppthing->Load(
 					&m_fileDispensee, 
 					bEditMode, 
 					--ms_sDispenseeFileCount,	// Always load statics for these.
 					m_ulFileVersion) == SUCCESS)
-					{
-					uint16_t	idInstance;
-					if (m_pRealm->m_idbank.Get(*ppthing, &idInstance) == SUCCESS)
+               {
+               if (ppthing)
 						{
-						// Release file's ID (cannot have all the dispensee's
-						// using the same ID) and set new one.
-						(*ppthing)->SetInstanceID(idInstance);
-						
-						// Success.  
-						m_u16IdDispensee	= idInstance;
+                 m_dispensee = ppthing;
 
 #if !defined(EDITOR_REMOVED)
 						// If in edit mode . . .
 						if (bEditMode == true)
 							{
 							// Update position.
-							(*ppthing)->EditMove(m_sX, m_sY, m_sZ);
+                     ppthing->EditMove(m_sX, m_sY, m_sZ);
 							}
 #endif // !defined(EDITOR_REMOVED)
 
 						// Startup, if requested.  We only give one chance
 						// UNlike CRealm::Startup().
-	//					if ((*ppthing)->m_sCallStartup != 0)
+   //					if (ppthing->m_sCallStartup != 0)
 							{
-	//						(*ppthing)->m_sCallStartup	= 0;
-							(*ppthing)->Startup();
+   //						ppthing->m_sCallStartup	= 0;
+                     ppthing->Startup();
 							}
 						}
 					else
@@ -1365,7 +1349,7 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 // Write dispensee to the memfile.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDispenser::SaveDispensee(		// Returns 0 on success.
-	CThing*	pthing)						// In:  Instance of Dispensee to save.
+   managed_ptr<CThing> pthing)						// In:  Instance of Dispensee to save.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
@@ -1401,7 +1385,7 @@ int16_t CDispenser::SaveDispensee(		// Returns 0 on success.
 // Render dispensee to m_imRender.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
-	CThing*	pthing)						// In:  Instance of Dispensee to render.
+   managed_ptr<CThing> pthing)						// In:  Instance of Dispensee to render.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
@@ -1475,12 +1459,12 @@ int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
 				RRect	rcClip(0, 0, m_imRender.m_sWidth, m_imRender.m_sHeight);
 
 				// Render dispensee into image.
-				m_pRealm->m_scene.Render(	// Returns nothing.          
+            realm()->Scene()->Render(	// Returns nothing.
 					&m_imRender,				// Destination image.        
 					sOffX,						// Destination 2D x coord.   
 					sOffY,						// Destination 2D y coord.   
 					psprite,						// Tree of sprites to render.
-					m_pRealm->m_phood,		// Da hood, homey.           
+					realm()->Hood(),		// Da hood, homey.           
 					&rcClip,						// Dst clip rect.            
 					nullptr);						// XRayee, if not nullptr.      
 				}
@@ -1531,18 +1515,12 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 	uint32_t	ulSqrDistance;
    uint32_t	ulCurSqrDistance	= UINT32_MAX;
 	uint32_t	ulDistX;
-	uint32_t	ulDistZ;
-	CDude*	pdude;
+   uint32_t	ulDistZ;
 
-	CListNode<CThing>* pDudeList = m_pRealm->m_aclassHeads[CDudeID].m_pnNext;
-	
-	// While we have a node and that node is owned (the head and tail are not owned).
-	while (pDudeList && pDudeList->m_powner)
-		{
-		// Get current owner.
-		pdude = (CDude*) pDudeList->m_powner;
-		// Must be Dude.
-		ASSERT(pdude->GetClassID() == CDudeID);
+
+   for(const managed_ptr<CThing>& pThing : realm()->GetThingsByType(CDudeID))
+   {
+       managed_ptr<CDude> pdude = pThing;
 
 		// If this dude is not dead . . .
 		if (pdude->m_state != CThing3d::State_Dead)
@@ -1560,10 +1538,7 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 				// Definitely going to have a dude to return.
 				sResult = SUCCESS;
 				}
-			}
-
-		// Next node please.
-		pDudeList = pDudeList->m_pnNext;
+         }
 		}
 
 	if (sResult == SUCCESS)
@@ -1582,23 +1557,17 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 // Destroy an instantiated dispensee.
 ////////////////////////////////////////////////////////////////////////////////
 void CDispenser::DestroyDispensee(	// Returns nothing.
-	CThing**	ppthing)						// In:  Ptr to the instance.
+   managed_ptr<CThing>& ppthing)						// In:  Ptr to the instance.
 	{
 	ASSERT(ppthing);
 
-	if (*ppthing)
+   if (ppthing)
 		{
 		// If this one is the one indicated by the ID . . .
-		if ( (*ppthing)->GetInstanceID() == m_u16IdDispensee)
-			{
-			m_u16IdDispensee	= CIdBank::IdNil;
-			}
-
+      if (m_dispensee == ppthing)
+        m_dispensee.reset();
 		// Destroy the dispensee.
-		delete *ppthing;
-
-		// Clear user's pointer.
-		*ppthing	= nullptr;
+      ppthing.reset();
 		}
 	}
 

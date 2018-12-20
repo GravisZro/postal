@@ -71,6 +71,8 @@
 #include <RSPiX.h>
 #include "realm.h"
 
+class CThing3d;
+
 // CWeapon is the base class for the weapons
 class CWeapon : public CThing
 {
@@ -118,12 +120,9 @@ class CWeapon : public CThing
 
 		CWeaponState m_eState;				// State variable for run routine
 
-		uint16_t		m_idParent;					// Anyone can be this item's parent.
-													// It'd probably be a good idea to make
-                                       // sure this is nullptrfore setting it,
-													// though.
+      managed_ptr<CThing3d> parent3d(void) noexcept { return parent(); }
 
-		uint16_t		m_u16ShooterID;			// Instance ID of the shooter (so that credit
+      managed_ptr<CThing3d> m_shooter;			// Instance ID of the shooter (so that credit
 													// for a kill can be determined)
 		CSprite2	m_spriteShadow;			// 2D sprite for shadow on the ground
 
@@ -148,18 +147,17 @@ class CWeapon : public CThing
 			{
 			m_sSuspend = 0;
 			m_dX = m_dY = m_dZ = m_dRot = m_dVertVel = m_dHorizVel = 0.0;
-			m_eState = State_Idle;
-			m_idParent = CIdBank::IdNil;
+         m_eState = State_Idle;
 			m_spriteShadow.m_sInFlags = CSprite::InHidden;
          m_spriteShadow.m_pImage = nullptr;
-			m_spriteShadow.m_pthing = this;
+//			m_spriteShadow.m_pthing = this;
 			m_lPrevTime = 0;  // valgrind fix.  --ryan.
 			}
 
       ~CWeapon(void)
 			{
 				// Remove sprite from scene (this is safe even if it was already removed!)
-				m_pRealm->m_scene.RemoveSprite(&m_spriteShadow);
+				realm()->Scene()->RemoveSprite(&m_spriteShadow);
 				// Release the shadow resource
 				if (m_spriteShadow.m_pImage)
 					rspReleaseResource(&g_resmgrGame, &(m_spriteShadow.m_pImage));
@@ -203,8 +201,6 @@ class CWeapon : public CThing
 		// Startup object
 		virtual int16_t Startup(void);							// Returns 0 if successfull, non-zero otherwise
 
-		// Shutdown object
-		virtual int16_t Shutdown(void);							// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		virtual void Suspend(void);

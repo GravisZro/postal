@@ -205,7 +205,7 @@ double CBand::ms_dMaxRunVel = 80.0;
 int32_t CBand::ms_lMingleTime = 400;
 int16_t CBand::ms_sStartingHitPoints = 100;
 SampleMaster::SoundInstance CBand::ms_siBandSongInstance = 0;
-uint16_t	CBand::ms_idBandLeader	= CIdBank::IdNil;		// The person who adjusts the band sound
+CBand* CBand::ms_bandLeader = nullptr;		// The person who adjusts the band sound
 																	// volume or IdNil.
 
 // Let this auto-init to 0
@@ -346,16 +346,13 @@ int16_t CBand::Load(					// Returns 0 if successfull, non-zero otherwise
 			ms_bDonePlaying		= false;
 			}
 
+      uint16_t idChildItem = 0;
 		// Load Rocket Man specific data
 			switch (ulFileVersion)
 			{
 				default:
 				case 37:
-					pFile->Read(&m_ucDestBouyID);
-					pFile->Read(&m_idChildItem);
-               pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
-					pFile->Read(&m_ucNextBouyID);
-					break;
+               pFile->Read(&m_ucDestBouyID);
 				case 36:
 				case 35:
 				case 34:
@@ -389,10 +386,7 @@ int16_t CBand::Load(					// Returns 0 if successfull, non-zero otherwise
 				case 6:
 				case 5:
 				case 4:
-               pFile->Read(&m_idChildItem);
-               pFile->Read(reinterpret_cast<uint8_t*>(&m_eWeaponType));
-					pFile->Read(&m_ucNextBouyID);
-					break;
+               pFile->Read(&idChildItem);
 				case 3:
 				case 2:
 				case 1:
@@ -400,6 +394,8 @@ int16_t CBand::Load(					// Returns 0 if successfull, non-zero otherwise
 					pFile->Read(&m_ucNextBouyID);
 					break;
 			}
+
+         m_child = realm()->GetOrAddThingById<CItem3d>(idChildItem);
 			
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -443,8 +439,9 @@ int16_t CBand::Save(										// Returns 0 if successfull, non-zero otherwise
 	}
 
 	// Save band member specific data
-	pFile->Write(&m_ucDestBouyID);
-	pFile->Write(&m_idChildItem);
+   pFile->Write(&m_ucDestBouyID);
+   uint16_t child_id = child() ? child()->GetInstanceID() : 0;
+   pFile->Write(child_id);
    pFile->Write(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 	pFile->Write(&m_ucNextBouyID);
 
@@ -476,13 +473,13 @@ int16_t CBand::Init(void)
 	// Init position, rotation and velocity
 	m_dVel = 0.0;
 	m_dRot = 0.0;
-	m_lPrevTime = m_pRealm->m_time.GetGameTime();
+   m_lPrevTime = realm()->m_time.GetGameTime();
 	m_state = CCharacter::State_Idle;
-	m_lTimer = m_pRealm->m_time.GetGameTime() + 500;
+   m_lTimer = realm()->m_time.GetGameTime() + 500;
 	m_sBrightness = 0;	// Default brightness
 
 	m_smash.m_bits		= CSmash::Civilian | CSmash::Character;
-	m_smash.m_pThing	= this;
+   m_smash.m_pThing = this;
 
 	m_lAnimTime = 0;
 	m_panimCur = &m_animMarch;
@@ -492,8 +489,8 @@ int16_t CBand::Init(void)
 //	m_ucDestBouyID = 1;		// This is the end of the parade route bouy
 //	m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
 	m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
-//	ASSERT(m_pNextBouy != nullptr);
-	if (m_pNextBouy != nullptr)
+//	ASSERT(m_pNextBouy);
+   if (m_pNextBouy)
 		{
 		m_sNextX = m_pNextBouy->GetX();
 		m_sNextZ = m_pNextBouy->GetZ();
@@ -549,12 +546,11 @@ void CBand::Update(void)
 	double dStartZ;
    milliseconds_t lThisTime;
    milliseconds_t lTimeDifference;
-	CThing* pDemon = nullptr;
 
 	if (!m_sSuspend)
 	{
 		// Get new time
-		lThisTime = m_pRealm->m_time.GetGameTime(); 
+      lThisTime = realm()->m_time.GetGameTime();
 		lTimeDifference = lThisTime - m_lPrevTime;
 
 		// Calculate elapsed time in seconds
@@ -594,11 +590,11 @@ void CBand::Update(void)
 						false);										// In:  Call ReleaseAndPurge rather than Release after playing
 
 					// Make this guy the band leader.
-					ms_idBandLeader	= GetInstanceID();
+               ms_bandLeader = this;
 				}
 
 				// If I am the band leader . . .
-				if (ms_idBandLeader == GetInstanceID() )
+            if (ms_bandLeader == this)
 				{
 					// If the band song is running . . .
 					if (ms_siBandSongInstance != 0)
@@ -678,7 +674,7 @@ void CBand::Update(void)
 					m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
 					m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
 					m_lTimer = lThisTime + ms_lMingleTime;
-					if (m_ucDestBouyID == 0 || m_pNextBouy == nullptr)
+               if (m_ucDestBouyID == 0 || !m_pNextBouy)
 					{
 						m_state = State_Wait;
 					}
@@ -686,7 +682,7 @@ void CBand::Update(void)
 					{
 						m_ucNextBouyID = m_pNextBouy->NextRouteNode(m_ucDestBouyID);
 						m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
-						if (m_pNextBouy != nullptr)
+                  if (m_pNextBouy)
 						{
 							m_sNextX = m_pNextBouy->GetX();
 							m_sNextZ = m_pNextBouy->GetZ();
@@ -867,7 +863,7 @@ void CBand::Update(void)
 					else
 					{
 						m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
-						if (m_pNextBouy != nullptr)
+                  if (m_pNextBouy)
 						{
 							m_sNextX = m_pNextBouy->GetX();
 							m_sNextZ = m_pNextBouy->GetZ();
@@ -889,7 +885,7 @@ void CBand::Update(void)
 
 				// Get height and 'no walk' status at new position.
 				bool		bNoWalk;
-				sHeight	= m_pRealm->GetHeightAndNoWalk(dNewX, dNewY, &bNoWalk);
+            sHeight	= realm()->GetHeightAndNoWalk(dNewX, dNewY, &bNoWalk);
 
 				// If too big a height difference or completely not walkable . . .
 				if (bNoWalk == true
@@ -999,9 +995,9 @@ void CBand::Update(void)
 				GameMessage msg;
 				msg.msg_Death.eType = typeDeath;
 				msg.msg_Death.sPriority = 0;
-				pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-				if (pDemon)
-					SendThingMessage(&msg, pDemon);				
+            auto list = realm()->GetThingsByType(CDemonID);
+            if (!list.empty())
+               SendThingMessage(msg, list.front());
 				OnDead();
 				delete this;
 				return;
@@ -1017,7 +1013,7 @@ void CBand::Update(void)
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
-		m_pRealm->m_smashatorium.Update(&m_smash);
+      realm()->m_smashatorium.Update(&m_smash);
 
 		// Save height for next time
 		m_sPrevHeight = sHeight;
@@ -1037,26 +1033,17 @@ void CBand::Render(void)
 	CDoofus::Render();
 
 	// Update child, if any . . .
-	if (m_idChildItem != CIdBank::IdNil)
-	{
-		CItem3d*	pitem;
-		if (m_pRealm->m_idbank.GetThingByID((CThing**)&pitem, m_idChildItem) == SUCCESS)
-		{
+   if (child())
+   {
 			// Set transform from our rigid body transfanimation for the child
 			// sprite.
-         pitem->m_sprite.m_ptrans	= &m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
+         child3d()->m_sprite.m_ptrans	= &m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 			// If the item is not our child . . .
-			if (pitem->m_sprite.m_psprParent != &m_sprite)
+         if (child3d()->m_sprite.m_psprParent != &m_sprite)
 				{
 				// Make it so.
-				m_sprite.AddChild( &(pitem->m_sprite) );
-				}
-		}
-		else	// Safety:
-		{
-			// Item is gone.
-			m_idChildItem	= CIdBank::IdNil;
-		}
+            m_sprite.AddChild( &(child3d()->m_sprite) );
+            }
 	}
 }
 
@@ -1112,12 +1099,10 @@ int16_t CBand::EditModify(void)
 
 			CItem3d::ItemType	itChild	= CItem3d::None;
 			// If there's currently a child . . .
-			CItem3d*	pitem	= nullptr;
-			if (m_pRealm->m_idbank.GetThingByID((CThing**)&pitem, m_idChildItem) == SUCCESS)
-				{
-				// Get the type.
-				itChild	= pitem->m_type;
-				}
+
+         managed_ptr<CItem3d> pitem;
+         if (child())
+            itChild	= managed_ptr<CItem3d>(child())->m_itemType;
 
 			RListBox*	plbChildTypes	= (RListBox*)pGui->GetItemFromId(3);
 			if (plbChildTypes != nullptr)
@@ -1138,7 +1123,7 @@ int16_t CBand::EditModify(void)
 							// Set item number.
 							pguiItem->m_ulUserData	= i;
 							// If this item is the current item type . . .
-							if (i == itChild)
+                     if (i == itChild)
 								{
 								plbChildTypes->SetSel(pguiItem);
 								}
@@ -1166,34 +1151,33 @@ int16_t CBand::EditModify(void)
 						itChild	= CItem3d::None;
 						}
 
-					if (pitem != nullptr)
+               if (child())
 						{
 						// If it is not of the new type . . .
-						if (pitem->m_type != itChild)
+                  if (managed_ptr<CItem3d>(child())->m_itemType != itChild)
 							{
 							// Disable item.
 							DetachChild(
-								&m_idChildItem,
+                        child(),
                         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 							// Be gone.
-							delete pitem;
-							pitem	= nullptr;
+                     resetChild();
 							}
 						}
 
 					// If there is no child item . . .
-					if (pitem == nullptr)
+               if (!child())
 						{
 						// If a child is desired . . .
 						if (itChild != CItem3d::None)
 							{
-                        pitem = static_cast<CItem3d*>(realm()->makeTypeWithID(CItem3dID));
-                        if (pitem != nullptr)
+                    managed_ptr<CItem3d> pitem2 = realm()->AddThing<CItem3d>();
+                        if (pitem2)
 								{
 								// Remember who our child is.
-								m_idChildItem	= pitem->GetInstanceID();
+                        setChild(pitem2);
 								// Setup the child.
-								pitem->Setup(0, 0, 0, itChild, nullptr, m_u16InstanceId);
+                        pitem2->Setup(0, 0, 0, itChild, nullptr, this);
 								}
 							else
 								{
@@ -1300,22 +1284,19 @@ int16_t CBand::FreeResources(void)						// Returns 0 if successfull, non-zero ot
 
 void CBand::ProcessMessages(void)
 {
-	// Check queue of messages.
-	GameMessage	msg;
-	while (m_MessageQueue.DeQ(&msg) == true)
+   while (!m_MessageQueue.empty())
 	{
+     GameMessage& msg = m_MessageQueue.front();
 		ProcessMessage(&msg);
 
 		switch(msg.msg_Generic.eType)
 		{
 			case typePanic:
 				OnPanicMsg(&(msg.msg_Panic));
-				break;
-				
+            break;
 		}
-
+      m_MessageQueue.pop_front();
 	}
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1390,17 +1371,17 @@ void CBand::OnExplosionMsg(Explosion_Message* pMessage)
 		CCharacter::OnExplosionMsg(pMessage);
 
 		// Drop item, if we have one still.
-		CThing3d*	pthing3d	= DetachChild(
-			&m_idChildItem,
+      DetachChild(
+         child(),
          &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 		// If we got something back . . . 
-		if (pthing3d != nullptr)
+      if (child())
 			{
 			// Let it know about the explosion.
 			GameMessage msg;
 			msg.msg_Explosion	= *pMessage;
 			
-			SendThingMessage(&msg, pthing3d);
+         SendThingMessage(msg, child());
 			}
 
 		// Explosion kills the guy
@@ -1446,9 +1427,9 @@ void CBand::OnExplosionMsg(Explosion_Message* pMessage)
 		GameMessage msg;
 		msg.msg_Explosion.eType = typeExplosion;
 		msg.msg_Explosion.sPriority = 0;
-		CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-		if (pDemon)
-			SendThingMessage(&msg, pDemon);				
+      auto list = realm()->GetThingsByType(CDemonID);
+      if (!list.empty())
+         SendThingMessage(msg, list.front());
 	}
 }
 
@@ -1509,9 +1490,9 @@ void CBand::OnBurnMsg(Burn_Message* pMessage)
 		GameMessage msg;
 		msg.msg_Burn.eType = typeBurn;
 		msg.msg_Burn.sPriority = 0;
-		CThing* pDemon = m_pRealm->m_aclassHeads[CDemonID].GetNext();
-		if (pDemon)
-			SendThingMessage(&msg, pDemon);				
+      auto list = realm()->GetThingsByType(CDemonID);
+      if (!list.empty())
+         SendThingMessage(msg, list.front());
 	}
 }
 
@@ -1570,7 +1551,7 @@ void CBand::OnPanicMsg(Panic_Message* pMessage)
 
 void CBand::AlertBand(void)
 {
-	CThing* pThing;
+   managed_ptr<CThing> pThing;
 	GameMessage msg;
 #ifdef UNUSED_VARIABLES
 	GameMessage msgStopSound;
@@ -1585,14 +1566,11 @@ void CBand::AlertBand(void)
 	msg.msg_Panic.sY = (int16_t) m_dY;
 	msg.msg_Panic.sZ = (int16_t) m_dZ;
 
-	CListNode<CThing>* pNext = m_pRealm->m_aclassHeads[CBandID].m_pnNext;
-	while (pNext->m_powner != nullptr)
-	{
-		pThing = pNext->m_powner;
-		if (pThing != this)
-			SendThingMessage(&msg, pThing);
-		pNext = pNext->m_pnNext;
-	}	
+   for(const managed_ptr<CThing>& pThing : realm()->GetThingsByType(CBandID))
+   {
+     if(pThing != this)
+       SendThingMessage(msg, pThing);
+   }
 	if (ms_siBandSongInstance != 0)
 	{
 		AbortSample(ms_siBandSongInstance);
@@ -1651,36 +1629,33 @@ bool CBand::WhileShot(void)	// Returns true until state is complete.
 void CBand::DropItem(void)	// Returns nothing.
 	{
 	// If we still have the child item . . .
-	if (m_idChildItem != CIdBank::IdNil)
+   if (child())
 		{
 		// Drop it.
-		CThing3d*	pthing3d	= DetachChild(
-			&m_idChildItem,
+      DetachChild(
+         child(),
          &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
-		// If we got something back . . . 
-		if (pthing3d != nullptr)
-			{
+
 			// Send it spinning.
-			pthing3d->m_dExtRotVelY	= GetRand() % 720;
-			pthing3d->m_dExtRotVelZ	= GetRand() % 720;
+         child3d()->m_dExtRotVelY	= GetRand() % 720;
+         child3d()->m_dExtRotVelZ	= GetRand() % 720;
 			// Send it forward (from our perspective)
 			// with our current velocity.
-			pthing3d->m_dExtHorzRot	= m_dRot;
-			pthing3d->m_dExtHorzVel	= m_dVel;
+         child3d()->m_dExtHorzRot	= m_dRot;
+         child3d()->m_dExtHorzVel	= m_dVel;
 			// ... and air drag.
-			if (pthing3d->m_dExtHorzVel > 0.0)
+         if (child3d()->m_dExtHorzVel > 0.0)
 				{
-				pthing3d->m_dExtHorzDrag = -ms_dDefaultAirDrag;
+            child3d()->m_dExtHorzDrag = -ms_dDefaultAirDrag;
 				}
-			else if (pthing3d->m_dExtHorzVel < 0.0)
+         else if (child3d()->m_dExtHorzVel < 0.0)
 				{
-				pthing3d->m_dExtHorzDrag = ms_dDefaultAirDrag;
+            child3d()->m_dExtHorzDrag = ms_dDefaultAirDrag;
 				}
 
 			// Similar enough to blown up.
-			pthing3d->m_state			= State_BlownUp;
-			}
-		}
+         child3d()->m_state			= State_BlownUp;
+         }
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

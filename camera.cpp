@@ -52,8 +52,7 @@ CCamera::CCamera()
 	{
 	// Clear these for testing/debugging
 	m_pScene = 0;
-	m_pimFilm = 0;
-	m_pHood = 0;
+   m_pimFilm = 0;
 	// Default to clipping to realm edges.
 	m_bClip = true;
 	}
@@ -71,7 +70,7 @@ CCamera::~CCamera()
 // Set camera's scene
 ////////////////////////////////////////////////////////////////////////////////
 void CCamera::SetScene(
-	CScene* pScene)										// In:  Scene to take picture of
+   managed_ptr<CScene> pScene)										// In:  Scene to take picture of
 	{
 	// Save specified values
 	m_pScene = pScene;
@@ -82,7 +81,7 @@ void CCamera::SetScene(
 // Set camera's hood
 ////////////////////////////////////////////////////////////////////////////////
 void CCamera::SetHood(
-	CHood* pHood)											// In:  Hood to use for camera control
+   managed_ptr<CHood> pHood)											// In:  Hood to use for camera control
 	{
 	// Save specified values
 	m_pHood = pHood;
@@ -177,8 +176,8 @@ void CCamera::SnapWithLensCoverOn(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CCamera::Snap(void)
 	{
-	ASSERT(m_pScene != nullptr);
-	ASSERT(m_pimFilm != nullptr);
+   ASSERT(m_pScene);
+   ASSERT(m_pimFilm);
 
 /*
 	// Init film clipping rect to view's location on the film
@@ -203,8 +202,8 @@ void CCamera::Snap(void)
 void CCamera::Snap(
 	int16_t sViewW,											// In:  View's width
 	int16_t sViewH,											// In:  View's height
-	CScene* pScene,										// In:  Scene to take picture of
-	CHood* phood,											// In:  Hood for this scene.
+   managed_ptr<CScene> pScene,										// In:  Scene to take picture of
+   managed_ptr<CHood> phood,											// In:  Hood for this scene.
 	int16_t sSceneViewX,									// In:  View's upper left x (in scene coords)
 	int16_t sSceneViewY,									// In:  View's upper left y (in scene coords)
 	RImage* pimFilm,										// In:  Film (where the picture ends up)
@@ -248,7 +247,7 @@ void CCamera::Update(void)
 			m_sSceneViewY = 0;
 
 		// Limit to right edge of scene
-      if (m_pHood != nullptr)
+      if (m_pHood)
 			{
 			int16_t sClipX = (m_sSceneViewX + m_sViewW) - m_pHood->GetWidth();
 			if (sClipX > 0)

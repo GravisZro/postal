@@ -830,7 +830,7 @@ class RGuiItem : public RProps <uint32_t, uint32_t>
 
 		// Pass callbacks from RHot on to appropriate instance.
 		static void HotCall(
-			RHot*	phot,			// In:  Ptr to RHot that generated event.
+         RHot* phot,				// In:  Ptr to RHot that generated the
 			RInputEvent* pie)	// In:  Most recent user input event.             
 									// Out: pie->sUsed = TRUE, if used.
          { reinterpret_cast<RGuiItem*>(phot->m_ulUser)->HotCall(pie); }

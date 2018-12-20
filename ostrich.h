@@ -77,7 +77,7 @@ class COstrich : public CDoofus
       ~COstrich(void)
 			{
 			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->m_scene.RemoveSprite(&m_sprite);
+         realm()->Scene()->RemoveSprite(&m_sprite);
          realm()->m_smashatorium.Remove(&m_smash);
 
 			// Free resources

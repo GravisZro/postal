@@ -49,7 +49,7 @@
 //		04/10/97 BRH	Updated this to work with the new multi layer attribute
 //							maps.
 //
-//		05/29/97	JMI	Removed ASSERT on m_pRealm->m_pAttribMap which no longer
+//		05/29/97	JMI	Removed ASSERT on realm()->m_pAttribMap which no longer
 //							exists.
 //
 //		06/29/97	JMI	Converted EditRect(), EditRender(), and/or Render() to
@@ -158,21 +158,11 @@ int16_t CAnimThing::Save(										// Returns 0 if successfull, non-zero otherwi
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CAnimThing::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 	{
-	m_lAnimPrevTime	= m_pRealm->m_time.GetGameTime();
+	m_lAnimPrevTime	= realm()->m_time.GetGameTime();
 	m_lAnimTime			= 0;
 
 	return SUCCESS;
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Shutdown object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CAnimThing::Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-	return SUCCESS;
-	}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -195,7 +185,7 @@ void CAnimThing::Resume(void)
 	// This method is far from precise, but I'm hoping it's good enough.
 	if (m_sSuspend == 0)
 		{
-		m_lAnimPrevTime	= m_pRealm->m_time.GetGameTime();
+		m_lAnimPrevTime	= realm()->m_time.GetGameTime();
 		}
 	}
 
@@ -210,10 +200,10 @@ void CAnimThing::Update(void)
 		if (m_lAnimTime >= m_paachannel->TotalTime() && m_sLoop == FALSE)
 			{
 			// If there's a thing to send a message to . . .
-			if (m_u16IdSendMsg != CIdBank::IdNil)
+         if (m_sender)
 				{
 				// Send the message.
-				SendThingMessage(&m_msg, m_u16IdSendMsg);
+            SendThingMessage(m_msg, m_sender);
 				}
 
 			// Done.
@@ -234,7 +224,7 @@ double dScaleInc = 0.025;
 void CAnimThing::Render(void)
 	{
 	// Get current time diff.
-	int32_t lCurTime		= m_pRealm->m_time.GetGameTime(); 
+	int32_t lCurTime		= realm()->m_time.GetGameTime(); 
 	m_lAnimTime			+= lCurTime - m_lAnimPrevTime;
 	m_lAnimPrevTime	= lCurTime;
 
@@ -262,7 +252,7 @@ void CAnimThing::Render(void)
 		m_sprite.m_sPriority = m_dZ;
 		
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(m_pRealm->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
 		m_sprite.m_pImage		= &(paa->m_imColor);
@@ -312,7 +302,7 @@ if (sEdit && (paa->m_sNumAlphas > 2))
 ///////////////////////////////////////////////////////////
 
 		// Update sprite in scene
-		m_pRealm->m_scene.UpdateSprite(&m_sprite);
+		realm()->Scene()->UpdateSprite(&m_sprite);
 		}
 	}
 
@@ -329,7 +319,7 @@ int16_t CAnimThing::Setup(									// Returns 0 if successfull, non-zero otherwi
 	m_dY = (double)sY;
 	m_dZ = (double)sZ;
 
-	m_lAnimPrevTime = m_pRealm->m_time.GetGameTime();
+	m_lAnimPrevTime = realm()->m_time.GetGameTime();
 
 	// Load resources
 	sResult = GetResources();
@@ -548,13 +538,13 @@ int16_t CAnimThing::GetResources(void)						// Returns 0 if successfull, non-zer
 
 	sResult	= rspGetResource(
 		&g_resmgrGame, 
-		m_pRealm->Make2dResPath(m_szResName), 
+		realm()->Make2dResPath(m_szResName), 
 		&m_paachannel);
 
 	if (sResult == SUCCESS)
 		{
 		m_lAnimTime			= 0;
-		m_lAnimPrevTime	= m_pRealm->m_time.GetGameTime();
+		m_lAnimPrevTime	= realm()->m_time.GetGameTime();
 
 		if (m_sLoop != FALSE)
 			{
@@ -568,7 +558,7 @@ int16_t CAnimThing::GetResources(void)						// Returns 0 if successfull, non-zer
 	else
 		{
 		TRACE("GetResources(): Failed to load resource \"%s\".\n",
-			m_pRealm->Make2dResPath(m_szResName) );
+			realm()->Make2dResPath(m_szResName) );
 		}
 
 	return sResult;
