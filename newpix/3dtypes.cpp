@@ -140,14 +140,14 @@ void RMesh::load(void) noexcept
 {
   union
   {
-    const uint8_t*    dataptr8;
-    const uint16_t*   dataptr16;
-    const point3d_t* dataptrTri;
+    const uint8_t*  dataptr8;
+    const uint16_t* dataptr16;
+    const vertex_t* dataptrTri;
   };
 
   dataptr8 = data;
   triangles.setSize(*dataptr16++);
-  triangles = const_cast<point3d_t*>(dataptrTri);
+  triangles = const_cast<vertex_t*>(dataptrTri);
   dataptrTri += triangles.size();
 
   data.setSize(dataptr8 - data);

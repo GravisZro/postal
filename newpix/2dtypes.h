@@ -38,7 +38,7 @@ public:
 
   void load(void) noexcept;
 
-  bool operator ==(const RMesh& other) const noexcept;
+  //bool operator ==(const RMesh& other) const noexcept;
 };
 
 #endif // TWODTYPES_H
