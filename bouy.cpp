@@ -231,6 +231,7 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 		pFile->Read(&u16Data);
       m_pParentNavNet = realm()->GetOrAddThingById<CNavigationNet>(u16Data, CNavigationNetID);
       ASSERT(m_pParentNavNet);
+      m_pParentNavNet->AddBouy(this); // register with parent navnet
 
 		// Switch on the parts that have changed
 		switch (ulFileVersion)
@@ -346,8 +347,8 @@ int16_t CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	// If we don't have a pointer to the nav net yet, get it from the ID
 
    // Re-register yourself with the network.
-   if(m_pParentNavNet)
-    m_pParentNavNet->AddBouy(this);
+   //if(m_pParentNavNet)
+    //m_pParentNavNet->AddBouy(this);
 	
 		// Only in edit mode . . .
       if (realm()->m_flags.bEditing == true)

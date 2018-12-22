@@ -1168,7 +1168,7 @@ int16_t CBand::EditModify(void)
 						// If a child is desired . . .
 						if (itChild != CItem3d::None)
 							{
-                    managed_ptr<CItem3d> pitem2 = realm()->AddThing<CItem3d>();
+                    managed_ptr<CItem3d> pitem2 = realm()->AddThing<CItem3d>(CItem3dID);
                         if (pitem2)
 								{
 								// Remember who our child is.

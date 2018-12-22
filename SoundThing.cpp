@@ -465,7 +465,7 @@ void CSoundThing::Update(void)
 				break;
 			case State_Delete:
 				// Banzai!
-				delete this;
+            realm()->RemoveThing(this);
 				return ;
 			}
 		}

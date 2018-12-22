@@ -391,7 +391,7 @@ void CDeathWad::Update(void)
 				else
 					{
 					// Otherwise, persist as powerup.
-               managed_ptr<CPowerUp> ppowerup = realm()->AddThing<CPowerUp>();
+               managed_ptr<CPowerUp> ppowerup = realm()->AddThing<CPowerUp>(CPowerUpID);
                if (ppowerup)
 						{
 						// Copy whatever's left.
@@ -700,7 +700,7 @@ void CDeathWad::Explosion(void)
 	{
 	// Start an explosion object and some smoke (doesn't an explosion object
 	// automatically make smoke??).
-   managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+   managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
    if (pExplosion)
 		{
 		// Don't blow us up.
@@ -717,7 +717,7 @@ void CDeathWad::Explosion(void)
    int16_t a;
    for (a = 0; a < 8; a++)
    {
-     managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+     managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
       if (pSmoke)
 			{
 			pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, ms_lSmokeTimeToLive, true, CFire::Smoke);
@@ -743,7 +743,7 @@ void CDeathWad::Thrust(void)
 
 	if (m_bInsideTerrain == false)
 		{
-      managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
+      managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
       if (pSmoke)
 			{
 			// This needs to be fixed by calculating the position of the back end of
@@ -753,7 +753,7 @@ void CDeathWad::Thrust(void)
 			}
 
 		// Also, create a fire (moving at the wad's velocity?).
-      managed_ptr<CFireball> pfireball = realm()->AddThing<CFireball>();
+      managed_ptr<CFireball> pfireball = realm()->AddThing<CFireball>(CFireballID);
       if (pfireball)
 			{
          pfireball->Setup(m_dX, m_dY, m_dZ, m_dRot, ms_lFireBallTimeToLive, m_shooter);

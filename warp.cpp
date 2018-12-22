@@ -673,7 +673,7 @@ int16_t CWarp::CreateWarpFromDude(	// Returns 0 on success.
 
 	// Create warp . . .
 
-   ppwarp = prealm->AddThing<CWarp>();
+   ppwarp = prealm->AddThing<CWarp>(CWarpID);
    if (ppwarp)
 		{
 		// Copy dude's position and orientation.

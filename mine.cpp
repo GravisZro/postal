@@ -601,7 +601,7 @@ void CMine::Update(void)
 				{
 					// Start an explosion object and then kill rocket
 					// object
-              managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
+              managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
               if (pExplosion)
 					{
 						pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);

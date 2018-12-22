@@ -926,7 +926,7 @@ void CCharacter::MakeBloody(
 		}
 
 	// Create blood animation.
-   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
+   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>(CAnimThingID);
    if (pat)
 		{
       std::strcpy(pat->m_szResName, BLOOD_SPLAT_RES_NAME);
@@ -982,7 +982,7 @@ void CCharacter::MakeBloodPool(void)
 	if (g_GameSettings.m_sKidMode == FALSE)
 	{
 #endif
-     managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
+     managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>(CAnimThingID);
    if (pat)
 		{
       std::strcpy(pat->m_szResName, BLOOD_POOL_RES_NAME);

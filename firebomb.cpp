@@ -367,7 +367,7 @@ void CFirebomb::Update(void)
 //-----------------------------------------------------------------------
 			case CFirebomb::State_Explode:
 
-            managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
+            managed_ptr<CFire> pFire = realm()->AddThing<CFire>(CFireID);
             if (pFire)
 				{
 					pFire->Setup(m_dX, m_dY, m_dZ, PRIMARY_BURN_TIME, true, CFire::LargeFire);
@@ -388,7 +388,7 @@ void CFirebomb::Update(void)
             managed_ptr<CFirefrag> pFrag;
 				for (i = 0; i < 8; i++)
             {
-              pFrag = realm()->AddThing<CFirefrag>();
+              pFrag = realm()->AddThing<CFirefrag>(CFirefragID);
               if (pFrag)
 					{
                   pFrag->m_shooter = m_shooter;
@@ -767,7 +767,7 @@ void CFirefrag::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Explode:
 
-          m_fire = realm()->AddThing<CFire>();
+          m_fire = realm()->AddThing<CFire>(CFireID);
             if (m_fire)
 				{
                m_fire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
@@ -872,7 +872,7 @@ int16_t CFirefrag::Setup(									// Returns 0 if successfull, non-zero otherwis
 	// Load resources
 //	sResult = GetResources();
 
-   m_fire = realm()->AddThing<CFire>();
+   m_fire = realm()->AddThing<CFire>(CFireID);
    if (m_fire)
 	{
       m_fire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);

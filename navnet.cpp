@@ -655,7 +655,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 	TreeListNode* pRoot = nullptr;
 	TreeListNode* pCurrent = nullptr;
 	uint8_t	ucNode = 0;
-#if defined(RELEASE)
+
 	// Build the sorted list of bouys
    for (auto iter = m_NodeMap.begin(); iter != m_NodeMap.end(); ++iter)
 	{
@@ -664,7 +664,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 		dZ = pBouy->m_dZ - sZ;
 		dSqDist = (dX * dX) + (dZ * dZ);
 		pBouy->m_TreeNode.m_sortkey = dSqDist;
-		pBouy->m_TreeNode.m_powner = pBouy;
+      pBouy->m_TreeNode.m_powner = pBouy.pointer();
 		if (pRoot == nullptr)
 		{
 			pRoot = &pBouy->m_TreeNode;
@@ -706,7 +706,7 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
 		// Get rid of the tree, its useless now
 		pRoot->DeleteTree();
 	}
-#endif
+
 	return ucNode;
 }
 

@@ -5701,7 +5701,7 @@ managed_ptr<CPowerUp> CDude::DropPowerUp(		// Returns new powerup on success; nu
    if (pstockpile.IsEmpty() == false)
 		{
 		// Create powerup . . .
-     ppowerup = realm()->AddThing<CPowerUp>();
+     ppowerup = realm()->AddThing<CPowerUp>(CPowerUpID);
       if (ppowerup)
 			{
 			// Put stockpile into powerup.
