@@ -926,7 +926,7 @@ void CCharacter::MakeBloody(
 		}
 
 	// Create blood animation.
-   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>(CAnimThingID);
+   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
    if (pat)
 		{
       std::strcpy(pat->m_szResName, BLOOD_SPLAT_RES_NAME);
@@ -945,7 +945,7 @@ void CCharacter::MakeBloody(
 	for (i = 0; i < sNumChunks; i++)
 		{
 		// Create blood particles . . .
-     managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
+     managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
 		// Note that this will fail if particles are disabled.
       if (pchunk)
 			{
@@ -982,7 +982,7 @@ void CCharacter::MakeBloodPool(void)
 	if (g_GameSettings.m_sKidMode == FALSE)
 	{
 #endif
-     managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>(CAnimThingID);
+     managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
    if (pat)
 		{
       std::strcpy(pat->m_szResName, BLOOD_POOL_RES_NAME);
@@ -1451,7 +1451,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 
 	// Create shells/casings . . .
 
-   managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
+   managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
 	// Note that this will fail if particles are disabled.
    if (pchunk)
 		{

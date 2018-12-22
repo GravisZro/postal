@@ -440,7 +440,7 @@ void CBarrel::Update(void)
 			case CBarrel::State_Wait:
 				if (lThisTime > m_lTimer)
             {
-              managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
+              managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
                if (pExplosion)
 					{
                   pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
@@ -484,7 +484,7 @@ void CBarrel::Update(void)
                managed_ptr<CFire> pFire;
 					for (i = 0; i < ms_sNumFires; i++)
                {
-                 pFire = realm()->AddThing<CFire>(CFireID);
+                 pFire = realm()->AddThing<CFire>();
                   if (pFire)
 						{
 							if (pFire->Setup(m_dX - 20 + (GetRandom() % 40), m_dY, m_dZ - 20 + (GetRandom() % 40), 
@@ -650,7 +650,7 @@ void CBarrel::OnShotMsg(Shot_Message* pMessage)
 		{
 			m_state = State_BlownUp;
          m_lAnimTime = 0;
-         managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
+         managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
          if (pExplosion)
 			{
             pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
@@ -732,7 +732,7 @@ void CBarrel::OnBurnMsg(Burn_Message* pMessage)
 			m_state = State_BlownUp;
 			m_lTimer = realm()->m_time.GetGameTime();
 			m_lAnimTime = 0;
-         managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
+         managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
          if (pExplosion)
 			{
             pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);

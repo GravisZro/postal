@@ -303,7 +303,7 @@ void CExplode::Update(void)
          int16_t a;
 			for (a = 0; a < 8; a++)
 			{
-           managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
+           managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
             if (pSmoke)
 					pSmoke->Setup(m_dX - 4 + GetRandom() % 9, MAX(m_dY-20, 0.0), m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}

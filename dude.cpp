@@ -4846,7 +4846,7 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 	for (i = 0; i < BRAIN_SPLAT_NUM_CHUNKS; i++)
 		{
 		// Create blood particles . . .
-      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
+      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
       if (pchunk)
 			{
 			pchunk->Setup(
@@ -5019,7 +5019,7 @@ void CDude::OnShotMsg(			// Returns nothing.
 		StartAnim(VEST_HIT_RES_NAME, dHitX, dHitY, dHitZ, false);
 
 		// Create a kevlar peice.
-      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
+      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
       if (pchunk)
 			{
 			pchunk->Setup(
@@ -5701,7 +5701,7 @@ managed_ptr<CPowerUp> CDude::DropPowerUp(		// Returns new powerup on success; nu
    if (pstockpile.IsEmpty() == false)
 		{
 		// Create powerup . . .
-     ppowerup = realm()->AddThing<CPowerUp>(CPowerUpID);
+     ppowerup = realm()->AddThing<CPowerUp>();
       if (ppowerup)
 			{
 			// Put stockpile into powerup.

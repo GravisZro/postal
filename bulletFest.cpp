@@ -606,7 +606,7 @@ void CBulletFest::Flare(		// Returns nothing.
 	{
   UNUSED(sAngle);
 	// Create the animator . . .
-   managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>(CAnimThingID);
+   managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>();
    ASSERT(pat);
 
    std::strcpy(pat->m_szResName, FLARE_RES_NAME);
@@ -640,7 +640,7 @@ void CBulletFest::Impact(	// Returns nothing.
   UNUSED(sAngle);
 	// Create the animator . . .
 
-  managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>(CAnimThingID);
+  managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>();
    ASSERT(pat);
 
    std::strcpy(pat->m_szResName, IMPACT_RES_NAME);
@@ -667,7 +667,7 @@ void CBulletFest::Ricochet(	// Returns nothing.
 	{
   UNUSED(sAngle);
    // Create the animator . . .
-  managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>(CAnimThingID);
+  managed_ptr<CAnimThing> pat = pRealm->AddThing<CAnimThing>();
    ASSERT(pat);
 
    std::strcpy(pat->m_szResName, RICOCHET_RES_NAME);

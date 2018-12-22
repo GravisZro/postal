@@ -407,19 +407,19 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 	{
 		m_lTimeToLive = realm()->m_time.GetGameTime() + lTimeToLive;
 
-      m_fireball1 = realm()->AddThing<CFireball>(CFireballID);
+      m_fireball1 = realm()->AddThing<CFireball>();
       if (m_fireball1)
          m_fireball1->Setup(m_dX, m_dY, m_dZ, sDir, lTimeToLive, shooter);
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;	// First interval
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;	
-      m_fireball2 = realm()->AddThing<CFireball>(CFireballID);
+      m_fireball2 = realm()->AddThing<CFireball>();
       if (m_fireball2)
          m_fireball2->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
-      m_fireball3 = realm()->AddThing<CFireball>(CFireballID);
+      m_fireball3 = realm()->AddThing<CFireball>();
       if (m_fireball3)
          m_fireball3->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
 

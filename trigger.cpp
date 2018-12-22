@@ -96,7 +96,7 @@ int16_t CTrigger::Load(								// Returns 0 if successfull, non-zero otherwise
 		realm()->m_pTriggerMap = nullptr; // clear the shadow
 		// ASSUME THERE WILL ALREADY BE AN EMPTY TRIGGER MAP HOLDER!
       if (!realm()->m_pTriggerMapHolder)
-        realm()->m_pTriggerMapHolder = realm()->AddThing<CTrigger>(CTriggerID);
+        realm()->m_pTriggerMapHolder = realm()->AddThing<CTrigger>();
 
 		if (m_pmgi) delete m_pmgi;
 		m_pmgi = nullptr;

@@ -388,7 +388,7 @@ void CNapalm::Update(void)
 					m_dFireX = m_dX;
 					m_dFireZ = m_dZ;
 					// Start a fire here
-               managed_ptr<CFire> pFire = realm()->AddThing<CFire>(CFireID);
+               managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
                if (pFire)
 					{
 						if (pFire->Setup(m_dX - 20 + (GetRand() % 40), m_dY, m_dZ - 20 + (GetRand() % 40), 

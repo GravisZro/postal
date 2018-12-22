@@ -1384,7 +1384,7 @@ void CThing3d::OnBurnMsg(	// Returns nothing.
    if (!m_fire)
 		{
 		// Make a fire and remember its ID.
-      m_fire = realm()->AddThing<CFire>(CFireID);
+      m_fire = realm()->AddThing<CFire>();
       if (m_fire)
          {
 
@@ -1817,7 +1817,7 @@ managed_ptr<CAnimThing> CThing3d::StartAnim(		// Returns ptr to CAnimThing on su
 	bool	bLoop)							// In:  true to loop animation.
 	{
    // Create the animator . . .
-   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>(CAnimThingID);
+   managed_ptr<CAnimThing> pat = realm()->AddThing<CAnimThing>();
    if (pat)
 		{
       std::strcpy(pat->m_szResName, pszAnimResName);

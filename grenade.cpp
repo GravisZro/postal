@@ -533,7 +533,7 @@ void CUnguidedMissile::Update(void)
 				{
 					// Start an explosion object and then kill rocket
 					// object
-               managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
+               managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
                if (pExplosion)
 					{
 						pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter, 1);
@@ -545,7 +545,7 @@ void CUnguidedMissile::Update(void)
                int16_t a;
 					for (a = 0; a < 4; a++)
                {
-                 managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
+                 managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
                   if (pSmoke)
 						{
 							pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::Smoke);
@@ -763,7 +763,7 @@ void CUnguidedMissile::Smoke(void)
 		// If the timer has expired . . .
 		if (lCurTime > m_lNextSmokeTime)
 			{
-        managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
+        managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
          if (pSmoke)
 				{
 				pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::SmallSmoke);

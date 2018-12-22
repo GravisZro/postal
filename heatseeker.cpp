@@ -530,7 +530,7 @@ void CHeatseeker::Update(void)
 				if (lThisTime > m_lSmokeTimer)
 				{
 					m_lSmokeTimer = lThisTime + ms_lSmokeTrailInterval;
-               managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
+               managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
                if (pSmoke)
 					{
 						// This needs to be fixed by calculating the position of the back end of
@@ -556,7 +556,7 @@ void CHeatseeker::Update(void)
 
 				// Start an explosion object and then kill rocket
 				// object
-          managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>(CExplodeID);
+          managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
           if (pExplosion)
 				{
 					pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_shooter);
@@ -569,7 +569,7 @@ void CHeatseeker::Update(void)
             int16_t a;
 				for (a = 0; a < 8; a++)
 				{
-              managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>(CFireID);
+              managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
                if (pSmoke)
 					{
 						pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);

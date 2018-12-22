@@ -712,7 +712,7 @@ void CPowerUp::OnExplosionMsg(			// Returns nothing.
 			{
 			if (bFirst == false)
 				{
-            managed_ptr<CPowerUp> ppowerup = realm()->AddThing<CPowerUp>(CPowerUpID);
+            managed_ptr<CPowerUp> ppowerup = realm()->AddThing<CPowerUp>();
             if(ppowerup)
 					{
 					// Transfer item.

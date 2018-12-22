@@ -325,6 +325,51 @@
 #include <ORANGE/MultiGrid/MultiGrid.h>
 #include <ORANGE/MultiGrid/MultiGridIndirect.h>
 
+
+class CHood;
+class CDude;
+class CDoofus;
+class CRocket;
+class CGrenade;
+class CBall;
+class CExplode;
+class CBouy;
+class CNavigationNet;
+class CGameEditThing;
+class CNapalm;
+class CFire;
+class CFirebomb;
+class CFirefrag;
+class CAnimThing;
+class CSoundThing;
+class CBand;
+class CItem3d;
+class CBarrel;
+class CProximityMine;
+class CDispenser;
+class CFireball;
+class CPerson;
+class CTimedMine;
+class CBouncingBettyMine;
+class CRemoteControlMine;
+class CPylon;
+class CPowerUp;
+class COstrich;
+class CTrigger;
+class CHeatseeker;
+class CChunk;
+class CSentry;
+class CWarp;
+class CDemon;
+class CCharacter;
+class CGoalTimer;
+class CFlag;
+class CFlagbase;
+class CFirestream;
+class CDeathWad;
+class CDynamite;
+class CSndRelay;
+
 #include "scene.h"
 #include "thing.h"
 #include "hood.h"
@@ -413,7 +458,6 @@
 
 #define REALM_NONSTL 1
 
-class CNavigationNet;
 
 class CRealm : Object
 	{
@@ -421,7 +465,7 @@ class CRealm : Object
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
 	//---------------------------------------------------------------------------
-	public:
+	public:   
 		// Miscellaneous enums
 		enum
 			{
@@ -666,6 +710,50 @@ public:
 
 private:
       template<class T> static constexpr ClassIDType lookupType(void) { return InvalidID; }
+
+      template<> constexpr ClassIDType lookupType<CHood             >(void) { return CHoodID             ; }
+      template<> constexpr ClassIDType lookupType<CDude             >(void) { return CDudeID             ; }
+      template<> constexpr ClassIDType lookupType<CDoofus           >(void) { return CDoofusID           ; }
+      template<> constexpr ClassIDType lookupType<CRocket           >(void) { return CRocketID           ; }
+      template<> constexpr ClassIDType lookupType<CGrenade          >(void) { return CGrenadeID          ; }
+      template<> constexpr ClassIDType lookupType<CBall             >(void) { return CBallID             ; }
+      template<> constexpr ClassIDType lookupType<CExplode          >(void) { return CExplodeID          ; }
+      template<> constexpr ClassIDType lookupType<CBouy             >(void) { return CBouyID             ; }
+      template<> constexpr ClassIDType lookupType<CNavigationNet    >(void) { return CNavigationNetID    ; }
+      template<> constexpr ClassIDType lookupType<CGameEditThing    >(void) { return CGameEditThingID    ; }
+      template<> constexpr ClassIDType lookupType<CNapalm           >(void) { return CNapalmID           ; }
+      template<> constexpr ClassIDType lookupType<CFire             >(void) { return CFireID             ; }
+      template<> constexpr ClassIDType lookupType<CFirebomb         >(void) { return CFirebombID         ; }
+      template<> constexpr ClassIDType lookupType<CFirefrag         >(void) { return CFirefragID         ; }
+      template<> constexpr ClassIDType lookupType<CAnimThing        >(void) { return CAnimThingID        ; }
+      template<> constexpr ClassIDType lookupType<CSoundThing       >(void) { return CSoundThingID       ; }
+      template<> constexpr ClassIDType lookupType<CBand             >(void) { return CBandID             ; }
+      template<> constexpr ClassIDType lookupType<CItem3d           >(void) { return CItem3dID           ; }
+      template<> constexpr ClassIDType lookupType<CBarrel           >(void) { return CBarrelID           ; }
+      template<> constexpr ClassIDType lookupType<CProximityMine    >(void) { return CProximityMineID    ; }
+      template<> constexpr ClassIDType lookupType<CDispenser        >(void) { return CDispenserID        ; }
+      template<> constexpr ClassIDType lookupType<CFireball         >(void) { return CFireballID         ; }
+      template<> constexpr ClassIDType lookupType<CPerson           >(void) { return CPersonID           ; }
+      template<> constexpr ClassIDType lookupType<CTimedMine        >(void) { return CTimedMineID        ; }
+      template<> constexpr ClassIDType lookupType<CBouncingBettyMine>(void) { return CBouncingBettyMineID; }
+      template<> constexpr ClassIDType lookupType<CRemoteControlMine>(void) { return CRemoteControlMineID; }
+      template<> constexpr ClassIDType lookupType<CPylon            >(void) { return CPylonID            ; }
+      template<> constexpr ClassIDType lookupType<CPowerUp          >(void) { return CPowerUpID          ; }
+      template<> constexpr ClassIDType lookupType<COstrich          >(void) { return COstrichID          ; }
+      template<> constexpr ClassIDType lookupType<CTrigger          >(void) { return CTriggerID          ; }
+      template<> constexpr ClassIDType lookupType<CHeatseeker       >(void) { return CHeatseekerID       ; }
+      template<> constexpr ClassIDType lookupType<CChunk            >(void) { return CChunkID            ; }
+      template<> constexpr ClassIDType lookupType<CSentry           >(void) { return CSentryID           ; }
+      template<> constexpr ClassIDType lookupType<CWarp             >(void) { return CWarpID             ; }
+      template<> constexpr ClassIDType lookupType<CDemon            >(void) { return CDemonID            ; }
+      template<> constexpr ClassIDType lookupType<CCharacter        >(void) { return CCharacterID        ; }
+      template<> constexpr ClassIDType lookupType<CGoalTimer        >(void) { return CGoalTimerID        ; }
+      template<> constexpr ClassIDType lookupType<CFlag             >(void) { return CFlagID             ; }
+      template<> constexpr ClassIDType lookupType<CFlagbase         >(void) { return CFlagbaseID         ; }
+      template<> constexpr ClassIDType lookupType<CFirestream       >(void) { return CFirestreamID       ; }
+      template<> constexpr ClassIDType lookupType<CDeathWad         >(void) { return CDeathWadID         ; }
+      template<> constexpr ClassIDType lookupType<CDynamite         >(void) { return CDynamiteID         ; }
+      template<> constexpr ClassIDType lookupType<CSndRelay         >(void) { return CSndRelayID         ; }
 
       CThing* makeType(ClassIDType type_it);
 public: // for shitty existing code

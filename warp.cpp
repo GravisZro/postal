@@ -541,7 +541,7 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 	// If no dude passed . . .
    if (!ppdude)
 		{
-         ppdude = realm()->AddThing<CDude>(CDudeID);
+         ppdude = realm()->AddThing<CDude>();
          if (ppdude)
 			{
 			// Copy stockpile to new CDude.
@@ -673,7 +673,7 @@ int16_t CWarp::CreateWarpFromDude(	// Returns 0 on success.
 
 	// Create warp . . .
 
-   ppwarp = prealm->AddThing<CWarp>(CWarpID);
+   ppwarp = prealm->AddThing<CWarp>();
    if (ppwarp)
 		{
 		// Copy dude's position and orientation.
