@@ -456,9 +456,6 @@ class CSndRelay;
 // The attribute map contains only the layer bits.
 #define REALM_ATTR_LAYER_MASK		0x7FFF
 
-#define REALM_NONSTL 1
-
-
 class CRealm : Object
 	{
 	friend class CNavigationNet;
