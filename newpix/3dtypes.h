@@ -10,6 +10,7 @@
 typedef float real_t;
 //typedef uint16_t triangle_t[3]; // a triangle is 3 index values for RSop data
 
+#pragma pack(push, 1)
 template<typename T>
 struct point3d_t
 {
@@ -20,6 +21,7 @@ struct point3d_t
   template<typename V>
   inline T& operator [](V index) { return *(reinterpret_cast<T*>(this) + index); }
 }; // a triangle is 3 index values for RSop data
+#pragma pack(pop)
 
 using vertex_t = point3d_t<uint16_t>;
 
