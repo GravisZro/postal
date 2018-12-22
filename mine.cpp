@@ -417,7 +417,7 @@ void CMine::Update(void)
 		ProcessMessages();
 		if (m_eState == State_Deleted)
 			{
-			delete this;
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -585,7 +585,7 @@ void CMine::Update(void)
 							}
 						}
 						// Get rid of the mine
-						delete this;
+                  realm()->RemoveThing(this);
 						return;
 					}
 				}
@@ -611,7 +611,7 @@ void CMine::Update(void)
 							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 
-					delete this;
+              realm()->RemoveThing(this);
 					return;
 				}
 				break;

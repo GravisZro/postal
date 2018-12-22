@@ -308,6 +308,7 @@ void CExplode::Update(void)
 					pSmoke->Setup(m_dX - 4 + GetRandom() % 9, MAX(m_dY-20, 0.0), m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}
 
+         realm()->RemoveThing(this);
 			delete this;
 			return;
 		}
@@ -411,7 +412,7 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 		{
 		ASSERT(pSmashed->m_pThing);
 		// If not the excepted thing . . .
-      if (pSmashed->m_pThing != managed_ptr<CThing>(m_except))
+      if (pSmashed->m_pThing != m_except)
 			{
          SendThingMessage(msg, pSmashed->m_pThing);
 			}

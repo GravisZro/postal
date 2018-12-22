@@ -315,9 +315,8 @@ void CHeatseeker::Update(void)
 		switch (m_eState)
 		{
         case CWeapon::State_Deleted:
-//           delete this;
+          realm()->RemoveThing(this);
            return;
-           break;
 
 			case CWeapon::State_Hide:
 			case CWeapon::State_Idle:
@@ -359,7 +358,7 @@ void CHeatseeker::Update(void)
 				dNewZ = m_dZ - rspSin(m_dRot) * (m_dHorizVel * dSeconds);
 
 				// Check for obstacles
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 #ifdef UNUSED_VARIABLES
             usAttrib = realm()->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
 #endif
@@ -578,9 +577,8 @@ void CHeatseeker::Update(void)
 					}
 				}
 
-				delete this;
-				return;
-				break;
+            realm()->RemoveThing(this);
+            return;
 		}
 
 		// Update sphere.

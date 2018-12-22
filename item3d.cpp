@@ -250,7 +250,8 @@ int16_t CItem3d::Load(										// Returns 0 if successfull, non-zero otherwise
 
             uint16_t parent_id = 0;
             pFile->Read(&parent_id);
-            m_parent = realm()->GetOrAddThingById<CThing>(parent_id, type());
+            m_parent = realm()->GetThingById<CThing>(parent_id);
+            ASSERT(m_parent);
 				break;
 			}
 		

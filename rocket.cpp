@@ -338,9 +338,7 @@ void CRocket::Update(void)
 		if (m_eState == State_Deleted)
 			{
 			// We are to be deleted.  Do it.
-			delete this;
-			// Must get out of here before we touch any of our invalidated 
-			// this.
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -394,7 +392,7 @@ void CRocket::Update(void)
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 
 				// Check for obstacles
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 #ifdef UNUSED_VARIABLES
             usAttrib = realm()->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
 #endif
@@ -611,9 +609,8 @@ void CRocket::Update(void)
 					}
 				}
 
-				delete this;
-				return;
-				break;
+            realm()->RemoveThing(this);
+            return;
 		}
 
 		// Update sphere.

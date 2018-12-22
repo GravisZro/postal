@@ -690,9 +690,8 @@ void CPerson::Update(void)
             if (!list.empty())
                SendThingMessage(msg, list.front());
 				CDoofus::OnDead();
-				delete this;  
-				return;
-				break;
+            realm()->RemoveThing(this);
+            return;
         }
 
 			case State_PanicBegin:
@@ -742,6 +741,10 @@ void CPerson::Update(void)
 				break;
 
 			default:
+#ifdef HACKED_TO_RUN
+          break;
+#endif
+
 				// If it ever gets to this case, then it has entered an unknown
 				// state which may perhaps be out of range.  Please note the
 				// value of the state to check to see if it is in the valid range

@@ -108,8 +108,7 @@ class CExplode : public CThing
 	public:
       CExplode(void)
 			{
-			m_sSuspend		= 0;
-         m_except.reset();
+         m_sSuspend		= 0;
 			}
 
 		~CExplode()

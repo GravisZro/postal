@@ -467,22 +467,7 @@ int16_t CThing::Load(             // Returns 0 if successfull, non-zero otherwis
     int16_t sFileCount,             // In:  File count (unique per file, never 0)
     uint32_t ulFileVersion)         // In:  File version being loaded.
 {
-  UNUSED(bEditMode, sFileCount);
-  // Switch on the file version.
-  switch (ulFileVersion)
-  {
-    default:   // Newer versions where this format has not changed.
-    case 1:
-      // Load this thing's ID.  The ID is unique to this 'thing' within its realm
-      // (i.e., no other CThing or derived class has this same ID within this realm).
-      // This is assigned by the editor via a call to the realm's m_idbank.Get().
-      pFile->Read(&m_u16InstanceId);
-      break;
-  }
-
-  // If this ID is not yet claimed . . .
-  realm()->RegisterThingId(this, m_u16InstanceId);
-
+  UNUSED(bEditMode, sFileCount, ulFileVersion);
   return pFile->Error();
 }
 

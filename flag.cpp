@@ -216,7 +216,7 @@ int16_t CFlag::Load(				// Returns 0 if successfull, non-zero otherwise
 			case 1:
 			case 0:
 				pFile->Read(&m_lTimeBonus);
-				pFile->Read(&m_u16FlagID);
+            pFile->Read(&m_u16FlagID);
 				break;
 		}
 
@@ -510,11 +510,8 @@ void CFlag::Update(void)
 						&m_sprite,						// Tree of 3D sprites to render.
                   realm()->Hood());							// Dst clip rect.
 
-					delete this;
-					return;
-					break;
-
-
+               realm()->RemoveThing(this);
+               return;
 		}
 
 	

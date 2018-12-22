@@ -496,7 +496,7 @@ class CThing
 //		ClassIDType m_id;
 
 		// Unique ID specific to this instance of CThing (set in constructor,
-		// released in destructor).
+      // released in destructor).
 		uint16_t			m_u16InstanceId;
 
 	//---------------------------------------------------------------------------
@@ -515,12 +515,10 @@ public:
   CThing(void);
   virtual ~CThing(void);
 
-  constexpr const managed_ptr<CThing>& child (void) const noexcept { return m_child; }
-  constexpr const managed_ptr<CThing>& parent(void) const noexcept { return m_parent; }
+  constexpr managed_ptr<CThing>& child (void) noexcept { return m_child; }
+  constexpr managed_ptr<CThing>& parent(void) noexcept { return m_parent; }
   constexpr void setChild (const managed_ptr<CThing>& nc) noexcept { m_child = nc; }
   constexpr void setParent(const managed_ptr<CThing>& np) noexcept { m_parent = np; }
-  constexpr void resetChild (void) noexcept { m_child.reset(); }
-  constexpr void resetParent(void) noexcept { m_parent.reset(); }
 
   constexpr CRealm* realm(void) const noexcept { return m_realm; }
   constexpr ClassIDType type(void) const noexcept { return m_type; }
@@ -545,10 +543,8 @@ protected:
       }
 
 		// Get object instance's unique ID.
-      uint16_t GetInstanceID(void)
-			{
-			return m_u16InstanceId;
-			}
+      uint16_t GetInstanceID(void) const noexcept { return m_u16InstanceId; }
+      void SetInstanceID(uint16_t id) noexcept { m_u16InstanceId = id; }
 
 
 		// Helper for processing your GUIs.
@@ -623,7 +619,6 @@ protected:
 			// Save this thing's ID.  The ID is unique to this 'thing' within its realm
 			// (i.e., no other CThing or derived class has this same ID within this realm).
 			// This is assigned by the editor via a call to the realm's m_idbank.Get().
-			pFile->Write(m_u16InstanceId);
 
 			return pFile->Error();
 			}

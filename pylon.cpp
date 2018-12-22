@@ -414,8 +414,10 @@ int16_t CPylon::EditModify(void)
 										m_msg.msg_Popout.eType = typePopout;
 										m_msg.msg_Popout.ucIDNext = pSecondaryGui->GetVal(3);
 										m_msg.msg_Popout.u16UniquePylonID = GetPylonUniqueID(m_msg.msg_Popout.ucIDNext);
-										CPylon* pPylon;
-                              if (realm()->m_idbank.GetThingByID((CThing**) &pPylon, m_msg.msg_Popout.u16UniquePylonID) == SUCCESS)
+
+                              managed_ptr<CPylon> pPylon;
+                              pPylon = realm()->GetThingById<CPylon>(m_msg.msg_Popout.u16UniquePylonID);
+                              if (pPylon)
 										{
 											m_msg.msg_Popout.sNextPylonX = pPylon->GetX();
 											m_msg.msg_Popout.sNextPylonZ = pPylon->GetZ();
@@ -442,8 +444,10 @@ int16_t CPylon::EditModify(void)
 										m_msg.msg_ShootCycle.eType = typeShootCycle;
 										m_msg.msg_ShootCycle.ucIDNext = pSecondaryGui->GetVal(3);
 										m_msg.msg_ShootCycle.u16UniquePylonID = GetPylonUniqueID(m_msg.msg_ShootCycle.ucIDNext);
-										CPylon* pPylon;
-                              if (realm()->m_idbank.GetThingByID((CThing**) &pPylon, m_msg.msg_ShootCycle.u16UniquePylonID) == SUCCESS)
+
+                              managed_ptr<CPylon> pPylon;
+                              pPylon = realm()->GetThingById<CPylon>(m_msg.msg_ShootCycle.u16UniquePylonID);
+                              if (pPylon)
 										{
 											m_msg.msg_ShootCycle.sNextPylonX = pPylon->GetX();
 											m_msg.msg_ShootCycle.sNextPylonZ = pPylon->GetZ();

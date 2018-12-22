@@ -1608,7 +1608,7 @@ void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
          &(childThing->m_dZ) );			// Out: Position of child.
 
 		// Child is done with us.
-      childThing->resetParent();
+      childThing->parent().reset();
       }
 	}
 

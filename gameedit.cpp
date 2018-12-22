@@ -1130,7 +1130,7 @@ static char	ms_szFileName[PATH_MAX]	= "";
 static int16_t	ms_sMoving		= FALSE;	// TRUE, if moving/placing a thing (ms_pthingSel).
 
 static managed_ptr<CThing> ms_pthingSel;	// CThing* to thing currently selected.
-static RHot* ms_photSel;	// RHot* to hotbox associated with selected thing.
+static RHot* ms_photSel = nullptr;	// RHot* to hotbox associated with selected thing.
 
 // Initial width and height of display so we can
 // restore video mode when done editting.
@@ -1150,7 +1150,7 @@ static RScrollBar	ms_sbHorz;
 
 // This points to the CHood's hotbox which is the root of all other CThing
 // hotboxes.
-static RHot* ms_photHood;
+static RHot* ms_photHood = nullptr;
 
 // This is the hotbox priority of the farthest item from the user.
 // Start out as close to front as possible.
@@ -1209,24 +1209,24 @@ static RFile			ms_filePaste;
 static int16_t			ms_sFileCount		= -1;
 
 // Type of item to paste.
-static ClassIDType	ms_idPaste;
+static ClassIDType	ms_idPaste = InvalidID;
 
 // Sprite used to draw attributes.
 static CSprite2		ms_spriteAttributes;
 
 // Attribute masks to draw.
-static uint16_t				ms_u16TerrainMask;
-static uint16_t				ms_u16LayerMask;
+static uint16_t				ms_u16TerrainMask = 0;
+static uint16_t				ms_u16LayerMask = 0;
 
 // Used by RFile callback function
 static milliseconds_t		ms_lRFileCallbackTime;
 static int32_t		ms_lFileBytesSoFar;
 static char		ms_szFileOpDescriptionFrmt[512];
 static RPrint	ms_printFile;
-static int16_t	ms_sFileOpTextX;
-static int16_t	ms_sFileOpTextY;
-static int16_t	ms_sFileOpTextW;
-static int16_t	ms_sFileOpTextH;
+static int16_t	ms_sFileOpTextX = 0;
+static int16_t	ms_sFileOpTextY = 0;
+static int16_t	ms_sFileOpTextW = 0;
+static int16_t	ms_sFileOpTextH = 0;
 
 // Amount to scroll off edge of realm.
 static int32_t	ms_lEdgeOvershoot	= 1000;
@@ -2411,7 +2411,7 @@ static bool DoInput(		// Returns true when done.
 						// Verify there is a selection . . .
                   if (ms_pthingSel)
 							{
-                     ASSERT(ms_photSel);
+                     ASSERT(ms_photSel != nullptr);
 							// Modify.
 							ms_pthingSel->EditModify();
 							// Size may have changed.
@@ -2543,7 +2543,7 @@ static bool DoInput(		// Returns true when done.
 			ms_sbVert.m_hot.Do(&ie);
 			ms_sbHorz.m_hot.Do(&ie);
 			// If there's a hood hotbox and no item being dragged . . .
-         if (ms_photHood && ms_sMoving == FALSE)
+         if (ms_photHood != nullptr && ms_sMoving == FALSE)
 				{
 				// Pass the event to the Thing hotboxes in Realm coords.
 				RInputEvent	ieRealm	= ie;
@@ -2603,7 +2603,7 @@ static bool DoInput(		// Returns true when done.
 							ms_sMoving			= TRUE;
 
 							// Make sure this is valid.
-                     ASSERT(ms_photSel);
+                     ASSERT(ms_photSel != nullptr);
 
 							// Get hotspot for item in 2D.
 							int16_t	sOffsetX;
@@ -2640,7 +2640,7 @@ static bool DoInput(		// Returns true when done.
 					if (ms_sMoving != FALSE)
 						{
                   ASSERT(ms_pthingSel);
-                  ASSERT(ms_photSel);
+                  ASSERT(ms_photSel != nullptr);
 
 						MoveThing(
 							ms_pthingSel, 
@@ -3661,11 +3661,12 @@ static int16_t CloseRealm(
       ms_pgething.reset();
 
 		// If there are any . . .
-      if (ms_photHood)
+      if (ms_photHood != nullptr)
 			{
 			// Destroy all child hotboxes.
          ms_photHood->m_listChildren.clear();
 			// Destroy root/hood hotbox.
+         delete ms_photHood;
          ms_photHood = nullptr;
 			}
 
@@ -3773,7 +3774,7 @@ static int16_t LoadRealm(
                   FRONTMOST_HOT_PRIORITY);	// New items towards front.
 
 					// If successful . . .
-               if (ms_photHood)
+               if (ms_photHood != nullptr)
 						{
 						// Setup hotboxes for all objects.
                  for(const managed_ptr<CThing>& pthing : prealm->m_every_thing)
@@ -4210,7 +4211,7 @@ static void PlayRealm(
 						bool	bTracking	= true;
 
 						// Get thing to track . . .
-						CThing*	pthingTrack	= nullptr;
+                  managed_ptr<CThing> pthingTrack;
 						uint16_t		u16IdTrack	= CIdBank::IdNil;
                   if (ms_pgething)
 							{
@@ -4429,7 +4430,7 @@ static void PlayRealm(
 												ms_sbHorz.m_im.m_sHeight);
 
 											// Reset the grip, if necessary.
-											if (pthingTrack != nullptr && bTracking == true)
+                                 if (pthingTrack && bTracking == true)
 												{
 												RRect	rc;
 												pthingTrack->EditRect(&rc);
@@ -4552,16 +4553,11 @@ static void PlayRealm(
 							prealm->Update();
 							prealm->Render();
 
-							if (u16IdTrack != CIdBank::IdNil)
-								{
-                        if (prealm->m_idbank.GetThingByID(&pthingTrack, u16IdTrack) != SUCCESS)
-									{
-									u16IdTrack	= CIdBank::IdNil;
-									}
-								}
+                     if (u16IdTrack != CIdBank::IdNil)
+                       pthingTrack = prealm->GetThingById<CThing>(u16IdTrack);
 
 							// Update grip/camera
-							if (pthingTrack != nullptr)
+                     if (pthingTrack)
 								{
 								RRect	rc;
 								pthingTrack->EditRect(&rc);
@@ -4762,13 +4758,11 @@ static int16_t CreateNewThing(		// Returns 0 on success.
                   ppthing->SetInstanceID(CIdBank::IdNil);
 */
 						// Load object . . .
-                  if (ppthing->Load(pfile, true, ms_sFileCount--, CRealm::FileVersion) == SUCCESS)
+                 uint16_t instance_id;
+                 if (pfile->Read(&instance_id) == 1 &&
+                    ppthing->Load(pfile, true, ms_sFileCount--, CRealm::FileVersion) == SUCCESS)
 							{
-							// Loaded.
-/*
-							// Reset ID.
-                     ppthing->SetInstanceID(idInstance);
-*/
+                     ppthing->SetInstanceID(instance_id);
 							// Reserve ID.
                      //prealm->m_idbank.Take(*ppthing, idInstance);
 							// Startup.
@@ -6278,7 +6272,7 @@ static void DragDrop(	// Returns nothing.
 	if (ms_sMoving != FALSE)
 		{
       ASSERT(ms_pthingSel);
-      ASSERT(ms_photSel);
+      ASSERT(ms_photSel != nullptr);
 
 		// Final position.
 		MoveThing(

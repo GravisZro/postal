@@ -668,13 +668,12 @@ void CPowerUp::RepaginateNow(void)
 		// If this fails, we'd better go away . . .
       if (GetResources() != SUCCESS)
 			{
-			delete this;
+        realm()->RemoveThing(this);
 			}
 		}
 	else
 		{
-		// Done then.
-		delete this;
+      realm()->RemoveThing(this);
 		}
 	}
 

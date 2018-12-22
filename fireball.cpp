@@ -282,7 +282,7 @@ void CFirestream::Update(void)
 		// See if we killed ourselves
 		if (ProcessFireballMessages() == State_Deleted)
 			{
-			delete this;
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -331,8 +331,7 @@ void CFirestream::Update(void)
             m_fireball2->m_eState = CWeapon::State_Fire;
          if (m_fireball3)
             m_fireball3->m_eState = CWeapon::State_Fire;
-			delete this;
-			return;
+         realm()->RemoveThing(this);
 		}
 	}
 }
@@ -701,7 +700,7 @@ void CFireball::Update(void)
 		// See if we killed ourselves
 		if (ProcessFireballMessages() == State_Deleted)
 			{
-			delete this;
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -721,7 +720,7 @@ void CFireball::Update(void)
 
 						// Check attribute map for walls, and if you hit a wall, 
 						// set the timer so you will die off next time around.
-						int16_t sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+						int16_t sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 						// If it hits a wall taller than itself, then it will rotate in the
 						// predetermined direction until it is free to move.
 						if ((int16_t) m_dY < sHeight ||
@@ -789,7 +788,7 @@ void CFireball::Update(void)
 				}
 				else
 				{
-					delete this;
+              realm()->RemoveThing(this);
 					return;
 				}
 				break;
@@ -1046,23 +1045,17 @@ int16_t CFireball::Preload(
 
 CFireball::CFireballState CFireball::ProcessFireballMessages(void)
 {
-	CFireballState eNewState = State_Idle;
+  CFireballState eNewState = State_Idle;
 
-   if(!m_MessageQueue.empty())
-   {
-     GameMessage& msg = m_MessageQueue.front();
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-            m_MessageQueue.clear();
-				return State_Deleted;
-				break;
-		}
-      // Dump the rest of the messages
-      m_MessageQueue.clear();
-   }
+  if(!m_MessageQueue.empty())
+  {
+    GameMessage& msg = m_MessageQueue.front();
+    if(msg.msg_Generic.eType == typeObjectDelete)
+      eNewState = State_Deleted;
+    m_MessageQueue.clear();
+  }
 
-	return eNewState;
+  return eNewState;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

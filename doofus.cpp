@@ -774,9 +774,7 @@ CDoofus::CDoofus(void)
 
     // explicitly initialize to stop Valgrind whining. --ryan.
    m_lIdleTimer = realm()->m_time.GetGameTime() + 2000 + GetRandom() % 2000;
-	m_lStuckTimeout = 0;
-
-	m_killer = 0;
+   m_lStuckTimeout = 0;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1555,9 +1553,8 @@ void CDoofus::Update(void)
 
 			case State_Dead:
 				CCharacter::OnDead();
-				delete this;
-				return;
-				break;
+            realm()->RemoveThing(this);
+            return;
 		}	
 
 		// Determine appropriate position for main smash.
@@ -1697,7 +1694,7 @@ void CDoofus::Logic_Die(void)
 	}	
 	else
    {
-      if (child())
+      if (m_weapon)
 		{
 			// It should drop like a rock if its a throwing weapon or just delete it if it
 			// is a launched weapon
@@ -1706,12 +1703,12 @@ void CDoofus::Logic_Die(void)
 				GameMessage msg;
 				msg.msg_ObjectDelete.eType = typeObjectDelete;
 				msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, weapon());
+            SendThingMessage(msg, m_weapon);
 			}
 			else
-			{
-            weapon()->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = weapon()->m_dRot = GetRandom() % 360;
+         {
+            m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
+            m_dShootAngle = m_weapon->m_dRot = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -1780,7 +1777,7 @@ void CDoofus::Logic_Writhing(void)
 	}
 	else
    {
-      if (weapon())
+      if (m_weapon)
 		{
 			// It should drop like a rock if its a throwing weapon or just delete it if it
 			// is a launched weapon
@@ -1789,12 +1786,12 @@ void CDoofus::Logic_Writhing(void)
 				GameMessage msg;
 				msg.msg_ObjectDelete.eType = typeObjectDelete;
             msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, weapon());
+            SendThingMessage(msg, m_weapon);
 			}
 			else
-			{
-            weapon()->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = weapon()->m_dRot = GetRandom() % 360;
+         {
+            m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
+            m_dShootAngle = m_weapon->m_dRot = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -1842,12 +1839,12 @@ void CDoofus::Logic_Guard(void)
 		{	
 			if (CDoofus::TryClearShot(m_dRot, 20) == true)
 			{
-            managed_ptr<CWeapon> pweapon = PrepareWeapon();
-            if (pweapon)
+            PrepareWeapon();
+            if (m_weapon)
 				{
 					// Keep it hidden, for now.
-					pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
-					pweapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
+               m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+               m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 				}
 				m_panimCur = &m_animShoot;
 				m_lAnimTime = 0;
@@ -1953,12 +1950,12 @@ void CDoofus::Logic_HuntHold(void)
 			{
 				if (SelectDude() == SUCCESS && SQDistanceToDude() < ms_dGuardDistance)
 				{	
-              managed_ptr<CWeapon> pweapon = PrepareWeapon();
-               if (pweapon)
+               PrepareWeapon();
+               if (m_weapon)
 					{
 						// Keep it hidden, for now.
-						pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
-						pweapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
+                  m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+                  m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 					}
 					m_panimCur = &m_animShoot;
 					m_lAnimTime = 0;
@@ -2232,11 +2229,11 @@ void CDoofus::Logic_DelayShoot(void)
 	{
 		if (TryClearShot(m_dRot, 20) == true && SelectDude() == SUCCESS) 
 		{
-         managed_ptr<CWeapon> pweapon = PrepareWeapon();
-         if (pweapon)
+         PrepareWeapon();
+         if (m_weapon)
 			{
-				pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
-            pweapon->SetRangeToTarget(rspSqrt(int32_t(SQDistanceToDude())));
+            m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+            m_weapon->SetRangeToTarget(rspSqrt(int32_t(SQDistanceToDude())));
 			}
 			m_panimCur = &m_animShoot;
 			m_lAnimTime = 0;
@@ -2266,12 +2263,12 @@ void CDoofus::Logic_PositionMove(void)
 		// Check for clear shot before shooting.  If not clear, go back to moving
 		if (CDoofus::TryClearShot(m_dRot, 20) == true && SelectDude() == SUCCESS)
 		{
-         managed_ptr<CWeapon> pweapon = PrepareWeapon();
-         if (pweapon)
+         PrepareWeapon();
+         if (m_weapon)
 			{
 				// Keep it hidden, for now.
-				pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
-				pweapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
+            m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+            m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 			}
 			m_state = State_Shoot;
 			m_eNextState = State_PositionSet;
@@ -2622,11 +2619,11 @@ void CDoofus::Logic_Popout(void)
 		m_lTimer = lThisTime + 2000 + GetRandom() % 2000;
 		m_sNextX = m_pPylonStart->GetX();
 		m_sNextZ = m_pPylonStart->GetZ();
-      managed_ptr<CWeapon> pweapon = PrepareWeapon();
-      if (pweapon)
+      PrepareWeapon();
+      if (m_weapon)
 		{
 			// Keep it hidden, for now.
-			pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+         m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
 		}
 		m_panimCur = &m_animShoot;
 		m_lAnimTime = 0;
@@ -2649,10 +2646,11 @@ void CDoofus::Logic_Shoot(void)
 	{
       case CFirestreamID:
 			// If out of fire streams . . .
-         if (!child())
+         if (!m_weapon)
 				{
 				// Must prepare more fire.
-            if (!PrepareWeapon())
+            PrepareWeapon();
+            if(!m_weapon)
 					break;
 				}
 			// Intentional fall through.
@@ -2703,12 +2701,12 @@ void CDoofus::Logic_Shoot(void)
 			break;
 
 		default:
-         if (child())
+         if (m_weapon)
 			{
 				if (WhileHoldingWeapon(ms_u32CollideBitsInclude, ms_u32CollideBitsDontcare, ms_u32CollideBitsExclude) == true)
 				{
 					// Note we are done with the child.  Now we're just finishing the anim.
-               ASSERT(!child());
+               ASSERT(!m_weapon);
 				}
 			}
 			break;
@@ -2836,11 +2834,11 @@ void CDoofus::Logic_RunShoot(void)
 			m_state = State_ShootRun;
 			// After shooting, go back to beginning
 			m_eNextState = State_RunShoot;
-         managed_ptr<CWeapon> pweapon = PrepareWeapon();
-         if (pweapon)
+         PrepareWeapon();
+         if (m_weapon)
 			{
 				// Keep it hidden, for now.
-				pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+            m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
 			}
 			SelectDude();
 
@@ -3167,12 +3165,12 @@ void CDoofus::Logic_Helping(void)
 		{	
 			if (CDoofus::TryClearShot(m_dRot, 20) == true)
 			{
-            managed_ptr<CWeapon> pweapon = PrepareWeapon();
-            if (pweapon)
+            PrepareWeapon();
+            if (m_weapon)
 				{
 					// Keep it hidden, for now.
-					pweapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
-					pweapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
+               m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+               m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 				}
 				m_panimCur = &m_animShoot;
 				m_lAnimTime = 0;
@@ -3540,7 +3538,7 @@ void CDoofus::OnExplosionMsg(Explosion_Message* pMessage)
       if (!list.empty())
          SendThingMessage(msg, list.front());
 		// If he has a weapon ready, either get rid of it or shoot it off randomly
-      if (child())
+      if (m_weapon)
 		{
 			// It should drop like a rock if its a throwing weapon or just delete it if it
 			// is a launched weapon
@@ -3549,12 +3547,12 @@ void CDoofus::OnExplosionMsg(Explosion_Message* pMessage)
 				GameMessage msg;
 				msg.msg_ObjectDelete.eType = typeObjectDelete;
             msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, child());
+            SendThingMessage(msg, m_weapon);
 			}
 			else
-			{
-            weapon()->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = weapon()->m_dRot = GetRandom() % 360;
+         {
+            m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
+            m_dShootAngle = m_weapon->m_dRot = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -3605,7 +3603,7 @@ void CDoofus::OnBurnMsg(Burn_Message* pMessage)
 			}
 		}
 		// If he has a weapon ready, either get rid of it or shoot it off randomly.
-      if (weapon())
+      if (m_weapon)
 		{
 			// It should drop like a rock if its a throwing weapon or just delete it if it
 			// is a launched weapon
@@ -3614,12 +3612,12 @@ void CDoofus::OnBurnMsg(Burn_Message* pMessage)
 				GameMessage msg;
 				msg.msg_ObjectDelete.eType = typeObjectDelete;
             msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, weapon());
+            SendThingMessage(msg, m_weapon);
 			}
 			else
-			{
-            weapon()->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = weapon()->m_dRot = GetRandom() % 360;
+         {
+            m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
+            m_dShootAngle = m_weapon->m_dRot = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -3664,34 +3662,21 @@ void CDoofus::OnDead(void)
 // This should be done when the character starts its shoot animation.
 // (virtual (overriden here) ).
 ////////////////////////////////////////////////////////////////////////////////
-managed_ptr<CWeapon> CDoofus::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
+void CDoofus::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
 {
 	// Play sound even if we have no weapon...seems like they're threatening him.
 	PlaySoundShooting();
-
-   managed_ptr<CWeapon>	pweapon;
-	// If we have a weapon . . .
-	if (m_eWeaponType != TotalIDs)
-	{
-		pweapon	= CCharacter::PrepareWeapon();
-	}
-	else
-	{
-		pweapon	= nullptr;
-	}
-
-	return pweapon;
-};
+   CCharacter::PrepareWeapon();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShootWeapon - Overloaded version to use the Shooting Angle
 ////////////////////////////////////////////////////////////////////////////////
 
-managed_ptr<CWeapon> CDoofus::ShootWeapon(CSmash::Bits bitsInclude,
+void CDoofus::ShootWeapon(CSmash::Bits bitsInclude,
 										CSmash::Bits bitsDontcare,
 										CSmash::Bits bitsExclude)
 {
-   managed_ptr<CWeapon> pWeapon;
 	double dSaveDirection = m_dRot;
 
 	// Don't adjust shooting angle if shooting on the run
@@ -3764,15 +3749,13 @@ managed_ptr<CWeapon> CDoofus::ShootWeapon(CSmash::Bits bitsInclude,
 		bitsExclude &= ~CSmash::Bad;
 	}
 */
-	pWeapon = CCharacter::ShootWeapon(bitsInclude, bitsDontcare, bitsExclude);
-	if (pWeapon)
-		pWeapon->SetDetectionBits(CSmash::Character | CSmash::Fire,
+   CCharacter::ShootWeapon(bitsInclude, bitsDontcare, bitsExclude);
+   if (m_weapon)
+      m_weapon->SetDetectionBits(CSmash::Character | CSmash::Fire,
 									  0,
 									  CSmash::Bad | CSmash::Ducking | CSmash::AlmostDead);
 
 	m_dRot = dSaveDirection;
-
-	return pWeapon;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

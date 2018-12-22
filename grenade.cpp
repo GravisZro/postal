@@ -330,7 +330,7 @@ void CUnguidedMissile::Update(void)
 		ProcessMessages();
 		if (m_eState == State_Deleted)
 			{
-			delete this;
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -353,7 +353,7 @@ void CUnguidedMissile::Update(void)
 				// If it starts at an invalid position like inside a wall, kill it
 				if (m_dY < sHeight)
 				{
-					delete this;
+              realm()->RemoveThing(this);
 					return;
 				}
 				m_eState = State_Go;
@@ -373,7 +373,7 @@ void CUnguidedMissile::Update(void)
 				dPrevVertVel = m_dVertVel;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds/*, dAccelerationDueToGravity*/);
 				// Check the height to see if it hit the ground
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// Adjust apparent rotation.
 				m_dAnimRotY	= rspMod360(m_dAnimRotY + m_dAnimRotVelY * dSeconds); 
@@ -494,7 +494,7 @@ void CUnguidedMissile::Update(void)
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				// Check for obstacles
 				usAttrib = realm()->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If it hit any obstacles, make it bounce off
 				if (usAttrib & REALM_ATTR_NOT_WALKABLE || sHeight > m_dY)
@@ -553,7 +553,7 @@ void CUnguidedMissile::Update(void)
 						}
 					}
 
-					delete this;
+               realm()->RemoveThing(this);
 					return;
 				}
 				break;

@@ -679,7 +679,7 @@ int16_t CBouy::BuildRoutingTable(void)
 	uint8_t* aParent = nullptr;
 	uint8_t* pucCurrentNode = nullptr;
 	uint8_t* pucAdjNode = nullptr;
-   managed_ptr<CBouy> pTraverseBouy = nullptr;
+   managed_ptr<CBouy> pTraverseBouy;
 
    ASSERT(m_pParentNavNet);
 	int16_t sCurrentNumNodes = m_pParentNavNet->GetNumNodes();

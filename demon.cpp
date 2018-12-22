@@ -554,15 +554,10 @@ void CDemon::Update(void)
 {
 	if (!m_sSuspend)
 	{
-
 		// Process messages.
 		ProcessMessages();
-
-		if (m_state == State_Delete)
-		{
-			delete this;
-			return;
-		}
+      if (m_state == State_Delete)
+        realm()->RemoveThing(this);
 	}
 }
 

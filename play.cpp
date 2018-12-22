@@ -713,7 +713,7 @@ class CPlayInfo
 		////////////////////////////////////////////////////////////////////////////////
 		~CPlayInfo()
 			{
-         delete realm();
+         delete m_realm;
 			delete m_pcamera;
 			delete m_pgrip;
 			}
@@ -3837,7 +3837,7 @@ class CPlayRealm : public CPlay
 							g_bTransferStockpile = false;
 
 							// Set up as many dudes as needed and get pointer to local dude
-                     //sResult = SetupDudes(pinfo, m_alevelpersist);
+                     sResult = SetupDudes(pinfo, m_alevelpersist);
 							}
 						else
 							{
@@ -4113,7 +4113,7 @@ class CPlayRealm : public CPlay
 
 
 	private:
-/*
+
 		////////////////////////////////////////////////////////////////////////////////
 		// Setup local dude
 		////////////////////////////////////////////////////////////////////////////////
@@ -4121,7 +4121,7 @@ class CPlayRealm : public CPlay
 			CPlayInfo*		pinfo,								// I/O: Play info
          managed_ptr<CDude> pdude)											// In:  Dude to setup
 			{
-        m_localDude = pdude;
+        pinfo->m_localDude = pdude;
 
 			// Turn on local dude's xray effect
 			pdude->m_sprite.m_sInFlags |= CSprite::InXrayee;
@@ -4129,18 +4129,18 @@ class CPlayRealm : public CPlay
 			// Set local dude's targeting status
 			pdude->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;
 			}
-*/
+
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Setup general dude
 		////////////////////////////////////////////////////////////////////////////////
 		void SetupGeneralDude(
-			CDude* pdude,											// In:  Dude to setup
+         managed_ptr<CDude> pdude,											// In:  Dude to setup
 			int16_t sColor,											// In:  Player's color
 			LevelPersist*	palevelpersist)					// In:  Players' level persistent data.
 			{
 			// Union player's pre-existing stockpile with warped-in dude and give him his prior weapon
-			ASSERT(pdude != nullptr);
+         ASSERT(pdude);
 			pdude->m_stockpile.Union(&(palevelpersist[pdude->m_sDudeNum].stockpile));
 			pdude->SetWeapon(palevelpersist[pdude->m_sDudeNum].weapon, true);
 
@@ -4165,7 +4165,7 @@ class CPlayRealm : public CPlay
 		// will exist (no more, no less).
 		//
 		////////////////////////////////////////////////////////////////////////////////
-#if 0
+
       int16_t SetupDudes(
 			CPlayInfo*		pinfo,								// I/O: Play info
 			LevelPersist*	palevelpersist)					// In:  Players' level persistent data.
@@ -4175,52 +4175,17 @@ class CPlayRealm : public CPlay
          CRealm* prealm = pinfo->realm();
 
 			// Always default to nil for safety!
-			pinfo->m_idLocalDude = CIdBank::IdNil;
-
-			//------------------------------------------------------------------------------
-			// This is for backwards compatibility with VERY OLD realms that used CDude's
-			// to determine where dude's started out and what they got.  This is completely
-			// obsolete, since we now use CWarp's instead.
-			//
-			// If there are no CDude's, then we don't do anything.  If there are, we
-			// convert them into CWarp's.  The CWarp's get their settings from the first
-			// CDude we find, and all subsequent CWarp's use those same settings.
-			//
-			// After this point, there will be NO DUDE'S, either because there weren't any
-			// to start with or because we converted them into warps.
-			//------------------------------------------------------------------------------
-			CListNode<CThing>*	pln		= prealm->m_aclassHeads[CDudeID].m_pnNext;
-			CListNode<CThing>*	plnTail	= &(prealm->m_aclassTails[CDudeID]);
-			CDude*	pdude;
-			CWarp*	pwarp;
-			bool		bFirst = true; 
-			while (pln != plnTail)
-				{
-				CListNode<CThing>*	plnNext	= pln->m_pnNext;
-
-				pdude	= (CDude*)pln->m_powner;
-            if (CWarp::CreateWarpFromDude(prealm, pdude, &pwarp, bFirst) == SUCCESS)
-					bFirst = false;
-				else
-					TRACE("SetupDudes(): CWarp::CreateWarpFromDude() failed.\n");
-
-				delete pdude;
-				pdude = 0;
-
-				pln = plnNext;
-				}
+         pinfo->m_localDude.reset();
 
 			//------------------------------------------------------------------------------
 			// Here, we warp-in as many dude's as we need.  If there are no warps, it
 			// probably means the realm wasn't designed correctecly, and we bail out.
-			//------------------------------------------------------------------------------
-			if (prealm->m_asClassNumThings[CWarpID] > 0)
-				{
-				// Setup warp pointers
-				CListNode<CThing>*	plnWarpHead	= &(prealm->m_aclassHeads[CWarpID]);
-				CListNode<CThing>*	plnWarp		= plnWarpHead->m_pnNext;
+         //------------------------------------------------------------------------------
+         std::list<managed_ptr<CThing>> warplist = prealm->GetThingsByType(CWarpID);
+         auto plnWarp = warplist.begin();
+            if(!warplist.empty())
+            {
 #if !defined(MULTIPLAYER_REMOVED)
-            CListNode<CThing>*	plnWarpTail	= &(prealm->m_aclassTails[CWarpID]);
 
             // Multiplayer mode is handled separately
 				if (pinfo->IsMP())
@@ -4231,33 +4196,31 @@ class CPlayRealm : public CPlay
 					// Find a random starter.  Pick a number from 0 to n - 1 where n is the
 					// number of CWarps in the realm.  Next, iterate to that warp so we start
 					// creating dudes at a 'random' warp.
-					int16_t	sStartWarpNum	= GetRand() % prealm->m_asClassNumThings[CWarpID];
-					int16_t	i;
-					for (i = 0; i < sStartWarpNum; i++, plnWarp = plnWarp->m_pnNext)
-						;
+               int16_t	sStartWarpNum	= GetRand() % warplist.size();
+               for (int16_t i = 0; i < sStartWarpNum; i++, ++plnWarp);
 
 					// Warp in as many dude's as we need
-               for (Net::ID id = 0; (sResult == SUCCESS) && (id < Net::MaxNumIDs); id++)
+               for (Net::ID id = 0; (sResult == SUCCESS) && (id < Net::MaxNumIDs); ++id, ++plnWarp)
 						{
 						// If this player needs a dude
 						if (pclient->DoesPlayerNeedDude(id))
 							{
 							// If we've hit the tail of the warps, wrap around
-							if (plnWarp == plnWarpTail)
-								plnWarp	= plnWarpHead->m_pnNext;
+                     if (plnWarp == warplist.end())
+                        plnWarp = warplist.begin();
 
-							pwarp	= (CWarp*)plnWarp->m_powner;
-							ASSERT(pwarp != nullptr);
+                     managed_ptr<CWarp> pwarp	= *plnWarp;
+                     ASSERT(pwarp);
 
 							// Warp in dude (creates a new dude since the pointer starts out nullptr)
-							pdude	= nullptr;
-                     if (pwarp->WarpIn(&pdude, CWarp::CopyStockPile) == SUCCESS)
+                     managed_ptr<CDude> pdude;
+                     if (pwarp->WarpIn(pdude, CWarp::CopyStockPile) == SUCCESS)
 								{
 								// SPECIAL CASE!!!  In multiplayer mode, we overwrite the dude numbers
 								// that are assigned by the CDude constructor, instead using the
 								// corresponding network ID.  This isn't a great solution, but it
 								// was the best we could do given the little time we have left.
-								ASSERT(pdude != nullptr);
+                        ASSERT(pdude);
 								pdude->m_sDudeNum = (int16_t)id;
 
 								// Set general dude stuff
@@ -4274,8 +4237,7 @@ class CPlayRealm : public CPlay
 								{
 								sResult = FAILURE;
 								TRACE("SetupDudes(): pwarp->WarpIn() failed.\n");
-								}
-							plnWarp	= plnWarp->m_pnNext;
+                        }
 							}
 						}
 					}
@@ -4283,12 +4245,12 @@ class CPlayRealm : public CPlay
 #endif // !defined(MULTIPLAYER_REMOVED)
                {
 					// Use the first warp
-					pwarp	= (CWarp*)plnWarp->m_powner;
-					ASSERT(pwarp != nullptr);
+              managed_ptr<CWarp> pwarp = *plnWarp;
+              ASSERT(pwarp);
 
 					// Warp in dude (creates a new dude since the pointer starts out nullptr)
-					pdude	= nullptr;
-               if (pwarp->WarpIn(&pdude, CWarp::CopyStockPile) == SUCCESS)
+               managed_ptr<CDude> pdude;
+               if (pwarp->WarpIn(pdude, CWarp::CopyStockPile) == SUCCESS)
 						{
 						// Set general dude stuff
 						SetupGeneralDude(pdude, g_GameSettings.m_sPlayerColorIndex, palevelpersist);
@@ -4314,7 +4276,6 @@ class CPlayRealm : public CPlay
 
 			return sResult;
 			}
-#endif
 
 
 		////////////////////////////////////////////////////////////////////////////////

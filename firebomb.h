@@ -192,8 +192,7 @@ class CFirefrag : public CWeapon
 
 	protected:
 		int16_t m_sPrevHeight;										// Previous height
-      managed_ptr<CFire> m_pFire;											// Pointer to controlled fire object
-		uint16_t	  m_u16FireID;										// ID for fire.
+      managed_ptr<CFire> m_fire;											// Pointer to controlled fire object
 		RImage* m_pImage;											// Pointer to only image (replace with 3d anim, soon)
 		CSprite2 m_sprite;										// 2D sprite to render this object.
 		int16_t		m_sNumExplosions;								// Total Number of explosions.
@@ -218,9 +217,7 @@ class CFirefrag : public CWeapon
    public:
       CFirefrag(void)
 			{
-			m_pImage = 0;
-			m_pFire = nullptr;
-			m_u16FireID = CIdBank::IdNil;
+         m_pImage = 0;
 			m_sNumExplosions	= 0;
 			}
 

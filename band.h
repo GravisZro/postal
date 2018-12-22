@@ -100,8 +100,6 @@ class CBand : public CDoofus
 	//---------------------------------------------------------------------------
    public:
 
-      CBand(CBand*) { ASSERT(false); } // for make_shared
-
       CBand(void)
 			{
 			m_ucNextBouyID = 1;

@@ -590,9 +590,6 @@ class CRealm : Object
 		// Time object, which manages game time
 		CTime m_time;
 
-		// Bank of IDs so each item in Realm can be uniquely identified.
-		CIdBank	m_idbank;
-
 		// Resource manager.  All resources loaded by CThings in this realm should
 		// be loaded through this.
 		// The base path and/or SAK, will be set via the CHood.
@@ -670,7 +667,7 @@ public:
 private:
       template<class T> static constexpr ClassIDType lookupType(void) { return InvalidID; }
 
-      CThing* makeType(ClassIDType type);
+      CThing* makeType(ClassIDType type_it);
 public: // for shitty existing code
       std::set<managed_ptr<CThing>> m_every_thing;
 private:
@@ -700,62 +697,69 @@ public:
 
       // Add thing to realm
       template<class T = CThing>
-      managed_ptr<T> AddThing(ClassIDType classid = lookupType<T>()) noexcept
+      managed_ptr<T> AddThing(ClassIDType type_id = lookupType<T>()) noexcept
       {
-        CThing* thing = makeType(classid);
+        CThing* thing = makeType(type_id);
         if(thing != nullptr)
         {
           m_every_thing.insert(thing);
-          m_thing_by_type[classid].emplace_back(static_cast<T*>(thing));
+          m_thing_by_type[type_id].emplace_back(static_cast<T*>(thing));
         }
         return static_cast<T*>(thing);
       }
 
       // Remove thing from realm
       template<class T>
-      void RemoveThing(managed_ptr<T> thing) noexcept
+      void RemoveThing(managed_ptr<T>& thing) noexcept
       {
         m_every_thing.erase(thing.pointer());
         m_thing_by_type[thing->type()].remove(thing.pointer());
+        m_thing_by_id.erase(thing->GetInstanceID());
         auto id_iter = m_id_by_thing.find(thing.pointer());
         if(id_iter != m_id_by_thing.end())
-        {
-          m_thing_by_id.erase(id_iter->second.pointer());
           m_id_by_thing.erase(id_iter);
-        }
+        thing.destroy();
       }
 
-      std::list<managed_ptr<CThing>> GetThingsByType(ClassIDType id) const noexcept
+      template<class T>
+      void RemoveThing(T* thingptr) noexcept
       {
-        auto iter = m_thing_by_type.find(id);
+        managed_ptr<T> thing(thingptr);
+        RemoveThing<T>(thing);
+      }
+
+      std::list<managed_ptr<CThing>> GetThingsByType(ClassIDType type_id) const noexcept
+      {
+        auto iter = m_thing_by_type.find(type_id);
         if(iter == m_thing_by_type.end())
           return std::list<managed_ptr<CThing>>();
         return iter->second;
       }
 
-      void RegisterThingId(CThing* thing, uint16_t id) noexcept
+      void RegisterThingId(CThing* thing, uint16_t instance_id) noexcept
       {
-        m_thing_by_id[id] = thing;
-        m_id_by_thing[thing] = id;
+        m_thing_by_id[instance_id] = thing;
+        m_id_by_thing[thing] = instance_id;
       }
 
       template<class T>
-      managed_ptr<T> GetThingById(uint16_t id) const noexcept
+      managed_ptr<T> GetThingById(uint16_t instance_id) const noexcept
       {
-        auto iter = m_thing_by_id.find(id);
+        auto iter = m_thing_by_id.find(instance_id);
         if(iter != m_thing_by_id.end())
           return managed_ptr<T>(iter->second);
         return managed_ptr<T>();
       }
 
       template<class T>
-      managed_ptr<T> GetOrAddThingById(uint16_t id, ClassIDType classid = lookupType<T>()) noexcept
+      managed_ptr<T> GetOrAddThingById(uint16_t instance_id, ClassIDType type_id = lookupType<T>()) noexcept
       {
-        auto thing = GetThingById<T>(id);
+        auto thing = GetThingById<T>(instance_id);
         if(!thing)
         {
-          thing = AddThing<T>(classid);
-          RegisterThingId(thing.pointer(), id);
+          thing = AddThing<T>(type_id);
+          thing->SetInstanceID(instance_id);
+          RegisterThingId(thing.pointer(), instance_id);
         }
         return thing;
       }

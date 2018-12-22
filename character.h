@@ -144,8 +144,6 @@
 class CCharacter : public CThing3d
    {
 public:
-      managed_ptr<CWeapon> weapon(void) noexcept { return child(); }
-public:
       ClassIDType m_eWeaponType;	// Type of weapon to be shot
 		CBulletFest	m_bullets;					// Generic bullet interface.
 
@@ -166,7 +164,9 @@ public:
 	// Static Variables
 	//---------------------------------------------------------------------------
 	public:
-
+      constexpr const managed_ptr<CWeapon>& weapon(void) const noexcept { return m_weapon; }
+protected:
+      managed_ptr<CWeapon> m_weapon;
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
@@ -370,14 +370,14 @@ public:
 		// This should be done when the character starts its shoot animation.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-      managed_ptr<CWeapon> PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
+      void PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
 
 		// Shoot current weapon.
 		// This should be done when the character releases the weapon it's
 		// shooting.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-      managed_ptr<CWeapon> ShootWeapon(	// Returns the weapon ptr or nullptr.
+      void ShootWeapon(	// Returns the weapon ptr or nullptr.
 					CSmash::Bits bitsInclude = 0,
 					CSmash::Bits bitsDontcare = CSmash::Bad | CSmash::Good,
 					CSmash::Bits bitsExclude = 0);

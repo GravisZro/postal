@@ -642,9 +642,9 @@ void CSentry::Update(void)
 					{
 						m_panimCur = &m_animShoot;
 						m_lAnimTime += lTimeDifference;
-                  managed_ptr<CWeapon> pweapon = PrepareWeapon();
-                  if (pweapon)
-							pweapon->SetRangeToTarget(rspSqrt(lSqDistanceToDude));
+                  PrepareWeapon();
+                  if (m_weapon)
+                     m_weapon->SetRangeToTarget(rspSqrt(lSqDistanceToDude));
 						ShootWeapon(ms_u32WeaponIncludeBits, ms_u32WeaponDontcareBits, ms_u32WeaponExcludeBits);
 						m_sNumRounds--;
 						m_lTimer = lThisTime + m_lShootDelay;
@@ -695,11 +695,8 @@ void CSentry::Update(void)
                   realm()->Hood());							// Dst clip rect.
 
 					CDoofus::OnDead();
-					delete this;
-					return;
-					break;
-
-
+               realm()->RemoveThing(this);
+               return;
 		}
 
 

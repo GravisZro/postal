@@ -1015,11 +1015,11 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 		m_idDispenseeType	= idNewThingType;
 
 		// If no current thing . . .
-      if (pthing)
+      if (!pthing)
 			{
 			// Allocate the desired thing . . .
         pthing = realm()->AddThing<CThing>(m_idDispenseeType);
-         if (!pthing)
+         if (pthing)
 				{
 				// New it in the correct location.
 				sResult	= pthing->EditNew(m_sX, m_sY, m_sZ);
@@ -1280,14 +1280,15 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 			if (m_fileDispensee.IsOpen() != FALSE)
 				{
 				m_fileDispensee.Seek(0, SEEK_SET);
-            if (ppthing->Load(
+            uint16_t instance_id;
+            if (m_fileDispensee.Read(&instance_id) == 1 &&
+                ppthing->Load(
 					&m_fileDispensee, 
 					bEditMode, 
 					--ms_sDispenseeFileCount,	// Always load statics for these.
 					m_ulFileVersion) == SUCCESS)
                {
-               if (ppthing)
-						{
+                 ppthing->SetInstanceID(instance_id);
                  m_dispensee = ppthing;
 
 #if !defined(EDITOR_REMOVED)
@@ -1305,13 +1306,7 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 							{
    //						ppthing->m_sCallStartup	= 0;
                      ppthing->Startup();
-							}
-						}
-					else
-						{
-						TRACE("InstantiateDispensee(): Could not get an instance ID from the idbank.\n");
-						sResult = FAILURE * 3;
-						}
+                     }
 					}
 				else
 					{
@@ -1566,8 +1561,8 @@ void CDispenser::DestroyDispensee(	// Returns nothing.
 		// If this one is the one indicated by the ID . . .
       if (m_dispensee == ppthing)
         m_dispensee.reset();
-		// Destroy the dispensee.
-      ppthing.reset();
+      // Destroy the dispensee.
+        realm()->RemoveThing(ppthing);
 		}
 	}
 

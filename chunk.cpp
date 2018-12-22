@@ -183,7 +183,7 @@ void CChunk::Update(void)
 			}
 
 		// We're done.
-		delete this;
+      realm()->RemoveThing(this);
 		}
 	}
 

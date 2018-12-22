@@ -66,8 +66,6 @@ class CSndRelay : public CThing
 
 		State	m_state;								// Current state.
 
-		uint16_t	m_idParent;							// Parent CSoundThing.
-
 	protected:
 
 		static int16_t	ms_sFileCount;			// File count.
@@ -85,7 +83,6 @@ class CSndRelay : public CThing
 
 			m_state		= State_Happy;
 
-			m_idParent	= CIdBank::IdNil;
 			}
 
       ~CSndRelay(void)

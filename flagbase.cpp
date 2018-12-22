@@ -399,11 +399,8 @@ void CFlagbase::Update(void)
 						&m_sprite,						// Tree of 3D sprites to render.
                   realm()->Hood());							// Dst clip rect.
 
-					delete this;
-					return;
-					break;
-
-
+               realm()->RemoveThing(this);
+               return;
 		}
 
 

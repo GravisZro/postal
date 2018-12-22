@@ -982,17 +982,17 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
 								{
 
 								// Read class ID of next object in file
-                        uint8_t id;
-								if (pFile->Read(&id) == 1)
+                        uint8_t type_id;
+                        uint16_t instance_id;
+                        if (pFile->Read(&type_id) == 1 &&
+                            pFile->Read(&instance_id) == 1)
                         {
-
-                          auto pThing = AddThing<CThing>(ClassIDType(id)); // Create object based on class ID
-
+                          auto pThing = GetOrAddThingById<CThing>(instance_id, ClassIDType(type_id)); // find or make new thing
                            if (pThing)
                            {
-                             if(id == CNavigationNetID)
+                             if(type_id == CNavigationNetID)
                                m_navnet = pThing;
-                             if(id == CHoodID)
+                             if(type_id == CHoodID)
                                m_hood = pThing;
 
 										// Load object assocated with this class ID
@@ -1002,7 +1002,7 @@ int16_t CRealm::Load(										// Returns 0 if successfull, non-zero otherwise
                               if (sResult == SUCCESS)
 											{
 											// Store last thing to successfully load.
-											idLastThingLoaded	= id;
+                                 idLastThingLoaded	= type_id;
 											// If there's a callback . . .
 											if (m_fnProgress)
 												{
@@ -1199,29 +1199,15 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 		}
 
    int16_t	sCurItemNum	= 0;
-   std::set<managed_ptr<CThing>> already_written;
-   for(auto pair : m_thing_by_type)
+   for(managed_ptr<CThing> pthing : m_every_thing)
    {
-     for(managed_ptr<CThing> pthing : pair.second)
-     {
-       if(already_written.find(pthing) == already_written.end()) // don't write children twice
-       {
-
-         if(pthing && pthing->child()) // dude with powerup
-         {
-           already_written.insert(pthing->child());
-           pFile->Write(uint8_t(pthing->child()->type()));
-           pthing->child()->Save(pFile, ms_sFileCount);
-           sCurItemNum++;
-         }
-
-         pFile->Write(uint8_t(pthing->type()));
-         pthing->Save(pFile, ms_sFileCount);
-         sCurItemNum++;
-       }
-     }
+     pFile->Write(uint8_t(pthing->type()));
+     pFile->Write(pthing->GetInstanceID());
+     sResult = pthing->Save(pFile, ms_sFileCount);
+     if(!sResult)
+       break;
+     sCurItemNum++;
    }
-
 
 	// Check for I/O errors (only matters if no errors were reported so far)
 	if (!sResult && pFile->Error())
@@ -1250,9 +1236,13 @@ int16_t CRealm::Startup(void)							// Returns 0 if successfull, non-zero otherw
 	m_sHostileBirths = 0;
 	m_sHostileKills = 0;
 
-
+ int objnum = 0;
       for(const managed_ptr<CThing>& thing : m_every_thing)
+      {
+        ASSERT(thing);
         thing->Startup();
+        ++objnum;
+      }
 
 		// Setup the previous time for the start of the game.														
 		m_lPrevTime = m_time.GetGameTime();
@@ -1330,8 +1320,10 @@ void CRealm::Update(void)
 	// Entering update loop.
 	m_bUpdating	= true;
 
-   for(const managed_ptr<CThing>& thing : m_every_thing)
-     thing->Update();
+  auto listcopy = m_every_thing; // make a copy
+  for(const managed_ptr<CThing>& thing : listcopy)
+    if(thing) // might have been destroyed in a prior Update() in the list
+      thing->Update();
 
 	// Update the display timer
 	m_lThisTime = m_time.GetGameTime();
@@ -2238,57 +2230,57 @@ void CRealm::CreateLayerMap(void)
 	}
 
 
-CThing* CRealm::makeType(ClassIDType type)
+CThing* CRealm::makeType(ClassIDType type_id)
 {
-  switch(type)
+  switch(type_id)
   {
-    case CHoodID             : return new (type, this, false) CHood             ;
-    case CDudeID             : return new (type, this, false) CDude             ;
-    case CDoofusID           : return new (type, this, false) CDoofus           ;
-    case CRocketID           : return new (type, this, false) CRocket           ;
-    case CGrenadeID          : return new (type, this, false) CGrenade          ;
-    case CBallID             : return new (type, this, false) CBall             ;
-    case CExplodeID          : return new (type, this, false) CExplode          ;
-    case CBouyID             : return new (type, this,  true) CBouy             ;
-    case CNavigationNetID    : return new (type, this,  true) CNavigationNet    ;
-    case CGameEditThingID    : return new (type, this, false) CGameEditThing    ;
-    case CNapalmID           : return new (type, this, false) CNapalm           ;
-    case CFireID             : return new (type, this, false) CFire             ;
-    case CFirebombID         : return new (type, this, false) CFirebomb         ;
-    case CFirefragID         : return new (type, this, false) CFirefrag         ;
-    case CAnimThingID        : return new (type, this,  true) CAnimThing        ;
-    case CSoundThingID       : return new (type, this,  true) CSoundThing       ;
-    case CBandID             : return new (type, this,  true) CBand             ;
-    case CItem3dID           : return new (type, this,  true) CItem3d           ;
-    case CBarrelID           : return new (type, this,  true) CBarrel           ;
-    case CProximityMineID    : return new (type, this,  true) CProximityMine    ;
-    case CDispenserID        : return new (type, this,  true) CDispenser        ;
-    case CFireballID         : return new (type, this, false) CFireball         ;
-    case CPersonID           : return new (type, this,  true) CPerson           ;
-    case CTimedMineID        : return new (type, this,  true) CTimedMine        ;
-    case CBouncingBettyMineID: return new (type, this,  true) CBouncingBettyMine;
-    case CRemoteControlMineID: return new (type, this, false) CRemoteControlMine;
-    case CPylonID            : return new (type, this,  true) CPylon            ;
-    case CPowerUpID          : return new (type, this,  true) CPowerUp          ;
-    case COstrichID          : return new (type, this,  true) COstrich          ;
-    case CTriggerID          : return new (type, this, false) CTrigger          ;
-    case CHeatseekerID       : return new (type, this, false) CHeatseeker       ;
+    case CHoodID             : return new (type_id, this, false) CHood             ;
+    case CDudeID             : return new (type_id, this, false) CDude             ;
+    case CDoofusID           : return new (type_id, this, false) CDoofus           ;
+    case CRocketID           : return new (type_id, this, false) CRocket           ;
+    case CGrenadeID          : return new (type_id, this, false) CGrenade          ;
+    case CBallID             : return new (type_id, this, false) CBall             ;
+    case CExplodeID          : return new (type_id, this, false) CExplode          ;
+    case CBouyID             : return new (type_id, this,  true) CBouy             ;
+    case CNavigationNetID    : return new (type_id, this,  true) CNavigationNet    ;
+    case CGameEditThingID    : return new (type_id, this, false) CGameEditThing    ;
+    case CNapalmID           : return new (type_id, this, false) CNapalm           ;
+    case CFireID             : return new (type_id, this, false) CFire             ;
+    case CFirebombID         : return new (type_id, this, false) CFirebomb         ;
+    case CFirefragID         : return new (type_id, this, false) CFirefrag         ;
+    case CAnimThingID        : return new (type_id, this,  true) CAnimThing        ;
+    case CSoundThingID       : return new (type_id, this,  true) CSoundThing       ;
+    case CBandID             : return new (type_id, this,  true) CBand             ;
+    case CItem3dID           : return new (type_id, this,  true) CItem3d           ;
+    case CBarrelID           : return new (type_id, this,  true) CBarrel           ;
+    case CProximityMineID    : return new (type_id, this,  true) CProximityMine    ;
+    case CDispenserID        : return new (type_id, this,  true) CDispenser        ;
+    case CFireballID         : return new (type_id, this, false) CFireball         ;
+    case CPersonID           : return new (type_id, this,  true) CPerson           ;
+    case CTimedMineID        : return new (type_id, this,  true) CTimedMine        ;
+    case CBouncingBettyMineID: return new (type_id, this,  true) CBouncingBettyMine;
+    case CRemoteControlMineID: return new (type_id, this, false) CRemoteControlMine;
+    case CPylonID            : return new (type_id, this,  true) CPylon            ;
+    case CPowerUpID          : return new (type_id, this,  true) CPowerUp          ;
+    case COstrichID          : return new (type_id, this,  true) COstrich          ;
+    case CTriggerID          : return new (type_id, this, false) CTrigger          ;
+    case CHeatseekerID       : return new (type_id, this, false) CHeatseeker       ;
     case CChunkID            :
 
       if(!g_GameSettings.m_sParticleEffects) // Don't allow chunks when disabled . . .
         return nullptr;
-      return new (type, this, false) CChunk            ;
-    case CSentryID           : return new (type, this,  true) CSentry           ;
-    case CWarpID             : return new (type, this,  true) CWarp             ;
-    case CDemonID            : return new (type, this,  true) CDemon            ;
-    case CCharacterID        : return new (type, this, false) CCharacter        ;
-    case CGoalTimerID        : return new (type, this, false) CGoalTimer        ;
-    case CFlagID             : return new (type, this,  true) CFlag             ;
-    case CFlagbaseID         : return new (type, this,  true) CFlagbase         ;
-    case CFirestreamID       : return new (type, this, false) CFirestream       ;
-    case CDeathWadID         : return new (type, this, false) CDeathWad         ;
-    case CDynamiteID         : return new (type, this, false) CDynamite         ;
-    case CSndRelayID         : return new (type, this,  true) CSndRelay         ;
+      return new (type_id, this, false) CChunk            ;
+    case CSentryID           : return new (type_id, this,  true) CSentry           ;
+    case CWarpID             : return new (type_id, this,  true) CWarp             ;
+    case CDemonID            : return new (type_id, this,  true) CDemon            ;
+    case CCharacterID        : return new (type_id, this, false) CCharacter        ;
+    case CGoalTimerID        : return new (type_id, this, false) CGoalTimer        ;
+    case CFlagID             : return new (type_id, this,  true) CFlag             ;
+    case CFlagbaseID         : return new (type_id, this,  true) CFlagbase         ;
+    case CFirestreamID       : return new (type_id, this, false) CFirestream       ;
+    case CDeathWadID         : return new (type_id, this, false) CDeathWad         ;
+    case CDynamiteID         : return new (type_id, this, false) CDynamite         ;
+    case CSndRelayID         : return new (type_id, this,  true) CSndRelay         ;
     default:
       ASSERT(false);
       return nullptr;

@@ -577,7 +577,7 @@ class CDoofus : public CCharacter
 		// Overloaded version of ShootWeapon to use m_dShootAngle
 		// and which sets the smash bits so enemy bullets won't hit other
 		// enemies.
-      virtual managed_ptr<CWeapon> ShootWeapon(
+      virtual void ShootWeapon(
 			CSmash::Bits bitsInclude = CSmash::Character, 
 			CSmash::Bits bitsDontcare = 0,
 			CSmash::Bits bitsExclude = CSmash::Bad | CSmash::SpecialBarrel);
@@ -616,7 +616,7 @@ class CDoofus : public CCharacter
 		// This should be done when the character starts its shoot animation.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
-      managed_ptr<CWeapon> PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
+      void PrepareWeapon(void);	// Returns the weapon ptr or nullptr.
 
 		// Implements basic functionality while holding and preparing to release
 		// a weapon.  Shows the weapon when the event hits 1 and releases the
@@ -720,7 +720,7 @@ class CDoofus : public CCharacter
 				msg.msg_Burn.eType = typeBurn;
 				msg.msg_Burn.sPriority = 0;
 				msg.msg_Burn.sDamage = 1000;
-            msg.msg_Burn.shooter = GetInstanceID();;
+            msg.msg_Burn.shooter = this;
 
             CListNode<CThing>* pNext = realm()->m_everythingHead.m_pnNext;
 				while (pNext->m_powner != nullptr)

@@ -541,7 +541,7 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 	// If no dude passed . . .
    if (!ppdude)
 		{
-         ppdude = realm()->AddThing<CDude>();
+         ppdude = realm()->AddThing<CDude>(CDudeID);
          if (ppdude)
 			{
 			// Copy stockpile to new CDude.

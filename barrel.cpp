@@ -496,7 +496,7 @@ void CBarrel::Update(void)
 					}
 					// Delete this barrel object and just let the fire burn
 					// where it was.
-					delete this;
+               realm()->RemoveThing(this);
 					return;
 				}
 

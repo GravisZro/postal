@@ -245,9 +245,7 @@ void CDeathWad::Update(void)
 		if (m_eState == State_Deleted)
 			{
 			// We are to be deleted.  Do it.
-			delete this;
-			// Must get out of here before we touch any of our invalidated 
-			// this.
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -425,10 +423,8 @@ void CDeathWad::Update(void)
 						}
 					}
 #endif
-
-				delete this;
-				return;
-				break;
+            realm()->RemoveThing(this);
+            return;
 		}
 
 		// Update sphere.
@@ -617,18 +613,8 @@ void CDeathWad::ProcessMessages(void)
    if(!m_MessageQueue.empty())
    {
      GameMessage& msg = m_MessageQueue.front();
-		switch(msg.msg_Generic.eType)
-		{
-			case typeObjectDelete:
-            m_MessageQueue.clear();
-				m_eState = State_Deleted;
-				// Don't delete this here.  Instead make sure the state is
-				// set so Update() knows to delete us and return immediately
-				// (before something else changes our state).
-				return;
-				break;
-      }
-      // Dump the rest of the messages
+      if(msg.msg_Generic.eType == typeObjectDelete)
+        m_eState = State_Deleted;
       m_MessageQueue.clear();
    }
 }

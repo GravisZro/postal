@@ -453,7 +453,7 @@ void CFire::Update(void)
 
 				// Check attribute map for walls, and if you hit a wall, 
 				// set the timer so you will die off next time around.
-				int16_t sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				int16_t sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 				// If it hits a wall taller than itself, then it will rotate in the
 				// predetermined direction until it is free to move.
 				if ((int16_t) m_dY < sHeight)
@@ -481,21 +481,11 @@ void CFire::Update(void)
 			}
 
 			m_lPrevTime = lThisTime;
-		}
-		else
-		{
-			// If its done smoking, then delete it
-			if (m_eFireAnim == Smoke || m_eFireAnim == SmallSmoke)
-			{
-				delete this;
-			}
-			// Else change the fire to smoke
-			else
-			{
-				if (Smokeout() != SUCCESS)
-					delete this;
-			}
-		}
+      }
+      else if (m_eFireAnim == Smoke || m_eFireAnim == SmallSmoke) // If its done smoking, then delete it
+        realm()->RemoveThing(this);
+      else if (Smokeout() != SUCCESS) // Else change the fire to smoke
+        realm()->RemoveThing(this);
 	}
 }
 

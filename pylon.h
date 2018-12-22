@@ -247,11 +247,12 @@ class CPylon : public CThing
 
 			if (m_u16TargetDudeID != CIdBank::IdNil)
 			{
-				CThing* pthing;
-				realm()->m_idbank.GetThingByID((CThing**) &pthing, m_u16TargetDudeID);
+            managed_ptr<CDude> pthing;
+            pthing = realm()->GetThingById<CDude>(m_u16TargetDudeID);
+            //realm()->m_idbank.GetThingByID((CThing**) &pthing, m_u16TargetDudeID);
 				if (pthing && pthing->type() == CDudeID)
 				{
-					if (((CDude*) pthing)->m_state != CThing3d::State_Dead)
+               if (pthing->m_state != CThing3d::State_Dead)
 						bTriggered = true;
 				}
 			}

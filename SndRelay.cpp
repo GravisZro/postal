@@ -139,7 +139,9 @@ int16_t CSndRelay::Load(								// Returns 0 if successfull, non-zero otherwise
 				pFile->Read(&lBool);
 				m_bInitiallyEnabled	= lBool ? true : false;
 
-				pFile->Read(&m_idParent);
+            uint16_t parent_id;
+            pFile->Read(&parent_id);
+            m_parent = realm()->GetOrAddThingById<CThing>(parent_id, CSoundThingID);
 
 				break;
 			}
@@ -173,8 +175,9 @@ int16_t CSndRelay::Save(										// Returns 0 if successfull, non-zero otherwis
 		pFile->Write(m_dX);
 		pFile->Write(m_dY);
 		pFile->Write(m_dZ);
-		pFile->Write((int32_t)m_bInitiallyEnabled);
-		pFile->Write(m_idParent);
+      pFile->Write((int32_t)m_bInitiallyEnabled);
+      uint16_t parent_id = parent() ? parent()->GetInstanceID() : UINT16_MAX;
+      pFile->Write(parent_id);
 
 		// Make sure there were no file errors
 		sResult	= pFile->Error();
@@ -221,24 +224,18 @@ void CSndRelay::Update(void)
 		// If enabled . . .
 		if (m_bEnabled == true)
 			{
-			// Attempt to get ptr to our parent . . .
-			CSoundThing*	pst	= nullptr;	// Safety.
-			if (realm()->m_idbank.GetThingByID((CThing**)&pst, m_idParent) == SUCCESS)
-				{
-				// Make sure this is what we think it is . . .
-				if (pst->type() == CSoundThingID)
-					{
+         // Attempt to get ptr to our parent . . .
+         if (parent() && parent()->type() == CSoundThingID)
+            {
+              managed_ptr<CSoundThing> pst(parent());
 					// Report volume based on our distance to the ear.
-					pst->RelayVolume(DistanceToVolume(m_dX, m_dY, m_dZ, pst->m_lVolumeHalfLife) );
-					}
-				else
-					{
-#if defined (RELEASE)
-					TRACE("Update(): ID %hu is not a \"SoundThing\", it is a \"%s\".\n",
-						pst->type(),
-						ms_aClassInfo[pst->type()].pszClassName);
-#endif
-					}
+               pst->RelayVolume(DistanceToVolume(m_dX, m_dY, m_dZ, pst->m_lVolumeHalfLife) );
+            }
+         else if (parent())
+            {
+               TRACE("Update(): ID %hu is not a \"SoundThing\", it is a \"%s\".\n",
+                     parent()->type(),
+                     parent()->GetClassName());
 				}
 			}
 
@@ -251,8 +248,7 @@ void CSndRelay::Update(void)
 				break;
 			case State_Delete:
 				// Banzai!
-				delete this;
-				return ;
+            realm()->RemoveThing(this);
 			}
 		}
 	}
@@ -347,9 +343,9 @@ int16_t CSndRelay::EditModify(void)
 		REdit* peditParentId = (REdit*)pgui->GetItemFromId(100);
 		ASSERT(peditParentId != nullptr);
 		ASSERT(peditParentId->m_type == RGuiItem::Edit);
-		if (m_idParent != CIdBank::IdNil)
+      if (parent())
 			{
-			peditParentId->SetText("%hu", m_idParent);
+         peditParentId->SetText("%hu", parent()->GetInstanceID());
 			}
 		else
 			{
@@ -367,13 +363,8 @@ int16_t CSndRelay::EditModify(void)
 		// Run the dialog using this super-duper helper funciton
 		if (DoGui(pgui) == 1)
 			{
-			// Get new values from dialog
-			m_idParent	= (uint16_t)peditParentId->GetVal();
-			if (m_idParent == 0)
-				{
-				m_idParent	= CIdBank::IdNil;
-				}
-
+         // Get new values from dialog
+        m_parent = realm()->GetThingById<CThing>(peditParentId->GetVal());
 			m_bInitiallyEnabled = (pmbEnable->m_sState == 2) ? true : false;
 			}
 		else

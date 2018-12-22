@@ -373,7 +373,7 @@ void RHot::SetParent(	// Returns nothing.
    if (m_photParent)
 		{
 		// Remove from its list of children.
-      m_photParent->m_listChildren.emplace(this);
+      m_photParent->m_listChildren.erase(this);
 		}
 
 	// Set new parent.
@@ -383,7 +383,7 @@ void RHot::SetParent(	// Returns nothing.
    if (m_photParent)
 		{
       // Remove from its list of children.
-      m_photParent->m_listChildren.erase(this);
+      m_photParent->m_listChildren.insert(this);
 		}
 
 	// If active . . .

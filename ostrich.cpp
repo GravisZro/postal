@@ -618,11 +618,8 @@ void COstrich::Update(void)
 
 			case State_Dead:
 				OnDead();
-				delete this;
-				return;
-
-				break;
-
+            realm()->RemoveThing(this);
+            return;
 		}
 
 		m_smash.m_sphere.sphere.X			= m_dX;

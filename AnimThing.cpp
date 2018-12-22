@@ -207,8 +207,7 @@ void CAnimThing::Update(void)
 				}
 
 			// Done.
-			delete this;
-			return;
+         realm()->RemoveThing(this);
 			}
 		}
 	}

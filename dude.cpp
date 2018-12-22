@@ -1630,11 +1630,8 @@ CDude::CDude(void)
 
 	m_bInvincible		= false;
 
-	// Base the dude number of the number of dude's in the realm.  Note that
-	// this number already includes this dude, so we subtract 1 from so the
-   // assigned dude numbers will start at 0.
-   ASSERT(!realm()->GetThingsByType(CDudeID).empty());
-   m_sDudeNum = realm()->GetThingsByType(CDudeID).size() - 1;
+   // Base the dude number of the number of dude's in the realm.
+   m_sDudeNum = realm()->GetThingsByType(CDudeID).size();
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2058,12 +2055,12 @@ void CDude::Update(void)
 				// Check for release point in animation . . .
 				if (u8Event > 0)
                {
-               if (child())
-						{
-                  if (weapon()->m_eState == CWeapon::State_Hide)
+               if (m_weapon)
+                  {
+                  if (m_weapon->m_eState == CWeapon::State_Hide)
 							{
 							// Unhide grenade.
-                     weapon()->m_eState = CWeapon::State_Idle;
+                     m_weapon->m_eState = CWeapon::State_Idle;
 							}
 						else if (u8Event > 1)
 							{
@@ -2297,7 +2294,7 @@ void CDude::Update(void)
 				// Check for launch point in animation . . .
 				if (u8Event > 0)
                {
-               if (child())
+               if (weapon())
 						{
                   if (weapon()->m_eState == CWeapon::State_Hide)
 							{
@@ -2477,9 +2474,9 @@ void CDude::Update(void)
 					// If we still have the picked up item . . .
                if (child())
                   {
-                  TakePowerUp(child());
-
-                  resetChild();
+                 managed_ptr<CPowerUp> powerup = child();
+                 TakePowerUp(powerup);
+                  child().reset();
 						}
 
 					// Go to last persistent state.  Usually stand.
@@ -2569,11 +2566,8 @@ void CDude::Update(void)
 		CCharacter::Update();
 
 		// If requested to delete self . . .
-		if (m_state == State_Delete)
-			{
-			// Good bye.
-			delete this;
-			}
+      if (m_state == State_Delete)
+        realm()->RemoveThing(this);
 		}
 	}
 
@@ -4107,8 +4101,8 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 			case State_PutDown:
 				{
 				// If there's a weapon that we haven't let go of . . .
-            if (child() && state != State_ThrowRelease)
-					{
+            if (weapon() && state != State_ThrowRelease)
+               {
 					// It should drop like a rock.
                weapon()->m_dHorizVel	= (GetRand() % (int16_t)CGrenade::ms_dThrowHorizVel);	// NOTE:   ****USING RAND()****
                weapon()->m_dRot	= GetRand() % 360;
@@ -4117,7 +4111,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					GameMessage msg;
 					msg.msg_ObjectDelete.eType = typeObjectDelete;
                msg.msg_ObjectDelete.sPriority = 0;
-               SendThingMessage(msg, child());
+               SendThingMessage(msg, weapon());
 					}
 				break;
 				}
@@ -4131,7 +4125,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 				{
 				// Abort weapon launch.
 				// If there's a weapon that we haven't launched . . .
-            if (child() && state != State_LaunchRelease)
+            if (weapon() && state != State_LaunchRelease)
 					{
 					// Done with it.
 					ShootWeapon();
@@ -4139,7 +4133,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					GameMessage msg;
 					msg.msg_ObjectDelete.eType = typeObjectDelete;
                msg.msg_ObjectDelete.sPriority = 0;
-               SendThingMessage(msg, child());
+               SendThingMessage(msg, weapon());
 					}
 
 				break;
@@ -4540,7 +4534,7 @@ void CDude::ArmWeapon(							// Returns nothing.
    WeaponType weaponType /*= CurrentWeapon*/)	// In:  Weapon to fire.
 	{
 	// If firing not in progress . . .
-   if (!child())
+   if (!weapon())
 		{
 		// If no specific weapon . . .
       if (weaponType == CurrentWeapon)
@@ -4639,8 +4633,8 @@ void CDude::ArmWeapon(							// Returns nothing.
 				// Remember the type of ammo we're shooting.
             m_weaponShooting	= weaponType;
 
-            managed_ptr<CWeapon> pweapon = PrepareWeapon();
-            if (pweapon)
+            PrepareWeapon();
+            if (weapon())
 					{
 					GameMessage msg;
 					msg.msg_WeaponFire.eType = typeWeaponFire;
@@ -4672,13 +4666,13 @@ void CDude::ArmWeapon(							// Returns nothing.
 // This should be done when the character releases the weapon it's
 // shooting.
 ////////////////////////////////////////////////////////////////////////////////
-managed_ptr<CWeapon> CDude::ShootWeapon(void)		// Returns the weapoin ptr or nullptr.
-	{
-	return ShootWeapon(
-		COLLISION_BITS_INCLUDE,
-		COLLISION_BITS_DONTCARE,
-		COLLISION_BITS_EXCLUDE);
-	}
+void CDude::ShootWeapon(void)		// Returns the weapoin ptr or nullptr.
+   {
+   ShootWeapon(
+      COLLISION_BITS_INCLUDE,
+      COLLISION_BITS_DONTCARE,
+      COLLISION_BITS_EXCLUDE);
+   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shoot current weapon.
@@ -4686,13 +4680,12 @@ managed_ptr<CWeapon> CDude::ShootWeapon(void)		// Returns the weapoin ptr or nul
 // shooting.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-managed_ptr<CWeapon> CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
+void CDude::ShootWeapon(					// Returns the weapon ptr or nullptr.
 	CSmash::Bits bitsInclude /*= ms_u32CollideBitsInclude*/,
 	CSmash::Bits bitsDontcare /*= ms_u32CollideBitsDontcare*/,
 	CSmash::Bits bitsExclude /*= ms_u32CollideBitsExclude*/)
 	{
-	bool	bShootWeapon	= true;	// Assume we should shoot the weapon.
-   managed_ptr<CWeapon> pweapon;	// Assume nothing.
+   bool	bShootWeapon	= true;	// Assume we should shoot the weapon.
 
 	// If the weapon is in an invalid position . . .
 	if (ValidateWeaponPosition() == false)
@@ -4778,22 +4771,20 @@ managed_ptr<CWeapon> CDude::ShootWeapon(					// Returns the weapon ptr or nullpt
 			// Deduct ammo.
 			*psNumLeft	= *psNumLeft - 1;
 
-         pweapon = CCharacter::ShootWeapon(bitsInclude, bitsDontcare, bitsExclude);
+         CCharacter::ShootWeapon(bitsInclude, bitsDontcare, bitsExclude);
 
 			// If a weapon was returned . . .
-			if (pweapon)
+         if (weapon())
 				{
 				// Set the detection bits (not all weapons use these).  The only one
 				// I know of currently is the heatseeker.
-				pweapon->SetDetectionBits(
+            weapon()->SetDetectionBits(
 					CSmash::Character,
 					0,
                realm()->m_flags.bCoopMode ? CSmash::Good : 0);
 				}
 			}
-		}
-
-	return pweapon;
+      }
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4855,7 +4846,7 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 	for (i = 0; i < BRAIN_SPLAT_NUM_CHUNKS; i++)
 		{
 		// Create blood particles . . .
-      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
+      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
       if (pchunk)
 			{
 			pchunk->Setup(
@@ -5028,7 +5019,7 @@ void CDude::OnShotMsg(			// Returns nothing.
 		StartAnim(VEST_HIT_RES_NAME, dHitX, dHitY, dHitZ, false);
 
 		// Create a kevlar peice.
-      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
+      managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
       if (pchunk)
 			{
 			pchunk->Setup(
@@ -5873,7 +5864,7 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
 // Take a powerup.
 ////////////////////////////////////////////////////////////////////////////////
 void CDude::TakePowerUp(		// Returns nothing.
-   managed_ptr<CPowerUp> pppowerup)		// In:  Power up to take from.
+   managed_ptr<CPowerUp>& pppowerup)		// In:  Power up to take from.
 										// Out: Ptr to powerup, if it persisted; nullptr otherwise.
 	{
    CStockPile* pspMax;

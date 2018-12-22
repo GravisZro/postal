@@ -562,8 +562,6 @@ class CDude : public CCharacter
 		CSprite2		m_TargetSprite;					// Targeting sprite to show what he is aiming
 																// at.
 
-		uint16_t			m_killer;						// Instance ID of our killer.
-
 		uint8_t				m_u8LastEvent;						// Last anim event.
 
       managed_ptr<CThing> m_victim;							// Instance ID of victim to be executed or
@@ -701,12 +699,12 @@ class CDude : public CCharacter
 		// This should be done when the character releases the weapon it's
 		// shooting.
 		virtual			// Overriden here.
-      managed_ptr<CWeapon> ShootWeapon(				// Returns the weapon ptr or nullptr.
-			CSmash::Bits bitsInclude,
-			CSmash::Bits bitsDontcare,
-			CSmash::Bits bitsExclude);
+      void ShootWeapon(				// Returns the weapon ptr or nullptr.
+         CSmash::Bits bitsInclude,
+         CSmash::Bits bitsDontcare,
+         CSmash::Bits bitsExclude);
 
-      managed_ptr<CWeapon> ShootWeapon(void);		// Returns the weapoin ptr or nullptr.
+      void ShootWeapon(void);		// Returns the weapoin ptr or nullptr.
 
 		// Determine if the dude is dead.
       bool IsDead(void)	const // Returns true, if dead; false otherwise.
@@ -861,7 +859,7 @@ class CDude : public CCharacter
 
 		// Take a powerup.
 		void TakePowerUp(					// Returns nothing.
-         managed_ptr<CPowerUp> pppowerup);		// In:  Power up to take from.
+         managed_ptr<CPowerUp>& pppowerup);		// In:  Power up to take from.
 												// Out: Ptr to powerup, if it persisted; nullptr otherwise.
 
 		// Break a powerup open and toss it.

@@ -292,7 +292,7 @@ void CFirebomb::Update(void)
 
 		if (m_eState == State_Deleted)
 			{
-			delete this;
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -312,7 +312,7 @@ void CFirebomb::Update(void)
 				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 				if (m_dY < sHeight)
 				{
-					delete this;
+              realm()->RemoveThing(this);
 					return;
 				}
 				m_eState = State_Go;
@@ -332,7 +332,7 @@ void CFirebomb::Update(void)
 				dNewY = m_dY;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 				// Check the height to see if it hit the ground
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
@@ -401,10 +401,8 @@ void CFirebomb::Update(void)
 					}
 				}
 
-				delete this;
-				return;
-
-				break;
+            realm()->RemoveThing(this);
+            return;
 		}
 
 		// Save height for next time
@@ -732,7 +730,7 @@ void CFirefrag::Update(void)
 				dNewY = m_dY;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 				// Check the height to see if it hit the ground
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
@@ -769,11 +767,11 @@ void CFirefrag::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Explode:
 
-          managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
-            if (pFire)
+          m_fire = realm()->AddThing<CFire>();
+            if (m_fire)
 				{
-					pFire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
-               pFire->m_shooter = m_shooter;
+               m_fire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
+               m_fire->m_shooter = m_shooter;
 //							PlaySample(g_smidGrenadeExplode);
 				}
 
@@ -788,28 +786,25 @@ void CFirefrag::Update(void)
 					m_eState = CWeapon::State_Go;
 				}
 				else
-				{
-					realm()->m_idbank.GetThingByID((CThing**) &m_pFire, m_u16FireID);
-					if (m_pFire)
+            {
+               if (m_fire)
 					{
 						GameMessage msg;
 						msg.msg_ObjectDelete.eType = typeObjectDelete;
 						msg.msg_ObjectDelete.sPriority = 0;
-                  SendThingMessage(msg, m_pFire);
+                  SendThingMessage(msg, m_fire);
 					}
-					delete this;
+               realm()->RemoveThing(this);
 					return;
 				}
-
 				break;
 		}
 
-		realm()->m_idbank.GetThingByID((CThing**) &m_pFire, m_u16FireID);
-		if (m_pFire)
+      if (m_fire)
 		{
-			m_pFire->m_dX = m_dX;
-			m_pFire->m_dY = m_dY;
-			m_pFire->m_dZ = m_dZ;
+         m_fire->m_dX = m_dX;
+         m_fire->m_dY = m_dY;
+         m_fire->m_dZ = m_dZ;
 		}
 
 		// Save height for next time
@@ -877,11 +872,11 @@ int16_t CFirefrag::Setup(									// Returns 0 if successfull, non-zero otherwis
 	// Load resources
 //	sResult = GetResources();
 
-   m_pFire = realm()->AddThing<CFire>();
-   if (m_pFire)
+   m_fire = realm()->AddThing<CFire>();
+   if (m_fire)
 	{
-		m_pFire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
-      m_pFire->m_shooter = m_shooter;
+      m_fire->Setup(m_dX, m_dY, m_dZ, SECONDARY_BURN_TIME, true, CFire::SmallFire);
+      m_fire->m_shooter = m_shooter;
 	}
 
 

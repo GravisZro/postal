@@ -289,9 +289,7 @@ void CNapalm::Update(void)
 		ProcessMessages();
 		if (m_eState == State_Deleted)
 			{
-			delete this;
-			// Must return now, now to avoid accessing through deallocated 
-			// 'this'.
+        realm()->RemoveThing(this);
 			return;
 			}
 
@@ -308,7 +306,7 @@ void CNapalm::Update(void)
 				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 				if (m_dY < sHeight)
 				{
-					delete this;
+              realm()->RemoveThing(this);
 					return;
 				}
 				m_eState = State_Go;
@@ -333,7 +331,7 @@ void CNapalm::Update(void)
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 
 				// Check the height to see if it hit the ground
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
@@ -421,7 +419,7 @@ void CNapalm::Update(void)
 				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
 				// Check for obstacles
-				sHeight = realm()->GetHeight((int16_t) dNewX, (int16_t) dNewZ);
+				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 				// If it hit any obstacles, make it bounce off
 				if (sHeight > m_dY)
 				{
@@ -455,10 +453,8 @@ void CNapalm::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Explode:
 
-				delete this;
-				return;
-
-				break;
+          realm()->RemoveThing(this);
+            return;
 		}
 
 		// Save time for next time

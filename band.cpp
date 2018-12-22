@@ -440,7 +440,7 @@ int16_t CBand::Save(										// Returns 0 if successfull, non-zero otherwise
 
 	// Save band member specific data
    pFile->Write(&m_ucDestBouyID);
-   uint16_t child_id = child() ? child()->GetInstanceID() : 0;
+   uint16_t child_id = child() ? child()->GetInstanceID() : UINT16_MAX;
    pFile->Write(child_id);
    pFile->Write(reinterpret_cast<uint8_t*>(&m_eWeaponType));
 	pFile->Write(&m_ucNextBouyID);
@@ -517,7 +517,7 @@ int16_t CBand::Startup(void)								// Returns 0 if successfull, non-zero otherw
 // If not a violent locale . . . 
 #if !VIOLENT_LOCALE
 	// We must kill band members in these countries b/c of their lack of tolerance.
-	delete this;
+  realm()->RemoveThing(this);
 	return SUCCESS;
 #else
 
@@ -999,10 +999,8 @@ void CBand::Update(void)
             if (!list.empty())
                SendThingMessage(msg, list.front());
 				OnDead();
-				delete this;
-				return;
-
-				break;
+            realm()->RemoveThing(this);
+            return;
 		}
 
 		m_smash.m_sphere.sphere.X			= m_dX;
@@ -1100,7 +1098,6 @@ int16_t CBand::EditModify(void)
 			CItem3d::ItemType	itChild	= CItem3d::None;
 			// If there's currently a child . . .
 
-         managed_ptr<CItem3d> pitem;
          if (child())
             itChild	= managed_ptr<CItem3d>(child())->m_itemType;
 
@@ -1161,7 +1158,7 @@ int16_t CBand::EditModify(void)
                         child(),
                         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 							// Be gone.
-                     resetChild();
+                     realm()->RemoveThing(child());
 							}
 						}
 
@@ -1289,12 +1286,9 @@ void CBand::ProcessMessages(void)
      GameMessage& msg = m_MessageQueue.front();
 		ProcessMessage(&msg);
 
-		switch(msg.msg_Generic.eType)
-		{
-			case typePanic:
-				OnPanicMsg(&(msg.msg_Panic));
-            break;
-		}
+      if(msg.msg_Generic.eType == typePanic)
+        OnPanicMsg(&(msg.msg_Panic));
+
       m_MessageQueue.pop_front();
 	}
 }
@@ -1551,7 +1545,6 @@ void CBand::OnPanicMsg(Panic_Message* pMessage)
 
 void CBand::AlertBand(void)
 {
-   managed_ptr<CThing> pThing;
 	GameMessage msg;
 #ifdef UNUSED_VARIABLES
 	GameMessage msgStopSound;

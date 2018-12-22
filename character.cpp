@@ -492,16 +492,16 @@ int16_t CCharacter::Save(									// Returns 0 if successfull, non-zero otherwis
 ////////////////////////////////////////////////////////////////////////////////
 void CCharacter::Update(void)										// Returns nothing.
    {
-      if (child())
+      if (m_weapon)
 			{
          RTransform&	transWeapon	= m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 			// Position weapon.
 			PositionChild(
-            child3d()->GetSprite(),	// In:  Child sprite to position.
+            m_weapon->GetSprite(),	// In:  Child sprite to position.
             &transWeapon,				// In:  Transform specifying position.
-            &(child3d()->m_dX),			// Out: New position of child.
-            &(child3d()->m_dY),			// Out: New position of child.
-            &(child3d()->m_dZ) );		// Out: New position of child.
+            &(m_weapon->m_dX),			// Out: New position of child.
+            &(m_weapon->m_dY),			// Out: New position of child.
+            &(m_weapon->m_dZ) );		// Out: New position of child.
          }
 
 	// If we have a weapon sound play instance . . .
@@ -654,8 +654,8 @@ bool CCharacter::WhileHoldingWeapon(	// Returns true when weapon is released.
 	// Check for show point in animation . . .
 	if (u8Event > 0)
       {
-      if (child())
-			{
+      if (weapon())
+         {
 			// If hidden . . .
          if (weapon()->m_eState == CWeapon::State_Hide)
 				{
@@ -700,7 +700,7 @@ void CCharacter::OnDead(void)
       realm()->Hood());							// Dst clip rect.
 	
 	// If we just rendered a child weapon into the background . . .
-   if (child())
+   if (m_weapon)
 		{
 		// It has a permanent place in the background and, therefore, is no
 		// longer needed.
@@ -711,7 +711,7 @@ void CCharacter::OnDead(void)
 		GameMessage msg;
 		msg.msg_ObjectDelete.eType = typeObjectDelete;
 		msg.msg_ObjectDelete.sPriority = 0;
-      SendThingMessage(msg, child());
+      SendThingMessage(msg, m_weapon);
 		}
 
 	// Register death with the score module
@@ -945,7 +945,7 @@ void CCharacter::MakeBloody(
 	for (i = 0; i < sNumChunks; i++)
 		{
 		// Create blood particles . . .
-     managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
+     managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
 		// Note that this will fail if particles are disabled.
       if (pchunk)
 			{
@@ -1076,27 +1076,39 @@ void CCharacter::BloodToBackground(
 // This should be done when the character starts its shoot animation.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-managed_ptr<CWeapon> CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
+void CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
 	{
-   m_child = realm()->AddThing<CWeapon>();
-   if (child())
+  switch (m_eWeaponType)
+     {
+        case CPistolID:
+        case CMachineGunID:
+        case CShotGunID:
+        case CAssaultWeaponID:
+        case CDoubleBarrelID:
+        case CUziID:
+        case CAutoRifleID:
+        case CSmallPistolID:
+           break;
+    default:
+      // specialized weapons
+   m_weapon = realm()->AddThing<CWeapon>(m_eWeaponType);
+   if (m_weapon)
         {
         // Set its parent.
-        child()->setParent(this);
+        m_weapon->setParent(this);
         // Set it up.
-        weapon()->Setup(0, 0, 0);
-        weapon()->m_dRot = m_dRot;
+        m_weapon->Setup(0, 0, 0);
+        m_weapon->m_dRot = m_dRot;
         // Set its initial state to hidden.
-        weapon()->m_eState = CWeapon::State_Hide;
+        m_weapon->m_eState = CWeapon::State_Hide;
         // Let the scene know to render the weapon as a child of this.
-        m_sprite.AddChild(weapon()->GetSprite() );
+        m_sprite.AddChild(m_weapon->GetSprite() );
         }
     else
         {
         TRACE("PrepareWeapon(): Failed to construct new thing.\n");
         }
-
-   return child();
+  }
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1105,12 +1117,11 @@ managed_ptr<CWeapon> CCharacter::PrepareWeapon(void)	// Returns the weapon ptr o
 // shooting.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
-managed_ptr<CWeapon> CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
+void CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 	CSmash::Bits bitsInclude,			// Bits to use for bullet collision (enemies can specify different bits)
 	CSmash::Bits bitsDontcare,			// Bits to use for bullet colllsion
 	CSmash::Bits bitsExclude)			// Bits to use for bullet collision
-	{
-   managed_ptr<CWeapon> pweapon = child();
+   {
 	// Detatch the weapon.
 	ASSERT(m_panimCur != nullptr);
 	
@@ -1174,31 +1185,31 @@ managed_ptr<CWeapon> CCharacter::ShootWeapon(	// Returns the weapon ptr or nullp
 
 		default:
 			{
-         ASSERT(child());
+         ASSERT(m_weapon);
 
-         if (child())
+         if (m_weapon)
 				{
 				// Set weapon position to character's position offset by rigid body's realm offset.
-            weapon()->m_dX = m_dX + pt3WeaponRel.x();
-            weapon()->m_dY = m_dY + pt3WeaponRel.y();
-            weapon()->m_dZ = m_dZ + pt3WeaponRel.z();
+            m_weapon->m_dX = m_dX + pt3WeaponRel.x();
+            m_weapon->m_dY = m_dY + pt3WeaponRel.y();
+            m_weapon->m_dZ = m_dZ + pt3WeaponRel.z();
 				// I guess we usually want to launch in the direction we are _currently_ facing and
 				// not the direction we were in when we prepared the weapon.
-            weapon()->m_dRot	= m_dRot;
+            m_weapon->m_dRot	= m_dRot;
 
 				// Set the collision bits for the weapon
-            weapon()->SetCollideBits(bitsInclude, bitsDontcare, bitsExclude);
+            m_weapon->SetCollideBits(bitsInclude, bitsDontcare, bitsExclude);
 
 				// Set Instance ID of the shooter
-            weapon()->m_shooter = this;
+            m_weapon->m_shooter = this;
 
 				// Set the weapon in motion by changing its state.
-            weapon()->m_eState = CWeapon::State_Fire;
+            m_weapon->m_eState = CWeapon::State_Fire;
 				
 				// Detach parent pointer
-            child()->resetParent();
+            m_weapon->parent().reset();
 				// Detatch weapon's sprite
-            CSprite*	pspriteWeapon	= weapon()->GetSprite();
+            CSprite*	pspriteWeapon	= m_weapon->GetSprite();
 				if (pspriteWeapon)
 					{
 					// Some weapons (one weapon, the flamer) are never parented.
@@ -1209,10 +1220,10 @@ managed_ptr<CWeapon> CCharacter::ShootWeapon(	// Returns the weapon ptr or nullp
 					}
 				
 				// Specific behavior by type.
-            switch (child()->type())
+            switch (m_weapon->type())
 					{
 					case CDeathWadID:
-                  managed_ptr<CDeathWad> pdw = child();
+                  managed_ptr<CDeathWad> pdw = m_weapon;
 
 						// Let it take what it needs.
 						pdw->FeedWad(&m_stockpile);
@@ -1225,9 +1236,7 @@ managed_ptr<CWeapon> CCharacter::ShootWeapon(	// Returns the weapon ptr or nullp
 	}
 
 	// No longer exists.
-   resetChild();
-
-	return pweapon;
+   m_weapon.reset();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1239,9 +1248,9 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 																// it is not in a valid position.                 
 
 	{
-	bool	bValid	= true;	// Assume valid.
+   bool	bValid	= true;	// Assume valid.
 
-   if (weapon())
+   if (m_weapon)
 		{
 		switch (m_eWeaponType)
 			{
@@ -1251,10 +1260,8 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 			case CRocketID:
 			case CHeatseekerID:
             {
-            if (weapon())
-					{
 					// If this weapon is not hidden . . .
-               if (weapon()->m_eState != CWeapon::State_Hide)
+               if (m_weapon->m_eState != CWeapon::State_Hide)
 						{
                   RTransform&	transWeapon = m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 
@@ -1271,23 +1278,17 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 							GameMessage	msg;
 							msg.msg_ObjectDelete.eType		= typeObjectDelete;
 							msg.msg_ObjectDelete.sPriority	= 0;
-                     SendThingMessage(msg, weapon());
+                     SendThingMessage(msg, m_weapon);
 
 							// Clear our instance ID.
-                     weapon().reset();
+                     m_weapon.reset();
 
 							// Call the notify function.
 							OnWeaponDestroyed();
 
 							bValid	= false;
 							}
-						}
-					}
-				else
-					{
-					// Clear our instance ID.
-               weapon().reset();
-					}
+                  }
 				break;
 				}
 			default:
@@ -1450,7 +1451,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 
 	// Create shells/casings . . .
 
-   managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>();
+   managed_ptr<CChunk> pchunk = realm()->AddThing<CChunk>(CChunkID);
 	// Note that this will fail if particles are disabled.
    if (pchunk)
 		{
