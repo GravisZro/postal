@@ -100,9 +100,11 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "SoundThing.h"
+#include "SampleMaster.h"
+
 #include "game.h"
+#include "realm.h"
 
 // This class has its own GetRandom() to keep it from de-synching the game.
 #ifdef GetRandom
@@ -280,12 +282,10 @@ int16_t CSoundThing::Save(										// Returns 0 if successfull, non-zero otherw
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CSoundThing::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CSoundThing::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 	{
 	// Set the collective volume to zero to start.
 	m_lCollectiveVolume	= 0;
-
-   return SUCCESS;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -454,19 +454,6 @@ void CSoundThing::Update(void)
 
 			// Set time way into the future so we don't bother for a while.
 			m_lStopLoopingTime	= END_OF_TIME;
-			}
-
-		// Process messages.
-		ProcessMessages();
-
-		switch (m_state)
-			{
-			case State_Happy:
-				break;
-			case State_Delete:
-				// Banzai!
-            realm()->RemoveThing(this);
-				return ;
 			}
 		}
 	}
@@ -946,24 +933,6 @@ int16_t CSoundThing::Kill(void)							// Returns 0 if successfull, non-zero othe
    return SUCCESS;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Process our message queue.
-////////////////////////////////////////////////////////////////////////////////
-void CSoundThing::ProcessMessages(void)
-	{
-  while (!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-		switch(msg.msg_Generic.eType)
-			{
-			case typeObjectDelete:
-				m_state	= State_Delete;
-				break;
-			}
-      m_MessageQueue.pop_front();
-		}
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Don't call this from outside of CSoundThing.  It should affect only

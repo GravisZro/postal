@@ -69,7 +69,8 @@
 #define WEAPON_H
 
 #include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
+
 
 class CThing3d;
 
@@ -101,8 +102,7 @@ class CWeapon : public CThing
 		State_Slide,
 		State_Hide,
 		State_Chase,
-		State_Find,
-		State_Deleted,
+      State_Find,
 		State_Armed,
 		State_RemoteControl
 	};
@@ -136,45 +136,9 @@ class CWeapon : public CThing
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
 
-	public:
-		// "Constant" values that we want to be able to tune using the editor
-
- 	//---------------------------------------------------------------------------
-	// Constructor(s) / destructor
-	//---------------------------------------------------------------------------
    public:
-      CWeapon(void)
-			{
-			m_sSuspend = 0;
-			m_dX = m_dY = m_dZ = m_dRot = m_dVertVel = m_dHorizVel = 0.0;
-         m_eState = State_Idle;
-			m_spriteShadow.m_sInFlags = CSprite::InHidden;
-         m_spriteShadow.m_pImage = nullptr;
-//			m_spriteShadow.m_pthing = this;
-			m_lPrevTime = 0;  // valgrind fix.  --ryan.
-			}
-
-      ~CWeapon(void)
-			{
-				// Remove sprite from scene (this is safe even if it was already removed!)
-				realm()->Scene()->RemoveSprite(&m_spriteShadow);
-				// Release the shadow resource
-				if (m_spriteShadow.m_pImage)
-					rspReleaseResource(&g_resmgrGame, &(m_spriteShadow.m_pImage));
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-        UNUSED(pRealm, ppNew);
-         return SUCCESS;
-			}
+      CWeapon(void);
+      ~CWeapon(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -199,7 +163,7 @@ class CWeapon : public CThing
 			int16_t sZ);												// In: Starting Z position
 
 		// Startup object
-		virtual int16_t Startup(void);							// Returns 0 if successfull, non-zero otherwise
+      virtual void Startup(void);							// Returns 0 if successfull, non-zero otherwise
 
 
 		// Suspend object
@@ -207,9 +171,6 @@ class CWeapon : public CThing
 
 		// Resume object
 		virtual void Resume(void);
-
-		// Update object
-		virtual void Update(void);
 
 		// Render object
 		virtual void Render(void);
@@ -336,12 +297,6 @@ class CWeapon : public CThing
 							// Call base class to get default functionality.
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
-
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 		// Handles Trigger_Message
 		virtual			// Overrride to implement additional functionality

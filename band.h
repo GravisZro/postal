@@ -55,7 +55,6 @@
 #ifndef BAND_H
 #define BAND_H
 
-#include <RSPiX.h>
 #include "doofus.h"
 
 // CBand is a class of marching band members for the parade
@@ -99,30 +98,8 @@ class CBand : public CDoofus
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-
-      CBand(void)
-			{
-			m_ucNextBouyID = 1;
-         m_ucDestBouyID = 1;
-			m_bCivilian = true;
-         }
-
-      ~CBand(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-         realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-
-			// If sample playing . . .
-			if (ms_siBandSongInstance != 0)
-				{
-				AbortSample(ms_siBandSongInstance);
-				ms_siBandSongInstance	= 0;
-				}
-			}
+      CBand(void);
+      ~CBand(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -141,7 +118,7 @@ class CBand : public CDoofus
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Update object
 		void Update(void);

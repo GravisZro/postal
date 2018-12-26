@@ -129,10 +129,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "explode.h"
+
+#include "realm.h"
 #include "dude.h"
 #include "game.h"
 #include "reality.h"
@@ -142,7 +141,7 @@
 // Macros/types/etc.
 ////////////////////////////////////////////////////////////////////////////////
 
-//#define IMAGE_FILE			"res\\explode.bmp"
+//#define IMAGE_FILE			"res/explode.bmp"
 //#define ANIM_FILE				"2d/explode.anm"
 //#define ALPHA_FILE			"2d/explode_a.anm"
 
@@ -164,6 +163,23 @@ int16_t CExplode::ms_sBlastRadius = 30;
 int16_t CExplode::ms_sProjectVelocity = 180;
 
 
+
+
+CExplode::CExplode(void)
+{
+  m_sSuspend = 0;
+}
+
+CExplode::~CExplode(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,23 +197,7 @@ int16_t CExplode::Load(									// Returns 0 if successfull, non-zero otherwise
 		if (ms_sFileCount != sFileCount)
 		{
 			ms_sFileCount = sFileCount;
-
-			// Load static data
-			switch (ulFileVersion)
-			{
-				default:
-				case 1:
-					break;
-			}
-		}
-
-		// Load instance data.
-		switch (ulFileVersion)
-		{
-			default:
-			case 1:
-				break;
-		}
+      }
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -246,15 +246,6 @@ int16_t CExplode::Save(										// Returns 0 if successfull, non-zero otherwise
 	return sResult;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Startup object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CExplode::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-{
-
-	return SUCCESS;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -308,7 +299,7 @@ void CExplode::Update(void)
 					pSmoke->Setup(m_dX - 4 + GetRandom() % 9, MAX(m_dY-20, 0.0), m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}
 
-         realm()->RemoveThing(this);
+         Object::enqueue(SelfDestruct);
 			return;
 		}
 	}

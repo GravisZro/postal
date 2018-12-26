@@ -263,10 +263,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>				 
-#include <cmath>
-
 #include "person.h"
+
+#include "realm.h"
+#include "dude.h"
 #include "TexEdit.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,9 +302,8 @@ int16_t CPerson::ms_sLogTabUserGlobal = 0;		// Logic table variable for group ef
 // Let this auto-init to 0
 int16_t CPerson::ms_sFileCount;
 
-// This is the one CPerson that can log its AI table transitions or
-// CIdBank::IdNil.
-uint16_t	CPerson::ms_u16IdLogAI	= CIdBank::IdNil;
+// This is the one CPerson that can log its AI table transitions or invalid_id
+uint16_t	CPerson::ms_u16IdLogAI = invalid_id;
 
 // The max amount a guy and step up while writhing.
 #define WRITHING_VERTICAL_TOLERANCE		(MaxStepUpThreshold / 2)
@@ -314,6 +313,31 @@ uint16_t	CPerson::ms_u16IdLogAI	= CIdBank::IdNil;
 //#if defined(__ANDROID__)
 extern bool demoCompat; 
 //#endif
+
+CPerson::CPerson(void)
+{
+  m_sSuspend = 0;
+  m_dRot = 0;
+  m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
+  m_ePersonType = Personatorium::Grenader;
+  m_eWeaponType = CGrenadeID;
+  m_panimCur = m_panimPrev = nullptr;
+  //			m_sprite.m_pthing	= this;
+  m_rstrLogicFile = "res/logics/default.lgk";
+  m_sShowState		= FALSE;
+  m_sUserState1 = 0; // Uninitialized
+  m_bHitComment = false;
+}
+
+CPerson::~CPerson(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -452,17 +476,13 @@ int16_t CPerson::Save(				// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CPerson::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CPerson::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
 	// Set the current height, previous time, and Nav Net
 	CDoofus::Startup();
 
 	// Init other stuff
 	Init();
-
-	return sResult;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -689,8 +709,8 @@ void CPerson::Update(void)
             auto list = realm()->GetThingsByType(CDemonID);
             if (!list.empty())
                SendThingMessage(msg, list.front());
-				CDoofus::OnDead();
-            realm()->RemoveThing(this);
+            CDoofus::OnDead();
+            Object::enqueue(SelfDestruct);
             return;
         }
 
@@ -741,10 +761,6 @@ void CPerson::Update(void)
 				break;
 
 			default:
-#ifdef HACKED_TO_RUN
-          break;
-#endif
-
 				// If it ever gets to this case, then it has entered an unknown
 				// state which may perhaps be out of range.  Please note the
 				// value of the state to check to see if it is in the valid range
@@ -1195,7 +1211,7 @@ int16_t CPerson::EditModify(void)
 						if (ms_u16IdLogAI == GetInstanceID() )
 						{
 							// No one is logging.
-							ms_u16IdLogAI	= CIdBank::IdNil;
+                     ms_u16IdLogAI = invalid_id;
 						}
 					}
 
@@ -1242,6 +1258,13 @@ void CPerson::EditUpdate(void)
 {
 }
 #endif // !defined(EDITOR_REMOVED)
+
+
+void CPerson::ResetLogAI(void)
+{
+  // Reset AI logging feature.
+  ms_u16IdLogAI = invalid_id;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get all required resources

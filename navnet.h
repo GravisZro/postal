@@ -38,11 +38,13 @@
 #ifndef NAVIGATIONNET_H
 #define NAVIGATIONNET_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "bouy.h"
 #include <map>
 
+#include "thing.h"
+
+#include "bouy.h" // remove when TreeListNode is no longer used
+
+class CBouy;
 // CNavigationNet is the class for navigation
 class CNavigationNet : public CThing
    {
@@ -76,36 +78,8 @@ class CNavigationNet : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CNavigationNet(void)
-			{
-			m_pImage = 0;
-			m_sSuspend = 0;
-			m_ucNextID = 1;
-			// Set yourself to be the new current Nav Net in the realm
-         //pRealm->m_pCurrentNavNet = this; // TODO: REPLACE
-			// Set default name as NavNetxx where xx is CThing ID
-			m_rstrNetName = "Untitled NavNet";
-			// Initialize the dummy nodes for the sorted tree/list
-			m_BouyTreeListHead.m_powner = nullptr;
-			m_BouyTreeListHead.m_pnPrev = nullptr;
-			m_BouyTreeListHead.m_pnRight = nullptr;
-			m_BouyTreeListHead.m_pnLeft = nullptr;
-			m_BouyTreeListHead.m_pnNext = &m_BouyTreeListTail;
-			m_BouyTreeListTail.m_powner = nullptr;
-			m_BouyTreeListTail.m_pnPrev = &m_BouyTreeListHead;
-			m_BouyTreeListTail.m_pnNext = nullptr;
-			m_BouyTreeListTail.m_pnRight = nullptr;
-			m_BouyTreeListTail.m_pnLeft = nullptr;
-			}
-
-      ~CNavigationNet(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
+      CNavigationNet(void);
+      ~CNavigationNet(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -124,7 +98,7 @@ class CNavigationNet : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -210,14 +184,7 @@ class CNavigationNet : public CThing
 			{ return m_ucNextID;}
 
 		// Set this NavNet as the default one for the Realm.  
-		int16_t SetAsDefault(void)
-         {  int16_t sResult = SUCCESS;
-            if (realm())
-               realm()->setNavNet(this);
-				else
-               sResult = FAILURE;
-            return sResult;
-			}
+      int16_t SetAsDefault(void);
 
 		// Delete all bouys from this network.
 		int16_t DeleteNetwork(void);

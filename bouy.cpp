@@ -157,11 +157,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "bouy.h"
+
 #include "navnet.h"
+#include "realm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -182,6 +181,26 @@
 int16_t CBouy::ms_sFileCount;
 bool  CBouy::ms_bShowBouys = true;
 
+
+CBouy::CBouy(void)
+{
+  m_pImage = 0;
+  m_sSuspend = 0;
+  m_paucRouteTable = nullptr;
+  m_sRouteTableSize = 0;
+}
+
+CBouy::~CBouy(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  if (m_paucRouteTable != nullptr)
+    free(m_paucRouteTable);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -335,10 +354,8 @@ int16_t CBouy::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-   int16_t sResult = SUCCESS;
-
 	// At this point we can assume the CHood was loaded, so we init our height
    m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 
@@ -352,11 +369,7 @@ int16_t CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	
 		// Only in edit mode . . .
       if (realm()->m_flags.bEditing == true)
-		{
-			sResult = GetResources();
-      }
-
-	return sResult;
+         GetResources();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,14 +391,6 @@ void CBouy::Resume(void)
 	// If we're actually going to start updating again, we need to reset
 	// the time so as to ignore any time that passed while we were suspended.
 	// This method is far from precise, but I'm hoping it's good enough.
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Update object
-////////////////////////////////////////////////////////////////////////////////
-void CBouy::Update(void)
-{
 }
 
 
@@ -459,14 +464,6 @@ int16_t CBouy::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	m_dZ = (double)sZ;
 
 	return SUCCESS;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Called by editor to update object
-////////////////////////////////////////////////////////////////////////////////
-void CBouy::EditUpdate(void)
-{
 }
 
 

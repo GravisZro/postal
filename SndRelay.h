@@ -32,9 +32,7 @@
 #ifndef SNDRELAY_H
 #define SNDRELAY_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "SampleMaster.h"
+#include "thing.h"
 
 class CSndRelay : public CThing
 	{
@@ -45,8 +43,7 @@ class CSndRelay : public CThing
 
 		typedef enum
 			{
-			State_Happy,		// La, la, la.
-			State_Delete		// Delete self next chance.
+         State_Happy,		// La, la, la.
 			} State;
 
 	//---------------------------------------------------------------------------
@@ -106,9 +103,6 @@ class CSndRelay : public CThing
 			RFile* pFile,											// In:  File to save to
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
-		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
 		// Suspend object
 		void Suspend(void);
 
@@ -164,13 +158,13 @@ class CSndRelay : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-		double GetX(void)	{ return m_dX; }
+      double GetX(void)	const { return m_dX; }
 
 		virtual					// Overriden here.
-		double GetY(void)	{ return m_dY; }
+      double GetY(void)	const { return m_dY; }
 
 		virtual					// Overriden here.
-		double GetZ(void)	{ return m_dZ; }
+      double GetZ(void)	const { return m_dZ; }
 
 	//---------------------------------------------------------------------------
 	// Internal functions
@@ -181,9 +175,6 @@ class CSndRelay : public CThing
 		
 		// Kill object
 		int16_t Kill(void);											// Returns 0 if successfull, non-zero otherwise
-
-		// Process our message queue.
-		void ProcessMessages(void);
 
 	};
 

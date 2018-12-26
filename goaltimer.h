@@ -29,8 +29,7 @@
 #ifndef GOALTIMER_H
 #define GOALTIMER_H
 
-#include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
 
 // CGoalTimer keeps track of the time and goal for a challenge level
 class CGoalTimer : public CThing
@@ -66,23 +65,8 @@ class CGoalTimer : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CGoalTimer(void)
-		{
-			m_pImage = 0;
-			m_sSuspend = 0;
-			m_sUpDown = 1;
-			m_sKillGoal = 0;
-			m_lTimerMS = 120000;
-      }
-
-      ~CGoalTimer(void)
-		{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-		}
+      CGoalTimer(void);
+      ~CGoalTimer(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -101,7 +85,7 @@ class CGoalTimer : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

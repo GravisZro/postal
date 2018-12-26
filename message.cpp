@@ -21,7 +21,6 @@ int16_t GameMessage::Save(RFile* pFile)
     switch (msg_Generic.eType)
     {
       case typeGeneric:
-      case typeObjectDelete:
       case typeSafeSpot:
       case typeSuicide:
       case typeTrigger:
@@ -103,7 +102,6 @@ int16_t GameMessage::Load(RFile* pFile)
     switch (msg_Generic.eType)
     {
       case typeGeneric:
-      case typeObjectDelete:
       case typeSafeSpot:
       case typeSuicide:
       case typeTrigger:

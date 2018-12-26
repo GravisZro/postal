@@ -125,10 +125,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
+#include "mine.h"
+
 #include <cmath>
 
-#include "mine.h"
+#include "realm.h"
 #include "explode.h"
 #include "SampleMaster.h"
 #include "reality.h"
@@ -160,7 +161,23 @@ double CMine::ms_dInitialBounceVelocity = 80.0;
 // Let this auto-init to 0
 int16_t CMine::ms_sFileCount;
 
+CMine::CMine(void)
+{
+  Reset();
+}
 
+CMine::~CMine(void)
+{
+  // Stop sound, if any.
+  StopLoopingSample(m_siMineBeep);
+
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -275,9 +292,9 @@ int16_t CMine::Save(										// Returns 0 if successfull, non-zero otherwise
 // Startup
 ////////////////////////////////////////////////////////////////////////////////
 
-int16_t CMine::Startup(void)
+void CMine::Startup(void)
 {
-	return Init();
+   Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -414,13 +431,7 @@ void CMine::Update(void)
 		// Get new time
 		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
-		ProcessMessages();
-		if (m_eState == State_Deleted)
-			{
-        realm()->RemoveThing(this);
-			return;
-			}
-
+      ProcessMessages();
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
 
@@ -585,7 +596,7 @@ void CMine::Update(void)
 							}
 						}
 						// Get rid of the mine
-                  realm()->RemoveThing(this);
+                  Object::enqueue(SelfDestruct);
 						return;
 					}
 				}
@@ -611,7 +622,7 @@ void CMine::Update(void)
 							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 
-              realm()->RemoveThing(this);
+               Object::enqueue(SelfDestruct);
 					return;
 				}
 				break;
@@ -916,17 +927,6 @@ void CMine::OnTriggerMsg(Trigger_Message* pMessage)
    if (type() == CRemoteControlMineID)
 		m_eState = State_Explode;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-////////////////////////////////////////////////////////////////////////////////
-void CMine::OnDeleteMsg(					// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-  UNUSED(pdeletemsg);
-	// Go to deleted state.  Update() will delete us.
-	m_eState	= State_Deleted;
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

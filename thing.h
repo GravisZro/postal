@@ -261,81 +261,19 @@
 #include <ORANGE/Channel/channel.h>
 #include <deque>
 
-#include "game.h"
+#include <put/object.h>
+
+//#include "game.h"
 #include "message.h"
 #include "Anim3D.h"
 #include "SampleMaster.h"
 #include "sprites.h"
 #include "smash.h"
+#include <newpix/managedpointer.h>
 
 // Forward declaration of class to avoid recursive depency of include files
 class CRealm;
 class CSmash;
-
-// Template node class for linked lists
-template <class Owner>
-class CListNode
-	{
-	typedef CListNode Node;
-
-//	protected:
-	public:
-		CListNode()	{ }	// Do not use.
-
-	public:
-		CListNode(Owner* powner)
-			{ m_powner	= powner; }
-
-		// Note:  This function can only be used with a list that has
-		// dummy nodes for head and tail.
-		Owner* GetNext(void)
-			{ return m_pnNext->m_powner; }
-		// Note:  This function can only be used with a list that has
-		// dummy nodes for head and tail.
-		Owner* GetPrev(void)
-			{ return m_pnPrev->m_powner; }
-
-		// Note:  This function can only be used with a list that has
-		// dummy nodes for head and tail.
-		void InsertBefore(
-			Node* pn)	// In:  Node to insert before.
-			{
-			ASSERT(m_pnNext == nullptr && m_pnPrev == nullptr);
-			m_pnNext					= pn;
-			m_pnPrev					= pn->m_pnPrev;
-			m_pnPrev->m_pnNext	= this;
-			pn->m_pnPrev			= this;
-			}
-
-		// Note:  This function can only be used with a list that has
-		// dummy nodes for head and tail.
-		void AddAfter(
-			Node* pn)	// In:  Node to add after.
-			{
-			ASSERT(m_pnNext == nullptr && m_pnPrev == nullptr);
-			m_pnNext					= pn->m_pnNext;
-			m_pnPrev					= pn;
-			m_pnNext->m_pnPrev	= this;
-			pn->m_pnNext			= this;
-			}
-
-		// Note:  This function can only be used with a list that has
-		// dummy nodes for head and tail.
-		// Note:  Do not call, if already removed.
-		void Remove(void)
-			{
-			m_pnNext->m_pnPrev		= m_pnPrev;
-			m_pnPrev->m_pnNext		= m_pnNext;
-			m_pnNext						= nullptr;
-			m_pnPrev						= nullptr;
-			}
-
-	public:
-		Node*		m_pnNext;
-		Node*		m_pnPrev;
-		Owner*	m_powner;
-	};
-
 
 enum ClassIDType : uint8_t
 {
@@ -350,7 +288,7 @@ enum ClassIDType : uint8_t
   CGrenadeID,
   CBallID,
   CExplodeID,
-  CBouyID,
+  CBouyID = 10,
   CNavigationNetID,
   CGameEditThingID,
   CNapalmID,
@@ -360,7 +298,7 @@ enum ClassIDType : uint8_t
   CFirefragID,
   CAnimThingID,
   CSoundThingID,
-  CGunnerID, // unused
+  CGunnerID = 20, // unused
   CBandID,
   CItem3dID,
   CBarrelID,
@@ -370,7 +308,7 @@ enum ClassIDType : uint8_t
   CCopID, // unused
   CPistolID,
   CMachineGunID,
-  CShotGunID,
+  CShotGunID = 30,
   CPersonID,
   CTimedMineID,
   CBouncingBettyMineID,
@@ -380,7 +318,7 @@ enum ClassIDType : uint8_t
   COstrichID,
   CTriggerID,
   CHeatseekerID,
-  CChunkID,
+  CChunkID = 40,
   CAssaultWeaponID,
   CSentryID,
   CSentryGunID,
@@ -390,14 +328,14 @@ enum ClassIDType : uint8_t
   CGoalTimerID,
   CFlagID,
   CFlagbaseID,
-  CFirestreamID,
+  CFirestreamID = 50,
   CDeathWadID,
   CDoubleBarrelID,
   CUziID,
   CAutoRifleID,
   CSmallPistolID,
   CDynamiteID,
-  CSndRelayID,
+  CSndRelayID = 57,
 
   TotalIDs, // total number of ID's
   InvalidID = 0xFF,
@@ -406,7 +344,7 @@ enum ClassIDType : uint8_t
 // This abstract class is the root of all objects that are part of a CRealm.
 // Its primary purpose is to force all derived classes to supply a common set
 // of functions so all ojects can be accessed in a generic manner.
-class CThing
+class CThing : public Object
 	{
 	// Make CRealm a friend so it can access private stuff
 	friend class CRealm;
@@ -498,15 +436,8 @@ class CThing
 		// Unique ID specific to this instance of CThing (set in constructor,
       // released in destructor).
 		uint16_t			m_u16InstanceId;
-
-	//---------------------------------------------------------------------------
-	// Public member variables
-	//---------------------------------------------------------------------------
-	public:
-	
-//		CListNode<CThing>	m_everything;
-//		CListNode<CThing> m_nodeClass;
-
+public:
+  signal<> SelfDestruct;
 
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
@@ -624,10 +555,14 @@ protected:
 			}
 
 		// Startup object
-		virtual int16_t Startup(void)							// Returns 0 if successfull, non-zero otherwise
-			{
-         return SUCCESS;
+      virtual void Startup(void)							// Returns 0 if successfull, non-zero otherwise
+         {
 			}
+
+      // Shutdown object
+      virtual void Shutdown(void)							// Returns 0 if successfull, non-zero otherwise
+         {
+         }
 
 
 		// Suspend object

@@ -132,10 +132,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "napalm.h"
+
+#include "realm.h"
 #include "dude.h"
 #include "fire.h"
 #include "SampleMaster.h"
@@ -176,6 +175,20 @@ static const char* ms_apszResNames[] =
 	nullptr
 };
 
+
+CNapalm::CNapalm(void)
+{
+  //			m_sprite.m_pthing	= this;
+}
+
+CNapalm::~CNapalm(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -286,13 +299,7 @@ void CNapalm::Update(void)
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
 
-		ProcessMessages();
-		if (m_eState == State_Deleted)
-			{
-        realm()->RemoveThing(this);
-			return;
-			}
-
+      ProcessMessages();
 		// Check the current state
 		switch (m_eState)
 		{
@@ -306,7 +313,7 @@ void CNapalm::Update(void)
 				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 				if (m_dY < sHeight)
 				{
-              realm()->RemoveThing(this);
+               Object::enqueue(SelfDestruct);
 					return;
 				}
 				m_eState = State_Go;
@@ -452,8 +459,7 @@ void CNapalm::Update(void)
 // Explode
 //-----------------------------------------------------------------------
 			case CWeapon::State_Explode:
-
-          realm()->RemoveThing(this);
+            Object::enqueue(SelfDestruct);
             return;
 		}
 
@@ -622,21 +628,6 @@ int16_t CNapalm::Preload(
 	return sResult;	
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// ProcessMessages
-////////////////////////////////////////////////////////////////////////////////
-
-void CNapalm::ProcessMessages(void)
-{
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-      m_eState = State_Deleted;
-    m_MessageQueue.clear();
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

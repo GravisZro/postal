@@ -138,10 +138,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "navnet.h"
+
+#include "realm.h"
 #include "bouy.h"
 #include "gameedit.h"
 
@@ -163,6 +162,38 @@
 
 // Let this auto-init to 0
 int16_t CNavigationNet::ms_sFileCount;
+
+
+CNavigationNet::CNavigationNet(void)
+{
+  m_pImage = 0;
+  m_sSuspend = 0;
+  m_ucNextID = 1;
+  // Set yourself to be the new current Nav Net in the realm
+  //pRealm->m_pCurrentNavNet = this; // TODO: REPLACE
+  // Set default name as NavNetxx where xx is CThing ID
+  m_rstrNetName = "Untitled NavNet";
+  // Initialize the dummy nodes for the sorted tree/list
+  m_BouyTreeListHead.m_powner = nullptr;
+  m_BouyTreeListHead.m_pnPrev = nullptr;
+  m_BouyTreeListHead.m_pnRight = nullptr;
+  m_BouyTreeListHead.m_pnLeft = nullptr;
+  m_BouyTreeListHead.m_pnNext = &m_BouyTreeListTail;
+  m_BouyTreeListTail.m_powner = nullptr;
+  m_BouyTreeListTail.m_pnPrev = &m_BouyTreeListHead;
+  m_BouyTreeListTail.m_pnNext = nullptr;
+  m_BouyTreeListTail.m_pnRight = nullptr;
+  m_BouyTreeListTail.m_pnLeft = nullptr;
+}
+
+CNavigationNet::~CNavigationNet(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -267,24 +298,16 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CNavigationNet::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-	{
-   int16_t sResult = SUCCESS;
+void CNavigationNet::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+   {
 	// At this point we can assume the CHood was loaded, so we init our height
    m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 	// Set yourself to be the new current Nav Net
    realm()->setNavNet(this);
 
 	// Init other stuff
-	if (m_ucNextID <= m_ucNumSavedBouys)
-	{
-		m_sCallStartup = 1;
-      sResult = SUCCESS;
-	}
-	else
-		UpdateRoutingTables();
-
-   return sResult;
+   if (m_ucNextID > m_ucNumSavedBouys)
+      UpdateRoutingTables();
 	}
 
 
@@ -797,6 +820,16 @@ void CNavigationNet::PrintRoutingTables(void)
 
 
 }
+
+
+int16_t CNavigationNet::SetAsDefault(void)
+   {  int16_t sResult = SUCCESS;
+      if (realm())
+         realm()->setNavNet(this);
+      else
+         sResult = FAILURE;
+      return sResult;
+   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DeleteNetwork - Delte all bouys from this network

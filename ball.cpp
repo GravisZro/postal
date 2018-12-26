@@ -82,13 +82,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cstring>
-
 #include "ball.h"
+
 #include "hood.h"
 #include "game.h"
 #include "reality.h"
+#include "realm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -130,6 +129,23 @@ static const char*	ms_apszAnimNames[]	=
 								// beyond useful portion of array.
 	};
 
+CBall::CBall(void)
+{
+  m_sSuspend	= 0;
+  m_dDX			= 0;
+  m_dDY			= 0;
+  m_dDZ			= 0;
+  //			m_sprite.m_pthing	= this;
+}
+
+CBall::~CBall(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -239,10 +255,8 @@ int16_t CBall::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CBall::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;	// Assume success.
-
+void CBall::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+   {
 	// At this point we can assume the CHood was loaded, so we init our height
 	m_sPrevHeight = realm()->GetHeight(m_dX, m_dZ);
 
@@ -250,9 +264,7 @@ int16_t CBall::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	// Eventually, this should be set via the bounding sphere radius.
 	m_sCurRadius	= 64;
 
-	m_lPrevTime		= realm()->m_time.GetGameTime();
-
-	return sResult;
+   m_lPrevTime		= realm()->m_time.GetGameTime();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -407,7 +419,7 @@ int16_t CBall::EditNew(									// Returns 0 if successfull, non-zero otherwise
 
      m_trans.makeIdentity();
 			// Attempt to startup as if in a real play . . .
-         sResult	= Startup();
+          Startup();
 		}
 
 	return sResult;
@@ -486,7 +498,7 @@ int16_t CBall::EditModify(void)
                {
               m_trans.makeIdentity();
 						// Attempt to startup as if in a real play . . .
-                  sResult	= Startup();
+                  Startup();
 					}
 				}
 			else

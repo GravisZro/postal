@@ -69,7 +69,7 @@
 #define GRENADE_H
 
 #include <RSPiX.h>
-#include "realm.h"
+
 #include "weapon.h"
 
 
@@ -140,24 +140,8 @@ class CUnguidedMissile : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CUnguidedMissile(void)
-			{
-//         m_sprite.m_pthing	= this;
-			m_dAnimRotY			= 0.0;	
-			m_dAnimRotZ			= 0.0;	
-			m_dAnimRotVelY		= 0.0;
-			m_dAnimRotVelZ		= 0.0;
-			m_lNextSmokeTime	= 0;
-			}
-
-      ~CUnguidedMissile(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
+      CUnguidedMissile(void);
+      ~CUnguidedMissile(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -231,9 +215,6 @@ class CUnguidedMissile : public CWeapon
 		
 		// Free all resources
 		int16_t FreeResources(void);						// Returns 0 if successfull, non-zero otherwise
-
-		// Process Message queue
-		void ProcessMessages(void);
 	};
 
 

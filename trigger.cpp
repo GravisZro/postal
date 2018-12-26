@@ -218,9 +218,8 @@ int16_t CTrigger::Save(								// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CTrigger::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
+void CTrigger::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+   {
 	}
 
 

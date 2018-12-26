@@ -156,10 +156,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
 
 #include "grenade.h"
+
+#include <cmath>
+
+
+#include "realm.h"
 #include "dude.h"
 #include "explode.h"
 #include "fire.h"
@@ -220,6 +223,26 @@ double	CUnguidedMissile::ms_adBounceDimisher[NumStyles]	=
 
 // Let this auto-init to 0
 int16_t CUnguidedMissile::ms_sFileCount;
+
+
+CUnguidedMissile::CUnguidedMissile(void)
+{
+  //         m_sprite.m_pthing	= this;
+  m_dAnimRotY			= 0.0;
+  m_dAnimRotZ			= 0.0;
+  m_dAnimRotVelY		= 0.0;
+  m_dAnimRotVelZ		= 0.0;
+  m_lNextSmokeTime	= 0;
+}
+
+CUnguidedMissile::~CUnguidedMissile(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -327,13 +350,6 @@ void CUnguidedMissile::Update(void)
 		// Get new time
 		int32_t lThisTime = realm()->m_time.GetGameTime(); 
 
-		ProcessMessages();
-		if (m_eState == State_Deleted)
-			{
-        realm()->RemoveThing(this);
-			return;
-			}
-
 		// Calculate elapsed time in seconds
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
 
@@ -353,7 +369,7 @@ void CUnguidedMissile::Update(void)
 				// If it starts at an invalid position like inside a wall, kill it
 				if (m_dY < sHeight)
 				{
-              realm()->RemoveThing(this);
+                Object::enqueue(SelfDestruct);
 					return;
 				}
 				m_eState = State_Go;
@@ -553,7 +569,7 @@ void CUnguidedMissile::Update(void)
 						}
 					}
 
-               realm()->RemoveThing(this);
+               Object::enqueue(SelfDestruct);
 					return;
 				}
 				break;
@@ -736,20 +752,6 @@ int16_t CUnguidedMissile::Preload(
 	return sResult; 
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// ProcessMessages
-////////////////////////////////////////////////////////////////////////////////
-
-void CUnguidedMissile::ProcessMessages(void)
-{
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-      m_eState = State_Deleted;
-    m_MessageQueue.clear();
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Smoke, if correct time.

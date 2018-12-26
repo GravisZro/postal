@@ -119,12 +119,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "fireball.h"
-#include "game.h"
+
+#include "realm.h"
 #include "reality.h"
+#include "game.h"
+
 #include "Thing3d.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,6 +150,24 @@
 int16_t CFirestream::ms_sFileCount;
 int16_t CFirestream::ms_sOffset1 = 12;		// pixels from 1st to 2nd fireball
 int16_t CFirestream::ms_sOffset2 = 24;	// pixels from 1st to 3rd fireball
+
+
+
+CFirestream::CFirestream(void)
+{
+  m_sSuspend = 0;
+  m_lPrevTime = 0;
+  m_bSendMessages = true;
+  m_sTotalAlphaChannels = 0;
+
+  //			m_sprite.m_pthing = this;
+}
+
+CFirestream::~CFirestream(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -236,9 +254,9 @@ int16_t CFirestream::Save(										// Returns 0 if successfull, non-zero otherw
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CFirestream::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CFirestream::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	return Init();
+   Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -278,14 +296,6 @@ void CFirestream::Update(void)
 #ifdef UNUSED_VARIABLES
       lThisTime = realm()->m_time.GetGameTime();
 #endif
-
-		// See if we killed ourselves
-		if (ProcessFireballMessages() == State_Deleted)
-			{
-        realm()->RemoveThing(this);
-			return;
-			}
-
 		// Update the other fireballs
       if (m_fireball1)
 			{
@@ -331,7 +341,7 @@ void CFirestream::Update(void)
             m_fireball2->m_eState = CWeapon::State_Fire;
          if (m_fireball3)
             m_fireball3->m_eState = CWeapon::State_Fire;
-         realm()->RemoveThing(this);
+         Object::enqueue(SelfDestruct);
 		}
 	}
 }
@@ -409,19 +419,28 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 
       m_fireball1 = realm()->AddThing<CFireball>();
       if (m_fireball1)
+      {
          m_fireball1->Setup(m_dX, m_dY, m_dZ, sDir, lTimeToLive, shooter);
+         Object::connect(SelfDestruct, m_fireball1->SelfDestruct);
+      }
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;	// First interval
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;	
       m_fireball2 = realm()->AddThing<CFireball>();
       if (m_fireball2)
+      {
          m_fireball2->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
+         Object::connect(SelfDestruct, m_fireball2->SelfDestruct);
+      }
 
 		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
 		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
       m_fireball3 = realm()->AddThing<CFireball>();
       if (m_fireball3)
+      {
          m_fireball3->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
+         Object::connect(SelfDestruct, m_fireball3->SelfDestruct);
+      }
 
 		if (sResult == SUCCESS)
 			sResult = Init();
@@ -522,31 +541,6 @@ return SUCCESS;
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// ProcessFireballMessages
-////////////////////////////////////////////////////////////////////////////////
-
-CFirestream::CFirestreamState CFirestream::ProcessFireballMessages(void)
-{
-  CFirestreamState eNewState = State_Idle;
-
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-    {
-      SendThingMessage(msg, m_fireball1);
-      SendThingMessage(msg, m_fireball2);
-      SendThingMessage(msg, m_fireball3);
-      eNewState = State_Deleted;
-    }
-    m_MessageQueue.clear();
-  }
-  return eNewState;
-}
-
-
-
 ////////////////////////////////// Fireball ////////////////////////////////////
 
 
@@ -565,6 +559,36 @@ int16_t CFireball::ms_sFileCount;
 int16_t CFireball::ms_sSmallRadius = 8;
 int32_t  CFireball::ms_lCollisionTime = 250;			// Check for collisions this often
 double CFireball::ms_dFireVelocity = 300;
+
+
+CFireball::CFireball(void)
+{
+  m_sSuspend = 0;
+  m_lPrevTime = 0;
+  m_bSendMessages = true;
+  m_u32CollideIncludeBits = 0;
+  m_u32CollideDontcareBits = 0;
+  m_u32CollideExcludeBits = 0;
+  m_sTotalAlphaChannels = 0;
+  m_smash.m_bits = 0;
+  m_bMoving = true;
+  m_lAnimTime = 0;
+
+  //			m_sprite.m_pthing = this;
+}
+
+CFireball::~CFireball(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  // Remove yourself from the collision list if it was in use
+  // (switching to smoke removes it from the smashatorium and sets
+  // the m_pThing field to nullptr)
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -653,9 +677,9 @@ int16_t CFireball::Save(										// Returns 0 if successfull, non-zero otherwis
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CFireball::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CFireball::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	return Init();
+   Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -696,13 +720,6 @@ void CFireball::Update(void)
 	{
 		lThisTime = realm()->m_time.GetGameTime();
 		m_lAnimTime += lThisTime - m_lPrevTime;
-
-		// See if we killed ourselves
-		if (ProcessFireballMessages() == State_Deleted)
-			{
-        realm()->RemoveThing(this);
-			return;
-			}
 
 		switch (m_eState)
 		{
@@ -784,11 +801,10 @@ void CFireball::Update(void)
                            SendThingMessage(msg, pSmashed->m_pThing);
 						}
 					}
-
 				}
 				else
 				{
-              realm()->RemoveThing(this);
+              Object::enqueue(SelfDestruct);
 					return;
 				}
 				break;
@@ -1038,25 +1054,6 @@ int16_t CFireball::Preload(
 	return sResult;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// ProcessFireballMessages
-////////////////////////////////////////////////////////////////////////////////
-
-CFireball::CFireballState CFireball::ProcessFireballMessages(void)
-{
-  CFireballState eNewState = State_Idle;
-
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-      eNewState = State_Deleted;
-    m_MessageQueue.clear();
-  }
-
-  return eNewState;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

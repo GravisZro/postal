@@ -134,6 +134,9 @@
 // Postal headers.
 //////////////////////////////////////////////////////////////////////////////
 #include "bulletFest.h"
+
+#include "realm.h"
+#include "thing.h"
 #include "AnimThing.h"
 #include "SampleMaster.h"
 #include "reality.h"

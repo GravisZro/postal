@@ -36,7 +36,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "camera.h"
 
 
@@ -70,7 +69,7 @@ CCamera::~CCamera()
 // Set camera's scene
 ////////////////////////////////////////////////////////////////////////////////
 void CCamera::SetScene(
-   managed_ptr<CScene> pScene)										// In:  Scene to take picture of
+   CScene* pScene)										// In:  Scene to take picture of
 	{
 	// Save specified values
 	m_pScene = pScene;
@@ -202,7 +201,7 @@ void CCamera::Snap(void)
 void CCamera::Snap(
 	int16_t sViewW,											// In:  View's width
 	int16_t sViewH,											// In:  View's height
-   managed_ptr<CScene> pScene,										// In:  Scene to take picture of
+   CScene* pScene,										// In:  Scene to take picture of
    managed_ptr<CHood> phood,											// In:  Hood for this scene.
 	int16_t sSceneViewX,									// In:  View's upper left x (in scene coords)
 	int16_t sSceneViewY,									// In:  View's upper left y (in scene coords)

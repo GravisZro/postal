@@ -50,8 +50,6 @@
 #ifndef ANIMTHING_H
 #define ANIMTHING_H
 
-#include <RSPiX.h>
-#include "realm.h"
 #include "thing.h"
 
 #include "AlphaAnimType.h"
@@ -91,25 +89,8 @@ class CAnimThing : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CAnimThing(void)
-			{
-			m_paachannel		= nullptr;
-			m_sSuspend			= 0;
-			m_sLoop				= TRUE;
-			m_szResName[0]		= '\0';
-         m_msg.msg_Generic.sPriority	= 0;
-//			m_sprite.m_pthing	= this;
-			}
-
-      ~CAnimThing(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
-
+      CAnimThing(void);
+      ~CAnimThing(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -128,7 +109,7 @@ class CAnimThing : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

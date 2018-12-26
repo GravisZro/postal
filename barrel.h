@@ -47,13 +47,10 @@
 #ifndef BARREL_H
 #define BARREL_H
 
-#include <RSPiX.h>
 #include "Thing3d.h"
-#include "realm.h"
-#include "grenade.h"
-#include "firebomb.h"
-#include "doofus.h"
+
 #include "AlphaAnimType.h"
+#include "character.h"
 
 // CBarrel is an exploding barrel that can react to explosions, fire and shots
 class CBarrel : public CThing3d
@@ -100,27 +97,8 @@ class CBarrel : public CThing3d
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CBarrel(void)
-			{
-			m_sSuspend = 0;
-			m_dRot = 0;
-			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
-			m_sScreenRadius = 20;
-			m_panimCur = m_pPreviousAnim = nullptr;
-//			m_sprite.m_pthing	= this;
-			m_bSpecial = false;
-         }
-
-      ~CBarrel(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			realm()->Scene()->RemoveSprite(&m_spriteShadow);
-			realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CBarrel(void);
+      ~CBarrel(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -139,7 +117,7 @@ class CBarrel : public CThing3d
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -203,12 +181,6 @@ class CBarrel : public CThing3d
 							// Call base class to get default functionality.
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
-
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 };
 

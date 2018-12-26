@@ -36,8 +36,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "goaltimer.h"
+
+#include "realm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -57,6 +58,25 @@
 
 // Let this auto-init to 0
 int16_t CGoalTimer::ms_sFileCount;
+
+
+CGoalTimer::CGoalTimer(void)
+{
+  m_pImage = 0;
+  m_sSuspend = 0;
+  m_sUpDown = 1;
+  m_sKillGoal = 0;
+  m_lTimerMS = 120000;
+}
+
+CGoalTimer::~CGoalTimer(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -153,13 +173,10 @@ int16_t CGoalTimer::Save(										// Returns 0 if successfull, non-zero otherwi
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CGoalTimer::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CGoalTimer::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-   int16_t sResult = SUCCESS;
 	// At this point we can assume the CHood was loaded, so we init our height
 	m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
-
-   return sResult;
 }
 
 

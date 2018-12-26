@@ -192,12 +192,12 @@
 #ifndef DOOFUS_H
 #define DOOFUS_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "navnet.h"
-#include "bouy.h"
-#include "dude.h"
-#include "pylon.h"
+#include "character.h"
+
+class CNavigationNet;
+class CPylon;
+class CDude;
+class CBouy;
 
 // CDoofus is the class for the enemy guys
 class CDoofus : public CCharacter
@@ -435,7 +435,7 @@ class CDoofus : public CCharacter
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		virtual int16_t Startup(void);							// Returns 0 if successfull, non-zero otherwise
+      virtual void Startup(void);							// Returns 0 if successfull, non-zero otherwise
 
 #if !defined(EDITOR_REMOVED)
 		// Called by editor to init new object at specified position
@@ -684,12 +684,6 @@ class CDoofus : public CCharacter
 							// Call base class to get default functionality.
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
-
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 		// Handles a Help_Message
 		virtual			// Override to implement additional functionality

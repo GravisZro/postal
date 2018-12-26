@@ -204,12 +204,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "Thing3d.h"
+
 #include "reality.h"
 #include "fire.h"
+#include "realm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -370,7 +369,6 @@ const char* CThing3d::ms_apszStateNames[] =
   "State_RunShootRun",
   "State_RunShootWait",
   "State_RunShoot",
-  "State_Delete",
   "State_Writhing",
   "State_Execute",
   "State_PutDown",
@@ -405,6 +403,61 @@ const char* CThing3d::ms_apszStateNames[] =
   "Please Add State Description",
   "Please Add State Description",
 };
+
+
+
+CThing3d::CThing3d(void)
+{
+  // Must call Zero() to initialize the stockpile since it has
+  // no constructor.
+  m_stockpile.Zero();
+
+  m_state				= State_Idle;
+  m_panimCur			= nullptr;
+  m_dExtHorzVel		= 0.0;
+  m_dExtHorzRot		= 0.0;
+  m_dExtHorzDrag		= 0.0;
+  m_dExtVertVel		= 0.0;
+  m_dExtRotVelY		= 0.0;
+  m_dExtRotVelZ		= 0.0;
+  m_dVel				= 0.0;
+  m_dAcc				= 0.0;
+  m_dRot				= 0.0;
+  m_dRotZ				= 0.0;
+  m_dScaleX			= 1.0;
+  m_dScaleY			= 1.0;
+  m_dScaleZ			= 1.0;
+  m_dDrag				= 0.0;
+  //			m_sprite.m_pthing	= this;
+  m_sSuspend			= 0;
+  m_sBrightness		= 0;
+  m_bAboveTerrain	= false;
+  m_stockpile.m_sHitPoints	= DefHitPoints;
+  m_spriteShadow.m_sInFlags = CSprite::InHidden;
+  m_spriteShadow.m_pImage = nullptr;
+  //			m_spriteShadow.m_pthing = this;
+  m_lAnimTime = 0;
+  m_lTimer = 0;
+  m_sLayerOverride	= -1;
+
+  // Default to the standard.
+  m_pap2dAttribCheckPoints	= &ms_apt2dAttribCheckMedium;
+}
+
+
+CThing3d::~CThing3d(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_spriteShadow);
+  // Remove smash from smashatorium (this is safe even if it was already
+  // removed).
+  realm()->m_smashatorium.Remove(&m_smash);
+  // Free the shadow resource
+  if (m_spriteShadow.m_pImage)
+    rspReleaseResource(&g_resmgrGame, &(m_spriteShadow.m_pImage));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -519,7 +572,7 @@ int16_t CThing3d::Save(									// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CThing3d::Startup(void)						// Returns 0 if successfull, non-zero otherwise
+void CThing3d::Startup(void)						// Returns 0 if successfull, non-zero otherwise
 	{
 	// Init other stuff
 	m_lPrevTime = realm()->m_time.GetGameTime();
@@ -527,8 +580,6 @@ int16_t CThing3d::Startup(void)						// Returns 0 if successfull, non-zero other
 
 	// No special flags
 	m_sprite.m_sInFlags = 0;
-
-   return SUCCESS;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1294,12 +1345,7 @@ void CThing3d::ProcessMessage(		// Returns nothing.
 		
 		case typeBurn:
 			OnBurnMsg(&(pmsg->msg_Burn) );
-			break;
-		
-		case typeObjectDelete:
-			OnDeleteMsg(&(pmsg->msg_ObjectDelete) );
-			break;
-
+         break;
 		case typeHelp:
 			OnHelpMsg(&(pmsg->msg_Help) );
 			break;
@@ -1410,15 +1456,6 @@ void CThing3d::OnBurnMsg(	// Returns nothing.
 		}
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CThing3d::OnDeleteMsg(				// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-  UNUSED(pdeletemsg);
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handles a Help_Message
@@ -1594,7 +1631,6 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
    managed_ptr<CThing3d> childThing,		// In:  Instance ID of child to detach.
-											// Out: CIdBank::IdNil.
 	RTransform*	ptrans)				// In:  Transform for positioning child.
 	{
    managed_ptr<CThing3d> pthing3d;

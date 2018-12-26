@@ -39,7 +39,6 @@
 // Includes.
 ////////////////////////////////////////////////////////////////////////////////
 #include "thing.h"
-#include "IdBank.h"
 
 extern void NavNetListPressedCall(RGuiItem* pgui);
 
@@ -72,17 +71,8 @@ class CGameEditThing : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CGameEditThing(void)
-			{
-			// Set defaults.
-			m_u16CameraTrackId	= CIdBank::IdNil;
-			m_sViewPosX				= 0;
-			m_sViewPosY				= 0;
-         }
-
-      ~CGameEditThing(void)
-			{
-			}
+      CGameEditThing(void);
+      ~CGameEditThing(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implementing them as inlines doesn't pay!

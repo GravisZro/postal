@@ -53,8 +53,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "chunk.h"
+
+#include "realm.h"
 #include "reality.h"
 
 // This class defines its own GetRand()
@@ -92,6 +93,27 @@ CChunk::TypeInfo	CChunk::ms_atiChunks[CChunk::NumTypes]	=
 		{	2,		4,	},	// Shell.
 		{	7,		4,	},	// Kevlar.
 	};
+
+
+CChunk::CChunk(void)
+{
+  m_sSuspend = 0;
+  m_dRot = 0.0;
+  m_dVel = 0.0;
+  m_dVertVel = 0.0;
+  m_sLen = 0;
+
+  //			m_sprite.m_pthing		= this;
+  m_sprite.m_u8Color	= 1;
+
+  m_type = Blood;
+}
+
+CChunk::~CChunk(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -183,7 +205,7 @@ void CChunk::Update(void)
 			}
 
 		// We're done.
-      realm()->RemoveThing(this);
+        Object::enqueue(SelfDestruct);
 		}
 	}
 

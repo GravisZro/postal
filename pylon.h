@@ -45,12 +45,7 @@
 #ifndef PYLON_H
 #define PYLON_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "smash.h"
-#include "Thing3d.h"
-#include "dude.h"
-//#include <vector>
+#include "thing.h"
 
 #define PYLON_MAX_PYLONS 254
 
@@ -91,73 +86,8 @@ class CPylon : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CPylon(void)
-		{
-			m_pImage = 0;
-			m_sSuspend = 0;
-			
-			// Let's default the whole thing to zero.
-         std::memset(&m_msg, 0, sizeof(m_msg) );
-
-			// Then set some portions we can via the generic type.
-			m_msg.msg_Generic.eType = typeGeneric;
-			m_msg.msg_Generic.sPriority = 0;
-
-         realm()->m_sNumPylons++;
-			m_u16TargetDudeID = 0;
-		}
-
-      ~CPylon(void)
-		{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Remove smash from smashatorium (this is safe even if it was already removed!).
-         realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-
-         realm()->m_sNumPylons--;
-		}
-/*
-	//---------------------------------------------------------------------------
-	// Required static functions
-	//---------------------------------------------------------------------------
-	public:
-		// Construct object
-		static int16_t Construct(									// Returns 0 if successfull, non-zero otherwise
-			CRealm* pRealm,										// In:  Pointer to realm this object belongs to
-			CThing** ppNew)										// Out: Pointer to new object
-			{
-			int16_t sResult = SUCCESS;
-
-			if (pRealm->m_sNumPylons < PYLON_MAX_PYLONS)
-			{
-				*ppNew = new CPylon(pRealm);
-            if (*ppNew == nullptr)
-				{
-					sResult = FAILURE;
-					TRACE("CPylon::Construct(): Couldn't construct CPylon (that's a bad thing)\n");
-				}
-			}
-			else
-			{
-				TRACE("CPylon::CPylon() - No more pylon ID's available\n");
-				*ppNew = nullptr;
-				sResult = FAILURE;
-			}
-
-			return sResult;
-			}
-*/
-	//---------------------------------------------------------------------------
-	// Enemy logic hint functions
-	//---------------------------------------------------------------------------
-
-	// An enemy can call this function to request that a message be sent to it
-	// with any hint information that this bouy may have.
-   //void MessageRequest(CThing* pThing);
+      CPylon(void);
+      ~CPylon(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -176,7 +106,7 @@ class CPylon : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -241,23 +171,7 @@ class CPylon : public CThing
 		uint16_t GetPylonUniqueID(uint8_t ucPylonID);
 
 		// Return true if the pylon was triggered in the last interation
-		inline bool Triggered(void)
-		{
-			bool bTriggered = false;
-
-			if (m_u16TargetDudeID != CIdBank::IdNil)
-			{
-            managed_ptr<CDude> pthing;
-            pthing = realm()->GetThingById<CDude>(m_u16TargetDudeID);
-            //realm()->m_idbank.GetThingByID((CThing**) &pthing, m_u16TargetDudeID);
-				if (pthing && pthing->type() == CDudeID)
-				{
-               if (pthing->m_state != CThing3d::State_Dead)
-						bTriggered = true;
-				}
-			}
-			return bTriggered;
-		}
+      bool Triggered(void);
 
 
 	//---------------------------------------------------------------------------

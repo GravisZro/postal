@@ -85,11 +85,12 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-
 #include "warp.h"
-#include "game.h"
+
+#include "realm.h"
 #include "reality.h"
+#include "game.h"
+#include "dude.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -140,6 +141,24 @@ CStockPile	CWarp::ms_stockpile	=
 
 // Tracks file counter so we know when to load/save "common" data 
 int16_t	CWarp::ms_sFileCount	= 0;
+
+
+CWarp::CWarp(void)
+{
+  m_sSuspend					= 0;
+  m_sRotY						= 0;
+
+  //			m_sprite.m_pthing			= this;
+}
+
+CWarp::~CWarp()
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -261,15 +280,6 @@ int16_t CWarp::Save(										// Returns 0 if successfull, non-zero otherwise
 		}
 
 	return sResult;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Startup object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CWarp::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
 	}
 
 
@@ -551,15 +561,7 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 			if (sResult == SUCCESS)
 				{
 				// Start up.
-            sResult	= ppdude->Startup();
-				if (sResult == SUCCESS)
-					{
-					// Successfully created and setup CDude.
-					}
-				else
-					{
-               TRACE("WarpIn(): ppdude->Startup() failed.\n");
-					}
+            ppdude->Startup();
 				}
 			else
 				{

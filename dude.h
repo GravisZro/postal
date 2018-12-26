@@ -354,16 +354,11 @@
 #ifndef DUDE_H
 #define DUDE_H
 
-#include <RSPiX.h>
-
-#include "realm.h"
-#include "game.h"
-#include "weapon.h"
 #include "character.h"
 #include "crawler.h"
-#include "input.h"
-#include "PowerUp.h"
-#include "flag.h"
+
+class CFlag;
+class CPowerUp;
 
 // First shot at a dude, which is a player-controlled character
 class CDude : public CCharacter
@@ -631,7 +626,7 @@ class CDude : public CCharacter
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -729,12 +724,6 @@ class CDude : public CCharacter
 							// Call base class to get default functionality.
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
-
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 		// Handles a Suicide_Message.
 		virtual			// Override to implement additional functionality.

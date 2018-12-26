@@ -36,21 +36,8 @@
 #ifndef SPRITES_H
 #define SPRITES_H
 
-////////////////////////////////////////////////////////////////////////////////
-// C includes -- must be before RSPiX includes.
-////////////////////////////////////////////////////////////////////////////////
 
-#include <vector>
-#if _MSC_VER >= 1020 || __MWERKS__ >= 0x1100 || __GNUC__
-	#include <set>
-#else
-	#include <multiset.h>
-#endif
-
-
-////////////////////////////////////////////////////////////////////////////////
-// RSPiX includes.
-////////////////////////////////////////////////////////////////////////////////
+#include <set>
 
 #include <RSPiX.h>
 
@@ -84,16 +71,8 @@ template <class T>
 			}
 		};
 
-#if _MSC_VER >= 1020 || __MWERKS__ >= 0x1100
-	#if __MWERKS__ >= 0x1100
-		ITERATOR_TRAITS(const CSprite*);
-	#endif
-  typedef std::multiset<CSprite*, SpriteLess<CSprite>, std::allocator<CSprite*> > msetSprites;
-  typedef std::vector<CSprite*, std::allocator<CSprite*> > vSprites;
-#else
-  typedef std::multiset<CSprite*, SpriteLess<CSprite> > msetSprites;
+  typedef std::multiset<CSprite*, SpriteLess<CSprite>> msetSprites;
   typedef std::vector<CSprite*> vSprites;
-#endif
 
 
 // A CSprite is a base class for sprites designed to work with CScene.

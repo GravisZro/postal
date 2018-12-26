@@ -65,9 +65,7 @@
 #ifndef DEMON_H
 #define DEMON_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "SampleMaster.h"
+#include "thing.h"
 
 
 class CDemon : public CThing
@@ -79,8 +77,7 @@ class CDemon : public CThing
 
 		typedef enum
 			{
-			State_Happy,		// La, la, la.
-			State_Delete		// Delete self next chance.
+         State_Happy,		// La, la, la.
 			} State;
 
 		typedef enum
@@ -177,9 +174,6 @@ class CDemon : public CThing
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile,											// In:  File to save to
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
-
-		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

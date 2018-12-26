@@ -5,9 +5,8 @@ CONFIG += strict_c++
 QMAKE_CXXFLAGS_DEBUG += -O0 -g3
 QMAKE_CXXFLAGS_RELEASE += -Os
 
-
-DEFINES+="HACKED_TO_RUN"
-
+#DEFINES+="NEW_MANAGED_PTR"
+DEFINES+="USE_NEW_SIGNAL"
 DEFINES+="LOCALE=US"
 DEFINES+="TARGET=POSTAL_1997"
 DEFINES+="ALLOW_TWINSTICK"
@@ -209,7 +208,6 @@ HEADERS += \
     heatseeker.h \
     hood.h \
     Hskirts.h \
-    IdBank.h \
     input.h \
     InputSettings.h \
     InputSettingsDlg.h \
@@ -273,7 +271,9 @@ HEADERS += \
     warp.h \
     weapon.h \
     yatime.h \
-    newpix/managedpointer.h
+    newpix/managedpointer.h \
+    newpix/animatedresource.h \
+    newpix/collisiondetection.h
 
 SOURCES += \
     RSPiX/GREEN/3D/pipeline.cpp \
@@ -380,7 +380,6 @@ SOURCES += \
     grip.cpp \
     heatseeker.cpp \
     hood.cpp \
-    IdBank.cpp \
     input.cpp \
     InputSettings.cpp \
     InputSettingsDlg.cpp \
@@ -435,7 +434,8 @@ SOURCES += \
     weapon.cpp \
     yatime.cpp \
     message.cpp \
-    newpix/managedpointer.cpp
+    newpix/managedpointer.cpp \
+    newpix/collisiondetection.cpp
 
 
 HEADERS += \

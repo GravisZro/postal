@@ -87,10 +87,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "ostrich.h"
+
+#include "realm.h"
 #include "SampleMaster.h"
 #include "item3d.h"
 
@@ -236,6 +235,22 @@ static RP3d ms_apt3dAttribCheck[] =
 };
 #endif
 
+
+COstrich::COstrich(void)
+{
+  m_sRotDirection = 0;
+}
+
+COstrich::~COstrich(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -372,7 +387,7 @@ int16_t COstrich::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t COstrich::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void COstrich::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 	// Register this as a victim rather than a hostile.
 	m_bCivilian = true;
@@ -382,7 +397,7 @@ int16_t COstrich::Startup(void)								// Returns 0 if successfull, non-zero oth
 	CDoofus::Startup();
 
 	// Init other stuff
-	return Init();
+   Init();
 }
 
 
@@ -617,8 +632,8 @@ void COstrich::Update(void)
 //-----------------------------------------------------------------------
 
 			case State_Dead:
-				OnDead();
-            realm()->RemoveThing(this);
+            OnDead();
+            Object::enqueue(SelfDestruct);
             return;
 		}
 

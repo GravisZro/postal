@@ -239,8 +239,6 @@
 #include "thing.h"
 #include "realm.h"
 
-#include "IdBank.h"
-
 // Need these to initialize array of class info (until better method is developed)
 #include "ball.h"
 #include "hood.h"
@@ -288,82 +286,8 @@
 // Variables/data
 ////////////////////////////////////////////////////////////////////////////////
 
-// Init this flag to a non-zero value so we can detect whether a CThing is
-// created before these static member variables are initialized.
-int16_t CThing::ms_sDetectStaticInits = 1;
-
 // This is used by DoGui() to perform GUI processing.
 RProcessGui   CThing::ms_pgDoGui;
-
-#if 0
-// Array of class info
-// This sucks right now.  I need to add the info for each class into this
-// array, but I don't like this method because it means this file has to
-// include the headers for each class.  Sounds like an RImage-style solution
-// might work, but I'm not sure exactly how.
-CThing::ClassInfo CThing::ms_aClassInfo[TotalIDs] =
-{ // Object Allocator               Preload function         Object Name            User can create in Editor
-  // =====================         =====================   ================
-   { CHood::Construct,                0,                        "Hood",               false   },
-   { CDude::Construct,                0,                        "Dude",               false   },
-   { CDoofus::Construct,              0,                        "Doofus",             false   },
-   { nullptr, /* Tkachuk */           0,                        "Tkachuk",            false   },
-   { nullptr, /* CRocketMan */        0,                        "RocketMan",          false   },
-   { nullptr, /* CGrenader */         0,                        "Grenader",           false   },
-   { CRocket::Construct,              CRocket::Preload,         "Rocket",             false   },
-   { CGrenade::Construct,             CGrenade::Preload,        "Grenade",            false   },
-   { CBall::Construct,                0,                        "Ball",               false   },
-   { CExplode::Construct,             CExplode::Preload,        "Explode",            false   },
-   { CBouy::Construct,                0,                        "Buoy",               true    },
-   { CNavigationNet::Construct,       0,                        "NavNet",             true    },
-   { CGameEditThing::Construct,       0,                        "GameEditThing",      false   },
-   { CNapalm::Construct,              CNapalm::Preload,         "Napalm",             false   },
-   { CFire::Construct,                CFire::Preload,           "Fire",               false   },
-   { nullptr, /* CImbecile */         0,                        "Imbecile",           false   },
-   { CFirebomb::Construct,            CFirebomb::Preload,       "Firebomb",           false   },
-   { CFirefrag::Construct,            0,                        "Firefrag",           false   },
-   { CAnimThing::Construct,           0,                        "AnimThing",          true    },
-   { CSoundThing::Construct,          0,                        "SoundThing",         true    },
-   { nullptr, /* CGunner */           0,                        "Gunner",             false   },
-   { CBand::Construct,                0,                        "Band",               true    },
-   { CItem3d::Construct,              0,                        "Item3d",             true    },
-   { CBarrel::Construct,              0,                        "Barrel",             true    },
-   { CMine::ConstructProximity,       0,                        "ProximityMine",      true    },
-   { CDispenser::Construct,           0,                        "Dispenser",          true    },
-   { CFireball::Construct,            CFireball::Preload,       "Fireball",           false   },
-   { nullptr, /* CCop */              0,                        "Cop",                false   },
-   { nullptr, /* CPistol */           0,                        "Pistol",             false   },
-   { nullptr, /* CMachineGun */       0,                        "MachineGun",         false   },
-   { nullptr, /* CShotGun */          0,                        "ShotGun",            false   },
-   { CPerson::Construct,              0,                        "Person",             true    },
-   { CMine::ConstructTimed,           CMine::Preload,           "TimedMine",          true    },
-   { CMine::ConstructBouncingBetty,   0,/*CMine::Preload*/      "BouncingBettyMine",  true    },
-   { CMine::ConstructRemoteControl,   0,/*CMine::Preload*/      "RemoteControlMine",  false   },
-   { CPylon::Construct,               0,                        "Pylon",              true    },
-   { CPowerUp::Construct,             CPowerUp::Preload,        "PowerUp",            true    },
-   { COstrich::Construct,             0,                        "Ostrich",            true    },
-   { CTrigger::Construct,             0,                        "Trigger",            false   },
-   { CHeatseeker::Construct,          CHeatseeker::Preload,     "Heatseeker",         false   },
-   { CChunk::Construct,               0,                        "Chunk",              false   },
-   { nullptr, /* CAssault */          0,                        "AssaultWeapon",      false   },
-   { CSentry::Construct,              0,                        "Sentry",             true    },
-   { nullptr, /* CSentryGun */        0,                        "CentryGun",          false   },
-   { CWarp::Construct,                0,                        "Warp",               true    },
-   { CDemon::Construct,               CDemon::Preload,          "Demon",              true    },
-   { nullptr, /* CCharacter */        CCharacter::Preload,      "Character",          false   },
-   { nullptr, /*CGoalTimer */         0,                        "GoalTimer",          false   },
-   { CFlag::Construct,                0,                        "Flag",               true    },
-   { CFlagbase::Construct,            0,                        "Flagbase",           true    },
-   { CFirestream::Construct,          0,                        "Firestream",         false   },
-   { CDeathWad::Construct,            CDeathWad::Preload,       "DeathWad",           false   },
-   { nullptr, /*CDoubleBarrel */      0,                        "DoubleBarrel",       false   },
-   { nullptr, /*CUziID */             0,                        "Uzi",                false   },
-   { nullptr, /*CAutoRifleID */       0,                        "AutoRifle",          false   },
-   { nullptr, /*CSmallPistolID */     0,                        "SmallPistol",        false   },
-   { CGrenade::ConstructDynamite,     0,                        "Dynamite",           false   },
-   { CSndRelay::Construct,            0,                        "SndRelay",           true    },
-};
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototypes
@@ -375,18 +299,16 @@ CThing::ClassInfo CThing::ms_aClassInfo[TotalIDs] =
 ////////////////////////////////////////////////////////////////////////////////
 CThing::CThing(void)                 // In:  Class ID
 {
-  // Make sure CThing static's have been initialized by C++ runtime
-  if (ms_sDetectStaticInits != 1)
-    TRACE("CThing::CThing(): Can't create global/static objects based on CThing!\n");
-
   // Default to calling startup and shutdown.  What could be the harm?!
   m_sCallStartup  = TRUE;
   m_sCallShutdown = TRUE;
 
   // Start out with no ID.
-  m_u16InstanceId = CIdBank::IdNil;
+  m_u16InstanceId = invalid_id;
   m_MessageQueue.clear();
   m_phot = nullptr;
+
+  Object::connect(SelfDestruct, fslot_t<void>([this]() noexcept { realm()->RemoveThing(this); }));
 }
 
 

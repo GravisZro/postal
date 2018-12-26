@@ -59,11 +59,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "logtab.h"
 #include "person.h"
 #include "Thing3d.h"
 #include "doofus.h"
+#include "dude.h"
+#include "pylon.h"
+#include "realm.h"
 
 // Action input variable
 class CLogTabVar_GetAction : CLogTabVar<CPerson*>
@@ -380,7 +382,7 @@ class CLogTabVar_DudeHealth : CLogTabVar<CPerson*>
 			}
 
 			return sResult;
-			}
+         }
 
 		void SetVal(CPerson* pPerson, int16_t sVal)
 			{

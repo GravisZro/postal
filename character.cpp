@@ -307,10 +307,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "character.h"
+
+#include "realm.h"
 #include "reality.h"
 #include "AnimThing.h"
 #include "fireball.h"
@@ -708,10 +707,8 @@ void CCharacter::OnDead(void)
 		// "Shoot" it (release it).
 		ShootWeapon();
 		// Delete it!
-		GameMessage msg;
-		msg.msg_ObjectDelete.eType = typeObjectDelete;
-		msg.msg_ObjectDelete.sPriority = 0;
-      SendThingMessage(msg, m_weapon);
+
+      Object::enqueue(m_weapon->SelfDestruct);
 		}
 
 	// Register death with the score module
@@ -834,15 +831,6 @@ void CCharacter::OnBurnMsg(	// Returns nothing.
 		}
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CCharacter::OnDeleteMsg(				// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-	CThing3d::OnDeleteMsg(pdeletemsg);
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handles a DrawBlood_Message.
@@ -1275,10 +1263,7 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 						if (sTerrainH > m_dY + dY)
 							{
 							// Send the object a delete message.
-							GameMessage	msg;
-							msg.msg_ObjectDelete.eType		= typeObjectDelete;
-							msg.msg_ObjectDelete.sPriority	= 0;
-                     SendThingMessage(msg, m_weapon);
+                      Object::enqueue(m_weapon->SelfDestruct);
 
 							// Clear our instance ID.
                      m_weapon.reset();
@@ -1364,7 +1349,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 			
 			;
 		//!! FIXME: this should simply miss if we shoot ourself. Cheap hack for dude shooting himself in twinstick mode.
-      if (pthingTarget != this && bResult)
+      if (bResult && pthingTarget != this)
 			{
 
 			// Create a message.

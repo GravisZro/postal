@@ -62,8 +62,6 @@
 #ifndef MINE_H
 #define MINE_H
 
-#include <RSPiX.h>
-#include "realm.h"
 #include "weapon.h"
 #include "bulletFest.h"
 
@@ -121,23 +119,8 @@ class CMine : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CMine(void)
-			{
-			Reset();
-         }
-
-      ~CMine(void)
-			{
-			// Stop sound, if any.
-			StopLoopingSample(m_siMineBeep);
-
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CMine(void);
+      ~CMine(void);
 
 	//---------------------------------------------------------------------------
 	// Internal functions
@@ -154,7 +137,7 @@ class CMine : public CWeapon
 			}
 
 		// Called after load to start the object
-		int16_t Startup(void);
+      void Startup(void);
 
 		// Init - common initialization code for startup, setup & edit new
 		int16_t Init(void);
@@ -273,10 +256,6 @@ class CMine : public CWeapon
 
 		// Handle Trigger message (for remote trigger mines)
 		void OnTriggerMsg(Trigger_Message* pMessage);
-
-		// Handles an ObjectDelete_Message.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 	};
 
 

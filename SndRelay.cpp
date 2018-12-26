@@ -35,10 +35,13 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "SndRelay.h"
+
+#include "SampleMaster.h"
+
 #include "SoundThing.h"
 #include "game.h"
+#include "realm.h"
 
 // This class has its own GetRandom() to keep it from de-synching the game.
 #ifdef GetRandom
@@ -188,15 +191,6 @@ int16_t CSndRelay::Save(										// Returns 0 if successfull, non-zero otherwis
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Startup object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CSndRelay::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-	{
-   return SUCCESS;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CSndRelay::Suspend(void)
@@ -237,18 +231,6 @@ void CSndRelay::Update(void)
                      parent()->type(),
                      parent()->GetClassName());
 				}
-			}
-
-		// Process messages.
-		ProcessMessages();
-
-		switch (m_state)
-			{
-			case State_Happy:
-				break;
-			case State_Delete:
-				// Banzai!
-            realm()->RemoveThing(this);
 			}
 		}
 	}
@@ -530,24 +512,6 @@ int16_t CSndRelay::Kill(void)							// Returns 0 if successfull, non-zero otherw
    return SUCCESS;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Process our message queue.
-////////////////////////////////////////////////////////////////////////////////
-void CSndRelay::ProcessMessages(void)
-   {
-  while (!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-		switch(msg.msg_Generic.eType)
-			{
-			case typeObjectDelete:
-				m_state	= State_Delete;
-				break;
-			}
-      m_MessageQueue.pop_front();
-		}
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

@@ -28,23 +28,23 @@ protected:
   shared_arr<uint8_t> data;
 
 public:
-  filedata_t(uint32_t sz = 0) // number of bytes to allocate (0 by default)
+  filedata_t(uint32_t sz = 0) noexcept // number of bytes to allocate (0 by default)
     : m_loaded(false)
   { data.allocate(sz); } // doesn't allocate data if sz = 0
-  virtual ~filedata_t(void) = default;
+  virtual ~filedata_t(void) noexcept = default;
 
-  bool isLoaded(void) const { return m_loaded; }
-  void setLoaded(void) { m_loaded = true; }
+  bool isLoaded(void) const noexcept { return m_loaded; }
+  void setLoaded(void) noexcept { m_loaded = true; }
 
-  void setData(uint8_t* ndata, uint32_t sz)
+  void setData(uint8_t* ndata, uint32_t sz) noexcept
   {
     data = ndata;
     data.setSize(sz);
   }
 
-  uint32_t dataSize(void) const { return data.size(); }
+  uint32_t dataSize(void) const noexcept { return data.size(); }
 
-  virtual void load (void) = 0;
+  virtual void load (void) noexcept = 0;
 };
 
 // forward declaration of specialization

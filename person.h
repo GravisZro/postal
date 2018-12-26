@@ -78,9 +78,8 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <RSPiX.h>
-#include "realm.h"
 #include "doofus.h"
+
 #include "personatorium.h"
 #include "logtab.h"
 
@@ -138,8 +137,7 @@ class CPerson : public CDoofus
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
 
-		// This is the one CPerson that can log its AI table transitions or
-		// CIdBank::IdNil.
+      // This is the one CPerson that can log its AI table transitions or invalid_id
 		static uint16_t	ms_u16IdLogAI;
 
 		// "Constant" values that we want to be able to tune using the editor
@@ -164,31 +162,8 @@ class CPerson : public CDoofus
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CPerson(void)
-			{
-			m_sSuspend = 0;
-			m_dRot = 0;
-			m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
-			m_ePersonType = Personatorium::Grenader;
-         m_eWeaponType = CGrenadeID;
-			m_panimCur = m_panimPrev = nullptr;
-//			m_sprite.m_pthing	= this;
-			m_rstrLogicFile = "res/logics/default.lgk";
-			m_sShowState		= FALSE;
-			m_sUserState1 = 0; // Uninitialized
-			m_bHitComment = false;
-         }
-
-      ~CPerson(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-         realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
-
+      CPerson(void);
+      ~CPerson(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -207,7 +182,7 @@ class CPerson : public CDoofus
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Init - set up object before running
 		int16_t Init(void);
@@ -261,11 +236,7 @@ class CPerson : public CDoofus
 	// Static functions
 	//---------------------------------------------------------------------------
 	public:
-		static void ResetLogAI(void)
-			{
-			// Reset AI logging feature.
-			ms_u16IdLogAI = CIdBank::IdNil;
-			}
+      static void ResetLogAI(void);
 
 
 	//---------------------------------------------------------------------------

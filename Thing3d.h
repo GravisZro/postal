@@ -168,11 +168,9 @@
 // Includes.
 ////////////////////////////////////////////////////////////////////////////////
 #include "thing.h"
-#include "realm.h"
+
 #include "StockPile.h"
 #include "AnimThing.h"
-
-#include <array>
 
 class CFire;
 
@@ -253,8 +251,6 @@ class CThing3d : public CThing
 			State_RunShootRun,		// Run towards pylon
 			State_RunShootWait,		// After you reach the end, wait a bit
 			State_RunShoot,			// Run between cover bouys and shoot in between
-
-			State_Delete,				// Delete this thing3d next chance.
 
 			State_Writhing,			// Writhing in predeath, waiting to be executed.
 
@@ -389,57 +385,8 @@ class CThing3d : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CThing3d(void)
-			{
-			// Must call Zero() to initialize the stockpile since it has
-			// no constructor.
-			m_stockpile.Zero();
-
-			m_state				= State_Idle;
-			m_panimCur			= nullptr;
-			m_dExtHorzVel		= 0.0;
-			m_dExtHorzRot		= 0.0;
-			m_dExtHorzDrag		= 0.0;
-			m_dExtVertVel		= 0.0;
-			m_dExtRotVelY		= 0.0;
-			m_dExtRotVelZ		= 0.0;
-			m_dVel				= 0.0;
-			m_dAcc				= 0.0;
-			m_dRot				= 0.0;
-			m_dRotZ				= 0.0;
-			m_dScaleX			= 1.0;
-			m_dScaleY			= 1.0;
-			m_dScaleZ			= 1.0;
-			m_dDrag				= 0.0;
-//			m_sprite.m_pthing	= this;
-			m_sSuspend			= 0;
-         m_sBrightness		= 0;
-			m_bAboveTerrain	= false;
-         m_stockpile.m_sHitPoints	= DefHitPoints;
-			m_spriteShadow.m_sInFlags = CSprite::InHidden;
-			m_spriteShadow.m_pImage = nullptr;
-//			m_spriteShadow.m_pthing = this;
-			m_lAnimTime = 0;
-			m_lTimer = 0;
-			m_sLayerOverride	= -1;
-
-         // Default to the standard.
-         m_pap2dAttribCheckPoints	= &ms_apt2dAttribCheckMedium;
-			}
-
-      ~CThing3d(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_spriteShadow);
-			// Remove smash from smashatorium (this is safe even if it was already 
-			// removed).
-         realm()->m_smashatorium.Remove(&m_smash);
-			// Free the shadow resource
-			if (m_spriteShadow.m_pImage)
-				rspReleaseResource(&g_resmgrGame, &(m_spriteShadow.m_pImage));
-			}
+      CThing3d(void);
+      ~CThing3d(void);
 
 
 	public:
@@ -465,7 +412,7 @@ class CThing3d : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -565,12 +512,6 @@ class CThing3d : public CThing
 							// Call base class to get default functionality.
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
-
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 		// Handles a call for help message Help_Message
 		virtual			// Override to implement additional functionality
@@ -692,7 +633,6 @@ class CThing3d : public CThing
 							// Call base class to get default functionality.
       void DetachChild(			// Returns ptr to the child or nullptr, if none.
          managed_ptr<CThing3d> child,	// In:  Instance ID of child to detach.
-												// Out: CIdBank::IdNil.
 			RTransform*	ptrans);			// In:  Transform for positioning child.
 
 		// Detach the specified child sprite (can be any sprite type).

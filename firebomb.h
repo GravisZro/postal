@@ -55,11 +55,7 @@
 #ifndef FIREBOMB_H
 #define FIREBOMB_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "fire.h"
 #include "weapon.h"
-#include "IdBank.h"
 
 // CFirebomb is hand thrown fire grenade weapon class
 class CFirebomb : public CWeapon
@@ -93,20 +89,8 @@ class CFirebomb : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CFirebomb(void)
-			{
-			m_sSuspend = 0;
-//			m_sprite.m_pthing	= this;
-         }
-
-      ~CFirebomb(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
+      CFirebomb(void);
+      ~CFirebomb(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -173,10 +157,9 @@ class CFirebomb : public CWeapon
 		// Free all resources
 		int16_t FreeResources(void);						// Returns 0 if successfull, non-zero otherwise
 
-		// Process message queue
-		void ProcessMessages(void);
 };
 
+class CFire;
 // CFirefrag a fragment that comes out of the CFirebomb weapon
 class CFirefrag : public CWeapon
 {
@@ -215,21 +198,8 @@ class CFirefrag : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CFirefrag(void)
-			{
-         m_pImage = 0;
-			m_sNumExplosions	= 0;
-			}
-
-      ~CFirefrag(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
-
+      CFirefrag(void);
+      ~CFirefrag(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

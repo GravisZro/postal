@@ -14,7 +14,7 @@ struct point2d_t
   };
 
   template<typename V>
-  inline T& operator [](V index) { return *(reinterpret_cast<T*>(this) + index); }
+  inline T& operator [](V index) noexcept { return *(reinterpret_cast<T*>(this) + index); }
 };
 
 class ImageResource : public filedata_t

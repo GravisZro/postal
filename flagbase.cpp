@@ -53,9 +53,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "flagbase.h"
+
 #include "flag.h"
+#include "realm.h"
 #include "SampleMaster.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +114,27 @@ static RP3d ms_apt3dAttribCheck[] =
 	{ 6, 0,  6},
 };
 #endif
+
+CFlagbase::CFlagbase(void)
+{
+  m_sSuspend = 0;
+  m_dRot = 0;
+  m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
+  m_panimCur = nullptr;
+  //			m_sprite.m_pthing	= this;
+  m_u16FlagID = 1;
+  m_u16Color = 0;
+}
+
+CFlagbase::~CFlagbase(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -294,17 +316,13 @@ int16_t CFlagbase::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CFlagbase::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CFlagbase::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
 	// Set the current height, previous time, and Nav Net
 	CThing3d::Startup();
 
 	// Init other stuff
-	Init();
-
-	return sResult;
+   Init();
 }
 
 
@@ -399,7 +417,7 @@ void CFlagbase::Update(void)
 						&m_sprite,						// Tree of 3D sprites to render.
                   realm()->Hood());							// Dst clip rect.
 
-               realm()->RemoveThing(this);
+                Object::enqueue(SelfDestruct);
                return;
 		}
 

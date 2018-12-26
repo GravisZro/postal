@@ -136,11 +136,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "dispenser.h"
+
+#include "realm.h"
 #include "reality.h"
+#include "dude.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -482,7 +482,7 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CDispenser::Startup(void)						// Returns 0 if successfull, non-zero otherwise
+void CDispenser::Startup(void)						// Returns 0 if successfull, non-zero otherwise
 	{
 	switch (m_logictype)
 		{
@@ -496,9 +496,7 @@ int16_t CDispenser::Startup(void)						// Returns 0 if successfull, non-zero oth
 		default:
 			m_lNextUpdate = realm()->m_time.GetGameTime();
 			break;
-		}
-
-   return SUCCESS;
+      }
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1562,7 +1560,7 @@ void CDispenser::DestroyDispensee(	// Returns nothing.
       if (m_dispensee == ppthing)
         m_dispensee.reset();
       // Destroy the dispensee.
-        realm()->RemoveThing(ppthing);
+      Object::enqueue(SelfDestruct);
 		}
 	}
 

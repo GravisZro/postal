@@ -46,9 +46,7 @@
 #ifndef BALL_H
 #define BALL_H
 
-#include <RSPiX.h>
-#include "realm.h"
-
+#include "thing.h"
 
 // This is a sample game object
 class CBall : public CThing
@@ -89,28 +87,9 @@ class CBall : public CThing
 	// Constructor(s) / destructor
    //---------------------------------------------------------------------------
     public:
-      CBall(void)
-			{
-			m_sSuspend	= 0;
-			m_dDX			= 0;
-			m_dDY			= 0;
-			m_dDZ			= 0;
-//			m_sprite.m_pthing	= this;
-			}
+      CBall(void);
+      ~CBall(void);
 
-      ~CBall(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
-
-
-	//---------------------------------------------------------------------------
-	// Required virtual functions (implimenting them as inlines doesn't pay!)
-	//---------------------------------------------------------------------------
 	public:
 		// Load object (should call base class version!)
 		int16_t Load(													// Returns 0 if successfull, non-zero otherwise
@@ -125,7 +104,7 @@ class CBall : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

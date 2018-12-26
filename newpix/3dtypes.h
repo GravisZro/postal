@@ -27,7 +27,7 @@ using vertex_t = point3d_t<uint16_t>;
 
 // helper constant expressions
 template<typename R, typename C>
-constexpr uint32_t rowcol(R row, C col) { return (row * 4) + col; }
+constexpr uint32_t rowcol(R row, C col) noexcept { return (row * 4) + col; }
 
 
 // Vector3D is to be treated as a primary type and thus has no encapsulation

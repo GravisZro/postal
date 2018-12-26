@@ -428,14 +428,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "doofus.h"
+
+#include "realm.h"
+#include "navnet.h"
 #include "dude.h"
 #include "SampleMaster.h"
 #include "grenade.h"
 #include "pylon.h"
+#include "bouy.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -743,39 +744,36 @@ int16_t CDoofus::ms_sFileCount;
 // Constructor
 ////////////////////////////////////////////////////////////////////////////////
 CDoofus::CDoofus(void)
-	{
-   m_sSuspend = 0;
-	m_pNextBouy = nullptr;
-   m_sNextX = m_sNextZ = 0.0;
-	m_ucDestBouyID = m_ucNextBouyID = 0;
-	m_lAlignTimer = 0;
-	m_lEvalTimer = 0;
-	m_lShootTimer = 0;
-	m_lShotTimeout = 0;
-	m_pPylonStart = nullptr;
-	m_pPylonEnd = nullptr;
-	m_lCommentTimer = 0;
-	m_usCommentCounter = 0;
-	m_lLastHelpCallTime = 0;
-	m_lSampleTimeIsPlaying = 0;
-	m_bRecentlyStuck = false;
-	m_bCivilian = false;
-   //m_ptransExecutionTarget	= nullptr;
-//	m_spriteWeapon.m_pthing	= this;
-	m_ucSpecialBouy0ID = 0;
-	m_ucSpecialBouy1ID = 0;
-	m_bPanic = false;
-	m_bRegisteredBirth = false;
-	// Default to no fallback weapon.
-	m_eFallbackWeaponType	= TotalIDs;
-	m_sStuckCounter = 0;
-	m_usBloodCounter = 0;
-	m_siPlaying = 0;
+{
+  m_sSuspend = 0;
+  m_sNextX = m_sNextZ = 0.0;
+  m_ucDestBouyID = m_ucNextBouyID = 0;
+  m_lAlignTimer = 0;
+  m_lEvalTimer = 0;
+  m_lShootTimer = 0;
+  m_lShotTimeout = 0;
+  m_lCommentTimer = 0;
+  m_usCommentCounter = 0;
+  m_lLastHelpCallTime = 0;
+  m_lSampleTimeIsPlaying = 0;
+  m_bRecentlyStuck = false;
+  m_bCivilian = false;
+  //m_ptransExecutionTarget	= nullptr;
+  //	m_spriteWeapon.m_pthing	= this;
+  m_ucSpecialBouy0ID = 0;
+  m_ucSpecialBouy1ID = 0;
+  m_bPanic = false;
+  m_bRegisteredBirth = false;
+  // Default to no fallback weapon.
+  m_eFallbackWeaponType	= TotalIDs;
+  m_sStuckCounter = 0;
+  m_usBloodCounter = 0;
+  m_siPlaying = 0;
 
-    // explicitly initialize to stop Valgrind whining. --ryan.
-   m_lIdleTimer = realm()->m_time.GetGameTime() + 2000 + GetRandom() % 2000;
-   m_lStuckTimeout = 0;
-	}
+  // explicitly initialize to stop Valgrind whining. --ryan.
+  m_lIdleTimer = realm()->m_time.GetGameTime() + 2000 + GetRandom() % 2000;
+  m_lStuckTimeout = 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
@@ -933,7 +931,7 @@ int16_t CDoofus::Save(										// Returns 0 if successfull, non-zero otherwise
 		// again after load
 		pFile->Write(&m_ucSpecialBouy0ID);
 		pFile->Write(&m_ucSpecialBouy1ID);
-		uint16_t u16Data = CIdBank::IdNil;	// Safety.
+      uint16_t u16Data = invalid_id;	// Safety.
 		if (m_pNavNet)
 			u16Data	= m_pNavNet->GetInstanceID();
 		pFile->Write(&u16Data);
@@ -948,7 +946,7 @@ int16_t CDoofus::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CDoofus::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CDoofus::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 	CCharacter::Startup();
 
@@ -1019,8 +1017,6 @@ int16_t CDoofus::Startup(void)								// Returns 0 if successfull, non-zero othe
    m_lShootTimeout = ms_lShootTimeoutMin + ((11-realm()->m_flags.sDifficulty) * ms_lShootTimeoutInc);
 	m_lRunShootInterval = ms_lRunShootInterval;
 	m_lShotReactionTimeout = ms_lShotTimeout;
-
-   return SUCCESS;
 }
 
 #if !defined(EDITOR_REMOVED)
@@ -1553,7 +1549,7 @@ void CDoofus::Update(void)
 
 			case State_Dead:
 				CCharacter::OnDead();
-            realm()->RemoveThing(this);
+            Object::enqueue(SelfDestruct);
             return;
 		}	
 
@@ -1700,10 +1696,7 @@ void CDoofus::Logic_Die(void)
 			// is a launched weapon
 			if (m_eWeaponType == CHeatseekerID || m_eWeaponType == CRocketID || m_eWeaponType == CNapalmID)
 			{
-				GameMessage msg;
-				msg.msg_ObjectDelete.eType = typeObjectDelete;
-				msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, m_weapon);
+           Object::enqueue(m_weapon->SelfDestruct);
 			}
 			else
          {
@@ -1783,10 +1776,7 @@ void CDoofus::Logic_Writhing(void)
 			// is a launched weapon
 			if (m_eWeaponType == CHeatseekerID || m_eWeaponType == CRocketID || m_eWeaponType == CNapalmID)
 			{
-				GameMessage msg;
-				msg.msg_ObjectDelete.eType = typeObjectDelete;
-            msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, m_weapon);
+            Object::enqueue(m_weapon->SelfDestruct);
 			}
 			else
          {
@@ -2576,7 +2566,7 @@ void CDoofus::Logic_PopWait(void)
 	}
 	else
 	{
-		m_pPylonStart = nullptr;
+      m_pPylonStart.reset();
 	}
 }
 
@@ -2940,7 +2930,7 @@ void CDoofus::Logic_RunShoot(void)
 	}
 	else
 	{
-		m_pPylonStart = nullptr;
+      m_pPylonStart.reset();
 	}
 }
 
@@ -3544,10 +3534,7 @@ void CDoofus::OnExplosionMsg(Explosion_Message* pMessage)
 			// is a launched weapon
 			if (m_eWeaponType == CHeatseekerID || m_eWeaponType == CRocketID || m_eWeaponType == CNapalmID)
 			{
-				GameMessage msg;
-				msg.msg_ObjectDelete.eType = typeObjectDelete;
-            msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, m_weapon);
+            Object::enqueue(m_weapon->SelfDestruct);
 			}
 			else
          {
@@ -3609,10 +3596,7 @@ void CDoofus::OnBurnMsg(Burn_Message* pMessage)
 			// is a launched weapon
 			if (m_eWeaponType == CHeatseekerID || m_eWeaponType == CRocketID || m_eWeaponType == CNapalmID)
 			{
-				GameMessage msg;
-				msg.msg_ObjectDelete.eType = typeObjectDelete;
-            msg.msg_ObjectDelete.sPriority = 0;
-            SendThingMessage(msg, m_weapon);
+            Object::enqueue(m_weapon->SelfDestruct);
 			}
 			else
          {
@@ -3624,15 +3608,6 @@ void CDoofus::OnBurnMsg(Burn_Message* pMessage)
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CDoofus::OnDeleteMsg(					// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-	CCharacter::OnDeleteMsg(pdeletemsg);
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handles a Help_Message

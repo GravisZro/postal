@@ -144,15 +144,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "firebomb.h"
+
+#include "realm.h"
+#include "reality.h"
+#include "game.h"
 #include "dude.h"
 #include "fire.h"
 #include "SampleMaster.h"
-#include "game.h"
-#include "reality.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -189,6 +188,21 @@ static const char* ms_apszResNames[] =
 	nullptr
 };
 
+
+CFirebomb::CFirebomb(void)
+{
+  m_sSuspend = 0;
+  //			m_sprite.m_pthing	= this;
+}
+
+CFirebomb::~CFirebomb(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -290,12 +304,6 @@ void CFirebomb::Update(void)
 
 		ProcessMessages();
 
-		if (m_eState == State_Deleted)
-			{
-        realm()->RemoveThing(this);
-			return;
-			}
-
 		// Check the current state
 		switch (m_eState)
 		{
@@ -312,7 +320,7 @@ void CFirebomb::Update(void)
 				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 				if (m_dY < sHeight)
 				{
-              realm()->RemoveThing(this);
+               Object::enqueue(SelfDestruct);
 					return;
 				}
 				m_eState = State_Go;
@@ -401,7 +409,7 @@ void CFirebomb::Update(void)
 					}
 				}
 
-            realm()->RemoveThing(this);
+            Object::enqueue(SelfDestruct);
             return;
 		}
 
@@ -559,22 +567,6 @@ int16_t CFirebomb::Preload(
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// ProcessMessages
-////////////////////////////////////////////////////////////////////////////////
-
-void CFirebomb::ProcessMessages(void)
-{
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-      m_eState = State_Deleted;
-    m_MessageQueue.clear();
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Firefrag
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -582,7 +574,7 @@ void CFirebomb::ProcessMessages(void)
 // Macros/types/etc.
 ////////////////////////////////////////////////////////////////////////////////
 
-#define FRAG_IMAGE_FILE			"res\\grenade.bmp"
+#define FRAG_IMAGE_FILE			"res/grenade.bmp"
 
 // Minimum elapsed time (in milliseconds)
 
@@ -603,6 +595,22 @@ double CFirefrag::ms_dVelTransferFract = -0.4;			// Amount of velocity to bounce
 int16_t	CFirefrag::ms_sMaxExplosions	= 4;					// Maximum explosions before death.
 // Let this auto-init to 0
 int16_t CFirefrag::ms_sFileCount;
+
+
+CFirefrag::CFirefrag(void)
+{
+  m_pImage = 0;
+  m_sNumExplosions	= 0;
+}
+
+CFirefrag::~CFirefrag(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -789,12 +797,9 @@ void CFirefrag::Update(void)
             {
                if (m_fire)
 					{
-						GameMessage msg;
-						msg.msg_ObjectDelete.eType = typeObjectDelete;
-						msg.msg_ObjectDelete.sPriority = 0;
-                  SendThingMessage(msg, m_fire);
-					}
-               realm()->RemoveThing(this);
+                 Object::enqueue(m_fire->SelfDestruct);
+               }
+        Object::enqueue(SelfDestruct);
 					return;
 				}
 				break;

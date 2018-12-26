@@ -137,6 +137,7 @@
 // Includes.
 ////////////////////////////////////////////////////////////////////////////////
 #include "Thing3d.h"
+
 #include "weapon.h"
 #include "SampleMaster.h"
 #include "bulletFest.h"
@@ -243,11 +244,6 @@ protected:
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
 
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 		// Handles a DrawBlood_Message.
 		virtual			// Override to implement additional functionality.

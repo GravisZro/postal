@@ -405,62 +405,6 @@ void CSmashatorium::QuickCheckReset(// Returns true if collision detected, false
 	m_sSearchH = 1 + m_psClipY[lY2] - m_psClipY[lY];
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-
-
-//
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-
-
-//
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-
-
-//
-////////////////////////////////////////////////////////////////////////////////
-
-//===========================================================================
-// Currently stubs for now...
-//===========================================================================
-
-// Reset QuickCheckNext() using the specified paramters.
-void CSmashatorium::QuickCheckReset(				// Returns true if collision detected, false otherwise
-	CSmash::Bits include,								// In:  Bits, of which, one must be set to collide with a given CSmash
-	CSmash::Bits dontcare,								// In:  Bits that you don't care about
-	CSmash::Bits exclude)								// In:  Bits that must be 0 to collide with a given CSmash
-	{
-  UNUSED(include, dontcare, exclude);
-	TRACE("NEVER USED!\n");
-	ASSERT(0);
-	}
-
-// Returns the next object being collided with, using the parameters that were
-// passed to QuickCheckReset().  This will return all the objects being collided
-// with in an arbitrary order.  Other functions will someday return the objects
-// in some particular order.  The function will return false when there are no
-// more colisions.
-bool CSmashatorium::QuickCheckNext(					// Returns true if collision detected, false otherwise
-   R3DLine*	pLine,										// In:  Line segment to collide against.
-	CSmash** pSmashee,								// Out: Thing being smashed into if any (unless 0)
-	CSmash*	pSmasher)								// Out: Smash that should be excluded from search.
-	{
-  UNUSED(pLine, pSmashee, pSmasher);
-	ASSERT(0);
-	return false;	// NEVER USED ANYMORE!
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -547,8 +491,9 @@ bool CSmashatorium::QuickCheckNext(CSmash** ppSmashee)
 			{	// Avoid redundancy
 			pSmashee->m_lSearchTagCode = m_lCurrentSearchCode;
 
-			if (!(pSmashee->m_bits & m_exclude) && ((pSmashee->m_bits & ~m_dontcare) 
-				& m_include) && pSmashee != m_pSmasher)
+         if (pSmashee != m_pSmasher &&
+             !(pSmashee->m_bits & m_exclude) &&
+             ((pSmashee->m_bits & ~m_dontcare) & m_include))
 				{
 				if (pSmashee->m_sphere.Collide(&m_pSmasher->m_sphere) == COLLISION)
 					{

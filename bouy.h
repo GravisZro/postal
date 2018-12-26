@@ -60,8 +60,7 @@
 #ifndef BOUY_H
 #define BOUY_H
 
-#include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
 
 // Template node class for linked lists
 template <class Owner, class K>
@@ -202,6 +201,7 @@ class CTreeListNode
 
 // Forward declaration
 class CBouy;
+class CNavigationNet;
 
 typedef CTreeListNode<CBouy, double> TreeListNode;
 
@@ -243,26 +243,8 @@ class CBouy : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CBouy(void)
-			{
-			m_pImage = 0;
-			m_sSuspend = 0;
-			m_pParentNavNet = nullptr;
-			m_paucRouteTable = nullptr;
-         m_sRouteTableSize = 0;
-         }
-
-      ~CBouy()
-         {
-         // Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-
-         if (m_paucRouteTable != nullptr)
-            free(m_paucRouteTable);
-
-         // Free resources
-         FreeResources();
-         }
+      CBouy(void);
+      ~CBouy(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -281,16 +263,13 @@ class CBouy : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
 
 		// Resume object
 		void Resume(void);
-
-		// Update object
-		void Update(void);
 
 		// Render object
 		void Render(void);
@@ -310,9 +289,6 @@ class CBouy : public CThing
 			int16_t sX,												// In:  New x coord
 			int16_t sY,												// In:  New y coord
 			int16_t sZ);												// In:  New z coord
-
-		// Called by editor to update object
-		void EditUpdate(void);
 
 		// Called by editor to render object
 		void EditRender(void);

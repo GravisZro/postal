@@ -26,7 +26,6 @@
 #ifndef OSTRICH_H
 #define OSTRICH_H
 
-#include <RSPiX.h>
 #include "doofus.h"
 
 // COstrich is the object for the ostriches wandering about in the game.
@@ -69,20 +68,8 @@ class COstrich : public CDoofus
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      COstrich(void)
-			{
-				m_sRotDirection = 0;
-			}
-
-      ~COstrich(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-         realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      COstrich(void);
+      ~COstrich(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -101,7 +88,7 @@ class COstrich : public CDoofus
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Update object
 		void Update(void);

@@ -166,12 +166,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "band.h"
-#include "SampleMaster.h"
+
+#include "realm.h"
+#include "navnet.h"
 #include "item3d.h"
+#include "SampleMaster.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -310,6 +310,31 @@ static RP3d ms_apt3dAttribCheck[] =
 	{ 6, 0,  6},
 };
 #endif
+
+
+CBand::CBand(void)
+{
+  m_ucNextBouyID = 1;
+  m_ucDestBouyID = 1;
+  m_bCivilian = true;
+}
+
+CBand::~CBand(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+
+  // If sample playing . . .
+  if (ms_siBandSongInstance != 0)
+  {
+    AbortSample(ms_siBandSongInstance);
+    ms_siBandSongInstance = 0;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -512,13 +537,13 @@ int16_t CBand::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CBand::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CBand::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 // If not a violent locale . . . 
 #if !VIOLENT_LOCALE
 	// We must kill band members in these countries b/c of their lack of tolerance.
-  realm()->RemoveThing(this);
-	return SUCCESS;
+        Object::enqueue(SelfDestruct);
+        return;
 #else
 
 	// Set the current height, previous time, and Nav Net by calling the
@@ -526,7 +551,7 @@ int16_t CBand::Startup(void)								// Returns 0 if successfull, non-zero otherw
 	CDoofus::Startup();
 
 	// Init other stuff
-	return Init();
+   Init();
 #endif
 }
 
@@ -999,7 +1024,7 @@ void CBand::Update(void)
             if (!list.empty())
                SendThingMessage(msg, list.front());
 				OnDead();
-            realm()->RemoveThing(this);
+            Object::enqueue(SelfDestruct);
             return;
 		}
 
@@ -1158,7 +1183,7 @@ int16_t CBand::EditModify(void)
                         child(),
                         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 							// Be gone.
-                     realm()->RemoveThing(child());
+                      Object::enqueue(SelfDestruct);
 							}
 						}
 
@@ -1168,7 +1193,7 @@ int16_t CBand::EditModify(void)
 						// If a child is desired . . .
 						if (itChild != CItem3d::None)
 							{
-                    managed_ptr<CItem3d> pitem2 = realm()->AddThing<CItem3d>(CItem3dID);
+                    managed_ptr<CItem3d> pitem2 = realm()->AddThing<CItem3d>();
                         if (pitem2)
 								{
 								// Remember who our child is.

@@ -553,11 +553,7 @@
 
 #include <ctime>
 
-#if defined(_WIN32)
-   #include <direct.h>
-#else
-   #include <unistd.h>
-#endif
+#include <unistd.h>
 
 #include "Menu/menu.h"
 #include <Prefs/prefs.h>
@@ -580,6 +576,7 @@
 #include "InputSettingsDlg.h"
 #include "encrypt.h"
 #include "credits.h"
+#include "realm.h"
 
 #if !defined(MULTIPLAYER_REMOVED)
 #include "NetDlg.h"

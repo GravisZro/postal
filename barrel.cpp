@@ -107,16 +107,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "barrel.h"
+
 #include "dude.h"
 #include "game.h"
 #include "SampleMaster.h"
 #include "reality.h"
 #include "explode.h"
-
+#include "realm.h"
+#include "fire.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -169,6 +168,29 @@ static const char* ms_apszSpinResNames[] =
 };
 
 
+
+
+CBarrel::CBarrel(void)
+   {
+   m_sSuspend = 0;
+   m_dRot = 0;
+   m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
+   m_sScreenRadius = 20;
+   m_panimCur = m_pPreviousAnim = nullptr;
+//			m_sprite.m_pthing	= this;
+   m_bSpecial = false;
+   }
+
+CBarrel::~CBarrel(void)
+   {
+   // Remove sprite from scene (this is safe even if it was already removed!)
+   realm()->Scene()->RemoveSprite(&m_sprite);
+   realm()->Scene()->RemoveSprite(&m_spriteShadow);
+   realm()->m_smashatorium.Remove(&m_smash);
+
+   // Free resources
+   FreeResources();
+   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -369,17 +391,13 @@ int16_t CBarrel::Init(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CBarrel::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CBarrel::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
 	// Set the current height, previous time, and Nav Net
 	CThing3d::Startup();
 
 	// Init other stuff
-	sResult	= Init();
-
-	return sResult;
+   Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -496,7 +514,7 @@ void CBarrel::Update(void)
 					}
 					// Delete this barrel object and just let the fire burn
 					// where it was.
-               realm()->RemoveThing(this);
+              Object::enqueue(SelfDestruct);
 					return;
 				}
 
@@ -741,16 +759,6 @@ void CBarrel::OnBurnMsg(Burn_Message* pMessage)
 		}
 	}
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CBarrel::OnDeleteMsg(					// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-	CThing3d::OnDeleteMsg(pdeletemsg);
-	}
 
 
 ////////////////////////////////////////////////////////////////////////////////

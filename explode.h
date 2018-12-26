@@ -47,7 +47,8 @@
 #define EXPLODE_H
 
 #include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
+
 #include "AlphaAnimType.h"
 #include "smash.h"
 
@@ -106,20 +107,8 @@ class CExplode : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-      CExplode(void)
-			{
-         m_sSuspend		= 0;
-			}
-
-		~CExplode()
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CExplode(void);
+      ~CExplode(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -143,9 +132,6 @@ class CExplode : public CThing
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile,											// In:  File to save to
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
-
-		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

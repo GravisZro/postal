@@ -749,7 +749,20 @@ void RunSteamworksUpkeep()
     }
 }
 #endif
+#include <put/cxxutils/posix_helpers.h>
 
+#include "realm.h"
+
+void print_lookup_count(void)
+{
+  posix::printf("\ncount of things added: %llu", g_things_added);
+  posix::printf("\ncount of things removed: %llu", g_things_removed);
+  posix::printf("\nmanaged_ptr insertion count: %llu", g_insert_count);
+  posix::printf("\nmanaged_ptr erasure attempt count: %llu", g_erase_count);
+  posix::printf("\nmanaged_ptr lookup count: %llu", g_lookup_count);
+  posix::printf("\nmanaged_ptr reset count: %llu", g_reset_count);
+  posix::printf("\nmanaged_ptr validity check count: %llu", g_validity_check_count);
+}
 
 int main(int argc, char **argv)
    {
@@ -759,6 +772,8 @@ int main(int argc, char **argv)
     _argv = argv;
 
     assert_types_are_sane();
+    posix::atexit(print_lookup_count);
+    Application app;
     rspPlatformInit();
 
     #if defined(STEAM_CONNECTED)

@@ -51,11 +51,11 @@
 #ifndef CRAWLER_H
 #define CRAWLER_H
 
-
 #include <RSPiX.h>
 
-#include "realm.h"
 #include "reality.h"
+
+class CRealm;
 
 class CCrawler
 	{
@@ -490,23 +490,8 @@ class CCrawler
 			int16_t sx,	// In:  X position on attribute map.
 			int16_t	sy,	// In:  Y position on attribute map.
 			int16_t sz,	// In:  Z position on attribute map.
-			int16_t* psH)	// Out: Terrain height at X/Z.
-			{
-			bool	bCanWalk;
-			bool	bCannotWalk;
-			*psH	= realm()->GetHeightAndNoWalk(sx, sz, &bCannotWalk);
-			if (bCannotWalk == true								// Not walkable
-				|| (*psH - sy > m_sVertTolerance) )			// Terrain higher by m_sVertTolerance.
-				{
-				bCanWalk	= false;
-				}
-			else
-				{
-				bCanWalk	= true;
-				}
+         int16_t* psH);	// Out: Terrain height at X/Z.
 
-			return bCanWalk;
-			}
 #ifdef UNUSED_FUNCTIONS
 		////////////////////////////////////////////////////////////////////////////////
 		// Plot a point via the CScene.  

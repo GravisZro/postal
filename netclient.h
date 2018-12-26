@@ -37,7 +37,6 @@
 #include "netmsgr.h"
 #include "NetInput.h"
 #include "ORANGE/CDT/fqueue.h"
-#include "IdBank.h"
 #include "Average.h"
 
 #define NUM_TIMES  8;		// Number of frame times to remember
@@ -155,7 +154,7 @@ class CNetClient
 //					m_qPings.Reset();
 //					m_lRunnigAvgPing			= 0;
 
-					m_idDude						= CIdBank::IdNil;
+               m_idDude = invalid_id;
 					}
 			};
 

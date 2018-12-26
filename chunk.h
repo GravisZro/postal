@@ -43,8 +43,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
 
 class CChunk : public CThing
 	{
@@ -103,29 +102,9 @@ class CChunk : public CThing
 	//---------------------------------------------------------------------------
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
-	public:
-		// Constructor
-      CChunk(void)
-			{
-			m_sSuspend			= 0;
-			m_dRot				= 0.0;
-			m_dVel				= 0.0;
-			m_dVertVel			= 0.0;
-			m_sLen				= 0;
-
-//			m_sprite.m_pthing		= this;
-			m_sprite.m_u8Color	= 1;
-
-			m_type				= Blood;
-			}
-
-      ~CChunk(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			}
-
-
+   public:
+      CChunk(void);
+      ~CChunk(void);
 
 	//---------------------------------------------------------------------------
 	// Virtual functions (implementing them as inlines doesn't pay!)

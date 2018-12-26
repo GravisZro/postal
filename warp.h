@@ -44,10 +44,11 @@
 #ifndef WARP_H
 #define WARP_H
 
-#include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
+
 #include "StockPile.h"
-#include "dude.h"
+
+class CDude;
 
 class CWarp : public CThing
 	{
@@ -105,22 +106,8 @@ class CWarp : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-      CWarp(void)
-			{
-			m_sSuspend					= 0;
-			m_sRotY						= 0;
-
-//			m_sprite.m_pthing			= this;
-			}
-
-		~CWarp()
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
+      CWarp(void);
+      ~CWarp(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implementing them as inlines doesn't pay!)
@@ -137,9 +124,6 @@ class CWarp : public CThing
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile,											// In:  File to save to
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
-
-		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

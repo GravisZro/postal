@@ -94,10 +94,13 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "demon.h"
+
+#include "realm.h"
 #include "game.h"
 #include "dude.h"
+#include "SampleMaster.h"
+
 
 // To help identify the m_sSoundBank number for each new Add on level
 #define DEMON_SHANTY_LEVEL			1
@@ -518,14 +521,6 @@ int16_t CDemon::Save(										// Returns 0 if successfull, non-zero otherwise
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Startup object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CDemon::Startup(void)								// Returns 0 if successfull, non-zero otherwise
-{
-	return SUCCESS;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Suspend object
 ////////////////////////////////////////////////////////////////////////////////
 void CDemon::Suspend(void)
@@ -555,9 +550,7 @@ void CDemon::Update(void)
 	if (!m_sSuspend)
 	{
 		// Process messages.
-		ProcessMessages();
-      if (m_state == State_Delete)
-        realm()->RemoveThing(this);
+      ProcessMessages();
 	}
 }
 
@@ -823,12 +816,7 @@ void CDemon::ProcessMessages(void)
 		if (!bFoundSample && lThisTime > m_lIdleTime + ms_lMinIdleTime)
 		{
 			switch(msg.msg_Generic.eType)
-			{
-				// Delete Demon
-				case typeObjectDelete:
-					m_state	= State_Delete;
-					break;
-
+         {
 				// Weapon Selector
 				case typeWeaponSelect:
 					switch (msg.msg_WeaponSelect.sWeapon)

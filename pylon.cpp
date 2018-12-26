@@ -75,10 +75,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "pylon.h"
+
+#include "realm.h"
+#include "dude.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -95,6 +95,35 @@
 // Let this auto-init to 0
 int16_t CPylon::ms_sFileCount;
 
+CPylon::CPylon(void)
+{
+  m_pImage = 0;
+  m_sSuspend = 0;
+
+  // Let's default the whole thing to zero.
+  std::memset(&m_msg, 0, sizeof(m_msg) );
+
+  // Then set some portions we can via the generic type.
+  m_msg.msg_Generic.eType = typeGeneric;
+  m_msg.msg_Generic.sPriority = 0;
+
+  realm()->m_sNumPylons++;
+  m_u16TargetDudeID = 0;
+}
+
+CPylon::~CPylon(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Remove smash from smashatorium (this is safe even if it was already removed!).
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+
+  realm()->m_sNumPylons--;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -110,18 +139,8 @@ int16_t CPylon::Load(										// Returns 0 if successfull, non-zero otherwise
 	if (sResult == SUCCESS)
 	{
 		// Load common data just once per file (not with each object)
-		if (ms_sFileCount != sFileCount)
-		{
-			ms_sFileCount = sFileCount;
-
-			// Load static data
-			switch (ulFileVersion)
-			{
-				default:
-				case 1:
-					break;
-			}
-		}
+      if (ms_sFileCount != sFileCount)
+         ms_sFileCount = sFileCount;
 
 		// Load object data
 		pFile->Read(&m_dX);
@@ -218,15 +237,13 @@ int16_t CPylon::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CPylon::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CPylon::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
 	// At this point we can assume the CHood was loaded, so we init our height
 	m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
 
 	// Init other stuff
-	sResult = GetResources();
+   GetResources();
 
 	// Update sphere.
 	m_smash.m_sphere.sphere.X			= m_dX;
@@ -238,8 +255,6 @@ int16_t CPylon::Startup(void)								// Returns 0 if successfull, non-zero other
 
 	// Update the smash.
 	realm()->m_smashatorium.Update(&m_smash);
-
-	return sResult;
 }
 
 
@@ -754,8 +769,28 @@ uint16_t CPylon::GetPylonUniqueID(uint8_t ucPylonID)
   for(managed_ptr<CThing>& pThing : realm()->GetThingsByType(CPylonID))
     if(managed_ptr<CPylon>(pThing)->m_ucID == ucPylonID)
       return pThing->GetInstanceID();
-  return CIdBank::IdNil;
+  return invalid_id;
 }
+
+
+bool CPylon::Triggered(void)
+{
+   bool bTriggered = false;
+
+   if (m_u16TargetDudeID != invalid_id)
+   {
+      managed_ptr<CDude> pthing;
+      pthing = realm()->GetThingById<CDude>(m_u16TargetDudeID);
+      //realm()->m_idbank.GetThingByID((CThing**) &pthing, m_u16TargetDudeID);
+      if (pthing && pthing->type() == CDudeID)
+      {
+         if (pthing->m_state != CThing3d::State_Dead)
+            bTriggered = true;
+      }
+   }
+   return bTriggered;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ProcessMessages - Similar to the base class version but handles a few more

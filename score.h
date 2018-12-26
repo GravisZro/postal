@@ -49,9 +49,15 @@
 #define SCORE_H
 
 #include <RSPiX.h>
+
 #include "game.h"
-#include "realm.h"
 #include "net.h"
+
+#include <newpix/managedpointer.h>
+
+class CHood;
+class CRealm;
+class CThing3d;
 
 #if !defined(MULTIPLAYER_REMOVED)
 

@@ -48,9 +48,7 @@
 #ifndef ITEM3D_H
 #define ITEM3D_H
 
-#include <RSPiX.h>
-
-#include "character.h"
+#include "Thing3d.h"
 
 class CItem3d : public CThing3d
 	{
@@ -198,12 +196,6 @@ class CItem3d : public CThing3d
 							// Call base class to get default functionality.
 		void OnBurnMsg(					// Returns nothing.
 			Burn_Message* pburnmsg);	// In:  Message to handle.
-
-		// Handles an ObjectDelete_Message.
-		virtual			// Override to implement additional functionality.
-							// Call base class to get default functionality.
-		void OnDeleteMsg(								// Returns nothing.
-			ObjectDelete_Message* pdeletemsg);	// In:  Message to handle.
 
 	//---------------------------------------------------------------------------
 	// Internal functions

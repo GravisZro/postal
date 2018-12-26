@@ -118,9 +118,10 @@
 #define INPUT_H
 
 #include <RSPiX.h>
-#include "realm.h"
 #include "InputSettings.h"
 
+
+class CRealm;
 
 // Maximum number of dudes supported by this module.  Just about any value
 // will work, it merely uses up a few extra bytes per dude, and no extra

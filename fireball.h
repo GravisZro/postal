@@ -57,11 +57,9 @@
 #ifndef FIREBALL_H
 #define FIREBALL_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "AlphaAnimType.h"
-#include "smash.h"
 #include "weapon.h"
+
+#include "AlphaAnimType.h"
 
 
 class CThing3d;
@@ -81,8 +79,7 @@ class CFireball : public CWeapon
 		State_Fire,
 		State_Find,
 		State_Chase,
-		State_Explode,
-		State_Deleted
+      State_Explode
 	} CFireballState;
 
 	typedef RChannel<CAlphaAnim> ChannelAA;
@@ -135,35 +132,8 @@ class CFireball : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CFireball(void)
-			{
-			m_sSuspend = 0;
-			m_lPrevTime = 0;
-			m_bSendMessages = true;
-			m_u32CollideIncludeBits = 0;
-			m_u32CollideDontcareBits = 0;
-			m_u32CollideExcludeBits = 0;
-         m_sTotalAlphaChannels = 0;
-			m_smash.m_bits = 0;
-			m_bMoving = true;
-			m_lAnimTime = 0;
-
-//			m_sprite.m_pthing = this;
-			}
-
-      ~CFireball(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			// Remove yourself from the collision list if it was in use
-			// (switching to smoke removes it from the smashatorium and sets
-			// the m_pThing field to nullptr)
-			if (m_smash.m_pThing)
-				realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CFireball(void);
+      ~CFireball(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -191,7 +161,7 @@ class CFireball : public CWeapon
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -318,8 +288,7 @@ class CFirestream : public CWeapon
 		State_Fire,
 		State_Find,
 		State_Chase,
-		State_Explode,
-		State_Deleted
+      State_Explode
 	} CFirestreamState;
 
 	typedef RChannel<CAlphaAnim> ChannelAA;
@@ -362,21 +331,8 @@ class CFirestream : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CFirestream(void)
-			{
-			m_sSuspend = 0;
-			m_lPrevTime = 0;
-			m_bSendMessages = true;
-			m_sTotalAlphaChannels = 0;
-
-//			m_sprite.m_pthing = this;
-			}
-
-      ~CFirestream(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			}
+      CFirestream(void);
+      ~CFirestream(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -404,7 +360,7 @@ class CFirestream : public CWeapon
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

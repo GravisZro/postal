@@ -49,6 +49,7 @@
 #define DEATHWAD_H
 
 #include "weapon.h"
+
 #include "StockPile.h"
 
 // CDeathWad is an unguided projectile weapon class.
@@ -100,31 +101,8 @@ class CDeathWad : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-      CDeathWad(void)
-			{
-//			m_sprite.m_pthing				= this;
-         m_smash.m_pThing = this;
-         m_siThrust						= 0;
-			m_stockpile.Zero();
-			m_bInsideTerrain				= false;
-			m_u32CollideIncludeBits		= 0;
-			m_u32CollideDontcareBits	= 0;
-			m_u32CollideExcludeBits		= 0;
-			m_dUnthrustedDistance		= 0.0;
-			}
-
-      ~CDeathWad(void)
-			{
-			// Stop sound, if any.
-			StopLoopingSample(m_siThrust);
-
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CDeathWad(void);
+      ~CDeathWad(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -190,9 +168,6 @@ class CDeathWad : public CWeapon
 		
 		// Free all resources
 		int16_t FreeResources(void);						// Returns 0 if successfull, non-zero otherwise
-
-		// Process messages in the message queue.
-		void ProcessMessages(void);
 
 		// Traverse the path until the inside terrain status changes or
 		// the destination is reached.

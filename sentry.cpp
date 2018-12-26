@@ -93,12 +93,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "sentry.h"
+
+#include "realm.h"
+#include "reality.h"
 #include "game.h"
 #include "SampleMaster.h"
 
-#include "reality.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -222,6 +223,32 @@ static RP3d ms_apt3dAttribCheck[] =
 	{ 6, 0,  6},
 };
 #endif
+
+CSentry::CSentry(void)
+{
+  m_sSuspend = 0;
+  m_dRot = 0;
+  m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
+  m_panimCur = m_panimPrev = nullptr;
+  m_panimCurBase	= nullptr;
+  //			m_sprite.m_pthing	= this;
+  m_sNumRounds = 0;
+  m_sRoundsPerShot = 0;
+  m_lSqDistRange = 0;
+  m_lShootDelay = 0;
+  m_dAngularVelocity = 360.0;
+}
+
+CSentry::~CSentry(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->Scene()->RemoveSprite(&m_spriteBase);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -511,17 +538,13 @@ void CSentry::UpdatePosition(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CSentry::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CSentry::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
 	// Set the current height, previous time, and Nav Net
 	CDoofus::Startup();
 
 	// Init other stuff
-	Init();
-
-	return sResult;
+   Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -695,7 +718,7 @@ void CSentry::Update(void)
                   realm()->Hood());							// Dst clip rect.
 
 					CDoofus::OnDead();
-               realm()->RemoveThing(this);
+              Object::enqueue(SelfDestruct);
                return;
 		}
 

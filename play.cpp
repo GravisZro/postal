@@ -693,8 +693,8 @@ class CPlayInfo
 
 			m_gamestate = Game_Ok;
 
-//			m_idLocalDude = CIdBank::IdNil;
-			m_idGripTarget = CIdBank::IdNil;
+//			m_idLocalDude = invalid_id;
+         m_idGripTarget = invalid_id;
 			m_bDoRealmFrame = false;
 			m_lSumUpdateDisplayTimes = 0;
 			m_bXRayAll	= false;		// Always default to no XRay all.
@@ -3292,10 +3292,8 @@ class CPlayInput : public CPlay
 			int32_t		lKey)				// In:  Key to continue or 0 to wait for foreground status
 			{
 			// Suspend realm.
-			if (prealm)
-				{
-				prealm->Suspend();
-				}
+         if (prealm)
+            Object::enqueue(prealm->Suspend);
 
 			// Fade colors to red.
 			PalTranOn();
@@ -3427,10 +3425,8 @@ class CPlayInput : public CPlay
 			PalTranOff();
 
 			// Resum realm.
-			if (prealm)
-				{
-				prealm->Resume();
-				}
+         if (prealm)
+            Object::enqueue(prealm->Resume);
 
 			// Clear queues.
 			rspClearAllInputEvents();
@@ -3449,8 +3445,8 @@ class CPlayInput : public CPlay
 			CPlayInfo* pinfo)										// I/O: Play info
 			{
 			// If not in multiplayer mode, suspend the realm while on the menu
-			if (!pinfo->IsMP())
-            pinfo->realm()->Suspend();
+         if (!pinfo->IsMP())
+            Object::enqueue(pinfo->realm()->Suspend);
 
 			// Fade out colors -- for MP do it fast to avoid hanging the game up
 			if (pinfo->IsMP())
@@ -3668,8 +3664,8 @@ class CPlayInput : public CPlay
 			ClearLocalInput();
 
 			// If not in multiplayer mode, resume the realm
-			if (!pinfo->IsMP())
-            pinfo->realm()->Resume();
+         if (!pinfo->IsMP())
+           Object::enqueue(pinfo->realm()->Resume);
 
 			// Restore camera's screen access.
 			pinfo->Camera()->SetViewSize(
@@ -3817,8 +3813,8 @@ class CPlayRealm : public CPlay
 					// Load realm (false indicates NOT edit mode)
                if (prealm->Load(pinfo->RealmName(), false) == SUCCESS)
 						{
-						// Startup the realm
-                  if (prealm->Startup() == SUCCESS)
+                  // Startup the realm
+                  if (Object::enqueue(prealm->Startup))
 							{
 
 							//==============================================================================
@@ -3982,12 +3978,12 @@ class CPlayRealm : public CPlay
 						prealm->m_time.Update(DEMO_TIME_PER_FRAME);
 						}
 					
-
 					// Update Realm
-					prealm->Update();
+               Object::enqueue(prealm->Update);
 
 					// Prepare Realm for rendering (Snap()).
-					prealm->Render();
+               Object::enqueue(prealm->Render);
+               Application::process_events(0);
 
 					// In demo mode (record or playback) we don't draw the results of the frame if
 					// we're falling behind.  However, we always draw when doing a demo-mode-movie .

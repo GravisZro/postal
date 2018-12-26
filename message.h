@@ -125,8 +125,8 @@ enum
 	typeShot,
 	typeExplosion,
 	typeBurn,
-	typeKill,
-	typeObjectDelete,
+   typeKill,
+   typeObjectDelete,
 	typeNotification,		// Generic notification with generic parameters for
 								// reuse.  Delete this silly message!
 	typeDrawBlood,			// Message indicating blood should be drawn on the

@@ -54,10 +54,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "deathWad.h"
+
+#include "realm.h"
 #include "dude.h"
 #include "explode.h"
 #include "fire.h"
@@ -139,6 +138,36 @@ const CStockPile CDeathWad::ms_stockpileMax				=
 
 // Let this auto-init to 0
 int16_t CDeathWad::ms_sFileCount;
+
+
+
+
+CDeathWad::CDeathWad(void)
+{
+  //			m_sprite.m_pthing				= this;
+  m_smash.m_pThing = this;
+  m_siThrust						= 0;
+  m_stockpile.Zero();
+  m_bInsideTerrain				= false;
+  m_u32CollideIncludeBits		= 0;
+  m_u32CollideDontcareBits	= 0;
+  m_u32CollideExcludeBits		= 0;
+  m_dUnthrustedDistance		= 0.0;
+}
+
+CDeathWad::~CDeathWad(void)
+{
+  // Stop sound, if any.
+  StopLoopingSample(m_siThrust);
+
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -237,17 +266,6 @@ void CDeathWad::Update(void)
 		double dSeconds = (double)(lThisTime - m_lPrevTime) / 1000.0;
 
 		ProcessMessages();
-		// If we're to be deleted . . .
-		// Note that this could be a case in the switch below, but, if
-		// for whatever reason, that moves or something else is inserted
-		// between here and the switch that might change the state, we 
-		// might not get deleted.
-		if (m_eState == State_Deleted)
-			{
-			// We are to be deleted.  Do it.
-        realm()->RemoveThing(this);
-			return;
-			}
 
 		// Check the current state
 		switch (m_eState)
@@ -423,7 +441,7 @@ void CDeathWad::Update(void)
 						}
 					}
 #endif
-            realm()->RemoveThing(this);
+            Object::enqueue(SelfDestruct);
             return;
 		}
 
@@ -602,21 +620,6 @@ int16_t CDeathWad::Preload(
 	CacheSample(g_smidDeathWadThrust);
 	CacheSample(g_smidDeathWadExplode);
 	return sResult;	
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ProcessMessages
-////////////////////////////////////////////////////////////////////////////////
-
-void CDeathWad::ProcessMessages(void)
-{
-   if(!m_MessageQueue.empty())
-   {
-     GameMessage& msg = m_MessageQueue.front();
-      if(msg.msg_Generic.eType == typeObjectDelete)
-        m_eState = State_Deleted;
-      m_MessageQueue.clear();
-   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

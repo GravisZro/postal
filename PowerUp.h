@@ -79,9 +79,8 @@
 #ifndef POWERUP_H
 #define POWERUP_H
 
-#include <RSPiX.h>
-#include "realm.h"
 #include "item3d.h"
+
 #include "StockPile.h"
 
 class CPowerUp : public CItem3d
@@ -109,28 +108,8 @@ class CPowerUp : public CItem3d
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CPowerUp(void)
-			{
-			m_panimCur	= &m_anim;
-
-			m_stockpile.m_sHitPoints	= 0;
-
-//			m_sprite.m_pthing	= this;
-
-         m_smash.m_pThing = this;
-			}
-
-      ~CPowerUp(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-
-			// Remove collision thinger.
-			realm()->m_smashatorium.Remove(&m_smash);
-			}
+      CPowerUp(void);
+      ~CPowerUp(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

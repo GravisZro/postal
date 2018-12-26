@@ -101,25 +101,8 @@ class CHeatseeker : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-      CHeatseeker(void)
-			{
-//			m_sprite.m_pthing	= this;
-			m_lSmokeTimer = 0;
-			m_siThrust = 0;
-			}
-
-      ~CHeatseeker(void)
-			{
-			// Stop sound if any
-			StopLoopingSample(m_siThrust);
-
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CHeatseeker(void);
+      ~CHeatseeker(void);
 
 
 	//---------------------------------------------------------------------------
@@ -211,9 +194,6 @@ class CHeatseeker : public CWeapon
 		
 		// Free all resources
 		int16_t FreeResources(void);						// Returns 0 if successfull, non-zero otherwise
-
-		// Process messages in the message queue.
-		void ProcessMessages(void);
 
 		inline int16_t FindAngleTo(double dX, double dZ)
 		{

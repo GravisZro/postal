@@ -66,12 +66,12 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "AnimThing.h"
+
+#include "realm.h"
 #include "dude.h"
 #include "game.h"
+#include "message.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -87,6 +87,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Variables/data
 ////////////////////////////////////////////////////////////////////////////////
+
+CAnimThing::CAnimThing(void)
+{
+  m_paachannel = nullptr;
+  m_sSuspend = 0;
+  m_sLoop = TRUE;
+  m_szResName[0] = '\0';
+  m_msg.msg_Generic.sPriority	= 0;
+  //			m_sprite.m_pthing	= this;
+}
+
+CAnimThing::~CAnimThing(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -156,12 +175,10 @@ int16_t CAnimThing::Save(										// Returns 0 if successfull, non-zero otherwi
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CAnimThing::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CAnimThing::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 	{
 	m_lAnimPrevTime	= realm()->m_time.GetGameTime();
-	m_lAnimTime			= 0;
-
-	return SUCCESS;
+   m_lAnimTime			= 0;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,9 +222,7 @@ void CAnimThing::Update(void)
 				// Send the message.
             SendThingMessage(m_msg, m_sender);
 				}
-
-			// Done.
-         realm()->RemoveThing(this);
+         Object::enqueue(SelfDestruct);
 			}
 		}
 	}

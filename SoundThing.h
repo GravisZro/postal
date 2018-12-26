@@ -66,9 +66,7 @@
 #ifndef SOUNDTHING_H
 #define SOUNDTHING_H
 
-#include <RSPiX.h>
-#include "realm.h"
-#include "SampleMaster.h"
+#include "thing.h"
 
 // This class has its own GetRandom() to keep it from de-synching the game.
 #ifdef GetRandom
@@ -89,8 +87,7 @@ class CSoundThing : public CThing
 
 		typedef enum
 			{
-			State_Happy,		// La, la, la.
-			State_Delete		// Delete self next chance.
+         State_Happy,		// La, la, la.
 			} State;
 
 	//---------------------------------------------------------------------------
@@ -212,7 +209,7 @@ class CSoundThing : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -269,13 +266,13 @@ class CSoundThing : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-		double GetX(void)	{ return m_dX; }
+      double GetX(void)	const { return m_dX; }
 
 		virtual					// Overriden here.
-		double GetY(void)	{ return m_dY; }
+      double GetY(void)	const { return m_dY; }
 
 		virtual					// Overriden here.
-		double GetZ(void)	{ return m_dZ; }
+      double GetZ(void)	const { return m_dZ; }
 
 	//---------------------------------------------------------------------------
 	// External functions
@@ -294,9 +291,6 @@ class CSoundThing : public CThing
 		
 		// Kill object
 		int16_t Kill(void);											// Returns 0 if successfull, non-zero otherwise
-
-		// Process our message queue.
-		void ProcessMessages(void);
 
 		// Don't call this from outside of CSoundThing.  It should affect only
 		// CSoundThing stuff.

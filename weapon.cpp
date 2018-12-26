@@ -47,8 +47,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "weapon.h"
+
+#include "realm.h"
 #include "reality.h"
 #include "Thing3d.h"
 
@@ -65,6 +66,27 @@
 // Let this auto-init to 0
 int16_t CWeapon::ms_sFileCount;
 
+
+
+CWeapon::CWeapon(void)
+{
+  m_sSuspend = 0;
+  m_dX = m_dY = m_dZ = m_dRot = m_dVertVel = m_dHorizVel = 0.0;
+  m_eState = State_Idle;
+  m_spriteShadow.m_sInFlags = CSprite::InHidden;
+  m_spriteShadow.m_pImage = nullptr;
+  //			m_spriteShadow.m_pthing = this;
+  m_lPrevTime = 0;  // valgrind fix.  --ryan.
+}
+
+CWeapon::~CWeapon(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_spriteShadow);
+  // Release the shadow resource
+  if (m_spriteShadow.m_pImage)
+    rspReleaseResource(&g_resmgrGame, &(m_spriteShadow.m_pImage));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -175,13 +197,11 @@ int16_t CWeapon::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CWeapon::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CWeapon::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 	{
 
 	// Init other stuff
 	m_lPrevTime = realm()->m_time.GetGameTime();
-
-   return SUCCESS;
 	}
 
 
@@ -220,14 +240,6 @@ void CWeapon::Resume(void)
 	if (m_sSuspend == 0)
 		m_lPrevTime = realm()->m_time.GetGameTime();
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Update object
-////////////////////////////////////////////////////////////////////////////////
-void CWeapon::Update(void)
-{
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -410,12 +422,7 @@ void CWeapon::ProcessMessage(		// Returns nothing.
 		
 		case typeBurn:
 			OnBurnMsg(&(pmsg->msg_Burn) );
-			break;
-		
-		case typeObjectDelete:
-			OnDeleteMsg(&(pmsg->msg_ObjectDelete) );
-			break;
-
+         break;
 		case typeTrigger:
 			OnTriggerMsg(&(pmsg->msg_Trigger) );
 			break;
@@ -454,16 +461,6 @@ void CWeapon::OnBurnMsg(	// Returns nothing.
 	Burn_Message* pburnmsg)		// In:  Message to handle.
 {
   UNUSED(pburnmsg);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CWeapon::OnDeleteMsg(				// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-{
-  UNUSED(pdeletemsg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

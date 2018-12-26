@@ -23,10 +23,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "crawler.h"
 
+#include "realm.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// EOF
-////////////////////////////////////////////////////////////////////////////////
+
+bool CCrawler::CanWalk(	// Returns true if we can walk there, false otherwise.
+               int16_t sx,	// In:  X position on attribute map.
+               int16_t	sy,	// In:  Y position on attribute map.
+               int16_t sz,	// In:  Z position on attribute map.
+               int16_t* psH)	// Out: Terrain height at X/Z.
+{
+  bool bCanWalk;
+  bool bCannotWalk;
+  *psH = realm()->GetHeightAndNoWalk(sx, sz, &bCannotWalk);
+  if (bCannotWalk == true								// Not walkable
+      || (*psH - sy > m_sVertTolerance) )			// Terrain higher by m_sVertTolerance.
+  {
+    bCanWalk	= false;
+  }
+  else
+  {
+    bCanWalk	= true;
+  }
+
+  return bCanWalk;
+}

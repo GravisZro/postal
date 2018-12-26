@@ -71,8 +71,8 @@
 #ifndef FIRE_H
 #define FIRE_H
 
-#include <RSPiX.h>
-#include "realm.h"
+#include "thing.h"
+
 #include "AlphaAnimType.h"
 #include "smash.h"
 
@@ -92,8 +92,7 @@ class CFire : public CThing
 		State_Fire,
 		State_Find,
 		State_Chase,
-		State_Explode,
-		State_Deleted
+      State_Explode
 	} CFireState;
 
 	typedef uint8_t FireAnim;
@@ -174,33 +173,8 @@ class CFire : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CFire(void)
-			{
-			m_bIsBurningDude = false;
-			m_sSuspend = 0;
-			m_lPrevTime = 0;
-			m_bSendMessages = true;
-			m_u32CollideIncludeBits = 0;
-			m_u32CollideDontcareBits = 0;
-			m_u32CollideExcludeBits = 0;
-         m_sTotalAlphaChannels = 0;
-			m_smash.m_bits = 0;
-         m_lStartTime = 0;
-			}
-
-      ~CFire(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-			realm()->Scene()->RemoveSprite(&m_sprite);
-			// Remove yourself from the collision list if it was in use
-			// (switching to smoke removes it from the smashatorium and sets
-			// the m_pThing field to nullptr)
-			if (m_smash.m_pThing)
-				realm()->m_smashatorium.Remove(&m_smash);
-
-			// Free resources
-			FreeResources();
-			}
+      CFire(void);
+      ~CFire(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -228,7 +202,7 @@ class CFire : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);
@@ -303,10 +277,7 @@ class CFire : public CThing
 		// Get the time left to live.
 		// Check IsBurning() to determine whether this applies to the fire or
 		// the smoke.
-		int32_t GetTimeLeftToLive(void)
-			{
-			return m_lBurnUntil - realm()->m_time.GetGameTime();
-			}
+      int32_t GetTimeLeftToLive(void);
 
 	//---------------------------------------------------------------------------
 	// Internal functions
@@ -318,9 +289,6 @@ class CFire : public CThing
 		// Free all resources
 		int16_t FreeResources(void);						// Returns 0 if successfull, non-zero otherwise
 
-		// Process Game Messages
-		CFire::CFireState ProcessMessages(void);
-
 		// Initialize the fire for large or small objects
 		int16_t Init(void);
 
@@ -328,15 +296,7 @@ class CFire : public CThing
 		// remove from the smash so it won't collide with anything, reset the timers, etc.
 		int16_t Smokeout(void);
 
-		inline void WindDirectionUpdate(void)
-		{
-			ms_sWindDirection = rspMod360(ms_sWindDirection -2 + (GetRand() % 4)); // Biased 1 direction
-			ms_dWindVelocity = ms_dWindVelocity - 0.1 + ((GetRand() % 3) / 10.0);
-			if (ms_dWindVelocity < 10.0)
-				ms_dWindVelocity = 11.0;
-			if (ms_dWindVelocity > 40.0)
-				ms_dWindVelocity = 39.0;
-		}
+      void WindDirectionUpdate(void);
 	};
 
 

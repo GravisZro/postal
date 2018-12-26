@@ -100,10 +100,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "item3d.h"
+
+#include "realm.h"
 #include "reality.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -687,15 +686,6 @@ void CItem3d::OnBurnMsg(			// Returns nothing.
   UNUSED(pburnmsg);
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CItem3d::OnDeleteMsg(					// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-	CThing3d::OnDeleteMsg(pdeletemsg);
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Setup object after creating it
@@ -708,7 +698,7 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
    ItemType itemtype,					// In:  Known item type or Custom.
    const char*	pszCustomBaseName /*= nullptr*/,	// In:  Required if type == Custom.
 													// Base name for custom type resources.
-   managed_ptr<CThing3d> parentThing /*= CIdBank::IdNil*/)	// In:  Parent instance ID.
+   managed_ptr<CThing3d> parentThing /*= invalid_id*/)	// In:  Parent instance ID.
 	{
 	int16_t sResult = SUCCESS;
 

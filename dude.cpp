@@ -1101,23 +1101,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
 
 #include "dude.h"
+
+#include "weapon.h"
+#include "input.h"
+#include "PowerUp.h"
+#include "flag.h"
+
 #include "grenade.h"
 #include "game.h"
 #include "SampleMaster.h"
 #include "input.h"
 #include "AnimThing.h"
+#include "realm.h"
 #include "reality.h"
+
 #include "fire.h"
 #include "TriggerRegions.h"
 #include "PowerUp.h"
 #include "chunk.h"
 #include "warp.h"
+
 #include "score.h"
 #include "play.h"
+
 
 //#if defined(__ANDROID__)
 bool demoCompat = false; //Set in Play.cpp
@@ -1783,18 +1791,16 @@ int16_t CDude::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CDude::Startup(void)						// Returns 0 if successfull, non-zero otherwise
+void CDude::Startup(void)						// Returns 0 if successfull, non-zero otherwise
 	{
-	int16_t sResult	= CCharacter::Startup();
+   CCharacter::Startup();
 	
 	// Init other stuff
    m_lNextBulletTime = realm()->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
 
 	// Set start position for crawler verification.
 	m_dLastCrawledToPosX	= m_dX; 
-	m_dLastCrawledToPosZ	= m_dZ; 
-
-	return sResult;
+   m_dLastCrawledToPosZ	= m_dZ;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2474,8 +2480,8 @@ void CDude::Update(void)
 					// If we still have the picked up item . . .
                if (child())
                   {
-                 managed_ptr<CPowerUp> powerup = child();
-                 TakePowerUp(powerup);
+                 ppowerup = child();
+                 TakePowerUp(ppowerup);
                   child().reset();
 						}
 
@@ -2564,10 +2570,6 @@ void CDude::Update(void)
 		// Call base class //////////////////////////////////////////////////////
 
 		CCharacter::Update();
-
-		// If requested to delete self . . .
-      if (m_state == State_Delete)
-        realm()->RemoveThing(this);
 		}
 	}
 
@@ -4076,11 +4078,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
                   {
                   if (m_fire)
 							{
-							// Send it a delete message.
-							GameMessage	msg;
-							msg.msg_ObjectDelete.eType		= typeObjectDelete;
-							msg.msg_ObjectDelete.sPriority	= 0;
-                     SendThingMessage(msg, m_fire);
+                     Object::enqueue(m_fire->SelfDestruct);
 							}
 						}
 					}
@@ -4108,10 +4106,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
                weapon()->m_dRot	= GetRand() % 360;
 					ShootWeapon();
 					// Delete it!
-					GameMessage msg;
-					msg.msg_ObjectDelete.eType = typeObjectDelete;
-               msg.msg_ObjectDelete.sPriority = 0;
-               SendThingMessage(msg, weapon());
+               Object::enqueue(weapon()->SelfDestruct);
 					}
 				break;
 				}
@@ -4130,10 +4125,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 					// Done with it.
 					ShootWeapon();
 					// Delete it!
-					GameMessage msg;
-					msg.msg_ObjectDelete.eType = typeObjectDelete;
-               msg.msg_ObjectDelete.sPriority = 0;
-               SendThingMessage(msg, weapon());
+               Object::enqueue(weapon()->SelfDestruct);
 					}
 
 				break;
@@ -5156,17 +5148,6 @@ void CDude::OnPutMeDownMsg(		// Returns nothing
 		}
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Handles an ObjectDelete_Message.
-// (virtual).
-////////////////////////////////////////////////////////////////////////////////
-void CDude::OnDeleteMsg(					// Returns nothing.
-	ObjectDelete_Message* pdeletemsg)	// In:  Message to handle.
-	{
-	CCharacter::OnDeleteMsg(pdeletemsg);
-
-	SetState(State_Delete);
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handles a Suicide_Message.

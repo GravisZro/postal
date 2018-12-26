@@ -183,8 +183,11 @@
 // C Headers
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
 #include "score.h"
+
+
+#include "realm.h"
+#include "input.h"
 #include "dude.h"
 #include "toolbar.h"
 #include "update.h"

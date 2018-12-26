@@ -90,19 +90,8 @@ class CNapalm : public CWeapon
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CNapalm(void)
-			{
-//			m_sprite.m_pthing	= this;
-			}
-
-      ~CNapalm(void)
-			{
-			// Remove sprite from scene (this is safe even if it was already removed!)
-         realm()->Scene()->RemoveSprite(&m_sprite);
-
-			// Free resources
-			FreeResources();
-			}
+      CNapalm(void);
+      ~CNapalm(void);
 
 
 	//---------------------------------------------------------------------------
@@ -178,9 +167,6 @@ class CNapalm : public CWeapon
 		
 		// Free all resources
 		int16_t FreeResources(void);						// Returns 0 if successfull, non-zero otherwise
-
-		// Process messages in the message queue.
-		void ProcessMessages(void);
 
 	};
 

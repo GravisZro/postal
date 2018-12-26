@@ -98,11 +98,11 @@
 #ifndef HOOD_H
 #define HOOD_H
 
-#include <RSPiX.h>
+#include "thing.h"
+
 #include <Spry/spry.h>
 #include <ORANGE/MultiGrid/MultiGrid.h>
 
-#include "thing.h"
 
 
 // Let's just know that the Realm exists.
@@ -198,7 +198,7 @@ class CHood : public CThing
 			int16_t sFileCount);									// In:  File count (unique per file, never 0)
 
 		// Startup object
-		int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
+      void Startup(void);										// Returns 0 if successfull, non-zero otherwise
 
 		// Suspend object
 		void Suspend(void);

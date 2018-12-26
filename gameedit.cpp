@@ -1715,7 +1715,8 @@ extern void GameEdit(
 	#endif
 	
 	// Clear rubber band links for bouys
-	m_pBouyLink0 = m_pBouyLink1 = nullptr;
+   m_pBouyLink0.reset();
+   m_pBouyLink1.reset();
 
 	// Init cursor stuff
    if (InitCursor() == SUCCESS)
@@ -2196,8 +2197,11 @@ static bool DoInput(		// Returns true when done.
 						switch (ie.lKey & 0x0000FFFF)
 							{
 							case 27:
-								EditPylonTriggerRegion(nullptr);
+                    {
+                        managed_ptr<CThing> none;
+                        EditPylonTriggerRegion(none);
 								break;
+                    }
 							case EDIT_KEY_ENLARGE_DISPLAY1:
 							case EDIT_KEY_ENLARGE_DISPLAY2:
 							case EDIT_KEY_ENLARGE_DISPLAY3:
@@ -2734,15 +2738,15 @@ static bool DoInput(		// Returns true when done.
 					NewRealm(prealm);
 					// Setup camera.
                pcamera->SetHood(prealm->Hood());
-					m_pBouyLink0 = nullptr;
-					m_pBouyLink1 = nullptr;
+               m_pBouyLink0.reset();
+               m_pBouyLink1.reset();
 					break;
 
 				case GUI_ID_OPEN_REALM:
 					// Load realm
 					LoadRealm(prealm);
-					m_pBouyLink0 = nullptr;
-					m_pBouyLink1 = nullptr;
+               m_pBouyLink0.reset();
+               m_pBouyLink1.reset();
 					break;
 
 				case GUI_ID_SAVE_REALM:
@@ -2783,8 +2787,8 @@ static bool DoInput(		// Returns true when done.
 				case GUI_ID_CLOSE_REALM:
 					// Clear the ream.
 					CloseRealm(prealm);
-					m_pBouyLink0 = nullptr;
-					m_pBouyLink1 = nullptr;
+               m_pBouyLink0.reset();
+               m_pBouyLink1.reset();
 					break;
 
 				case GUI_ID_EXIT:
@@ -2793,8 +2797,8 @@ static bool DoInput(		// Returns true when done.
 						{
 						// Exit the editor
 						bExit = true;
-						m_pBouyLink0 = nullptr;
-						m_pBouyLink1 = nullptr;
+                  m_pBouyLink0.reset();
+                  m_pBouyLink1.reset();
 						}
 					break;
 
@@ -3001,10 +3005,9 @@ static void DoOutput(	// Returns nothing.
 		{
 		// Lock the composite buffer for much access.
 		rspLockBuffer();
-
 		// Update and render realm (in edit mode)
-		prealm->EditUpdate();
-		prealm->EditRender();
+      Object::enqueue(prealm->EditUpdate);
+      Object::enqueue(prealm->EditRender);
 
 		// Need hood for this . . .
       if (prealm->Hood())
@@ -3554,8 +3557,9 @@ static int16_t NewRealm(
 		// Set the bouy lines to default to on
 		ms_bDrawNetwork = true;
 
-		// Clear the network lines from the previous level (if any)
-		UpdateNetLines(nullptr);
+      // Clear the network lines from the previous level (if any)
+      managed_ptr<CThing> none;
+      UpdateNetLines(none);
 
 		// Set disk path for this realm.
 		prealm->m_resmgr.SetBasePath(g_GameSettings.m_szNoSakDir);
@@ -3651,7 +3655,7 @@ static int16_t CloseRealm(
 		if (ms_pcameraCur != nullptr)
 			{
 			// Clear hood ptr.
-			ms_pcameraCur->SetHood(nullptr);
+         //ms_pcameraCur->SetHood(nullptr);
 			}
 		
 		// Clear realm in case it contains anything
@@ -3679,7 +3683,8 @@ static int16_t CloseRealm(
 
 		// Better clear these.
 		ms_sMoving		= FALSE;
-		SetSel(nullptr, nullptr);
+      managed_ptr<CThing> none;
+      SetSel(none, nullptr);
 
 		// Set filename such that initially open and save dialogs start in
 		// *.RLM dir.
@@ -3738,7 +3743,7 @@ static int16_t LoadRealm(
 				ms_pgething	= GetEditorThing(prealm);
 
 				// Start the realm.
-				prealm->Startup();
+            Object::enqueue(prealm->Startup);
 
             if (prealm->Hood())
 					{
@@ -3770,7 +3775,7 @@ static int16_t LoadRealm(
 						rc.sH,							// Dimensions.
                   ThingHotCall,					// Callback.
 						TRUE,								// TRUE, if active.
-                  uintptr_t(prealm->Hood().pointer()),						// User value (CThing*).
+                  uintptr_t(prealm->Hood()),						// User value (CThing*).
                   FRONTMOST_HOT_PRIORITY);	// New items towards front.
 
 					// If successful . . .
@@ -3812,7 +3817,7 @@ static int16_t LoadRealm(
 									rc.sH,							// Dimensions.
 									ThingHotCall,					// Callback.
 									sActivateHot,					// TRUE, if initially active.
-                           uintptr_t(pthing.pointer()),					// User value (CThing*).
+                           uintptr_t(pthing),					// User value (CThing*).
                            FRONTMOST_HOT_PRIORITY);	// New items towards front.
 
 								// If successful . . .
@@ -4133,9 +4138,10 @@ static void PlayRealm(
 
 
 					// Startup the realm
-               if (prealm->Startup() == SUCCESS)
+               Object::enqueue(prealm->Startup);
+               if(true)
 						{
-						uint16_t	idSpecificWarp	= CIdBank::IdNil;
+                  uint16_t	idSpecificWarp	= invalid_id;
 
 						//////////// Special behaviors based on the current selection ////////////
 						// Note that pthingSel does not exist in prealm (it is in pEditRealm).
@@ -4212,7 +4218,7 @@ static void PlayRealm(
 
 						// Get thing to track . . .
                   managed_ptr<CThing> pthingTrack;
-						uint16_t		u16IdTrack	= CIdBank::IdNil;
+                  uint16_t		u16IdTrack	= invalid_id;
                   if (ms_pgething)
 							{
 							u16IdTrack = ms_pgething->m_u16CameraTrackId;
@@ -4340,13 +4346,9 @@ static void PlayRealm(
 									{
 									case EDIT_KEY_PAUSE:
 										if (bSuspended == false)
-											{
-											prealm->Suspend();
-											}
+                                Object::enqueue(prealm->Suspend);
 										else
-											{
-											prealm->Resume();
-											}
+                                Object::enqueue(prealm->Resume);
 										bSuspended	= !bSuspended;
 										break;
 		#if 0
@@ -4479,14 +4481,10 @@ static void PlayRealm(
 										break;
 
 									case EDIT_KEY_REALM_STATISTICS:
-										
-										prealm->Suspend();
-
+                             Object::enqueue(prealm->Suspend);
                               managed_ptr<CThing> pthing;
                               ShowRealmStatistics(prealm, pthing);
-
-										prealm->Resume();
-
+                              Object::enqueue(prealm->Resume);
 										break;
 									}
 								}
@@ -4550,10 +4548,10 @@ static void PlayRealm(
 								}
 
 							// Update and render realm
-							prealm->Update();
-							prealm->Render();
+                     Object::enqueue(prealm->Update);
+                     Object::enqueue(prealm->Render);
 
-                     if (u16IdTrack != CIdBank::IdNil)
+                     if (u16IdTrack != invalid_id)
                        pthingTrack = prealm->GetThingById<CThing>(u16IdTrack);
 
 							// Update grip/camera
@@ -4755,7 +4753,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 						// Remember its ID.
                   uint16_t	idInstance	= ppthing->GetInstanceID();
 						// Release its ID.
-                  ppthing->SetInstanceID(CIdBank::IdNil);
+                  ppthing->SetInstanceID(invalid_id);
 */
 						// Load object . . .
                  uint16_t instance_id;
@@ -4820,7 +4818,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 							rc.sH,							// Dimensions.
 							ThingHotCall,					// Callback.
 							sActivateHot,					// TRUE, if initially active.
-                     uintptr_t(ppthing.pointer()),					// User value (CThing*).
+                     uintptr_t(ppthing),					// User value (CThing*).
                      FRONTMOST_HOT_PRIORITY);	// New items towards front.
 
                   if (pphot != nullptr)
@@ -4839,7 +4837,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
                            if (ms_pgething)
 										{
 										// If no camera focus yet . . .
-										if (ms_pgething->m_u16CameraTrackId == CIdBank::IdNil)
+                              if (ms_pgething->m_u16CameraTrackId == invalid_id)
 											{
 											// Track this dude.
                                  ms_pgething->m_u16CameraTrackId	= ppthing->GetInstanceID();
@@ -5350,6 +5348,19 @@ void NavNetListPressedCall(	// Returns nothing
 		}
 	}
 
+
+CGameEditThing::CGameEditThing(void)
+{
+  // Set defaults.
+  m_u16CameraTrackId	= invalid_id;
+  m_sViewPosX				= 0;
+  m_sViewPosY				= 0;
+}
+
+CGameEditThing::~CGameEditThing(void)
+{
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Callback from scrollbars indicating change in thumb position.
@@ -5440,7 +5451,8 @@ static void ThingHotCall(	// Returns nothing.
 						}
 
 					// Unselect.
-					SetSel(nullptr, nullptr);
+               managed_ptr<CThing> none;
+               SetSel(none, nullptr);
 					}
 				// If EDIT_KEY_SETCAMERATRACK held down . . .
             else if (aucKeys[EDIT_KEY_SETCAMERATRACK] != '\0')
@@ -5457,7 +5469,7 @@ static void ThingHotCall(	// Returns nothing.
 						else
 							{
 							// Clear camera track ID.
-							ms_pgething->m_u16CameraTrackId	= CIdBank::IdNil;
+                     ms_pgething->m_u16CameraTrackId = invalid_id;
 							}
 
 						// User feedback.
@@ -6282,7 +6294,8 @@ static void DragDrop(	// Returns nothing.
 			sDropY,
 			sDropZ);
 
-		SetSel(nullptr, nullptr);
+      managed_ptr<CThing> none;
+      SetSel(none, nullptr);
 		ms_sMoving		= FALSE;
 
 		rspShowMouseCursor();
@@ -6651,7 +6664,7 @@ static void DelThing(	// Returns nothing.
    managed_ptr<CThing>& pthingDel,	// In:  CThing to be deleted.
    RHot* photDel,			// In:  Hotbox of CThing to be deleted.
 	CRealm* prealm)		// In:  Current Realm
-	{
+   {
    if (pthingDel)
 		{
 		// If hot not specified . . .
@@ -6659,6 +6672,7 @@ static void DelThing(	// Returns nothing.
          photDel	= pthingDel->m_phot;
 
       managed_ptr<CNavigationNet> pNavNet;
+      managed_ptr<CThing> none;
 
       switch (pthingDel->type())
 			{
@@ -6668,8 +6682,9 @@ static void DelThing(	// Returns nothing.
 					RSP_MB_ICN_STOP | RSP_MB_BUT_OK,
 					"Delete Hood",
 					"You may not delete the hood.");
-				SetSel(nullptr, nullptr);
-				pthingDel = nullptr;
+
+            SetSel(none, nullptr);
+            pthingDel.reset();
 				photDel = nullptr;
 				break;
 
@@ -6679,8 +6694,8 @@ static void DelThing(	// Returns nothing.
 					RSP_MB_ICN_STOP | RSP_MB_BUT_OK,
 					"Delete Hood",
 					"You may not delete the CGameEditThing.");
-				SetSel(nullptr, nullptr);
-				pthingDel = nullptr;
+            SetSel(none, nullptr);
+            pthingDel.reset();
 				photDel = nullptr;
 				break;
 
@@ -6700,7 +6715,10 @@ static void DelThing(	// Returns nothing.
 				// drawn to, then clear the connection line.
             if (ms_pthingSel == m_pBouyLink0 ||
                 ms_pthingSel == m_pBouyLink1)
-					m_pBouyLink0 = m_pBouyLink1 = nullptr;
+            {
+               m_pBouyLink0.reset();
+               m_pBouyLink1.reset();
+            }
 				// If the network lines are being shown, update them, otherwise
 				// they will get updated when view lines is turned on.
 				if (ms_bDrawNetwork)
@@ -6749,8 +6767,8 @@ static void DelThing(	// Returns nothing.
 					rspMsgBox(RSP_MB_ICN_STOP | RSP_MB_BUT_OK,
 					"Delete Navigation Net",
 					"You may not delete the last remaining Navigation Net.");
-					SetSel(nullptr, nullptr);
-					pthingDel = nullptr;
+               SetSel(none, nullptr);
+               pthingDel.reset();
 					photDel = nullptr;
 				}
 				break;
@@ -6766,14 +6784,14 @@ static void DelThing(	// Returns nothing.
 				if (pthingDel->GetInstanceID() == ms_pgething->m_u16CameraTrackId)
 					{
 					// Done with that.
-					ms_pgething->m_u16CameraTrackId	= CIdBank::IdNil;
+               ms_pgething->m_u16CameraTrackId = invalid_id;
 					}
 				}
 
 			// If this is the selection . . .
 			if (pthingDel == ms_pthingSel)
 				{
-				SetSel(nullptr, nullptr);
+            SetSel(none, nullptr);
 				}
 			}
 
@@ -7558,7 +7576,7 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 				if (pguiThing)
 					{
                // Success.
-               pguiThing->m_lId	= uintptr_t(pthing.pointer());
+               pguiThing->m_lId	= uintptr_t(pthing);
 					}
 				else
 					{

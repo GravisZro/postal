@@ -325,6 +325,7 @@
 #include <ORANGE/MultiGrid/MultiGrid.h>
 #include <ORANGE/MultiGrid/MultiGridIndirect.h>
 
+#include "game.h"
 
 class CHood;
 class CDude;
@@ -374,7 +375,6 @@ class CSndRelay;
 #include "thing.h"
 #include "hood.h"
 #include "yatime.h"
-#include "IdBank.h"
 #include "smash.h"
 #include "trigger.h"
 
@@ -456,9 +456,14 @@ class CSndRelay;
 // The attribute map contains only the layer bits.
 #define REALM_ATTR_LAYER_MASK		0x7FFF
 
-class CRealm : Object
-	{
-	friend class CNavigationNet;
+extern uint64_t g_things_added;
+extern uint64_t g_things_removed;
+
+constexpr uint16_t invalid_id = UINT16_MAX;
+
+
+class CRealm : public Object
+   {
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
 	//---------------------------------------------------------------------------
@@ -602,14 +607,7 @@ class CRealm : Object
 	//---------------------------------------------------------------------------
 	// Non-static variables
 	//---------------------------------------------------------------------------
-	public:
-
-		CListNode<CThing>* m_pNext;
-
-		// This flag indicates (by true) that we are in the Update() loop.
-		// It is false at all other times.
-		bool	m_bUpdating;
-		
+   public:
 
 		// Pointer to the attribute map.  The CHood is expected to set these
 		// as soon as it can so that other obects can use it.  This is really
@@ -697,13 +695,9 @@ public:
 	//---------------------------------------------------------------------------
 	// Non-static functions
 	//---------------------------------------------------------------------------
-	public:
-	
-		// Default (and only) constructor
-		CRealm();
-
-		// Destructor
-		~CRealm();
+   public:
+      CRealm(void);
+      ~CRealm(void);
 
 private:
       template<class T> static constexpr ClassIDType lookupType(void) { return InvalidID; }
@@ -763,8 +757,70 @@ private:
    managed_ptr<CNavigationNet> m_navnet;
    managed_ptr<CHood> m_hood;
    // The scene, which is basically the visual representation of the realm
-   managed_ptr<CScene> m_scene;
+   CScene m_scene;
+
+private:
+  void started(void)
+  {
+    m_sPopulationBirths = 0;
+    m_sPopulation = 0;
+    m_sPopulationDeaths = 0;
+    m_sHostiles = 0;
+    m_sHostileBirths = 0;
+    m_sHostileKills = 0;
+
+    // Setup the previous time for the start of the game.
+    m_lPrevTime = m_time.GetGameTime();
+  }
+
+  void suspended(void)
+  {
+    m_sNumSuspends++;
+    PauseAllSamples();
+  }
+
+  void resumed(void)
+  {
+    if (m_sNumSuspends > 0)
+    {
+      // Resume the game time.  I don't think it matters whether this is done
+      // before or after the CThing->Resume() calls since game time never actually
+      // advances unless CTime->Update() is called (when not suspended, of course).
+      m_time.Resume();
+
+      m_sNumSuspends--;
+
+      // Resume active sounds.
+      ResumeAllSamples();
+    }
+  }
+
+  void updated(void)
+  {
+    // Update the display timer
+    m_lThisTime = m_time.GetGameTime();
+    m_lElapsedTime = m_lThisTime - m_lPrevTime;
+    if (m_bScoreTimerCountsUp)
+      m_lScoreTimeDisplay += m_lElapsedTime;
+    else
+      m_lScoreTimeDisplay -= m_lElapsedTime;
+    m_lPrevTime = m_lThisTime;
+  }
+
+
+
 public:
+   signal<> Startup;
+   signal<> Shutdown;
+
+   signal<> Update;
+   signal<> Render;
+
+   signal<> EditUpdate;
+   signal<> EditRender;
+
+   signal<> Suspend;
+   signal<> Resume;
 
    // Give the current network for this realm
    managed_ptr<CNavigationNet> NavNet(void)
@@ -773,8 +829,8 @@ public:
    managed_ptr<CHood> Hood(void)
       { return m_hood; }
 
-   managed_ptr<CScene> Scene(void)
-      { return m_scene; }
+   CScene* Scene(void)
+      { return &m_scene; }
 
    void setNavNet(managed_ptr<CNavigationNet> nn)
       { m_navnet = nn; }
@@ -784,33 +840,44 @@ public:
       template<class T = CThing>
       managed_ptr<T> AddThing(ClassIDType type_id = lookupType<T>()) noexcept
       {
-        CThing* thing = makeType(type_id);
+        T* thing = static_cast<T*>(makeType(type_id));
         if(thing != nullptr)
         {
           m_every_thing.insert(thing);
-          m_thing_by_type[type_id].emplace_back(static_cast<T*>(thing));
+          m_thing_by_type[type_id].emplace_back(thing);
+          Object::connect(Startup   , thing, mslot_t<T, void>(&T::Startup   ));
+          Object::connect(Shutdown  , thing, mslot_t<T, void>(&T::Shutdown  ));
+          Object::connect(Update    , thing, mslot_t<T, void>(&T::Update    ));
+          Object::connect(Render    , thing, mslot_t<T, void>(&T::Render    ));
+          Object::connect(EditUpdate, thing, mslot_t<T, void>(&T::EditUpdate));
+          Object::connect(EditRender, thing, mslot_t<T, void>(&T::EditRender));
+          Object::connect(Suspend   , thing, mslot_t<T, void>(&T::Suspend   ));
+          Object::connect(Resume    , thing, mslot_t<T, void>(&T::Resume    ));
+          ++g_things_added;
         }
-        return static_cast<T*>(thing);
+        return thing;
       }
 
       // Remove thing from realm
       template<class T>
-      void RemoveThing(managed_ptr<T>& thing) noexcept
-      {
-        m_every_thing.erase(thing.pointer());
-        m_thing_by_type[thing->type()].remove(thing.pointer());
-        m_thing_by_id.erase(thing->GetInstanceID());
-        auto id_iter = m_id_by_thing.find(thing.pointer());
-        if(id_iter != m_id_by_thing.end())
-          m_id_by_thing.erase(id_iter);
-        thing.destroy();
-      }
-
-      template<class T>
       void RemoveThing(T* thingptr) noexcept
       {
-        managed_ptr<T> thing(thingptr);
-        RemoveThing<T>(thing);
+        m_every_thing.erase(thingptr);
+        m_thing_by_type[thingptr->type()].remove(thingptr);
+        m_thing_by_id.erase(thingptr->GetInstanceID());
+        auto id_iter = m_id_by_thing.find(thingptr);
+        if(id_iter != m_id_by_thing.end())
+          m_id_by_thing.erase(id_iter);
+        Object::disconnect(Startup   , thingptr);
+        Object::disconnect(Shutdown  , thingptr);
+        Object::disconnect(Update    , thingptr);
+        Object::disconnect(Render    , thingptr);
+        Object::disconnect(EditUpdate, thingptr);
+        Object::disconnect(EditRender, thingptr);
+        Object::disconnect(Suspend   , thingptr);
+        Object::disconnect(Resume    , thingptr);
+        managed_ptr<T>::destroy(thingptr);
+        ++g_things_removed;
       }
 
       std::list<managed_ptr<CThing>> GetThingsByType(ClassIDType type_id) const noexcept
@@ -946,35 +1013,13 @@ public:
 		int16_t Save(													// Returns 0 if successfull, non-zero otherwise
 			RFile* pFile);											// In:  File to save to
 
-		// Startup
-      int16_t Startup(void);										// Returns 0 if successfull, non-zero otherwise
-
-		// Suspend
-		void Suspend(void);
-
-		// Resume
-		void Resume(void);
-
-		bool IsSuspended(void)	// Returns true, if suspended; false, otherwise.
-			{ return (m_sNumSuspends == 0) ? false : true; }
-
-		// Update
-		void Update(void);
-
-		// Render
-		void Render(void);
+      bool IsSuspended(void)	// Returns true, if suspended; false, otherwise.
+         { return (m_sNumSuspends == 0) ? false : true; }
 
 #if !defined(EDITOR_REMOVED)
-		// Edit-mode update
-		void EditUpdate(void);
-
-		// Edit-mode render
-		void EditRender(void);
-
-		// Edit-Modify dialog - set properties for the realm like scoring & play mode.
-		void EditModify(void);
+      // Edit-Modify dialog - set properties for the realm like scoring & play mode.
+      void EditModify(void);
 #endif // !defined(EDITOR_REMOVED)
-
 
 		int16_t GetHeight(int16_t sX, int16_t sZ);
 

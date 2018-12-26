@@ -194,13 +194,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "fire.h"
+
+#include "AlphaAnimType.h"
 #include "dude.h"
-#include "game.h"
 #include "reality.h"
+#include "realm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -236,6 +235,49 @@ int16_t CFire::ms_sWindDirection = INIT_WIND_DIR;		// Start wind in this directi
 int32_t  CFire::ms_lCollisionTime = 250;					// Check for collisions this often
 int32_t  CFire::ms_lSmokeTime = 10000;						// Time to let smoke run
 double CFire::ms_dWindVelocity = INIT_WIND_VEL;		// Pixels per second drift due to wind
+
+
+CFire::CFire(void)
+   {
+   m_bIsBurningDude = false;
+   m_sSuspend = 0;
+   m_lPrevTime = 0;
+   m_bSendMessages = true;
+   m_u32CollideIncludeBits = 0;
+   m_u32CollideDontcareBits = 0;
+   m_u32CollideExcludeBits = 0;
+   m_sTotalAlphaChannels = 0;
+   m_smash.m_bits = 0;
+   m_lStartTime = 0;
+   }
+
+CFire::~CFire(void)
+   {
+   // Remove sprite from scene (this is safe even if it was already removed!)
+   realm()->Scene()->RemoveSprite(&m_sprite);
+   // Remove yourself from the collision list if it was in use
+   // (switching to smoke removes it from the smashatorium and sets
+   // the m_pThing field to nullptr)
+   realm()->m_smashatorium.Remove(&m_smash);
+
+   // Free resources
+   FreeResources();
+   }
+
+int32_t CFire::GetTimeLeftToLive(void)
+   {
+   return m_lBurnUntil - realm()->m_time.GetGameTime();
+   }
+
+void CFire::WindDirectionUpdate(void)
+{
+   ms_sWindDirection = rspMod360(ms_sWindDirection -2 + (GetRand() % 4)); // Biased 1 direction
+   ms_dWindVelocity = ms_dWindVelocity - 0.1 + ((GetRand() % 3) / 10.0);
+   if (ms_dWindVelocity < 10.0)
+      ms_dWindVelocity = 11.0;
+   if (ms_dWindVelocity > 40.0)
+      ms_dWindVelocity = 39.0;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,9 +373,9 @@ int16_t CFire::Save(										// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
-int16_t CFire::Startup(void)								// Returns 0 if successfull, non-zero otherwise
+void CFire::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
-	return Init();
+   Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -371,11 +413,7 @@ void CFire::Update(void)
 	double dNewZ;
 
 	if (!m_sSuspend)
-	{
-		// See if we killed ourselves
-		if (ProcessMessages() == State_Deleted)
-			return;
-
+   {
 		if (m_lTimer < m_lBurnUntil)
 		{
 			lThisTime = realm()->m_time.GetGameTime();
@@ -401,7 +439,10 @@ void CFire::Update(void)
 				// If the fire is not smoldering out, then it has the ability
 				// to set other things on fire and should check collisions
 				// to see which things it should tell to burn.
-				if (m_bSendMessages && m_sCurrentAlphaLevel > SMOLDER_ALPHA && m_eFireAnim != Smoke && m_eFireAnim != SmallSmoke)
+            if (m_bSendMessages &&
+                m_sCurrentAlphaLevel > SMOLDER_ALPHA &&
+                m_eFireAnim != Smoke &&
+                m_eFireAnim != SmallSmoke)
 				{
 					CSmash* pSmashed = nullptr;
 					GameMessage msg;
@@ -442,7 +483,8 @@ void CFire::Update(void)
 			}
 
 			// If this is smoke, make it drift in the wind direction
-			if (m_eFireAnim == Smoke || m_eFireAnim == SmallSmoke)
+         if (m_eFireAnim == Smoke ||
+             m_eFireAnim == SmallSmoke)
 			{
 				// Update position using wind direction and velocity
 				dSeconds = ((double) lThisTime - (double) m_lPrevTime) / 1000.0;
@@ -482,10 +524,10 @@ void CFire::Update(void)
 
 			m_lPrevTime = lThisTime;
       }
-      else if (m_eFireAnim == Smoke || m_eFireAnim == SmallSmoke) // If its done smoking, then delete it
-        realm()->RemoveThing(this);
-      else if (Smokeout() != SUCCESS) // Else change the fire to smoke
-        realm()->RemoveThing(this);
+      else if (m_eFireAnim == Smoke ||
+               m_eFireAnim == SmallSmoke || // If its done smoking OR
+               Smokeout() != SUCCESS) // Else change the fire to smoke
+        Object::enqueue(SelfDestruct);
 	}
 }
 
@@ -688,8 +730,7 @@ int16_t CFire::Smokeout(void)
 	WindDirectionUpdate();
 
 	// Remove smash from the smashatorium if it was being used
-	if (m_smash.m_pThing)
-		realm()->m_smashatorium.Remove(&m_smash);
+   realm()->m_smashatorium.Remove(&m_smash);
 
 	m_bSendMessages = false;
 
@@ -868,23 +909,6 @@ int16_t CFire::Preload(
 	return sResult;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// ProcessMessages
-////////////////////////////////////////////////////////////////////////////////
-
-CFire::CFireState CFire::ProcessMessages(void)
-{
-  CFireState eNewState = State_Idle;
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-      return CFire::State_Deleted;
-    m_MessageQueue.clear();
-  }
-  return eNewState;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

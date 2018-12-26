@@ -431,23 +431,9 @@ public:
 		CSmash::Bits dontcare,								// In:  Bits that you don't care about
 		CSmash::Bits exclude);								// In:  Bits that must be 0 to collide with a given CSmash
 
-	// Reset QuickCheckNext() using the specified paramters.
-	void QuickCheckReset(									// Returns true if collision detected, false otherwise
-		CSmash::Bits include,								// In:  Bits, of which, one must be set to collide with a given CSmash
-		CSmash::Bits dontcare,								// In:  Bits that you don't care about
-		CSmash::Bits exclude);								// In:  Bits that must be 0 to collide with a given CSmash
 
 	CSmash *GetNextSmash();	// Internal - used to aid in Next searches
 
-	// Returns the next object being collided with, using the parameters that were
-	// passed to QuickCheckReset().  This will return all the objects being collided
-	// with in an arbitrary order.  Other functions will someday return the objects
-	// in some particular order.  The function will return false when there are no
-	// more colisions.
-	bool QuickCheckNext(										// Returns true if collision detected, false otherwise
-		R3DLine*	pline,										// In:  Line segment to collide against.
-		CSmash** pSmashee = 0,								// Out: Thing being smashed into if any (unless 0)
-		CSmash*	pSmasher = 0);								// Out: Smash that should be excluded from search.
 
 	// Returns true if collision detected, false otherwise
 	// Out: Thing being smashed into if any (unless 0)	
@@ -527,8 +513,6 @@ public:
 	//
 	void Reset(void); 
 
-	CSmashatorium(int16_t sWorldW,int16_t sWorldH,int16_t sTileW,int16_t sTileH) 
-		{ Erase(); Alloc(sWorldW,sWorldH,sTileW,sTileH); }
 	~CSmashatorium() { Destroy(); }
 	};
 

@@ -40,9 +40,9 @@
 #ifndef ANIM3D_H
 #define ANIM3D_H
 
-#include <3dtypes.h>
-#include <animatedresource.h>
-#include <resourcemanager.h>
+#include <newpix/3dtypes.h>
+#include <newpix/animatedresource.h>
+#include <newpix/resourcemanager.h>
 
 // These are the basic components of any 3D animation.
 typedef std::shared_ptr<AnimatedResource<RSop>> ChanForm;            // Channel of SOPs.

@@ -387,6 +387,8 @@
 #include "deathWad.h"
 #include "SndRelay.h"
 
+uint64_t g_things_added = 0;
+uint64_t g_things_removed = 0;
 
 //#define RSP_PROFILE_ON
 
@@ -613,8 +615,7 @@ void MapY2DtoY3D(		// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 // Default (and only) constructor
 ////////////////////////////////////////////////////////////////////////////////
-CRealm::CRealm()
-  : m_scene(new CScene())
+CRealm::CRealm(void)
 	{
 	time_t lTime;
 	time(&lTime);
@@ -628,16 +629,12 @@ CRealm::CRealm()
 	CreateLayerMap();
 	
 	// Setup render object (it's constructor was automatically called)
-   m_scene->SetLayers(TotalLayers);
+   m_scene.SetLayers(TotalLayers);
 
 	// Set attribute map to a safe (but invalid) value
 	m_pTerrainMap = 0;
 	m_pLayerMap = 0;
-	m_pTriggerMap = 0;
-	m_pTriggerMapHolder = 0;
-
-	// Set Hood ptr to a safe (but invalid) value.
-   m_hood.reset();
+   m_pTriggerMap = 0;
 
 /*
 	// Create a container of things for each element in the array
@@ -645,9 +642,6 @@ CRealm::CRealm()
    for (s = 0; s < TotalIDs; s++)
 		m_apthings[s] = new CThing::Things;
 */
-
-	// Not currently updating.
-	m_bUpdating		= false;
 
 	m_sNumSuspends	= 0;
 
@@ -673,13 +667,18 @@ CRealm::CRealm()
 
 	// Initialize.
 	Init();
+
+   Object::connect(Startup, this, &CRealm::started  );
+   Object::connect(Suspend, this, &CRealm::suspended);
+   Object::connect(Resume , this, &CRealm::resumed  );
+   Object::connect(Update , this, &CRealm::updated  );
 	}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
 ////////////////////////////////////////////////////////////////////////////////
-CRealm::~CRealm()
+CRealm::~CRealm(void)
 	{
 	// Clear the realm (in case this hasn't been done yet)
 	Clear();
@@ -738,7 +737,7 @@ void CRealm::Clear()
    m_id_by_thing.clear();
 
 	// Clear out any sprites that didn't already remove themselves
-   m_scene->RemoveAllSprites();
+   m_scene.RemoveAllSprites();
 
 	// Reset smashatorium.
 
@@ -1176,9 +1175,8 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 	pFile->Write(&m_dKillsPercentGoal);
 
    int16_t count = 0;
-   for(auto pair : m_thing_by_type)
-     for(auto pthing : pair.second)
-       ++count;
+   for(auto& pair : m_thing_by_type)
+     count += pair.second.size();
 
 	// Write out number of objects
    pFile->Write(count);
@@ -1199,7 +1197,7 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 		}
 
    int16_t	sCurItemNum	= 0;
-   for(managed_ptr<CThing> pthing : m_every_thing)
+   for(const managed_ptr<CThing>& pthing : m_every_thing)
    {
      pFile->Write(uint8_t(pthing->type()));
      pFile->Write(pthing->GetInstanceID());
@@ -1219,244 +1217,7 @@ int16_t CRealm::Save(										// Returns 0 if successfull, non-zero otherwise
 	return sResult;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Startup the realm
-////////////////////////////////////////////////////////////////////////////////
-int16_t CRealm::Startup(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-
-	// Initialize Population statistics b/c anyone killed already was not done so 
-	// by the player.
-	m_sPopulationBirths = 0;
-	m_sPopulation = 0;
-	m_sPopulationDeaths = 0;
-	m_sHostiles = 0;
-	m_sHostileBirths = 0;
-	m_sHostileKills = 0;
-
- int objnum = 0;
-      for(const managed_ptr<CThing>& thing : m_every_thing)
-      {
-        ASSERT(thing);
-        thing->Startup();
-        ++objnum;
-      }
-
-		// Setup the previous time for the start of the game.														
-		m_lPrevTime = m_time.GetGameTime();
-
-
-
-	return sResult;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Suspend the realm
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::Suspend(void)
-	{
-	m_sNumSuspends++;
-
-  for(const managed_ptr<CThing>& thing : m_every_thing)
-    thing->Suspend();
-
-	// Suspend the game time.  I don't think it matters whether this is done
-	// before or after the CThing->Suspend() calls since game time never actually
-	// advances unless CTime->Update() is called (when not suspended, of course).
-	m_time.Suspend();
-
-	// Suspend active sounds.
-	PauseAllSamples();
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Resume the realm
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::Resume(void)
-	{
-	if (m_sNumSuspends > 0)
-		{
-     for(const managed_ptr<CThing>& thing : m_every_thing)
-       thing->Resume();
-
-		// Resume the game time.  I don't think it matters whether this is done
-		// before or after the CThing->Resume() calls since game time never actually
-		// advances unless CTime->Update() is called (when not suspended, of course).
-		m_time.Resume();
-
-		m_sNumSuspends--;
-
-		ASSERT(m_sNumSuspends >= 0);
-
-		// Resume active sounds.
-		ResumeAllSamples();
-		}
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Update the realm
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::Update(void)
-	{
-	// We want to do this for every CThing in the realm.  We use iNext to get
-	// the next iterator before calling the current item to avoid
-	// a problem that could otherwise occur where iCur becomes invalidated during
-	// the (*iCur)->Update() (like when a CThing deletes itself).
-	// This causes an additional problem which is relatively easy to fix.  Since
-	// we always insert at the end, if iCur is the last thing (meaning iNext is the
-	// .end()), and that call adds a new thing at the end, that thing will never
-	// get called b/c iNext already points to .end().  We effectively skip the 
-	// newly added item.
-	// To avoid this, we simply, at the end, check to make sure iNext-- produces
-	// iCur.  If not, we process iNext--.
-	// Further, if the last item added two things, we need to go back two.
-
-	rspStartProfile("Realm Update");
-
-	// Entering update loop.
-	m_bUpdating	= true;
-
-  auto listcopy = m_every_thing; // make a copy
-  for(const managed_ptr<CThing>& thing : listcopy)
-    if(thing) // might have been destroyed in a prior Update() in the list
-      thing->Update();
-
-	// Update the display timer
-	m_lThisTime = m_time.GetGameTime();
-	m_lElapsedTime = m_lThisTime - m_lPrevTime;
-	if (m_bScoreTimerCountsUp)
-		m_lScoreTimeDisplay += m_lElapsedTime;
-	else
-		m_lScoreTimeDisplay -= m_lElapsedTime;
-	m_lPrevTime = m_lThisTime;
- 
-	// Leaving update loop.
-	m_bUpdating	= false;
-
-	rspEndProfile("Realm Update");
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Render the realm
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::Render(void)
-   {
-	// Entering update loop.
-	m_bUpdating	= true;
-
-   for(const managed_ptr<CThing>& thing : m_every_thing)
-     thing->Render();
-
-	// Leaving update loop.
-	m_bUpdating	= false;
-	}
-
-// This old way probably doesn't make sense any more since we're going to allow
-// for multiple views of a realm.  I don't think we'd want to tell each object
-// to render itself for each different view -- not unless the enter concept of
-// what each item does to "render" itself changes.  Right now, objects merely
-// update their representations in the scene, which really doesn't take too
-// long, and needs to get done no matter what view we're talking about.
-/*
-void CRealm::Render(
-	short sViewX,											// In:  X coord of view
-	short sViewY,											// In:  Y coord of view
-	short sViewW,											// In:  Width of view
-	short sViewH,											// In:  Height of view
-	RImage* pimDst,										// In:  Image to render to
-	short sDstX,											// In:  X coord to draw to
-	short sDstY)											// In:  Y coord to draw to
-	{
-	// It may turn out that some objects want to do their own clipping to see if
-	// they need to add themselves to the scene.  I would guess this would be
-	// the exception rather than the rule, so when (or if) such a requirement
-	// comes up, we shouldn't pass the view info to each object, but instead
-	// should create a function that objects can call to get the view info, the
-	// idea being that this would be faster overall than passing all that data
-	// to each object only to have it ignored most of the time.
-
-	// Do this for everything
-	for (CThing::Things::iterator i = m_everything.begin(); i != m_everything.end(); i++)
-		(*i)->Render();
-
-	// Render specified view to specified position in specified image
-   m_scene->Render(
-		sViewX,
-		sViewY,
-		sViewW,
-		sViewH,
-		pimDst,
-		sDstX,
-		sDstY);
-	}
-*/
-
 #if !defined(EDITOR_REMOVED)
-////////////////////////////////////////////////////////////////////////////////
-// Edit mode: Update the realm
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::EditUpdate(void)
-	{
-
-  for(const managed_ptr<CThing>& thing : m_every_thing)
-    thing->EditUpdate();
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Edit mode: Render the realm
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::EditRender(void)
-	{
-  for(const managed_ptr<CThing>& thing : m_every_thing)
-    thing->EditRender();
-	}
-
-// This old way probably doesn't make sense any more since we're going to allow
-// for multiple views of a realm.  I don't think we'd want to tell each object
-// to render itself for each different view -- not unless the enter concept of
-// what each item does to "render" itself changes.  Right now, objects merely
-// update their representations in the scene, which really doesn't take too
-// long, and needs to get done no matter what view we're talking about.
-/*
-void CRealm::EditRender(
-	short sViewX,											// In:  X coord of view
-	short sViewY,											// In:  Y coord of view
-	short sViewW,											// In:  Width of view
-	short sViewH,											// In:  Height of view
-	RImage* pimDst,										// In:  Image to render to
-	short sDstX,											// In:  X coord to draw to
-	short sDstY)											// In:  Y coord to draw to
-	{
-	// It may turn out that some objects want to do their own clipping to see if
-	// they need to add themselves to the render.  I would guess this would be
-	// the exception rather than the rule, so when (or if) such a requirement
-	// comes up, we shouldn't pass the view info to each object, but instead
-	// should create a function that objects can call to get the view info, the
-	// idea being that this would be faster overall than passing all that data
-	// to each object only to have it ignored most of the time.
-
-	// Do this for everything
-	for (CThing::Things::iterator i = m_everything.begin(); i != m_everything.end(); i++)
-		(*i)->EditRender();
-
-	// Render specified view to specified position in specified image
-   m_scene->Render(
-		sViewX,
-		sViewY,
-		sViewW,
-		sViewH,
-		pimDst,
-		sDstX,
-		sDstY);
-	}
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
 // EditModify - Run dialog for realm scoring and play options
 ////////////////////////////////////////////////////////////////////////////////
@@ -1801,7 +1562,7 @@ bool CRealm::IsPathClear(			// Returns true, if the entire path is clear.
 		// Destroy when done.
 		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
 		// Put 'er there.
-      m_scene->UpdateSprite(psl2d);
+      m_scene.UpdateSprite(psl2d);
 		}
 #endif
 

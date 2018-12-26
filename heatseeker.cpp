@@ -145,10 +145,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "heatseeker.h"
+
+#include "realm.h"
 #include "dude.h"
 #include "explode.h"
 #include "fire.h"
@@ -202,6 +201,27 @@ static const char* ms_apszResNames[] =
 	nullptr,
 	nullptr
 };
+
+
+CHeatseeker::CHeatseeker(void)
+{
+  //			m_sprite.m_pthing	= this;
+  m_lSmokeTimer = 0;
+  m_siThrust = 0;
+}
+
+CHeatseeker::~CHeatseeker(void)
+{
+  // Stop sound if any
+  StopLoopingSample(m_siThrust);
+
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+  realm()->m_smashatorium.Remove(&m_smash);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -313,11 +333,7 @@ void CHeatseeker::Update(void)
 
 		// Check the current state
 		switch (m_eState)
-		{
-        case CWeapon::State_Deleted:
-          realm()->RemoveThing(this);
-           return;
-
+      {
 			case CWeapon::State_Hide:
 			case CWeapon::State_Idle:
 				break;
@@ -577,7 +593,7 @@ void CHeatseeker::Update(void)
 					}
 				}
 
-            realm()->RemoveThing(this);
+            Object::enqueue(SelfDestruct);
             return;
 		}
 
@@ -790,21 +806,6 @@ int16_t CHeatseeker::Preload(
 	CacheSample(g_smidRocketFire);
 	CacheSample(g_smidRocketExplode);
 	return sResult;	
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ProcessMessages
-////////////////////////////////////////////////////////////////////////////////
-
-void CHeatseeker::ProcessMessages(void)
-{
-  if(!m_MessageQueue.empty())
-  {
-    GameMessage& msg = m_MessageQueue.front();
-    if(msg.msg_Generic.eType == typeObjectDelete)
-      m_eState = State_Deleted;
-    m_MessageQueue.clear();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

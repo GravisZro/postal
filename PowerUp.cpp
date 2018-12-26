@@ -145,10 +145,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <RSPiX.h>
-#include <cmath>
-
 #include "PowerUp.h"
+
+#include "realm.h"
 #include "dude.h"
 #include "game.h"
 
@@ -199,6 +198,30 @@ const char*	CPowerUp::ms_apszPowerUpResNames[CStockPile::NumStockPileItems + 2]	
 	"3d/minecrate",					// Multiple items.
 	"3d/minecrate",					// No items.
 	};
+
+
+CPowerUp::CPowerUp(void)
+{
+  m_panimCur	= &m_anim;
+
+  m_stockpile.m_sHitPoints	= 0;
+
+  //			m_sprite.m_pthing	= this;
+
+  m_smash.m_pThing = this;
+}
+
+CPowerUp::~CPowerUp(void)
+{
+  // Remove sprite from scene (this is safe even if it was already removed!)
+  realm()->Scene()->RemoveSprite(&m_sprite);
+
+  // Free resources
+  FreeResources();
+
+  // Remove collision thinger.
+  realm()->m_smashatorium.Remove(&m_smash);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -436,10 +459,8 @@ int16_t CPowerUp::Setup(									// Returns 0 if successfull, non-zero otherwise
 	// Load resources and initialize.
 	sResult = Init();
 
-	if (sResult == SUCCESS)
-		{
-		sResult	= Startup();
-		}
+   if (sResult == SUCCESS)
+      Startup();
 
 	return sResult;
 	}
@@ -663,18 +684,8 @@ void CPowerUp::PickUpFeedback(void)	// Returns nothing.
 void CPowerUp::RepaginateNow(void)
 	{
 	// If not empty . . .
-	if (IsEmpty() == false)
-		{
-		// If this fails, we'd better go away . . .
-      if (GetResources() != SUCCESS)
-			{
-        realm()->RemoveThing(this);
-			}
-		}
-	else
-		{
-      realm()->RemoveThing(this);
-		}
+   if (IsEmpty() || GetResources() != SUCCESS)
+        Object::enqueue(SelfDestruct);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -747,8 +758,7 @@ void CPowerUp::OnExplosionMsg(			// Returns nothing.
 		// This one was altered.
       if (GetResources() != SUCCESS)
 			{
-			// Doh!
-         realm()->RemoveThing(this);
+        Object::enqueue(SelfDestruct);
 			return;
 			}
 		}
