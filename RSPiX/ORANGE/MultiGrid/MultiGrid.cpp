@@ -219,8 +219,7 @@ int16_t	RMultiGrid::AllocGrid(int16_t sScaleW, int16_t sScaleH)
 	// Set the parameters:
 	//--------------------------------------------- Convert Input to log 2
 	int16_t sValue = 16384,sDigit = 14;
-	int16_t sLogW,sLogH;
-	int16_t i,j;
+   int16_t sLogW = 0,sLogH = 0;
 
 	while (sScaleW > 0)
 		{
@@ -281,35 +280,43 @@ int16_t	RMultiGrid::AllocGrid(int16_t sScaleW, int16_t sScaleH)
 	// Initial Max
 	int16_t		sMaxNumTiles = MIN((int32_t)32767, (int32_t)1 + int32_t(sGridW) * (int32_t)sGridH);
 
-	if (!(m_psTiles = (int16_t*) calloc(lByteTileSize,sMaxNumTiles ) )) return FAILURE;
+   if (!(m_psTiles = (int16_t*) calloc(lByteTileSize,sMaxNumTiles ) ))
+     return FAILURE;
 
 	//---------------------------------------------Add in the random access:
 	int16_t *psTile = m_psTiles;
-	if (!(m_ppsTileList = (int16_t**) calloc(sizeof(int16_t*),sMaxNumTiles ) )) return FAILURE;
-	for (i=0; i < sMaxNumTiles; i++,psTile += lShortTileSize) m_ppsTileList[i] = psTile;
+   if (!(m_ppsTileList = (int16_t**) calloc(sizeof(int16_t*),sMaxNumTiles ) ))
+     return FAILURE;
+   for (int16_t i=0; i < sMaxNumTiles; i++,psTile += lShortTileSize)
+     m_ppsTileList[i] = psTile;
 
 	int16_t sOff = 0;
-	if (!(m_psTileLine = (int16_t*) calloc(sizeof(int16_t),sScaleH ) )) return FAILURE;
-	for (i=0;i < sScaleH;i++,sOff += sScaleW) m_psTileLine[i] = sOff;
+   if (!(m_psTileLine = (int16_t*) calloc(sizeof(int16_t),sScaleH ) ))
+     return FAILURE;
+   for (int16_t i=0;i < sScaleH;i++,sOff += sScaleW)
+     m_psTileLine[i] = sOff;
 
 	//--------------------------------------------- Allocate the coarse grid
 
-	if (!(m_psGrid = (int16_t*) calloc(sizeof(int16_t),int32_t(sGridW)*sGridH) )) return FAILURE;
+   if (!(m_psGrid = (int16_t*) calloc(sizeof(int16_t),int32_t(sGridW)*sGridH) ))
+     return FAILURE;
 
 	//--------------------------------------------- Add in the random access:
 
-	if (!(m_ppsGridLines = (int16_t**) calloc(sizeof(int16_t*),sFullHeight ) )) return FAILURE;
-	for (i=0; i < sFullHeight; i++) m_ppsGridLines[i] = m_psGrid + (i >> m_sShiftY)*sGridW;
+   if (!(m_ppsGridLines = (int16_t**) calloc(sizeof(int16_t*),sFullHeight ) ))
+     return FAILURE;
+   for (int16_t i=0; i < sFullHeight; i++)
+     m_ppsGridLines[i] = m_psGrid + (i >> m_sShiftY)*sGridW;
 
 	//---------------------------------------------  Populate the coarse grid:
 
 	int16_t	*psSrc,*psSrcLine = psUncompressed;
 	int32_t	lSrcSkip = int32_t(m_sWidth)*sScaleH;
 
-	for (j=0;j < sFullHeight;j += sScaleH,psSrcLine += lSrcSkip)
+   for (int16_t j=0;j < sFullHeight;j += sScaleH,psSrcLine += lSrcSkip)
 		{
 		psSrc = psSrcLine;
-		for (i=0;i < sGridW;i++,psSrc += sScaleW)
+      for (int16_t i=0;i < sGridW;i++,psSrc += sScaleW)
 			{
 			*(m_ppsGridLines[j] + i) = *psSrc;
 			}
