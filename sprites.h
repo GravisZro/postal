@@ -164,7 +164,7 @@ class CSprite
 //			m_pthing				= nullptr;
 			}
 
-		virtual ~CSprite()
+      virtual ~CSprite(void)
 			{
 			// If we have a parent . . .
 			if (m_psprParent != nullptr)
@@ -261,7 +261,7 @@ class CSprite
 // It has two optional ways of alpha'ing during blit:
 // 1) m_pimAlpha, an alpha mask.
 // 2) m_sAlphaLevel, an alpha value to apply to the whole image.
-class CSprite2 : public CSprite
+class CSprite2 : virtual public CSprite
 	{
 	public:
       RImage* m_pImage;									// Pointer to image
@@ -269,54 +269,59 @@ class CSprite2 : public CSprite
       int16_t m_sAlphaLevel;								// Constant alpha level to
 																	// use if no m_pimAlpha.
 
-	CSprite2()
+   CSprite2(void) noexcept
 		{
 		m_pImage			= nullptr;
 		m_pimAlpha		= nullptr;
       m_sAlphaLevel	= UINT8_MAX;
 		m_type			= Standard2d;
 		}
+
+   virtual ~CSprite2(void) noexcept { }
 																	
 	};
 
 // A CSpriteLine2d is a 2D line designed to work with CScene.
-class CSpriteLine2d : public CSprite
+class CSpriteLine2d : virtual public CSprite
 	{
 	public:
 		int16_t		m_sX2End;	// 2D end point for line.
 		int16_t		m_sY2End;	// 2D end point for line.
 		uint8_t			m_u8Color;	// Color for line segment.
 
-	CSpriteLine2d()
+   CSpriteLine2d(void) noexcept
 		{
 		m_type			= Line2d;
 		}
-																	
+
+   virtual ~CSpriteLine2d(void) noexcept { }
 	};
 
 // A CSpriteCylinder3d is a cylinder designed to work with CScene.
-class CSpriteCylinder3d : public CSprite
+class CSpriteCylinder3d : virtual public CSprite
 	{
 	public:
 		int16_t		m_sRadius;	// Radius of cylinder
 		int16_t		m_sHeight;	// Height of cylinder.
 		uint8_t			m_u8Color;	// Color for line segment.
 
-	CSpriteCylinder3d()
+   CSpriteCylinder3d(void) noexcept
 		{
 		m_type			= Cylinder3d;
 		}
-																	
+
+    virtual ~CSpriteCylinder3d(void) noexcept { }
 	};
 
 // A CSprite3 is a 3d sprite designed to work with CScene.
-class CSprite3 : public CSprite
+class CSprite3 : virtual public CSprite
 	{
 	public:
-		CSprite3()
+      CSprite3(void) noexcept
 			{
 			Init();
 			}
+      virtual ~CSprite3(void) noexcept { }
 
 	public:
 		void Init(void)
