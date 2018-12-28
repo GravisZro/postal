@@ -82,7 +82,7 @@
 //							m_sMaxDispensees.
 //
 //		04/24/97	JMI	Upped file version to 8 for newly saved CBarrel parameter,
-//							m_dRot.
+//							m_rotation.y.
 //
 //		04/24/97	JMI	Upped file version to 9 for new CDude parameter,
 //							m_sNumShells.
@@ -840,27 +840,27 @@ public:
       template<class T = CThing>
       managed_ptr<T> AddThing(ClassIDType type_id = lookupType<T>()) noexcept
       {
-        T* thing = static_cast<T*>(makeType(type_id));
-        if(thing != nullptr)
+        T* thingptr = static_cast<T*>(makeType(type_id));
+        if(thingptr != nullptr)
         {
-          m_every_thing.insert(thing);
-          m_thing_by_type[type_id].emplace_back(thing);
-          Object::connect(Startup   , thing, mslot_t<T, void>(&T::Startup   ));
-          Object::connect(Shutdown  , thing, mslot_t<T, void>(&T::Shutdown  ));
-          Object::connect(Update    , thing, mslot_t<T, void>(&T::Update    ));
-          Object::connect(Render    , thing, mslot_t<T, void>(&T::Render    ));
-          Object::connect(EditUpdate, thing, mslot_t<T, void>(&T::EditUpdate));
-          Object::connect(EditRender, thing, mslot_t<T, void>(&T::EditRender));
-          Object::connect(Suspend   , thing, mslot_t<T, void>(&T::Suspend   ));
-          Object::connect(Resume    , thing, mslot_t<T, void>(&T::Resume    ));
+          m_every_thing.insert(thingptr);
+          m_thing_by_type[type_id].emplace_back(thingptr);
+
+          Object::connect(Startup   , thingptr, mslot_t<T, void>(&T::Startup   ));
+          Object::connect(Shutdown  , thingptr, mslot_t<T, void>(&T::Shutdown  ));
+          Object::connect(Update    , thingptr, mslot_t<T, void>(&T::Update    ));
+          Object::connect(Render    , thingptr, mslot_t<T, void>(&T::Render    ));
+          Object::connect(EditUpdate, thingptr, mslot_t<T, void>(&T::EditUpdate));
+          Object::connect(EditRender, thingptr, mslot_t<T, void>(&T::EditRender));
+          Object::connect(Suspend   , thingptr, mslot_t<T, void>(&T::Suspend   ));
+          Object::connect(Resume    , thingptr, mslot_t<T, void>(&T::Resume    ));
           ++g_things_added;
         }
-        return thing;
+        return thingptr;
       }
 
       // Remove thing from realm
-      template<class T>
-      void RemoveThing(T* thingptr) noexcept
+      void RemoveThing(CThing* thingptr) noexcept
       {
         m_every_thing.erase(thingptr);
         m_thing_by_type[thingptr->type()].remove(thingptr);
@@ -876,7 +876,7 @@ public:
         Object::disconnect(EditRender, thingptr);
         Object::disconnect(Suspend   , thingptr);
         Object::disconnect(Resume    , thingptr);
-        managed_ptr<T>::destroy(thingptr);
+        managed_ptr<CThing>::destroy(thingptr);
         ++g_things_removed;
       }
 
@@ -1218,11 +1218,6 @@ public:
 		// Now that the layer map needs to be 32K of uncompressable data, we create it
 		// at run time.
 		static void CreateLayerMap(void);
-
-	//---------------------------------------------------------------------------
-	// Protected static functions
-	//---------------------------------------------------------------------------
-	protected:
 
 	};
 

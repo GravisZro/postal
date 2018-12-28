@@ -1394,7 +1394,7 @@ bool CRealm::IsEndOfLevelGoalMet(bool bEndLevelKey)
 		case Checkpoint:
 			if (m_sFlagsGoal == 0)
 			{
-            if (m_lScoreTimeDisplay > 0 && m_sFlagsCaptured < GetThingsByType(CFlagID).size())
+            if (m_lScoreTimeDisplay > 0 && m_sFlagsCaptured < int16_t(GetThingsByType(CFlagID).size()))
 					bEnd = false;
 			}
 			else
@@ -2027,7 +2027,6 @@ CThing* CRealm::makeType(ClassIDType type_id)
     case CTriggerID          : return new (type_id, this, false) CTrigger          ;
     case CHeatseekerID       : return new (type_id, this, false) CHeatseeker       ;
     case CChunkID            :
-
       if(!g_GameSettings.m_sParticleEffects) // Don't allow chunks when disabled . . .
         return nullptr;
       return new (type_id, this, false) CChunk            ;
@@ -2042,6 +2041,7 @@ CThing* CRealm::makeType(ClassIDType type_id)
     case CDeathWadID         : return new (type_id, this, false) CDeathWad         ;
     case CDynamiteID         : return new (type_id, this, false) CDynamite         ;
     case CSndRelayID         : return new (type_id, this,  true) CSndRelay         ;
+    case TotalIDs            : return nullptr; // alias for no weapon
     default:
       ASSERT(false);
       return nullptr;
