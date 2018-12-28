@@ -4,7 +4,7 @@
 #include "sakarchive.h"
 
 template<typename T = uint16_t>
-struct point2d_t
+struct space2d_t
 {
   T x;
   union

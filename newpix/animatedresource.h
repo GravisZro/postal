@@ -142,7 +142,7 @@ struct AnimatedResource : filedata_t
 
     switch(type)
     {
-      default:
+      case type_t::uninitialized:
         ASSERT(false);
         break;
 

@@ -12,7 +12,7 @@ typedef float real_t;
 
 #pragma pack(push, 1)
 template<typename T>
-struct point3d_t
+struct space3d_t
 {
   T x;
   T y;
@@ -20,10 +20,10 @@ struct point3d_t
 
   template<typename V>
   inline T& operator [](V index) { return *(reinterpret_cast<T*>(this) + index); }
-}; // a triangle is 3 index values for RSop data
+};
 #pragma pack(pop)
 
-using vertex_t = point3d_t<uint16_t>;
+using vertex_t = space3d_t<uint16_t>;
 
 // helper constant expressions
 template<typename R, typename C>
@@ -281,7 +281,7 @@ class RMesh : public filedata_t
 {
   friend class RPipeLine; // allow encapsulation to be violated for speed
 private:
-  shared_arr<vertex_t> triangles; // Array of triangles
+  shared_arr<vertex_t> triangles; // Array of verticies that form triangles
 
 public:
   RMesh(uint32_t sz = 0) noexcept

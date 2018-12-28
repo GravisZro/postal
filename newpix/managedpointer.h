@@ -28,7 +28,7 @@ public:
 
   template<typename U>
   managed_ptr(const managed_ptr<U>& other)
-    { m_ptr = other ? reinterpret_cast<T*>(other.pointer()) : nullptr; }
+    { m_ptr = other ? static_cast<T*>(other.pointer()) : nullptr; }
 
   void reset(void) noexcept { ++g_reset_count; m_ptr = nullptr; }
 
@@ -50,9 +50,9 @@ public:
 
 
   template<typename U>
-  bool operator ==(U* other) const noexcept { return pointer() == reinterpret_cast<T*>(other); }
+  bool operator ==(U* other) const noexcept { return pointer() == static_cast<T*>(other); }
   template<typename U>
-  bool operator !=(U* other) const noexcept { return pointer() != reinterpret_cast<T*>(other); }
+  bool operator !=(U* other) const noexcept { return pointer() != static_cast<T*>(other); }
 
   operator bool(void) const noexcept
   {

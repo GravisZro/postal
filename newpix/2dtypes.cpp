@@ -1,5 +1,7 @@
 #include "2dtypes.h"
 
+#include "3dtypes.h"
+
 struct ImageHeader
 {
   uint32_t type;      // Image type
@@ -17,31 +19,16 @@ struct ImageHeader
 
 struct SpriteHeader
 {
-  int16_t X;          // Sprite X
-  int16_t Y;          // Sprite Y
-  int16_t Z;          // Sprite Z
+  space3d_t<int16_t> dimensions;
+  space3d_t<int16_t> hotspot;
 
-  int16_t HotSpotX;   // The offset from m_sX to the hotspot.
-                      //  This value would normally be subtracted from m_sX to get the destination (e.g., screen) position.
-  int16_t HotSpotY;   // The offset from m_sY to the hotspot.
-                      //  This value would normally be subtracted from m_sY to get the destination (e.g., screen) position.
-  int16_t HotSpotZ;   // The offset from m_sZ to the hotspot.
-                      //  This value would normally be subtracted from m_sZ to get the destination (e.g., screen) position.
   int16_t Angle;      // Angle of rotation
   int32_t Width;      // Sprite's Desired Display Width (for scale blit)
   int32_t Height;     // Sprite's Desired Display Height (for scale blit)
 
-  double  Xpos;       // X Position
-  double  Ypos;       // Y Position
-  double  Zpos;       // Z Position
-
-  double  Xacc;       // X Acceleration
-  double  Yacc;       // Y Acceleration
-  double  Zacc;       // Z Acceleration
-
-  double  Xvel;       // X Velocity
-  double  Yvel;       // Y Velocity
-  double  Zvel;       // Z Velocity
+  space3d_t<double> position;
+  space3d_t<double> acceleration;
+  space3d_t<double> velocity;
 
   uint32_t Flags;     // Attribute and status flags
 };

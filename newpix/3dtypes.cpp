@@ -339,13 +339,13 @@ void RTransform::TransformInto(const Vector3D& src, Vector3D& dest) const noexce
 
 void RTransform::Rz(int16_t sDeg) noexcept // CCW!
 {
-  register real_t S = rspfSin(sDeg);
-  register real_t C = rspfCos(sDeg);
+  real_t S = rspfSin(sDeg);
+  real_t C = rspfCos(sDeg);
 
   for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row1 = matdata[rowcol(1, i)];
-    register real_t row0 = matdata[rowcol(0, i)];
+    real_t row1 = matdata[rowcol(1, i)];
+    real_t row0 = matdata[rowcol(0, i)];
     matdata[rowcol(1, i)] = row0 * S + row1 * C;
     matdata[rowcol(0, i)] = row0 * C - row1 * S;
   }
@@ -353,13 +353,13 @@ void RTransform::Rz(int16_t sDeg) noexcept // CCW!
 
 void RTransform::Rx(int16_t sDeg) noexcept // CCW!
 {
-  register real_t S = rspfSin(sDeg);
-  register real_t C = rspfCos(sDeg);
+  real_t S = rspfSin(sDeg);
+  real_t C = rspfCos(sDeg);
 
   for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row1 = matdata[rowcol(1, i)];
-    register real_t row2 = matdata[rowcol(2, i)];
+    real_t row1 = matdata[rowcol(1, i)];
+    real_t row2 = matdata[rowcol(2, i)];
     matdata[rowcol(2, i)] = row1 * S + row2 * C;
     matdata[rowcol(1, i)] = row1 * C - row2 * S;
   }
@@ -367,13 +367,13 @@ void RTransform::Rx(int16_t sDeg) noexcept // CCW!
 
 void RTransform::Ry(int16_t sDeg) noexcept // CCW!
 {
-  register real_t S = rspfSin(sDeg);
-  register real_t C = rspfCos(sDeg);
+  real_t S = rspfSin(sDeg);
+  real_t C = rspfCos(sDeg);
 
   for (uint8_t i = 0; i < 4; ++i)
   {
-    register real_t row0 = matdata[rowcol(0, i)];
-    register real_t row2 = matdata[rowcol(2, i)];
+    real_t row0 = matdata[rowcol(0, i)];
+    real_t row2 = matdata[rowcol(2, i)];
     matdata[rowcol(2, i)] = -row0 * S + row2 * C;
     matdata[rowcol(0, i)] =  row0 * C + row2 * S;
   }
