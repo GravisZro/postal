@@ -415,7 +415,7 @@ int16_t RSprite::Save(RFile* pcf)
 																					{
 																						if (pcf->Write(&m_sHotSpotZ) == 1)
 																						{
-																							if (m_pImage)
+																							if (m_pImage != nullptr)
 																							{
 																								ulImageFlag = 1;
 																								if (pcf->Write(&ulImageFlag) == 1)
