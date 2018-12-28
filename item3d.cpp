@@ -160,6 +160,21 @@ static const char* ms_apszResExtensions[NUM_RES_NAMES]	=
 	};
 #endif
 
+CItem3d::CItem3d(void) noexcept
+{
+  m_szAnimBaseName[0] = '\0';
+  m_itemType = None;
+
+  m_szAnimRigidName[0] = '\0';
+  m_szChildAnimBaseName[0]	= '\0';
+}
+
+CItem3d::~CItem3d(void) noexcept
+{
+  FreeResources();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +383,7 @@ void CItem3d::Update(void)
       m_smash.m_sphere.sphere.X			= m_position.x;
       m_smash.m_sphere.sphere.Y			= m_position.y;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);
@@ -569,23 +584,13 @@ int16_t CItem3d::Init(void)									// Returns 0 if successfull, non-zero otherw
 	if (m_animChild.m_pmeshes && m_anim.m_ptransRigid)
 		{
 		// Attach to main sprite.
-		m_sprite.AddChild(&m_spriteChild);
+      AddChild(&m_spriteChild);
 		}
 
 	// No special flags.
-	m_sprite.m_sInFlags = 0;
+   m_sInFlags = 0;
 
 	return sResult;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill item3d
-////////////////////////////////////////////////////////////////////////////////
-void CItem3d::Kill(void)
-	{
-	// Free resources
-	FreeResources();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -624,7 +629,7 @@ int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero o
 		{
 		// Remove just in case we're already in scene.  Can happen in editor after
 		// a failed EditModify().
-		realm()->Scene()->RemoveSprite(&m_sprite);
+      realm()->Scene()->RemoveSprite(this);
 		}
 		
 	return sResult;

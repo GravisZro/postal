@@ -144,7 +144,6 @@ int16_t CDeathWad::ms_sFileCount;
 
 CDeathWad::CDeathWad(void)
 {
-  //			m_sprite.m_pthing				= this;
   m_smash.m_pThing = this;
   m_siThrust						= 0;
   m_stockpile.Zero();
@@ -160,8 +159,6 @@ CDeathWad::~CDeathWad(void)
   // Stop sound, if any.
   StopLoopingSample(m_siThrust);
 
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -451,7 +448,7 @@ void CDeathWad::Update(void)
       m_smash.m_sphere.sphere.X			= m_position.x;
       m_smash.m_sphere.sphere.Y			= m_position.y;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);
@@ -469,10 +466,10 @@ void CDeathWad::Render(void)
 {
 	int32_t lThisTime = realm()->m_time.GetGameTime();
 
-   m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
-   m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
-   m_sprite.m_ptex = &m_anim.m_ptextures->atTime(lThisTime);
-   m_sprite.m_psphere = &m_anim.m_pbounds->atTime(lThisTime);
+   m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
+   m_psop = &m_anim.m_psops->atTime(lThisTime);
+   m_ptex = &m_anim.m_ptextures->atTime(lThisTime);
+   m_psphere = &m_anim.m_pbounds->atTime(lThisTime);
 
 	// Reset rotation so it is not cumulative
    m_trans.makeIdentity();
@@ -481,33 +478,25 @@ void CDeathWad::Render(void)
    m_trans.Ry(rspMod360(m_rotation.y));
 
 	// Eventually this should be channel driven also
-	m_sprite.m_sRadius = ms_sCollisionRadius;
+   m_sRadius = ms_sCollisionRadius;
 
-	if (m_eState == State_Hide || m_bInsideTerrain == true)
-		{
-		m_sprite.m_sInFlags = CSprite::InHidden;
-		}
-	else
-		{
-		m_sprite.m_sInFlags = 0;
-		}
+   m_sInFlags = (m_eState == State_Hide || m_bInsideTerrain) ? CSprite::InHidden : 0;
 
 	// If we're not a child of someone else...
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sprite.m_sX2, &m_sprite.m_sY2);
+      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sX2, &m_sY2);
 
 		// Priority is based on Z.
-      m_sprite.m_sPriority = m_position.z;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from the attribute map
-      m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-		m_sprite.m_ptrans		= &m_trans;
+      m_ptrans		= &m_trans;
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
+      Object::enqueue(SpriteUpdate); // Update sprite in scene
 		
 		// Render the 2D shadow sprite
 		CWeapon::Render();

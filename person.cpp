@@ -322,7 +322,6 @@ CPerson::CPerson(void)
   m_ePersonType = Personatorium::Grenader;
   m_eWeaponType = CGrenadeID;
   m_panimCur = m_panimPrev = nullptr;
-  //			m_sprite.m_pthing	= this;
   m_rstrLogicFile = "res/logics/default.lgk";
   m_sShowState		= FALSE;
   m_sUserState1 = 0; // Uninitialized
@@ -331,8 +330,6 @@ CPerson::CPerson(void)
 
 CPerson::~CPerson(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -828,11 +825,11 @@ void CPerson::Render(void)
 		m_rstrLogicName = ms_apszStateNames[m_state];
 		m_rstrLogicName += "/";
 		m_rstrLogicName += ms_apszActionNames[m_eCurrentAction];
-      m_sprite.m_pszText = m_rstrLogicName;
-//		m_sprite.m_pszText = ms_apszStateNames[m_state];
+      m_pszText = m_rstrLogicName;
+//		m_pszText = ms_apszStateNames[m_state];
 	}
 	else
-		m_sprite.m_pszText		= nullptr;
+      m_pszText		= nullptr;
 
 	CDoofus::Render();
 }
@@ -858,19 +855,12 @@ void CPerson::EditRender(void)
 			m_rstrLogicName	+= "Invalid weapon";
 			}
 
-      m_sprite.m_pszText = m_rstrLogicName;
+      m_pszText = m_rstrLogicName;
 		}
 	else
 		{
-		WeaponDetails*	pwd	= GetWeaponDetails(m_eWeaponType);
-		if (pwd)
-			{
-			m_sprite.m_pszText	= pwd->pszName;
-			}
-		else
-			{
-			m_sprite.m_pszText	= nullptr;
-			}
+      WeaponDetails*	pwd = GetWeaponDetails(m_eWeaponType);
+      m_pszText = pwd != nullptr ? pwd->pszName : nullptr;
 		}
 	}
 #endif // !defined(EDITOR_REMOVED)
@@ -916,7 +906,7 @@ void CPerson::Logic_Writhing(void)
 
 #if 1
 		// Get radius.
-		int16_t	sRadius			= m_sprite.m_sRadius;
+      int16_t	sRadius			= m_sRadius;
 		// Determine pseudo-head point.
 		int16_t	sRot				= rspMod360(m_dAnimRot);
       int16_t	sPseudoHeadX	= m_position.x + COSQ[sRot] * sRadius;

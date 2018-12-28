@@ -111,8 +111,6 @@ CChunk::CChunk(void)
 
 CChunk::~CChunk(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  //realm()->Scene()->RemoveSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -226,9 +224,7 @@ void CChunk::Render(void)
   // Layer should be based on info we get from attribute map.
   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-  // Update sprite in scene
-  //realm()->Scene()->UpdateSprite(&m_sprite);
-  Object::enqueue(SpriteUpdate);
+  Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
 
 

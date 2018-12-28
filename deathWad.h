@@ -77,8 +77,7 @@ class CDeathWad
 	protected:
 		CAnim3D		m_anim;					// 3D animation
 		RTransform	m_trans;					// Transform
-		CSmash		m_smash;					// Collision body.
-		CSprite3		m_sprite;				// 3D sprite to render this thing.
+      CSmash		m_smash;					// Collision body.
 		bool			m_bInsideTerrain;		// true if we are inside terrain.
 
 		SampleMaster::SoundInstance	m_siThrust;	// Looping thrust play instance.
@@ -119,8 +118,8 @@ class CDeathWad
 	public:
 		void SetTransform(RTransform* pTransform)
 			{
-			m_sprite.m_ptrans = pTransform;
-			};
+         m_ptrans = pTransform;
+         }
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -155,7 +154,7 @@ class CDeathWad
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 		// Feed the WAD prior to moving its state to State_Fire.

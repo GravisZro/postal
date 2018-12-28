@@ -421,6 +421,26 @@ int32_t GetRandSway(		// Returns sway value.
 	return (GetRand() % lRange) - lRange / 2;
 	}
 
+
+CCharacter::CCharacter(void)
+{
+  m_eWeaponType = CRocketID;
+  m_siLastWeaponPlayInstance	= 0;
+  m_lStopLoopingWeaponSoundTime	= 0;
+}
+
+CCharacter::~CCharacter(void)
+{
+  // If we have a weapon sound play instance . . .
+  if (m_siLastWeaponPlayInstance)
+  {
+    // Stop looping the sound.
+    StopLoopingSample(m_siLastWeaponPlayInstance);
+    // Forget about it.
+    m_siLastWeaponPlayInstance	= 0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -695,7 +715,7 @@ void CCharacter::OnDead(void)
 	// Render current dead frame into background to stay.
    realm()->Scene()->DeadRender3D(
       realm()->Hood()->m_pimBackground,		// Destination image.
-		&m_sprite,						// Tree of 3D sprites to render.
+      this,						// Tree of 3D sprites to render.
       realm()->Hood());							// Dst clip rect.
 	
 	// If we just rendered a child weapon into the background . . .
@@ -910,7 +930,7 @@ void CCharacter::MakeBloody(
       dHitZ	= m_position.z - SINQ[sDeflectionAngle] * TORSO_RADIUS;
 
 		// Put it up about half way up character's body.
-		dHitY	+= m_sprite.m_sRadius;
+      dHitY	+= m_sRadius;
 		}
 
 	// Create blood animation.
@@ -1090,7 +1110,7 @@ void CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
         // Set its initial state to hidden.
         m_weapon->m_eState = CWeapon::State_Hide;
         // Let the scene know to render the weapon as a child of this.
-        m_sprite.AddChild(m_weapon->GetSprite() );
+        AddChild(m_weapon.pointer());
         }
     else
         {
@@ -1199,7 +1219,7 @@ void CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 				// Detatch weapon's sprite
             CSprite*	pspriteWeapon	= m_weapon->GetSprite();
             if (pspriteWeapon && pspriteWeapon->m_psprParent) // Some weapons (one weapon, the flamer) are never parented.
-              m_sprite.RemoveChild(pspriteWeapon);
+              RemoveChild(pspriteWeapon);
 				
 				// Specific behavior by type.
             if(m_weapon->type() == CDeathWadID)
@@ -1913,20 +1933,6 @@ int16_t CCharacter::Preload(
 	return sResult;
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Called by destructor to clean up.
-////////////////////////////////////////////////////////////////////////////////
-void CCharacter::Kill(void)
-	{
-	// If we have a weapon sound play instance . . .
-	if (m_siLastWeaponPlayInstance)
-		{
-		// Stop looping the sound.
-		StopLoopingSample(m_siLastWeaponPlayInstance);
-		// Forget about it.
-		m_siLastWeaponPlayInstance	= 0;
-		}
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

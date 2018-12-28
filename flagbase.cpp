@@ -128,8 +128,6 @@ CFlagbase::CFlagbase(void)
 
 CFlagbase::~CFlagbase(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -414,7 +412,7 @@ void CFlagbase::Update(void)
 					// Render current dead frame into background to stay.
 					realm()->Scene()->DeadRender3D(
                   realm()->Hood()->m_pimBackground,		// Destination image.
-						&m_sprite,						// Tree of 3D sprites to render.
+                  this,						// Tree of 3D sprites to render.
                   realm()->Hood());							// Dst clip rect.
 
                 Object::enqueue(SelfDestruct);

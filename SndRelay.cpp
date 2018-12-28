@@ -67,6 +67,24 @@
 
 int16_t	CSndRelay::ms_sFileCount			= 0;	// File count.         
 
+
+CSndRelay::CSndRelay(void)
+{
+  m_bInitiallyEnabled = true;
+  m_bEnabled = m_bInitiallyEnabled;
+
+  m_sSuspend = 0;
+
+  m_state = State_Happy;
+}
+
+CSndRelay::~CSndRelay(void)
+{
+
+  if (m_pImage != nullptr)
+    rspReleaseResource(&g_resmgrGame, &m_pImage);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,10 +420,10 @@ void CSndRelay::EditRect(	// Returns nothiing.
 	prc->sW	= 10;	// Safety.
 	prc->sH	= 10;	// Safety.
 
-	if (m_sprite.m_pImage)
+   if (m_pImage)
 		{
-		prc->sW	= m_sprite.m_pImage->m_sWidth;
-		prc->sH	= m_sprite.m_pImage->m_sHeight;
+      prc->sW	= m_pImage->m_sWidth;
+      prc->sH	= m_pImage->m_sHeight;
 		}
 
 	prc->sX	-= prc->sW / 2;
@@ -425,10 +443,10 @@ void CSndRelay::EditHotSpot(	// Returns nothiing.
 	*psX	= 5;	// Safety.
 	*psY	= 5;	// Safety.
 
-	if (m_sprite.m_pImage)
+   if (m_pImage != nullptr)
 		{
-		*psX	= m_sprite.m_pImage->m_sWidth / 2;
-		*psY	= m_sprite.m_pImage->m_sHeight;
+      *psX	= m_pImage->m_sWidth / 2;
+      *psY	= m_pImage->m_sHeight;
 		}
 	}
 
@@ -444,29 +462,28 @@ void CSndRelay::EditUpdate(void)
 // Called by editor to render object
 ////////////////////////////////////////////////////////////////////////////////
 void CSndRelay::EditRender(void)
-	{
-	// Setup simple, non-animating sprite
-	m_sprite.m_sInFlags = 0;
+{
+  // Setup simple, non-animating sprite
+  m_sInFlags = 0;
 
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&(m_sprite.m_sX2),
-		&(m_sprite.m_sY2) );
+  Map3Dto2D(
+        m_position.x,
+        m_position.y,
+        m_position.z,
+        &m_sX2,
+        &m_sY2);
 
-	// Priority is based on bottom edge of sprite
-   m_sprite.m_sPriority = m_position.z;
+  // Priority is based on bottom edge of sprite
+  m_sPriority = m_position.z;
 
-	// Center on image.
-	m_sprite.m_sX2	-= m_sprite.m_pImage->m_sWidth / 2;
-	m_sprite.m_sY2	-= m_sprite.m_pImage->m_sHeight;
+  // Center on image.
+  m_sX2	-= m_pImage->m_sWidth / 2;
+  m_sY2	-= m_pImage->m_sHeight;
 
-   m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-	// Update sprite in scene
-	realm()->Scene()->UpdateSprite(&m_sprite);
-	}
+  Object::enqueue(SpriteUpdate); // Update sprite in scene
+}
 #endif // !defined(EDITOR_REMOVED)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -476,18 +493,16 @@ int16_t CSndRelay::Init(void)							// Returns 0 if successfull, non-zero otherw
 	{
 	int16_t sResult = SUCCESS;
 
-	Kill();
-
 	m_bEnabled = m_bInitiallyEnabled;
 
-	if (m_sprite.m_pImage == 0)
+   if (m_pImage == nullptr)
 		{
-		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_sprite.m_pImage);
+      sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_pImage);
 		if (sResult == SUCCESS)
 			{
 			// This is a questionable action on a resource managed item, but it's
 			// okay if EVERYONE wants it to be an FSPR8.
-			if (m_sprite.m_pImage->Convert(RImage::FSPR8) != RImage::FSPR8)
+         if (m_pImage->Convert(RImage::FSPR8) != RImage::FSPR8)
 				{
 				sResult = FAILURE;
 				TRACE("CSndRelay::GetResource() - Couldn't convert to FSPR8\n");
@@ -498,19 +513,6 @@ int16_t CSndRelay::Init(void)							// Returns 0 if successfull, non-zero otherw
 	return sResult;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CSndRelay::Kill(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   if (m_sprite.m_pImage != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_sprite.m_pImage);
-
-	realm()->Scene()->RemoveSprite(&m_sprite);
-
-   return SUCCESS;
-	}
 
 
 ////////////////////////////////////////////////////////////////////////////////

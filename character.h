@@ -172,26 +172,9 @@ protected:
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CCharacter(void)
-			{
-         m_eWeaponType = CRocketID;
-			m_siLastWeaponPlayInstance	= 0;
-			m_lStopLoopingWeaponSoundTime	= 0;
-         }
+      CCharacter(void);
+      virtual ~CCharacter(void);
 
-      virtual ~CCharacter(void)
-			{
-			Kill();
-			}
-
-	//---------------------------------------------------------------------------
-	// Required static functions - None for this non-instantiable object.
-	//---------------------------------------------------------------------------
-	public:
-
-	//---------------------------------------------------------------------------
-	// Required virtual functions (implimenting them as inlines doesn't pay!)
-	//---------------------------------------------------------------------------
 	public:
 		// Load object (should call base class version!)
 		int16_t Load(													// Returns 0 if successfull, non-zero otherwise

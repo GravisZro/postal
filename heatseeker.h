@@ -66,8 +66,7 @@ class CHeatseeker
 		CSmash		m_smash;					// Smash used for explosion collisions (small)
 		CSmash		m_smashSeeker;			// Smash used to detect heat sources (larger)
 		bool			m_bArmed;				// Initially missile is not armed so it doesn't
-													// collide with the person who shot it.
-		CSprite3		m_sprite;				// 3D sprite to render this thing.
+                                       // collide with the person who shot it.
 		int32_t			m_lSmokeTimer;			// Time to wait between emitting smoke
 		uint32_t			m_u32CollideBitsInclude;	// Bits that cause a collision
 		uint32_t			m_u32CollideBitsDontCare;	// Bits that are ignored for collisions
@@ -121,8 +120,8 @@ class CHeatseeker
 	public:
 		void SetTransform(RTransform* pTransform)
 			{
-				m_sprite.m_ptrans = pTransform;
-			};
+            m_ptrans = pTransform;
+         }
 
 	//---------------------------------------------------------------------------
 	// Optional virtual functions
@@ -187,7 +186,7 @@ class CHeatseeker
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 	//---------------------------------------------------------------------------

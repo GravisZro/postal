@@ -329,7 +329,6 @@ class CThing3d
 
       managed_ptr<CFire> m_fire;					// ID of fire to carry around when you are burning.
 
-		CSprite3 m_sprite;					// 3D Sprite used to render the 3D Thing.
 		CSprite2	m_spriteShadow;			// 2D shadow sprite to be shown on the ground
 
 		CSmash	m_smash;						// Smash for collision detection.
@@ -344,7 +343,7 @@ class CThing3d
 
 		State	m_state;							// Current state of this thing3d.
 
-		int16_t	m_sBrightness;					// Normal brightness level or dark if burnt
+      int16_t	m_sBaseBrightness;					// Normal brightness level or dark if burnt
 
 		bool	m_bAboveTerrain;				// true, if in the air, false if on terrain.
 
@@ -451,7 +450,7 @@ class CThing3d
 		// or none to return.
 		virtual	// If you override this, do NOT call this base class.
 		CSprite* GetSprite(void)	// Returns the sprite for this thing or nullptr.
-			{ return &m_sprite; }
+         { return this; }
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.

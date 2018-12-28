@@ -108,7 +108,7 @@
 // Anim for when a barrel is hit by a bullet.
 #define SENTRY_HIT_RES_NAME	"Ricochet.aan"
 
-#define HULL_RADIUS				(m_sprite.m_sRadius / 2)
+#define HULL_RADIUS				(m_sRadius / 2)
 
 // Gets a GetRandom()om between -range / 2 and range / 2.
 #define RAND_SWAY(sway)		((GetRandom() % sway) - sway / 2)
@@ -240,8 +240,6 @@ CSentry::CSentry(void)
 
 CSentry::~CSentry(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->Scene()->RemoveSprite(&m_spriteBase);
   realm()->m_smashatorium.Remove(&m_smash);
 
@@ -443,8 +441,8 @@ void CSentry::Render(void)
    m_sPriority	= m_spriteBase.m_sPriority + 1;
    m_sLayer		= m_spriteBase.m_sLayer;
 
-   // Update sprite in scene
-   realm()->Scene()->UpdateSprite(&m_sprite);
+   Object::enqueue(SpriteUpdate); // Update sprite in scene
+   //realm()->Scene()->UpdateSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

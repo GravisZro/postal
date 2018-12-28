@@ -205,17 +205,11 @@ CPowerUp::CPowerUp(void)
   m_panimCur	= &m_anim;
 
   m_stockpile.m_sHitPoints	= 0;
-
-  //			m_sprite.m_pthing	= this;
-
   m_smash.m_pThing = this;
 }
 
 CPowerUp::~CPowerUp(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
-
   // Free resources
   FreeResources();
 
@@ -420,7 +414,7 @@ void CPowerUp::Update(void)
       m_smash.m_sphere.sphere.X			= m_position.x;
       m_smash.m_sphere.sphere.Y			= m_position.y;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-      m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);
@@ -621,13 +615,13 @@ int16_t CPowerUp::Grab(		// Returns 0 on success..
    int16_t sResult	= SUCCESS;	// Assume success.
 
 	// If we are not already grabbed . . .
-   if (m_sprite.m_psprParent == nullptr)
+   if (m_psprParent == nullptr)
 		{
       m_position.x	= 0.0;
       m_position.y	= 0.0;
       m_position.z	= 0.0;
 
-      psprParent->AddChild(&m_sprite);
+      psprParent->AddChild(this);
 
 		// Don't use this for now b/c the next line that removes the
 		// smash from the smashatorium will be ineffective b/c the
@@ -659,10 +653,10 @@ void CPowerUp::Drop(			// Returns nothing.
    m_position.z	= sZ;
 
 	// If we have a parent . . .
-   if (m_sprite.m_psprParent != nullptr)
+   if (m_psprParent != nullptr)
 		{
 		// Remove from parent.
-      m_sprite.m_psprParent->RemoveChild(&m_sprite);
+      m_psprParent->RemoveChild(this);
 		}
 	}
 

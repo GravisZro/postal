@@ -4119,7 +4119,7 @@ class CPlayRealm : public CPlay
         pinfo->m_localDude = pdude;
 
 			// Turn on local dude's xray effect
-			pdude->m_sprite.m_sInFlags |= CSprite::InXrayee;
+         pdude->m_sInFlags |= CSprite::InXrayee;
 
 			// Set local dude's targeting status
 			pdude->m_bTargetingHelpEnabled = (g_GameSettings.m_sCrossHair != FALSE) ? true : false;

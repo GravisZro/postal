@@ -243,8 +243,6 @@ COstrich::COstrich(void)
 
 COstrich::~COstrich(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -640,9 +638,9 @@ void COstrich::Update(void)
       m_smash.m_sphere.sphere.X			= m_position.x;
 		// Fudge center of sphere as half way up the dude.
 		// Doesn't work if dude's feet leave the origin.
-      m_smash.m_sphere.sphere.Y			= m_position.y + m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);

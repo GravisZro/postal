@@ -32,7 +32,6 @@
 #ifndef SNDRELAY_H
 #define SNDRELAY_H
 
-#include "thing.h"
 #include <newpix/sprite_base.h>
 
 class CSndRelay
@@ -55,8 +54,6 @@ class CSndRelay
 	public:
 		bool m_bInitiallyEnabled;
 
-		CSprite2 m_sprite;						// Sprite (for editor only)
-
 		bool m_bEnabled;
 
 		int16_t m_sSuspend;							// Suspend flag
@@ -71,21 +68,8 @@ class CSndRelay
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
 	public:
-      CSndRelay(void)
-			{
-			m_bInitiallyEnabled = true;
-			m_bEnabled	= m_bInitiallyEnabled;
-
-			m_sSuspend	= 0;
-
-			m_state		= State_Happy;
-
-			}
-
-      virtual ~CSndRelay(void)
-			{
-			Kill();
-			}
+      CSndRelay(void);
+      virtual ~CSndRelay(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -172,9 +156,6 @@ class CSndRelay
 	protected:
 		// Init object
 		int16_t Init(void);											// Returns 0 if successfull, non-zero otherwise
-		
-		// Kill object
-		int16_t Kill(void);											// Returns 0 if successfull, non-zero otherwise
 
 	};
 

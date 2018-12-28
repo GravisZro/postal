@@ -37,16 +37,23 @@ class CAlphaAnim
 		RImage* m_pimAlphaArray;								// Array of alpha image's (could be empty!)
 
 	public:
-		CAlphaAnim()
-			{
-         m_pimAlphaArray = nullptr;
-			Reset();
-         }
-		
-		~CAlphaAnim()
-			{
-			Reset();
-         }
+      CAlphaAnim(void) noexcept
+      {
+        m_pimAlphaArray = nullptr;
+        m_sNumAlphas = 0;
+        m_sX = 0;
+        m_sY = 0;
+      }
+
+      virtual ~CAlphaAnim(void) noexcept
+      {
+        if(m_pimAlphaArray != nullptr)
+        {
+          delete []m_pimAlphaArray;
+          m_pimAlphaArray = nullptr;
+        }
+      }
+
 #ifdef UNUSED_FUNCTIONS
 		CAlphaAnim& operator=(const CAlphaAnim& rhs)
 			{
@@ -69,38 +76,21 @@ class CAlphaAnim
 			return false;
 			}
 
-		void Reset(void)
-			{
-			Free();
-			m_sNumAlphas = 0;
-			m_sX = 0;
-			m_sY = 0;
-			}
-
-		void Alloc(int16_t sNumAlphas)
-			{
-			Free();
-			if (sNumAlphas > 0)
-				{
-				m_pimAlphaArray = new RImage[sNumAlphas];
-            ASSERT(m_pimAlphaArray != nullptr);
-				}
-			m_sNumAlphas = sNumAlphas;
-			}
-
-		void Free(void)
-			{
-			delete []m_pimAlphaArray;
-         m_pimAlphaArray = nullptr;
-			}
 
 		int16_t Load(RFile* pFile)
 			{
 			pFile->Read(&m_sNumAlphas);
 			pFile->Read(&m_sX);
 			pFile->Read(&m_sY);
-			m_imColor.Load(pFile);
-			Alloc(m_sNumAlphas);
+         m_imColor.Load(pFile);
+         if (m_sNumAlphas > 0)
+         {
+           if(m_pimAlphaArray != nullptr)
+             delete[] m_pimAlphaArray;
+           m_pimAlphaArray = new RImage[m_sNumAlphas];
+           ASSERT(m_pimAlphaArray != nullptr);
+         }
+
 			for (int16_t s = 0; s < m_sNumAlphas; s++)
 				m_pimAlphaArray[s].Load(pFile);
 			return pFile->Error();

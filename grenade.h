@@ -100,7 +100,7 @@ class CUnguidedMissile
 
 		CAnim3D		m_anim;										// 3D animation.  One should be enough, I think.
 		RTransform	m_trans;										// Transform.
-		CSprite3		m_sprite;									// 3D sprite to render this thing.
+//		CSprite3		m_sprite;									// 3D sprite to render this thing.
 		Style			m_style;										// Style of thrown weapon.
 
 		double		m_dAnimRotY;								// Apparent rotation around Y axis.
@@ -187,7 +187,7 @@ class CUnguidedMissile
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 		// Function to modify the velocity for a requested range
@@ -222,19 +222,15 @@ class CUnguidedMissile
 class CGrenade : public CUnguidedMissile
 {
 public:
-  CGrenade(void)
-  {
-    m_style = Grenade;
-  }
+  CGrenade(void) noexcept { m_style = Grenade; }
+  virtual ~CGrenade(void) noexcept = default;
 };
 
 class CDynamite : public CUnguidedMissile
 {
 public:
-  CDynamite(void)
-  {
-    m_style = Dynamite;
-  }
+  CDynamite(void) noexcept { m_style = Dynamite; }
+  virtual ~CDynamite(void) noexcept = default;
 };
 
 

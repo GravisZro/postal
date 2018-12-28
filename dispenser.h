@@ -52,11 +52,11 @@
 #ifndef DISPENSER_H
 #define DISPENSER_H
 
-#include "thing.h"
+#include <newpix/sprite_base.h>
 
-#include "sprites.h"
-
-class CDispenser : public CThing
+class CDispenser
+    : public sprite_base_t,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -89,7 +89,6 @@ class CDispenser : public CThing
 	//---------------------------------------------------------------------------
 	public:
 
-		CSprite2		m_sprite;								// 2D sprite.
 		RImage*		m_pim;									// 2D image resource ptr.
 		RImage		m_imRender;								// Used to render dispenser
 																	// and dispensee in edit mode.
@@ -145,25 +144,8 @@ class CDispenser : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CDispenser(void)
-			{
-			m_pim					= nullptr;
-			m_idDispenseeType	= TotalIDs;			// This means none.
-			m_sSuspend			= FALSE;
-         std::memset(m_alLogicParms, 0, sizeof(m_alLogicParms) );
-			m_sMaxDispensees	= 10;
-         m_sNumDispensees	= 0;
-			m_logictype			= Timed;
-			m_bEditMode			= false;
-			m_sDispenseeHotSpotX	= 0;
-			m_sDispenseeHotSpotY	= 0;
-			}
-
-      virtual ~CDispenser(void)
-			{
-			// Kill dispenser
-			Kill();
-			}
+      CDispenser(void) noexcept;
+      virtual ~CDispenser(void) noexcept;
 
 
 	//---------------------------------------------------------------------------

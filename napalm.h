@@ -67,8 +67,7 @@ class CNapalm
 		double m_dFireZ;							// Last position of fire for comparision
 											
 		CAnim3D		m_anim;						// 3D animation
-		RTransform	m_trans;						// Transform
-		CSprite3		m_sprite;					// 3D sprite to render this thing.
+      RTransform	m_trans;						// Transform
 
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
@@ -85,7 +84,7 @@ class CNapalm
 	//---------------------------------------------------------------------------
    public:
       CNapalm(void);
-      ~CNapalm(void);
+      virtual ~CNapalm(void);
 
 
 	//---------------------------------------------------------------------------
@@ -99,7 +98,7 @@ class CNapalm
 	public:
 		void SetTransform(RTransform* pTransform)
 			{
-				m_sprite.m_ptrans = pTransform;
+            m_ptrans = pTransform;
          }
 
 
@@ -138,7 +137,7 @@ class CNapalm
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 		// Function to modify the velocity for a requested range

@@ -1618,38 +1618,41 @@ void CDude::CDudeAnim3D::Release(void)	// Returns nothing.
 // Constructor.
 ////////////////////////////////////////////////////////////////////////////////
 CDude::CDude(void)
-	{
-	m_statePersistent	= State_Stand;
+{
+  m_statePersistent	= State_Stand;
 
-	// Set default stockpile.
-	m_stockpile.Copy(&ms_stockpileDefault);
+  // Set default stockpile.
+  m_stockpile.Copy(&ms_stockpileDefault);
 
-	m_weapontypeCur	= SemiAutomatic;
-	m_weaponShooting	= NoWeapon;
+  m_weapontypeCur	= SemiAutomatic;
+  m_weaponShooting	= NoWeapon;
 
-	m_lLastShotTime	= 0;
-	m_lLastYellTime	= 0;
+  m_lLastShotTime	= 0;
+  m_lLastYellTime	= 0;
 
-	m_sTextureIndex	= 0;
+  m_sTextureIndex	= 0;
 
-   m_u8LastEvent		= 0;
+  m_u8LastEvent		= 0;
 
-	m_bDead				= false;
+  m_bDead				= false;
 
-	m_bInvincible		= false;
+  m_bInvincible		= false;
 
-   // Base the dude number of the number of dude's in the realm.
-   m_sDudeNum = realm()->GetThingsByType(CDudeID).size();
-   }
+  // Base the dude number of the number of dude's in the realm.
+  m_sDudeNum = realm()->GetThingsByType(CDudeID).size();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
 ////////////////////////////////////////////////////////////////////////////////
 CDude::~CDude()
-	{
-	// Kill dude
-	Kill();
-	}
+{
+  // Remove the target sprite, if there.
+  realm()->Scene()->RemoveSprite(&m_TargetSprite);
+
+  // Free resources
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -2503,7 +2506,7 @@ void CDude::Update(void)
 						// Make it blit as a child.
                   ASSERT(psmash->m_pThing->type() == CPowerUpID);
                   ppowerup	= psmash->m_pThing;
-                  if (ppowerup->Grab(&m_sprite) == SUCCESS)
+                  if (ppowerup->Grab(this) == SUCCESS)
 							{
 							// Store/Identify child.
                      setChild(ppowerup);
@@ -2518,7 +2521,7 @@ void CDude::Update(void)
                setChild(ppowerup);
               // Position powerup.
 					PositionChild(
-						&(ppowerup->m_sprite),	// In:  Child sprite to detach.
+                  ppowerup.pointer(),	// In:  Child sprite to detach.
                   &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying position.
                   &(ppowerup->m_position.x),		// Out: New position of child.
                   &(ppowerup->m_position.y),		// Out: New position of child.
@@ -2532,9 +2535,9 @@ void CDude::Update(void)
       m_smash.m_sphere.sphere.X			= m_position.x;
 		// Fudge center of sphere as half way up the dude.
 		// Doesn't work if dude's feet leave the origin.
-      m_smash.m_sphere.sphere.Y			= m_position.y + m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
       realm()->m_smashatorium.Update(&m_smash);
@@ -3656,7 +3659,7 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
    m_smash.m_pThing = this;
 
 	// No special flags.
-	m_sprite.m_sInFlags = 0;
+   m_sInFlags = 0;
 
 	// Targeting flag initially starts out as Hidden
 	m_TargetSprite.m_sInFlags		= CSprite::InHidden;
@@ -3669,12 +3672,12 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 	// Setup weapon sprite.
 	m_spriteWeapon.m_sInFlags	= 0;
 //	m_spriteWeapon.m_pthing		= this;
-	m_sprite.AddChild(&m_spriteWeapon);
+   AddChild(&m_spriteWeapon);
 
 	// Setup backpack sprite.
 	m_spriteBackpack.m_sInFlags	= 0;
 //	m_spriteBackpack.m_pthing		= this;
-	m_sprite.AddChild(&m_spriteBackpack);
+   AddChild(&m_spriteBackpack);
 
 	// Setup our crawler.
    m_crawler.m_realm			= realm();
@@ -3712,18 +3715,6 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 	return sResult;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill dude
-////////////////////////////////////////////////////////////////////////////////
-void CDude::Kill(void)
-	{
-	// Remove the target sprite, if there.
-   realm()->Scene()->RemoveSprite(&m_TargetSprite);
-
-	// Free resources
-	FreeResources();
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get all required resources
@@ -4151,7 +4142,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
          case State_Idle:
 				m_panimCur	= nullptr;
 				// Make sure we're not in the render list.
-            realm()->Scene()->RemoveSprite(&m_sprite);
+            realm()->Scene()->RemoveSprite(this);
 				break;
 			case State_Stand:
 				m_statePersistent			= State_Stand;
@@ -5003,7 +4994,7 @@ void CDude::OnShotMsg(			// Returns nothing.
 		{
 		// Audible and visual feedback.
 		PlaySample(g_smidBulletIntoVest, SampleMaster::Weapon);
-      double	dHitY	= m_position.y + m_sprite.m_sRadius + RAND_SWAY(VEST_HIT_SWAY);
+      double	dHitY	= m_position.y + m_sRadius + RAND_SWAY(VEST_HIT_SWAY);
 		// X/Z position depends on angle of shot (it is opposite).
 		int16_t	sDeflectionAngle	= rspMod360(pshotmsg->sAngle + 180);
       double	dHitX	= m_position.x + COSQ[sDeflectionAngle] * TORSO_RADIUS;
@@ -5356,7 +5347,7 @@ void CDude::Revive(				// Returns nothing.
 			// Render current dead frame into background to stay.
          realm()->Scene()->DeadRender3D(
             realm()->Hood()->m_pimBackground,	// Destination image.
-				&m_sprite,									// Tree of 3D sprites to render.
+            this,									// Tree of 3D sprites to render.
             realm()->Hood());						// Dst clip rect.
 
 			// First try to find a warp in point . . .
@@ -5411,11 +5402,11 @@ void CDude::ShowTarget()
 
 		if (m_TargetSprite.m_psprParent)
 			m_TargetSprite.m_psprParent->RemoveChild(&m_TargetSprite);
-		((CThing3d*)this)->m_sprite.AddChild(&m_TargetSprite);
+      AddChild(&m_TargetSprite);
 		// Map from 3d to 2d coords
 		Map3Dto2D(
-			fRateX - m_sprite.m_sRadius / 2,
-			m_sprite.m_sRadius * 2,
+         fRateX - m_sRadius / 2,
+         m_sRadius * 2,
 			fRateZ,
 			&m_TargetSprite.m_sX2,
 			&m_TargetSprite.m_sY2);

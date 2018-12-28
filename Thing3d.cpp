@@ -425,9 +425,8 @@ CThing3d::CThing3d(void)
   m_rotation.y				= 0.0;
   m_rotation.z				= 0.0;
   m_dDrag				= 0.0;
-  //			m_sprite.m_pthing	= this;
   m_sSuspend			= 0;
-  m_sBrightness		= 0;
+  m_sBaseBrightness		= 0;
   m_bAboveTerrain	= false;
   m_stockpile.m_sHitPoints	= DefHitPoints;
   m_spriteShadow.m_sInFlags = CSprite::InHidden;
@@ -444,8 +443,6 @@ CThing3d::CThing3d(void)
 
 CThing3d::~CThing3d(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   // Remove sprite from scene (this is safe even if it was already removed!)
   realm()->Scene()->RemoveSprite(&m_spriteShadow);
   // Remove smash from smashatorium (this is safe even if it was already
@@ -576,7 +573,7 @@ void CThing3d::Startup(void)						// Returns 0 if successfull, non-zero otherwis
 	m_lAnimPrevUpdateTime	= m_lPrevTime;
 
 	// No special flags
-	m_sprite.m_sInFlags = 0;
+   m_sInFlags = 0;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -623,7 +620,7 @@ void CThing3d::Render(void)
    GetEffectAttributes(m_position.x, m_position.z, &u16CombinedAttributes, &sLightTally);
 
 	// Brightness.
-	m_sprite.m_sBrightness	= m_sBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
+   m_sBrightness = m_sBaseBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
 
 	// If no parent . . .
    if (!parent())
@@ -636,28 +633,27 @@ void CThing3d::Render(void)
       m_trans.Rz(rspMod360(m_rotation.z) );
 
 		// Map from 3d to 2d coords
-      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sprite.m_sX2, &m_sprite.m_sY2);
+      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sX2, &m_sY2);
 
 		// If no layer override . . .
 		if (m_sLayerOverride < 0)
 			{
 			// Layer should be based on info from attribute map.
-         GetLayer(m_position.x, m_position.z, &(m_sprite.m_sLayer) );
+         GetLayer(m_position.x, m_position.z, &m_sLayer);
 			}
 		else
 			{
 			// Use the layer override.
-			m_sprite.m_sLayer	= m_sLayerOverride;
+         m_sLayer	= m_sLayerOverride;
 			}
 
 		// Priority is based on our Z position.
-      m_sprite.m_sPriority = m_position.z;
+      m_sPriority = m_position.z;
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
+      Object::enqueue(SpriteUpdate); // Update sprite in scene
 		
 		// Set transform.
-		m_sprite.m_ptrans = &m_trans;
+      m_ptrans = &m_trans;
 
 		// If the item is above the ground, show the shadow sprite, else hide it.
 		if (m_bAboveTerrain)
@@ -677,10 +673,10 @@ void CThing3d::Render(void)
 			m_spriteShadow.m_sY2 -= m_spriteShadow.m_pImage->m_sHeight / 2;
 
 			// Priority is based on bottom edge of sprite on X/Z plane!
-         m_spriteShadow.m_sPriority = MAX(m_sprite.m_sPriority - 1, 0);//m_position.z;
+         m_spriteShadow.m_sPriority = MAX(m_sPriority - 1, 0);//m_position.z;
 
 			// Layer should be based on info we get from attribute map.
-         m_spriteShadow.m_sLayer = m_sprite.m_sLayer; //CRealm::GetLayerViaAttrib(realm()->GetLayer((short) m_position.x, (short) m_position.z));
+         m_spriteShadow.m_sLayer = m_sLayer; //CRealm::GetLayerViaAttrib(realm()->GetLayer((short) m_position.x, (short) m_position.z));
 
 			// Set the alpha level based on the height difference
          m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) m_position.y - sY);
@@ -701,10 +697,10 @@ void CThing3d::Render(void)
 
 	ASSERT(m_panimCur != nullptr);
 
-   m_sprite.m_pmesh = &m_panimCur->m_pmeshes->atTime(m_lAnimTime);
-   m_sprite.m_psop = &m_panimCur->m_psops->atTime(m_lAnimTime);
-   m_sprite.m_ptex = & m_panimCur->m_ptextures->atTime(m_lAnimTime);
-   m_sprite.m_psphere = & m_panimCur->m_pbounds->atTime(m_lAnimTime);
+   m_pmesh = &m_panimCur->m_pmeshes->atTime(m_lAnimTime);
+   m_psop = &m_panimCur->m_psops->atTime(m_lAnimTime);
+   m_ptex = & m_panimCur->m_ptextures->atTime(m_lAnimTime);
+   m_psphere = & m_panimCur->m_pbounds->atTime(m_lAnimTime);
 	}
 
 #if !defined(EDITOR_REMOVED)
@@ -785,7 +781,7 @@ void CThing3d::EditRect(RRect* pRect)
          apt3dSrc[1].setW(1.0);
 
 			realm()->Scene()->TransformPtsToRealm(&trans, apt3dSrc, apt3dDst, 2);
-         m_sprite.m_sRadius = (apt3dDst[1] - apt3dDst[0]).magnatude();
+         m_sRadius = (apt3dDst[1] - apt3dDst[0]).magnatude();
 
 			Map3Dto2D(
             m_position.x + apt3dDst[0].x(),
@@ -798,13 +794,13 @@ void CThing3d::EditRect(RRect* pRect)
 		{
       Map3Dto2D(m_position.x, m_position.y, m_position.z, &(pRect->sX), &(pRect->sY) );
 
-		m_sprite.m_sRadius	= 10;	// **FUDGE.
+      m_sRadius	= 10;	// **FUDGE.
 		}
 
-	pRect->sX -= m_sprite.m_sRadius;
-	pRect->sY -= m_sprite.m_sRadius;
-	pRect->sW = m_sprite.m_sRadius * 2;
-	pRect->sH = m_sprite.m_sRadius * 2;
+   pRect->sX -= m_sRadius;
+   pRect->sY -= m_sRadius;
+   pRect->sW = m_sRadius * 2;
+   pRect->sH = m_sRadius * 2;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1434,7 +1430,7 @@ void CThing3d::OnBurnMsg(	// Returns nothing.
 			// Put it in the thing3d's midsection.
          m_fire->Setup(
             m_position.x, 							// In:  New x coord
-            m_position.y + m_sprite.m_sRadius, // In:  New y coord
+            m_position.y + m_sRadius, // In:  New y coord
             m_position.z, 							// In:  New z coord
 				BURN_DURATION, 				// In:  Number of milliseconds to burn, default 1sec
 				false, 							// In:  Use thick fire (more opaque) default = true
@@ -1489,11 +1485,8 @@ void CThing3d::UpdateFirePosition(void)
 		// effect.
       m_fire->m_position.z	= m_position.z + 1.0;
 		// If dead or dying . . .
-		if (m_state == State_Die || m_state == State_Dead)
-			{
-			// Char the guy.
-			m_sBrightness	= BURNT_BRIGHTNESS;
-			}
+      if (m_state == State_Die || m_state == State_Dead)
+         m_sBaseBrightness	= BURNT_BRIGHTNESS; // Char the guy.
       }
 	}
 
@@ -1609,7 +1602,7 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 	// Set up translation based on the combined character and rigid body transforms.
 	RTransform transChildAbsolute;
    // Apply child and parent to transChildAbs.
-   transChildAbsolute.Mul(*m_sprite.m_ptrans, *ptrans);
+   transChildAbsolute.Mul(*m_ptrans, *ptrans);
 	// Set up pt at origin for weapon.
    Vector3D pt3Src = {0, 0, 0, 1};
    Vector3D pt3Dst;
@@ -1634,7 +1627,7 @@ void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
    if (childThing)
 		{
 		DetachChild(
-         &(childThing->m_sprite),		// In:  Child sprite to detach.
+         static_cast<CSprite*>(childThing.pointer()),		// In:  Child sprite to detach.
 			ptrans,							// In:  Transform for positioning child.
          &(childThing->m_position.x),			// Out: Position of child.
          &(childThing->m_position.y),			// Out: Position of child.
@@ -1665,7 +1658,7 @@ void CThing3d::DetachChild(	// Returns nothing.
    *pdZ += m_position.z;
 	
 	// Detatch child's sprite
-	m_sprite.RemoveChild(psprite);
+   RemoveChild(psprite);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

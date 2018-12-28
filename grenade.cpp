@@ -32,7 +32,7 @@
 //
 //		02/13/97	JMI	Changing RForm3d to RSop.
 //
-//		02/15/97	JMI	Now sets m_sprite.m_psphere Render().
+//		02/15/97	JMI	Now sets m_psphere Render().
 //
 //		02/15/97	JMI	Made rotation to match CDude's in Update().
 //
@@ -227,7 +227,7 @@ int16_t CUnguidedMissile::ms_sFileCount;
 
 CUnguidedMissile::CUnguidedMissile(void)
 {
-  //         m_sprite.m_pthing	= this;
+  //         m_pthing	= this;
   m_dAnimRotY			= 0.0;
   m_dAnimRotZ			= 0.0;
   m_dAnimRotVelY		= 0.0;
@@ -237,9 +237,6 @@ CUnguidedMissile::CUnguidedMissile(void)
 
 CUnguidedMissile::~CUnguidedMissile(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
-
   // Free resources
   FreeResources();
 }
@@ -593,42 +590,40 @@ void CUnguidedMissile::Render(void)
 	// Animate.
 	int32_t	lCurTime			= realm()->m_time.GetGameTime();
 
-   m_sprite.m_pmesh		= &m_anim.m_pmeshes  ->atTime(lCurTime % m_anim.m_pmeshes->totalTime);
-   m_sprite.m_psop		= &m_anim.m_psops    ->atTime(lCurTime % m_anim.m_psops->totalTime);
-   m_sprite.m_ptex		= &m_anim.m_ptextures->atTime(lCurTime % m_anim.m_ptextures->totalTime);
-   m_sprite.m_psphere	= &m_anim.m_pbounds  ->atTime(lCurTime % m_anim.m_pbounds->totalTime);
+   m_pmesh		= &m_anim.m_pmeshes  ->atTime(lCurTime % m_anim.m_pmeshes->totalTime);
+   m_psop		= &m_anim.m_psops    ->atTime(lCurTime % m_anim.m_psops->totalTime);
+   m_ptex		= &m_anim.m_ptextures->atTime(lCurTime % m_anim.m_ptextures->totalTime);
+   m_psphere	= &m_anim.m_pbounds  ->atTime(lCurTime % m_anim.m_pbounds->totalTime);
 
 	// This should eventually be channel driven too.
-	m_sprite.m_sRadius	= m_sCurRadius;
+   m_sRadius	= m_sCurRadius;
 
 	// See if it is hidden or not
 	if (m_eState == State_Hide)
-		m_sprite.m_sInFlags = CSprite::InHidden;
+      m_sInFlags = CSprite::InHidden;
 	else
-		m_sprite.m_sInFlags	= 0;
+      m_sInFlags	= 0;
 	
 	// If we're not a child of someone else . . .
    if (!parent())
 		{
 		// Map from 3d to 2d coords
-      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sprite.m_sX2, &m_sprite.m_sY2);
+      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sX2, &m_sY2);
 
 		// Priority is based on bottom edge of sprite
-      m_sprite.m_sPriority = m_position.z;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-      m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 		// Adjust transformation based current rotations.
 		m_trans.makeIdentity();
 		m_trans.Ry(m_dAnimRotY);
 		m_trans.Rx(m_dAnimRotZ);
 
-		m_sprite.m_ptrans		= &m_trans;
+      m_ptrans		= &m_trans;
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
-
+      Object::enqueue(SpriteUpdate); // Update sprite in scene
 		// Let it render the shadow sprite.
 		CWeapon::Render();
 		}

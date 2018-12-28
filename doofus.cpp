@@ -1002,7 +1002,7 @@ void CDoofus::Startup(void)								// Returns 0 if successfull, non-zero otherwi
 
 	// Setup weapon sprite.
 	m_spriteWeapon.m_sInFlags	= CSprite::InHidden;
-	m_sprite.AddChild(&m_spriteWeapon);
+   AddChild(&m_spriteWeapon);
 
 
 	// Start in a neutral state
@@ -3863,9 +3863,9 @@ void CDoofus::PositionSmash(void)
 		{
 		// Update sphere.
       m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y + m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 		}
 	else
 		{
@@ -3886,7 +3886,7 @@ void CDoofus::PositionSmash(void)
          m_smash.m_sphere.sphere.X			= m_position.x + dVitalOrganX;
          m_smash.m_sphere.sphere.Y			= m_position.y + dVitalOrganY;
          m_smash.m_sphere.sphere.Z			= m_position.z + dVitalOrganZ;
-			m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+         m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 			}
 		else
 			{
@@ -3896,11 +3896,11 @@ void CDoofus::PositionSmash(void)
 			// Let's go a radius up their torso.  Say... .
          // This only looks decent if m_rotation.y is the direction they fell which is
 			// not always the case.
-			int16_t	sPseudoCenter	= m_sprite.m_sRadius;
+         int16_t	sPseudoCenter	= m_sRadius;
          m_smash.m_sphere.sphere.X			= m_position.x + COSQ[int16_t(m_rotation.y)] * sPseudoCenter;
-         m_smash.m_sphere.sphere.Y			= m_position.y + m_sprite.m_sRadius;
+         m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
          m_smash.m_sphere.sphere.Z			= m_position.z - SINQ[int16_t(m_rotation.y)] * sPseudoCenter;
-			m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+         m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 			}
 		}
 	}

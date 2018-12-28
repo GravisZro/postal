@@ -104,28 +104,8 @@ class CItem3d : public CThing3d
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CItem3d(void)
-			{
-			Reset();
-         }
-
-		// Reset this object.
-		void Reset(void)	// Returns nothing.
-			{
-			m_szAnimBaseName[0]	= '\0';
-         m_itemType					= None;
-
-			m_szAnimRigidName[0]			= '\0';
-			m_szChildAnimBaseName[0]	= '\0';
-
-//			m_spriteChild.m_pthing		= this;
-			}
-
-      ~CItem3d(void)
-			{
-			// Kill item3d
-			Kill();
-			}
+      CItem3d(void) noexcept;
+      virtual ~CItem3d(void) noexcept;
 
 
 	//---------------------------------------------------------------------------

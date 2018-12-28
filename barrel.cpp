@@ -124,7 +124,7 @@
 // Anim for when a barrel is hit by a bullet.
 #define BARREL_HIT_RES_NAME	"Ricochet.aan"
 
-#define HULL_RADIUS				(m_sprite.m_sRadius / 2)
+#define HULL_RADIUS				(m_sRadius / 2)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,9 +183,6 @@ CBarrel::CBarrel(void)
 
 CBarrel::~CBarrel(void)
    {
-   // Remove sprite from scene (this is safe even if it was already removed!)
-   realm()->Scene()->RemoveSprite(&m_sprite);
-   realm()->Scene()->RemoveSprite(&m_spriteShadow);
    realm()->m_smashatorium.Remove(&m_smash);
 
    // Free resources
@@ -523,9 +520,9 @@ void CBarrel::Update(void)
 
 		// Update sphere.
       m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y		   = m_position.y + m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.Y		   = m_position.y + m_sRadius;
       m_smash.m_sphere.sphere.Z			= m_position.z;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);
@@ -686,7 +683,7 @@ void CBarrel::OnShotMsg(Shot_Message* pMessage)
 			StartAnim(
 				BARREL_HIT_RES_NAME, 
 				dHitX, 
-            m_position.y + m_sprite.m_sRadius + (GetRandom() % m_sprite.m_sRadius),
+            m_position.y + m_sRadius + (GetRandom() % m_sRadius),
 				dHitZ,
 				false);
 		}

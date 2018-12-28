@@ -784,10 +784,7 @@ class CDude : public CCharacter
 	//---------------------------------------------------------------------------
 	// Internal functions
 	//---------------------------------------------------------------------------
-	protected:
-		// Kill dude
-		void Kill(void);
-
+   protected:
 		// Get all required resources
 		int16_t GetResources(void);								// Returns 0 if successfull, non-zero otherwise
 		

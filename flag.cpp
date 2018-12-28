@@ -155,8 +155,6 @@ CFlag::CFlag(void)
 
 CFlag::~CFlag(void)
    {
-   // Remove sprite from scene (this is safe even if it was already removed!)
-   realm()->Scene()->RemoveSprite(&m_sprite);
    realm()->m_smashatorium.Remove(&m_smash);
 
    // Free resources
@@ -406,9 +404,9 @@ void CFlag::Update(void)
 					// Add child to smashed
                if (pSmashed->m_pThing->type() == CDudeID)
 					{
-                  managed_ptr<CDude>(pSmashed->m_pThing)->m_sprite.AddChild(&m_sprite);
+                  managed_ptr<CDude>(pSmashed->m_pThing)->AddChild(this);
                   m_parent = pSmashed->m_pThing;
-						realm()->Scene()->RemoveSprite(&m_sprite);
+                  realm()->Scene()->RemoveSprite(this);
 						m_state = State_Patrol;
 						//m_u32IncludeBits = CSmash::Flagbase;
 						m_u32IncludeBits = CSmash::FlagBase;
@@ -533,7 +531,7 @@ void CFlag::Update(void)
 					// Render current dead frame into background to stay.
 					realm()->Scene()->DeadRender3D(
                   realm()->Hood()->m_pimBackground,		// Destination image.
-						&m_sprite,						// Tree of 3D sprites to render.
+                  this,						// Tree of 3D sprites to render.
                   realm()->Hood());							// Dst clip rect.
 
                 Object::enqueue(SelfDestruct);

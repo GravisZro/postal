@@ -253,6 +253,32 @@ void LogicItemCall(
 	RGuiItem*	pguiLogicItem);	// In:  Logic item that was pressed.
 
 
+
+CDispenser::CDispenser(void) noexcept
+{
+  m_pim					= nullptr;
+  m_idDispenseeType	= TotalIDs;			// This means none.
+  m_sSuspend			= FALSE;
+  std::memset(m_alLogicParms, 0, sizeof(m_alLogicParms) );
+  m_sMaxDispensees	= 10;
+  m_sNumDispensees	= 0;
+  m_logictype			= Timed;
+  m_bEditMode			= false;
+  m_sDispenseeHotSpotX	= 0;
+  m_sDispenseeHotSpotY	= 0;
+}
+
+CDispenser::~CDispenser(void) noexcept
+{
+  // Free resources.
+  FreeResources();
+
+  if (m_fileDispensee.IsOpen() != FALSE)
+  {
+    m_fileDispensee.Close();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -1095,24 +1121,23 @@ void CDispenser::EditRender(void)
 		(int16_t) m_sX, 
 		(int16_t) m_sY, 
 		(int16_t) m_sZ, 
-		&m_sprite.m_sX2, 
-		&m_sprite.m_sY2);
+      &m_sX2,
+      &m_sY2);
 
 	// Priority is based on hotspot of sprite
-	m_sprite.m_sPriority = m_sZ;
+   m_sPriority = m_sZ;
 
 	// Center on dispensee's hotspot.
-	m_sprite.m_sX2	-= m_sDispenseeHotSpotX;
-	m_sprite.m_sY2	-= m_sDispenseeHotSpotY;
+   m_sX2	-= m_sDispenseeHotSpotX;
+   m_sY2	-= m_sDispenseeHotSpotY;
 
 	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(m_sX, m_sZ));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(m_sX, m_sZ));
 
 	// Image would normally animate, but doesn't for now
-	m_sprite.m_pImage = &m_imRender;
+   m_pImage = &m_imRender;
 
-	// Update sprite in scene
-   realm()->Scene()->UpdateSprite(&m_sprite);
+   Object::enqueue(SpriteUpdate); // Update sprite in scene
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1198,28 +1223,11 @@ int16_t CDispenser::Init(	// Returns 0 if successfull, non-zero otherwise
 		}
 
 	// No special flags.
-	m_sprite.m_sInFlags = 0;
+   m_sInFlags = 0;
 
 	return sResult;
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill dispenser
-////////////////////////////////////////////////////////////////////////////////
-void CDispenser::Kill(void)
-	{
-	// Remove sprite from scene (this is safe even if it was already removed!)
-   realm()->Scene()->RemoveSprite(&m_sprite);
-
-	// Free resources.
-	FreeResources();
-
-	if (m_fileDispensee.IsOpen() != FALSE)
-		{
-		m_fileDispensee.Close();
-		}
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get all required resources

@@ -207,78 +207,61 @@
 #define GUI_ID_SHADOW_INTENSITY		890
 #define GUI_ID_BROWSE					1000
 
-////////////////////////////////////////////////////////////////////////////////
-// Variables/data
-////////////////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Function prototypes
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Constructor
-// (protected).
-////////////////////////////////////////////////////////////////////////////////
 CHood::CHood(void)
-	{
-	// Initialize ptrs to resources.
-	m_pimBackground	= nullptr;
-	m_pTerrainMap		= nullptr;
-	m_pLayerMap			= nullptr;
+{
+  // Initialize ptrs to resources.
+  m_pimBackground	= nullptr;
+  m_pTerrainMap		= nullptr;
+  m_pLayerMap			= nullptr;
 
-	int16_t i;
-	for (i = 0; i < MaxLayers; i++)
-		{
-		m_apspryAlphas[i]		= nullptr;
-		m_apspryOpaques[i]	= nullptr;
-		}
+  int16_t i;
+  for (i = 0; i < MaxLayers; i++)
+  {
+    m_apspryAlphas[i]		= nullptr;
+    m_apspryOpaques[i]	= nullptr;
+  }
 
-	m_pimXRayMask		= nullptr;
-	m_pmaTransparency	= nullptr;
-	m_pltAmbient		= nullptr;
-	m_pltSpot			= nullptr;
+  m_pimXRayMask		= nullptr;
+  m_pmaTransparency	= nullptr;
+  m_pltAmbient		= nullptr;
+  m_pltSpot			= nullptr;
 
-	m_pimEmptyBar		= nullptr;			
-	m_pimEmptyBarSelected= nullptr;	
-	m_pimFullBar		= nullptr;			
-	m_pimFullBarSelected	= nullptr;	
-	m_pimTopBar = nullptr;
+  m_pimEmptyBar		= nullptr;
+  m_pimEmptyBarSelected= nullptr;
+  m_pimFullBar		= nullptr;
+  m_pimFullBarSelected	= nullptr;
+  m_pimTopBar = nullptr;
 
-	m_pimNum			= nullptr;		
-	m_pimNumLite	= nullptr;
-	m_pimNumLow		= nullptr;	
-	m_pimNumGone	= nullptr;		
-	
-	// Must flag resources as not yet existing
-	m_bResourcesExist = false;
+  m_pimNum			= nullptr;
+  m_pimNumLite	= nullptr;
+  m_pimNumLow		= nullptr;
+  m_pimNumGone	= nullptr;
 
-	// Initialize.
-	std::strcpy(m_acBaseName, "");
+  // Must flag resources as not yet existing
+  m_bResourcesExist = false;
 
-	m_sSceneRotX		= 30;
-	m_sRealmRotX		= 45;
-	m_dScale3d			= 1.0;
+  // Initialize.
+  std::strcpy(m_acBaseName, "");
 
-	m_sShadowAngle = 0;	
-	m_dShadowLength = 1.0;	
-	m_sShadowIntensity = 64;	
-	
-	m_sScaleAttribHeights	= TRUE;
+  m_sSceneRotX		= 30;
+  m_sRealmRotX		= 45;
+  m_dScale3d			= 1.0;
 
-	// No Init() calls yet.
-	m_sNumInits			= 0;
-	}
+  m_sShadowAngle = 0;
+  m_dShadowLength = 1.0;
+  m_sShadowIntensity = 64;
 
-////////////////////////////////////////////////////////////////////////////////
-// Destructor
-// (public).
-////////////////////////////////////////////////////////////////////////////////
+  m_sScaleAttribHeights	= TRUE;
+
+  // No Init() calls yet.
+  m_sNumInits			= 0;
+}
+
 CHood::~CHood(void)
-	{
-   Kill();
-	}
+{
+  FreeResources();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
@@ -936,19 +919,6 @@ void CHood::SetupPipeline(void)	// Returns nothing.
 	transScene2Realm.Rx(m_sRealmRotX - m_sSceneRotX);
 	// Re-setup with tweakage and scaling.
 	realm()->Scene()->SetupPipeline(&transScene, &transScene2Realm, m_dScale3d);
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill the hood
-////////////////////////////////////////////////////////////////////////////////
-int16_t CHood::Kill(void)									// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-	
-	// Free resources
-	sResult = FreeResources();
-
-	return sResult;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
