@@ -4087,9 +4087,7 @@ class CPlayRealm : public CPlay
 			CPlayInfo* pinfo)										// I/O: Play info
 			{
 			if (!pinfo->m_bBadRealmMP)
-				{
-            CRealm* prealm = pinfo->realm();
-
+            {
 				// If we're not simply restarting the level . . .
 				if (pinfo->IsRestartingRealm() == false)
 					{
@@ -4102,8 +4100,9 @@ class CPlayRealm : public CPlay
 					}
             }
 
-				// Shutdown realm
-//				prealm->Shutdown();
+            // Shutdown realm
+            Object::enqueue(pinfo->realm()->Shutdown);
+            Application::process_events(0);
 				}
 			}
 
