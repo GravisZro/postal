@@ -5,6 +5,7 @@ CONFIG += strict_c++
 QMAKE_CXXFLAGS_DEBUG += -O0 -g3
 QMAKE_CXXFLAGS_RELEASE += -Os
 
+
 #DEFINES+="NEW_MANAGED_PTR"
 DEFINES+="USE_NEW_SIGNAL"
 DEFINES+="LOCALE=US"
@@ -273,7 +274,10 @@ HEADERS += \
     yatime.h \
     newpix/managedpointer.h \
     newpix/animatedresource.h \
-    newpix/collisiondetection.h
+    newpix/collisiondetection.h \
+    newpix/sprite_base.h \
+    newpix/halfapp.h \
+    newpix/halfobject.h
 
 SOURCES += \
     RSPiX/GREEN/3D/pipeline.cpp \
@@ -435,7 +439,9 @@ SOURCES += \
     yatime.cpp \
     message.cpp \
     newpix/managedpointer.cpp \
-    newpix/collisiondetection.cpp
+    newpix/collisiondetection.cpp \
+    newpix/sprite_base.cpp \
+    newpix/halfapp.cpp
 
 
 HEADERS += \
@@ -471,7 +477,6 @@ PUT = put
 INCLUDEPATH += $$PUT
 
 HEADERS += \
-    $$PUT/object.h \
     $$PUT/cxxutils/signal_helpers.h \
     $$PUT/cxxutils/socket_helpers.h \
     $$PUT/cxxutils/posix_helpers.h \
@@ -482,7 +487,6 @@ HEADERS += \
     $$PUT/cxxutils/cstringarray.h
 
 HEADERS += \
-    $$PUT/application.h \
     $$PUT/specialized/eventbackend.h \
     $$PUT/specialized/mutex.h \
     $$PUT/cxxutils/vfifo.h \
@@ -490,7 +494,6 @@ HEADERS += \
     $$PUT/cxxutils/configmanip.h
 
 SOURCES += \
-    $$PUT/application.cpp \
     $$PUT/specialized/eventbackend.cpp \
     $$PUT/specialized/mutex.cpp \
     $$PUT/cxxutils/vfifo.cpp \

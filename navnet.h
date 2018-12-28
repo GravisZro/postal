@@ -41,12 +41,15 @@
 #include <map>
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
 #include "bouy.h" // remove when TreeListNode is no longer used
 
 class CBouy;
 // CNavigationNet is the class for navigation
-class CNavigationNet : public CThing
+class CNavigationNet
+    : public sprite_base_t,
+      public CSprite2
    {
 
 	//---------------------------------------------------------------------------
@@ -56,13 +59,8 @@ class CNavigationNet : public CThing
       std::map<uint8_t, managed_ptr<CBouy>>	m_NodeMap;										// Map of ID's to CBouy nodes
 
 	protected:
-		double m_dX;												// x coord
-		double m_dY;												// y coord
-		double m_dZ;												// z coord
 		uint8_t	 m_ucNextID;
-		uint8_t	 m_ucNumSavedBouys;
-		RImage* m_pImage;											// Pointer to only image (replace with 3d anim, soon)
-		CSprite2 m_sprite;										// Sprite (replace with CSprite3, soon)
+      uint8_t	 m_ucNumSavedBouys;
 		RString  m_rstrNetName;									// Name of Nav Net
 		TreeListNode m_BouyTreeListHead;						// Head of sorted list
 		TreeListNode m_BouyTreeListTail;						// Tail of sorted list
@@ -150,13 +148,13 @@ class CNavigationNet : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 		// Add a bouy to this network and assign it an ID
 		uint8_t AddBouy(CBouy* pBouy);

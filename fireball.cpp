@@ -84,7 +84,7 @@
 //		07/14/97	JMI	Now will detach itself from its parent via 
 //							m_sprite.m_psprParent->RemoveChild() in the rare event 
 //							that it is still parented going into the Render().
-//							Also, threw in some random to the m_dRot before they are
+//							Also, threw in some random to the m_rotation.y before they are
 //							separated from the CFirestream.
 //
 //		07/27/97	JMI	Changed to use Z position (i.e., X/Z plane) instead of
@@ -159,14 +159,10 @@ CFirestream::CFirestream(void)
   m_lPrevTime = 0;
   m_bSendMessages = true;
   m_sTotalAlphaChannels = 0;
-
-  //			m_sprite.m_pthing = this;
 }
 
 CFirestream::~CFirestream(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -299,10 +295,10 @@ void CFirestream::Update(void)
 		// Update the other fireballs
       if (m_fireball1)
 			{
-         m_fireball1->m_dX		= m_dX;
-         m_fireball1->m_dY		= m_dY;
-         m_fireball1->m_dZ		= m_dZ;
-         m_fireball1->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
+         m_fireball1->m_position.x		= m_position.x;
+         m_fireball1->m_position.y		= m_position.y;
+         m_fireball1->m_position.z		= m_position.z;
+         m_fireball1->m_rotation.y	= rspMod360(m_rotation.y + RAND_SWAY(FIREBALL_SWAY) );
 			}
 		else
 			{
@@ -311,10 +307,10 @@ void CFirestream::Update(void)
 
       if (m_fireball2)
 			{
-         m_fireball2->m_dX		= m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;
-         m_fireball2->m_dY		= m_dY;
-         m_fireball2->m_dZ		= m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;
-         m_fireball2->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
+         m_fireball2->m_position.x		= m_position.x + COSQ[(int16_t) m_rotation.y] * ms_sOffset1;
+         m_fireball2->m_position.y		= m_position.y;
+         m_fireball2->m_position.z		= m_position.z - SINQ[(int16_t) m_rotation.y] * ms_sOffset1;
+         m_fireball2->m_rotation.y	= rspMod360(m_rotation.y + RAND_SWAY(FIREBALL_SWAY) );
 			}
 		else
          {
@@ -323,10 +319,10 @@ void CFirestream::Update(void)
 
       if (m_fireball3)
 			{
-         m_fireball3->m_dX		= m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;
-         m_fireball3->m_dY		= m_dY;
-         m_fireball3->m_dZ		= m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;
-         m_fireball3->m_dRot	= rspMod360(m_dRot + RAND_SWAY(FIREBALL_SWAY) );
+         m_fireball3->m_position.x		= m_position.x + COSQ[(int16_t) m_rotation.y] * ms_sOffset2;
+         m_fireball3->m_position.y		= m_position.y;
+         m_fireball3->m_position.z		= m_position.z - SINQ[(int16_t) m_rotation.y] * ms_sOffset2;
+         m_fireball3->m_rotation.y	= rspMod360(m_rotation.y + RAND_SWAY(FIREBALL_SWAY) );
 			}
 		else
          {
@@ -353,15 +349,12 @@ void CFirestream::Update(void)
 void CFirestream::Render(void)
 {
 	// If we have a parent . . .
-	if (m_sprite.m_psprParent)
-		{
-		// Get outta there!
-		m_sprite.m_psprParent->RemoveChild(&m_sprite);
-		}
+   if (m_psprParent)
+     m_psprParent->RemoveChild(this);
 
 	// This should never ever be rendered.
-	ASSERT(m_sprite.m_psprParent == nullptr);
-	ASSERT( (m_sprite.m_sInFlags & CSprite::PrivInserted) == 0);
+   ASSERT(m_psprParent == nullptr);
+   ASSERT( (m_sInFlags & CSprite::PrivInserted) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,23 +374,23 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
 	double dZ;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
-	m_dRot = sDir;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
+	m_rotation.y = sDir;
 	m_lPrevTime = realm()->m_time.GetGameTime();
    m_shooter = shooter;
 
 	// Make sure that the starting positions are valid before creating
 	// fireballs here, otherwise they will shoot through walls.
-	dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
-	dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
+   dX = m_position.x + COSQ[(int16_t) m_rotation.y] * ms_sOffset2;	// Second interval
+   dZ = m_position.z - SINQ[(int16_t) m_rotation.y] * ms_sOffset2;
 	if (realm()->IsPathClear(		// Returns true, if the entire path is clear.                 
 											// Returns false, if only a portion of the path is clear.     
 											// (see *psX, *psY, *psZ).                                    
-			(int16_t) m_dX, 				// In:  Starting X.                                           
-			(int16_t) m_dY, 				// In:  Starting Y.                                           
-			(int16_t) m_dZ, 				// In:  Starting Z.                                           
+         (int16_t) m_position.x, 				// In:  Starting X.
+         (int16_t) m_position.y, 				// In:  Starting Y.
+         (int16_t) m_position.z, 				// In:  Starting Z.
 			3.0, 							// In:  Rate at which to scan ('crawl') path in pixels per    
 											// iteration.                                                 
 											// NOTE: Values less than 1.0 are inefficient.                
@@ -420,25 +413,25 @@ int16_t CFirestream::Setup(									// Returns 0 if successfull, non-zero otherw
       m_fireball1 = realm()->AddThing<CFireball>();
       if (m_fireball1)
       {
-         m_fireball1->Setup(m_dX, m_dY, m_dZ, sDir, lTimeToLive, shooter);
+         m_fireball1->Setup(m_position.x, m_position.y, m_position.z, sDir, lTimeToLive, shooter);
          Object::connect(SelfDestruct, m_fireball1->SelfDestruct);
       }
 
-		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset1;	// First interval
-		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset1;	
+      dX = m_position.x + COSQ[(int16_t) m_rotation.y] * ms_sOffset1;	// First interval
+      dZ = m_position.z - SINQ[(int16_t) m_rotation.y] * ms_sOffset1;
       m_fireball2 = realm()->AddThing<CFireball>();
       if (m_fireball2)
       {
-         m_fireball2->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
+         m_fireball2->Setup(dX, m_position.y, dZ, sDir, lTimeToLive, shooter);
          Object::connect(SelfDestruct, m_fireball2->SelfDestruct);
       }
 
-		dX = m_dX + COSQ[(int16_t) m_dRot] * ms_sOffset2;	// Second interval 
-		dZ = m_dZ - SINQ[(int16_t) m_dRot] * ms_sOffset2;	
+      dX = m_position.x + COSQ[(int16_t) m_rotation.y] * ms_sOffset2;	// Second interval
+      dZ = m_position.z - SINQ[(int16_t) m_rotation.y] * ms_sOffset2;
       m_fireball3 = realm()->AddThing<CFireball>();
       if (m_fireball3)
       {
-         m_fireball3->Setup(dX, m_dY, dZ, sDir, lTimeToLive, shooter);
+         m_fireball3->Setup(dX, m_position.y, dZ, sDir, lTimeToLive, shooter);
          Object::connect(SelfDestruct, m_fireball3->SelfDestruct);
       }
 
@@ -472,9 +465,9 @@ int16_t CFirestream::EditNew(									// Returns 0 if successfull, non-zero othe
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_lTimer = GetRand(); //realm()->m_time.GetGameTime() + 1000;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 
@@ -499,9 +492,9 @@ int16_t CFirestream::EditMove(									// Returns 0 if successfull, non-zero oth
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
 	return SUCCESS;
 }
@@ -579,8 +572,6 @@ CFireball::CFireball(void)
 
 CFireball::~CFireball(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   // Remove yourself from the collision list if it was in use
   // (switching to smoke removes it from the smashatorium and sets
   // the m_pThing field to nullptr)
@@ -721,9 +712,8 @@ void CFireball::Update(void)
 		lThisTime = realm()->m_time.GetGameTime();
 		m_lAnimTime += lThisTime - m_lPrevTime;
 
-		switch (m_eState)
-		{
-			case State_Fire:
+      if(m_eState == CWeaponState::State_Fire)
+      {
 				if (lThisTime < m_lTimeToLive)
 				{
 					if (m_bMoving)
@@ -732,21 +722,21 @@ void CFireball::Update(void)
 						dSeconds = ((double) lThisTime - (double) m_lPrevTime) / 1000.0;
 						// Apply internal velocity.
 						dDistance	= m_dHorizVel * dSeconds;
-						dNewX	= m_dX + COSQ[(int16_t) m_dRot] * dDistance;
-						dNewZ	= m_dZ - SINQ[(int16_t) m_dRot] * dDistance;
+                  dNewX	= m_position.x + COSQ[(int16_t) m_rotation.y] * dDistance;
+                  dNewZ	= m_position.z - SINQ[(int16_t) m_rotation.y] * dDistance;
 
 						// Check attribute map for walls, and if you hit a wall, 
 						// set the timer so you will die off next time around.
 						int16_t sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 						// If it hits a wall taller than itself, then it will rotate in the
 						// predetermined direction until it is free to move.
-						if ((int16_t) m_dY < sHeight ||
+                  if ((int16_t) m_position.y < sHeight ||
 							!realm()->IsPathClear(	// Returns true, if the entire path is clear.                 
 															// Returns false, if only a portion of the path is clear.     
 															// (see *psX, *psY, *psZ).                                    
-							(int16_t) m_dX, 				// In:  Starting X.                                           
-							(int16_t) m_dY, 				// In:  Starting Y.                                           
-							(int16_t) m_dZ, 				// In:  Starting Z.                                           
+                     (int16_t) m_position.x, 				// In:  Starting X.
+                     (int16_t) m_position.y, 				// In:  Starting Y.
+                     (int16_t) m_position.z, 				// In:  Starting Z.
 							3.0, 							// In:  Rate at which to scan ('crawl') path in pixels per    
 															// iteration.                                                 
 															// NOTE: Values less than 1.0 are inefficient.                
@@ -767,24 +757,24 @@ void CFireball::Update(void)
 						{
 							// Stop moving and fix yourself on a random spot on the wall.
 							m_bMoving = false;				
-							m_dX += (-3 + GetRand() % 7);
-							m_dY += (-3 + GetRand() % 7);
-							m_dZ += (-3 + GetRand() % 7);
+                     m_position.x += (-3 + GetRand() % 7);
+                     m_position.y += (-3 + GetRand() % 7);
+                     m_position.z += (-3 + GetRand() % 7);
 
 							// Update sphere
-							m_smash.m_sphere.sphere.X = m_dX;
-							m_smash.m_sphere.sphere.Y = m_dY;
-							m_smash.m_sphere.sphere.Z = m_dZ;
+                     m_smash.m_sphere.sphere.X = m_position.x;
+                     m_smash.m_sphere.sphere.Y = m_position.y;
+                     m_smash.m_sphere.sphere.Z = m_position.z;
 						}
 						else
 						{
-							m_dX = dNewX;
-							m_dZ = dNewZ;
+                     m_position.x = dNewX;
+                     m_position.z = dNewZ;
 
 							// Update sphere
-							m_smash.m_sphere.sphere.X = m_dX;
-							m_smash.m_sphere.sphere.Y = m_dY;
-							m_smash.m_sphere.sphere.Z = m_dZ;
+                     m_smash.m_sphere.sphere.X = m_position.x;
+                     m_smash.m_sphere.sphere.Y = m_position.y;
+                     m_smash.m_sphere.sphere.Z = m_position.z;
 
 							// Check for collisions
 							CSmash* pSmashed = nullptr;
@@ -802,15 +792,8 @@ void CFireball::Update(void)
 						}
 					}
 				}
-				else
-				{
+            else
               Object::enqueue(SelfDestruct);
-					return;
-				}
-				break;
-
-			default:
-				break;
 		}
 		m_lPrevTime = lThisTime;
 	}
@@ -830,46 +813,45 @@ void CFireball::Render(void)
 	if (pAnim) // && m_sCurrentAlphaChannel >= 0)
 	{
 		// No special flags
-		m_sprite.m_sInFlags = 0; 
+      m_sInFlags = 0;
 
 		// Map from 3d to 2d coords
-		Map3Dto2D(m_dX, m_dY, m_dZ, &(m_sprite.m_sX2), &(m_sprite.m_sY2) );
+      Map3Dto2D(m_position.x, m_position.y, m_position.z, &m_sX2, &m_sY2);
 		// Offset by animations 2D offsets.
-		m_sprite.m_sX2	+= pAnim->m_sX;
-		m_sprite.m_sY2	+= pAnim->m_sY;
+      m_sX2	+= pAnim->m_sX;
+      m_sY2	+= pAnim->m_sY;
 
 		// Priority is based on our Z position.
-		m_sprite.m_sPriority = m_dZ;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-//		m_sprite.m_sAlphaLevel = 200;
+//		m_sAlphaLevel = 200;
 		if (m_lTotalFlameTime == 0)
 			{
 			// Safety.
 			m_lTotalFlameTime = 500;
 			}
 
-//		m_sprite.m_sAlphaLevel = MIN((long)255, (long) (((m_lTimeToLive - realm()->m_time.GetGameTime()) / m_lTotalFlameTime) * 255));
+//		m_sAlphaLevel = MIN((long)255, (long) (((m_lTimeToLive - realm()->m_time.GetGameTime()) / m_lTotalFlameTime) * 255));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
-		m_sprite.m_pImage = &(pAnim->m_imColor);
+      m_pImage = &(pAnim->m_imColor);
 
 		// Now there is only 1 alpha mask.
 		m_sCurrentAlphaChannel = 0; //MIN(m_sCurrentAlphaChannel, (short) (m_sTotalAlphaChannels - 1));
-		m_sprite.m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
+      m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
 		// Adjust level between 0 and max so it gets more opaque with time.
-		m_sprite.m_sAlphaLevel = MIN_ALPHA + MAX_ALPHA - (MAX_ALPHA * (m_lTimeToLive - realm()->m_time.GetGameTime()) ) / m_lTotalFlameTime ;
+      m_sAlphaLevel = MIN_ALPHA + MAX_ALPHA - (MAX_ALPHA * (m_lTimeToLive - realm()->m_time.GetGameTime()) ) / m_lTotalFlameTime ;
 		// Keep in range.
-		if (m_sprite.m_sAlphaLevel < 0)
-			m_sprite.m_sAlphaLevel = 0;
-		else if (m_sprite.m_sAlphaLevel > MAX_ALPHA)
-			m_sprite.m_sAlphaLevel = MAX_ALPHA;
+      if (m_sAlphaLevel < 0)
+         m_sAlphaLevel = 0;
+      else if (m_sAlphaLevel > MAX_ALPHA)
+         m_sAlphaLevel = MAX_ALPHA;
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
-		
+      // Update sprite in scene
+      Object::enqueue(SpriteUpdate);
 	}
 }
 
@@ -888,10 +870,10 @@ int16_t CFireball::Setup(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
-	m_dRot = sDir;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
+	m_rotation.y = sDir;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lCollisionTimer = m_lPrevTime + ms_lCollisionTime;
    m_shooter = shooter;
@@ -922,9 +904,9 @@ int16_t CFireball::Init(void)
 //	CAlphaAnim* pAnim = nullptr;
 
 	// Update sphere
-	m_smash.m_sphere.sphere.X = m_dX;
-	m_smash.m_sphere.sphere.Y = m_dY;
-	m_smash.m_sphere.sphere.Z = m_dZ;
+   m_smash.m_sphere.sphere.X = m_position.x;
+   m_smash.m_sphere.sphere.Y = m_position.y;
+   m_smash.m_sphere.sphere.Z = m_position.z;
 	m_smash.m_sphere.sphere.lRadius = ms_sSmallRadius;
 	m_smash.m_bits = CSmash::Fire;
    m_smash.m_pThing = this;
@@ -952,9 +934,9 @@ int16_t CFireball::EditNew(									// Returns 0 if successfull, non-zero otherw
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_lTimer = GetRand(); //realm()->m_time.GetGameTime() + 1000;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 
@@ -982,9 +964,9 @@ int16_t CFireball::EditMove(									// Returns 0 if successfull, non-zero other
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
 	return SUCCESS;
 }

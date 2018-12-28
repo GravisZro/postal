@@ -56,8 +56,13 @@
 
 #include "weapon.h"
 
+#include "Anim3D.h"
+#include "SampleMaster.h"
+
 // CRocket is an unguided missile weapon class
-class CRocket : public CWeapon
+class CRocket
+    : public CWeapon,
+      public CSprite3
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -78,8 +83,7 @@ class CRocket : public CWeapon
 		RTransform	m_trans;					// Transform
 		CSmash		m_smash;
 		bool			m_bArmed;				// Initially missile is not armed so it doesn't
-													// collide with the person who shot it.
-		CSprite3		m_sprite;				// 3D sprite to render this thing.
+                                       // collide with the person who shot it.
 		int32_t			m_lSmokeTimer;			// Time between emitting smoke puffs
 
 		SampleMaster::SoundInstance	m_siThrust;	// Looping thrust play instance.
@@ -102,7 +106,7 @@ class CRocket : public CWeapon
 	//---------------------------------------------------------------------------
    public:
       CRocket(void);
-      ~CRocket(void);
+      virtual ~CRocket(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -115,7 +119,7 @@ class CRocket : public CWeapon
 	public:
 		void SetTransform(RTransform* pTransform)
 			{
-				m_sprite.m_ptrans = pTransform;
+            m_ptrans = pTransform;
          }
 
 
@@ -169,7 +173,7 @@ class CRocket : public CWeapon
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 	//---------------------------------------------------------------------------

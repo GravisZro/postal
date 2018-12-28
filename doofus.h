@@ -416,7 +416,7 @@ class CDoofus : public CCharacter
    //---------------------------------------------------------------------------
     public:
       CDoofus(void);
-      ~CDoofus(void);
+      virtual ~CDoofus(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

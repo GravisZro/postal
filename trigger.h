@@ -95,7 +95,7 @@ class CTrigger : public CThing
 	//---------------------------------------------------------------------------
    public:
       CTrigger(void);
-      ~CTrigger(void);
+      virtual ~CTrigger(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

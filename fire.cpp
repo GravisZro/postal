@@ -89,7 +89,7 @@
 //							to check each time, but it was checking only when changing
 //							alpha levels which was too long.
 //
-//		03/05/97	JMI	Render()'s mapping from 3D to 2D had a typo (was adding m_dY
+//		03/05/97	JMI	Render()'s mapping from 3D to 2D had a typo (was adding m_position.y
 //							instead of subtracting).  Now uses Map3Dto2D().
 //
 //		03/13/97	JMI	Load now takes a version number.
@@ -253,8 +253,6 @@ CFire::CFire(void)
 
 CFire::~CFire(void)
    {
-   // Remove sprite from scene (this is safe even if it was already removed!)
-   realm()->Scene()->RemoveSprite(&m_sprite);
    // Remove yourself from the collision list if it was in use
    // (switching to smoke removes it from the smashatorium and sets
    // the m_pThing field to nullptr)
@@ -490,15 +488,15 @@ void CFire::Update(void)
 				dSeconds = ((double) lThisTime - (double) m_lPrevTime) / 1000.0;
 				// Apply internal velocity.
 				dDistance	= ms_dWindVelocity * dSeconds;
-				dNewX	= m_dX + COSQ[(int16_t) m_sRot] * dDistance;
-				dNewZ	= m_dZ - SINQ[(int16_t) m_sRot] * dDistance;
+            dNewX	= m_position.x + COSQ[(int16_t) m_sRot] * dDistance;
+            dNewZ	= m_position.z - SINQ[(int16_t) m_sRot] * dDistance;
 
 				// Check attribute map for walls, and if you hit a wall, 
 				// set the timer so you will die off next time around.
 				int16_t sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 				// If it hits a wall taller than itself, then it will rotate in the
 				// predetermined direction until it is free to move.
-				if ((int16_t) m_dY < sHeight)
+            if ((int16_t) m_position.y < sHeight)
 				{
 					if (m_bTurnRight)
 						m_sRot = rspMod360(m_sRot - 20);
@@ -508,16 +506,16 @@ void CFire::Update(void)
 				else
 				// else it is ok, so update its new position
 				{
-					m_dX = dNewX;
-					m_dZ = dNewZ;
+               m_position.x = dNewX;
+               m_position.z = dNewZ;
 				}
 			}
 			else
 			{
 				// Update our smashatorium location.
-				m_smash.m_sphere.sphere.X = m_dX;
-				m_smash.m_sphere.sphere.Y = m_dY;
-				m_smash.m_sphere.sphere.Z = m_dZ;
+            m_smash.m_sphere.sphere.X = m_position.x;
+            m_smash.m_sphere.sphere.Y = m_position.y;
+            m_smash.m_sphere.sphere.Z = m_position.z;
 				// Update the smash.
 				realm()->m_smashatorium.Update(&m_smash);
 			}
@@ -547,9 +545,9 @@ void CFire::Render(void)
 		// blending is turned off - its impossible to see through when
 		// alpha blending is off anyway.
 		if (g_GameSettings.m_sAlphaBlend)
-			m_sprite.m_sInFlags = 0;
+         m_sInFlags = 0;
 		else
-			m_sprite.m_sInFlags = CSprite::InHidden;
+         m_sInFlags = CSprite::InHidden;
 	}
 	else
 	{
@@ -559,47 +557,45 @@ void CFire::Render(void)
 	if (pAnim)
 	{
 		// Map from 3d to 2d coords
-		Map3Dto2D(m_dX, m_dY, m_dZ, &(m_sprite.m_sX2), &(m_sprite.m_sY2) );
+      Map3Dto2D(m_position.x, m_position.y, m_position.z, &m_sX2, &m_sY2);
 		// Offset by animations 2D offsets.
-		m_sprite.m_sX2	+= pAnim->m_sX;
-		m_sprite.m_sY2	+= pAnim->m_sY;
+      m_sX2	+= pAnim->m_sX;
+      m_sY2	+= pAnim->m_sY;
 
 		// Priority is based on our Z position.
-		m_sprite.m_sPriority = m_dZ;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
-		m_sprite.m_pImage = &(pAnim->m_imColor);
+      m_pImage = &(pAnim->m_imColor);
 
 		// If its the tiny smoke (for trails) 
 		// Do the alpha based on the time to live.
 		if (m_eFireAnim == SmallSmoke)
 		{
 			// Set the alpha level so it gets more translucent over time.
-			m_sprite.m_sAlphaLevel = MAX_ALPHA - (MAX_ALPHA * (m_lTimer - m_lStartTime) ) / m_lTimeToLive ;
+         m_sAlphaLevel = MAX_ALPHA - (MAX_ALPHA * (m_lTimer - m_lStartTime) ) / m_lTimeToLive ;
 			
 			// Do a range check.
-			if (m_sprite.m_sAlphaLevel < 0)
-				m_sprite.m_sAlphaLevel = 0;
-			else if (m_sprite.m_sAlphaLevel > MAX_ALPHA)
-				m_sprite.m_sAlphaLevel = MAX_ALPHA;
+         if (m_sAlphaLevel < 0)
+            m_sAlphaLevel = 0;
+         else if (m_sAlphaLevel > MAX_ALPHA)
+            m_sAlphaLevel = MAX_ALPHA;
 		}
 		else
 		{
-			m_sprite.m_sAlphaLevel = m_sCurrentAlphaLevel;
+         m_sAlphaLevel = m_sCurrentAlphaLevel;
 		}
 
 		// Now there is only one alpha mask
-		m_sprite.m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
+      m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
 
-		ASSERT(m_sprite.m_sAlphaLevel <= 255);
-		ASSERT(m_sprite.m_sAlphaLevel >= 0);
+      ASSERT(m_sAlphaLevel <= 255);
+      ASSERT(m_sAlphaLevel >= 0);
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
-		
+      Object::enqueue(SpriteUpdate);
 	}
 }
 
@@ -618,9 +614,9 @@ int16_t CFire::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lCollisionTimer = m_lPrevTime + ms_lCollisionTime;
 
@@ -675,9 +671,9 @@ int16_t CFire::Init(void)
 	{
 		case LargeFire:
 			// Update sphere
-			m_smash.m_sphere.sphere.X = m_dX;
-			m_smash.m_sphere.sphere.Y = m_dY;
-			m_smash.m_sphere.sphere.Z = m_dZ;
+         m_smash.m_sphere.sphere.X = m_position.x;
+         m_smash.m_sphere.sphere.Y = m_position.y;
+         m_smash.m_sphere.sphere.Z = m_position.z;
 			m_smash.m_sphere.sphere.lRadius = ms_sLargeRadius;
 			m_smash.m_bits = CSmash::Fire;
          m_smash.m_pThing = this;
@@ -687,9 +683,9 @@ int16_t CFire::Init(void)
 
 		case SmallFire:
 			// Update sphere
-			m_smash.m_sphere.sphere.X = m_dX;
-			m_smash.m_sphere.sphere.Y = m_dY;
-			m_smash.m_sphere.sphere.Z = m_dZ;
+         m_smash.m_sphere.sphere.X = m_position.x;
+         m_smash.m_sphere.sphere.Y = m_position.y;
+         m_smash.m_sphere.sphere.Z = m_position.z;
 			m_smash.m_sphere.sphere.lRadius = ms_sSmallRadius;
 			m_smash.m_bits = CSmash::Fire;
          m_smash.m_pThing = this;
@@ -781,9 +777,9 @@ int16_t CFire::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_lTimer = GetRandom(); //realm()->m_time.GetGameTime() + 1000;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 
@@ -811,9 +807,9 @@ int16_t CFire::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
    return SUCCESS;
 }

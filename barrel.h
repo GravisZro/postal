@@ -98,7 +98,7 @@ class CBarrel : public CThing3d
 	//---------------------------------------------------------------------------
    public:
       CBarrel(void);
-      ~CBarrel(void);
+      virtual ~CBarrel(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

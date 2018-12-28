@@ -32,7 +32,7 @@
 //
 //		07/21/97	JMI	Added GetX(), GetY(), and GetZ().	
 //
-//		08/01/97	JMI	Demon would set his position (m_dX, Y, Z) when first 
+//		08/01/97	JMI	Demon would set his position (m_position.x, Y, Z) when first
 //							created but, since he never Save()d or Load()ed it, he
 //							was in an unitialized position when loaded into a level.
 //
@@ -66,9 +66,13 @@
 #define DEMON_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
+#include "SampleMaster.h"
 
-class CDemon : public CThing
+class CDemon
+    : public sprite_base_t,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -100,12 +104,6 @@ class CDemon : public CThing
 		int16_t m_sCommentCount;					// Number of comments that could have 
 														// been made, but were withheld.
 
-		RImage* m_pImage;							// Pointer to only image (for editor only)
-		CSprite2 m_sprite;						// Sprite (for editor only)
-		double m_dX;								// x coord (for editor only)
-		double m_dY;								// y coord (for editor only)
-		double m_dZ;								// z coord (for editor only)
-
 		int16_t m_sSuspend;							// Suspend flag
 
 		State	m_state;								// Current state.
@@ -131,32 +129,8 @@ class CDemon : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CDemon(void)
-			{
-			m_lIdleTime = 0;
-			m_lKillTimer = 0;
-			m_sRecentKills = 0;
-			m_sCommentCount = 0;
-
-			m_pImage = 0;
-
-			m_sSuspend = 0;
-
-			m_state	= State_Happy;
-
-			// Default to position on the screen for old .rlms that did not
-			// save their demon's position.
-			m_dX		= 100.0;
-			m_dY		= 0.0;
-			m_dZ		= 50.0;
-
-			m_sSoundBank	= 0;
-			}
-
-      ~CDemon(void)
-			{
-			Kill();
-			}
+      CDemon(void);
+      virtual ~CDemon(void);
 
 
 	//---------------------------------------------------------------------------
@@ -230,13 +204,13 @@ class CDemon : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 	//---------------------------------------------------------------------------
 	// Optional Static  functions
@@ -252,9 +226,6 @@ class CDemon : public CThing
 	protected:
 		// Init object
 		int16_t Init(void);											// Returns 0 if successfull, non-zero otherwise
-		
-		// Kill object
-		int16_t Kill(void);											// Returns 0 if successfull, non-zero otherwise
 
 		// Process our message queue.
 		void ProcessMessages(void);

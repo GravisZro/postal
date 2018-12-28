@@ -109,7 +109,7 @@ class CPowerUp : public CItem3d
 	//---------------------------------------------------------------------------
    public:
       CPowerUp(void);
-      ~CPowerUp(void);
+      virtual ~CPowerUp(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

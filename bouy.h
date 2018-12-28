@@ -61,6 +61,7 @@
 #define BOUY_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
 // Template node class for linked lists
 template <class Owner, class K>
@@ -207,7 +208,9 @@ typedef CTreeListNode<CBouy, double> TreeListNode;
 
 
 // CBouy is the class for navigation
-class CBouy : public CThing
+class CBouy
+    : public sprite_base_t,
+      public CSprite2
 	{
    friend class CNavigationNet;
 
@@ -220,13 +223,7 @@ class CBouy : public CThing
 		TreeListNode m_TreeNode;
 
 	protected:
-		double m_dX;								// x coord
-		double m_dY;								// y coord
-		double m_dZ;								// z coord
       managed_ptr<CNavigationNet> m_pParentNavNet;		// Pointer to its navigation network
-													
-		RImage* m_pImage;							// Pointer to only image (replace with 3d anim, soon)
-		CSprite2 m_sprite;						// Sprite (replace with CSprite3, soon)
 
 		int16_t m_sSuspend;							// Suspend flag
 
@@ -244,7 +241,7 @@ class CBouy : public CThing
 	//---------------------------------------------------------------------------
    public:
       CBouy(void);
-      ~CBouy(void);
+      virtual ~CBouy(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -306,13 +303,13 @@ class CBouy : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 		// Add a link to this bouy - it is directly connected, ie, 1 hop away
       int16_t AddLink(managed_ptr<CBouy> pBouy);
@@ -346,7 +343,7 @@ class CBouy : public CThing
 		// Used by gameedit to know is this bouy is visible or hidden
 		bool Visible(void)
 		{
-			return ((m_sprite.m_sInFlags & CSprite::InHidden) == 0);
+         return (m_sInFlags & CSprite::InHidden) == 0;
 		}
 
 		// Toggle the show/hide flag

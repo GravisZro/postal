@@ -67,6 +67,9 @@
 #define SOUNDTHING_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
+
+#include "SampleMaster.h"
 
 // This class has its own GetRandom() to keep it from de-synching the game.
 #ifdef GetRandom
@@ -78,7 +81,9 @@
 #endif
 
 
-class CSoundThing : public CThing
+class CSoundThing
+    : public sprite_base_t,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -101,12 +106,6 @@ class CSoundThing : public CThing
 		char	m_szResName[PATH_MAX];		// Resource name
 
 		SampleMasterID m_id;
-
-		RImage* m_pImage;							// Pointer to only image (for editor only)
-		CSprite2 m_sprite;						// Sprite (for editor only)
-		double m_dX;								// x coord (for editor only)
-		double m_dY;								// y coord (for editor only)
-		double m_dZ;								// z coord (for editor only)
 
 		SampleMaster::SoundInstance	m_siChannel;
 
@@ -144,52 +143,8 @@ class CSoundThing : public CThing
 	// Constructor(s) / destructor
 	//---------------------------------------------------------------------------
    public:
-      CSoundThing(void)
-			{
-			m_bInitiallyEnabled = true;
-			m_bInitiallyRepeats = false;
-			m_lMinTime[0] = 0;
-			m_lMinTime[1] = 0;
-			m_lRndTime[0] = 0;
-			m_lRndTime[1] = 0;
-			m_szResName[0] = 0;
-
-			m_id.pszId = m_szResName;
-			m_id.usDescFlags	= SMDF_NO_DESCRIPT;
-
-			m_pImage = 0;
-
-			m_lLastStartTime = 0;
-			m_lNextStartTime = 0;
-			m_sWhichTime = -1;
-			m_bEnabled = m_bInitiallyEnabled;
-			m_bRepeats = m_bInitiallyRepeats;
-
-			m_sSuspend = 0;
-
-			m_siChannel	= 0;
-
-			m_state	= State_Happy;
-
-			m_lVolumeHalfLife	= 1000;
-
-			m_sUseLooping			= FALSE;
-			m_lStopLoopingTime	= 0;
-			m_lNumLoopBacks		= 0;	
-			m_lLoopBackTo			= 0;		
-			m_lLoopBackFrom		= 0;	
-
-			m_sPurgeSampleWhenDone	= FALSE;
-
-			m_sAmbient				= TRUE;
-
-			m_lCollectiveVolume	= 0;
-			}
-
-      ~CSoundThing(void)
-			{
-			Kill();
-			}
+      CSoundThing(void);
+      virtual ~CSoundThing(void);
 
 
 	//---------------------------------------------------------------------------
@@ -266,13 +221,13 @@ class CSoundThing : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 	//---------------------------------------------------------------------------
 	// External functions
@@ -288,9 +243,6 @@ class CSoundThing : public CThing
 	protected:
 		// Init object
 		int16_t Init(void);											// Returns 0 if successfull, non-zero otherwise
-		
-		// Kill object
-		int16_t Kill(void);											// Returns 0 if successfull, non-zero otherwise
 
 		// Don't call this from outside of CSoundThing.  It should affect only
 		// CSoundThing stuff.

@@ -173,7 +173,7 @@ CExplode::CExplode(void)
 CExplode::~CExplode(void)
 {
   // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
+  //realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -296,7 +296,7 @@ void CExplode::Update(void)
 			{
            managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
             if (pSmoke)
-					pSmoke->Setup(m_dX - 4 + GetRandom() % 9, MAX(m_dY-20, 0.0), m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
+               pSmoke->Setup(m_position.x - 4 + GetRandom() % 9, MAX(m_position.y-20, 0.0), m_position.z - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}
 
          Object::enqueue(SelfDestruct);
@@ -316,22 +316,22 @@ void CExplode::Render(void)
 	if (pAnim)
 	{
 		// No special flags
-		m_sprite.m_sInFlags = 0; //CSprite::InXrayable;
+      m_sInFlags = 0; //CSprite::InXrayable;
 
 		// Map from 3d to 2d coords
-//		m_sprite.m_sX2 = m_dX + pAnim->m_sX;
-//		m_sprite.m_sY2 = m_dZ + pAnim->m_sY;
-		Map3Dto2D((int16_t) (m_dX + pAnim->m_sX), (int16_t) m_dY, (int16_t) (m_dZ + pAnim->m_sY), &m_sprite.m_sX2, &m_sprite.m_sY2);
+//		m_sX2 = m_position.x + pAnim->m_sX;
+//		m_sY2 = m_position.z + pAnim->m_sY;
+      Map3Dto2D((int16_t) (m_position.x + pAnim->m_sX), (int16_t) m_position.y, (int16_t) (m_position.z + pAnim->m_sY), &m_sX2, &m_sY2);
 
 		// Priority is based on our Z position.
-		m_sprite.m_sPriority = m_dZ;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
-		m_sprite.m_pImage = &(pAnim->m_imColor);
-		m_sprite.m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
+      m_pImage = &(pAnim->m_imColor);
+      m_pimAlpha = &(pAnim->m_pimAlphaArray[0]);
 
 #ifdef UNUSED_VARIABLES
 		// temp
@@ -339,8 +339,8 @@ void CExplode::Render(void)
 #endif
 
 		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
-
+      //realm()->Scene()->UpdateSprite(&m_sprite);
+      Object::enqueue(SpriteUpdate);
 	}
 }
 
@@ -359,9 +359,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
    m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lTimer = 0;
    m_shooter = shooter;
@@ -370,9 +370,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	sResult = GetResources(sAnim);
 
 		// Update sphere.
-	m_smash.m_sphere.sphere.X			= m_dX;
-	m_smash.m_sphere.sphere.Y			= m_dY;
-	m_smash.m_sphere.sphere.Z			= m_dZ;
+   m_smash.m_sphere.sphere.X			= m_position.x;
+   m_smash.m_sphere.sphere.Y			= m_position.y;
+   m_smash.m_sphere.sphere.Z			= m_position.z;
 	m_smash.m_sphere.sphere.lRadius	= ms_sBlastRadius;
 
 	// Update the smash.
@@ -388,9 +388,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	msg.msg_Explosion.eType = typeExplosion;
 	msg.msg_Explosion.sPriority = 0;
 	msg.msg_Explosion.sDamage = 100;
-	msg.msg_Explosion.sX = (int16_t) m_dX;
-	msg.msg_Explosion.sY = (int16_t) m_dY;
-	msg.msg_Explosion.sZ = (int16_t) m_dZ;
+   msg.msg_Explosion.sX = (int16_t) m_position.x;
+   msg.msg_Explosion.sY = (int16_t) m_position.y;
+   msg.msg_Explosion.sZ = (int16_t) m_position.z;
 	msg.msg_Explosion.sVelocity = ms_sProjectVelocity;
    msg.msg_Explosion.shooter = m_shooter;
 	realm()->m_smashatorium.QuickCheckReset(
@@ -423,9 +423,9 @@ int16_t CExplode::EditNew(									// Returns 0 if successfull, non-zero otherwi
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_lTimer = realm()->m_time.GetGameTime() + 1000;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 
@@ -453,9 +453,9 @@ int16_t CExplode::EditMove(									// Returns 0 if successfull, non-zero otherw
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
 	return SUCCESS;
 }

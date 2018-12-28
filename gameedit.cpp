@@ -2088,10 +2088,10 @@ static bool DoInput(		// Returns true when done.
 	{
 	bool	bExit	= false;
 
-	int16_t sCursorX;
-	int16_t sCursorY;
-	int16_t sCursorZ;
-	int16_t sCursorEvent;
+   int16_t sCursorX = 0;
+   int16_t sCursorY = 0;
+   int16_t sCursorZ = 0;
+   int16_t sCursorEvent = 0;
 	RInputEvent	ie;
 
 	// Get next input event.
@@ -3793,6 +3793,7 @@ static int16_t LoadRealm(
 								// Some types may need to hook in here.
                         switch (pthing->type() )
 									{
+                          UNHANDLED_SWITCH;
 									case CBouyID:
 										// If bouy lines are hidden . . .
 										if (ms_bDrawNetwork == false)
@@ -3804,7 +3805,7 @@ static int16_t LoadRealm(
 
 									case CNavigationNetID:
                               managed_ptr<CNavigationNet>(pthing)->EditPostLoad();
-										break;
+                              break;
 									}
 
 								// Get rectangle.
@@ -4150,16 +4151,8 @@ static void PlayRealm(
 						// it to get the ID of the specificied thing in the playing realm.
 
 						// If there is a selection . . .
-						if (pthingSel)
-							{
-                     switch (pthingSel->type() )
-								{
-								case CWarpID:
-									// Get user's preferred warp.
-									idSpecificWarp	= pthingSel->GetInstanceID();
-									break;
-								}
-							}
+                  if (pthingSel && pthingSel->type() == CWarpID)
+                    idSpecificWarp	= pthingSel->GetInstanceID(); // Get user's preferred warp.
 
 						//////////////////////////////////////////////////////////////////////////
 
@@ -4794,17 +4787,9 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 						int16_t sActivateHot	= TRUE;
 
 						// Some types may need to hook in here.
-                  switch ( ppthing->type() )
-							{
-							case CBouyID:
-								// If bouy lines are hidden . . .
-								if (ms_bDrawNetwork == false)
-									{
-									// Don't activate new bouy hots.
-									sActivateHot	= FALSE;
-									}
-								break;
-							}
+                  if(ppthing->type() == CBouyID &&
+                     ms_bDrawNetwork == false) // If bouy lines are hidden . . .
+                      sActivateHot = FALSE; // Don't activate new bouy hots.
 
 						// Get pos and dimensions for hot.
 						RRect	rc;
@@ -4830,9 +4815,8 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 								}
 
 							// Special things.
-							switch (id)
-								{
-								case CDudeID:
+                     if(id ==  CDudeID)
+                     {
 									// If there is an editor thing . . .
                            if (ms_pgething)
 										{
@@ -4851,8 +4835,6 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 										// Set him to the user selected color.
 										pdude->m_sTextureIndex = MAX((int16_t)0, MIN((int16_t)(CDude::MaxTextures - 1), (int16_t)g_GameSettings.m_sPlayerColorIndex));
 										}
-
-									break;
 								}
 
 							// If an error occurred after allocation . . .
@@ -6676,6 +6658,7 @@ static void DelThing(	// Returns nothing.
 
       switch (pthingDel->type())
 			{
+        UNHANDLED_SWITCH;
 			case CHoodID:
 				// *** LOCALIZE ***
 				rspMsgBox(
@@ -6726,6 +6709,7 @@ static void DelThing(	// Returns nothing.
 				break;
 
 			case CNavigationNetID:
+        {
 				// If it is a NavNet, delete all of the Bouys associated
 				// with the NavNet.  Make sure its not the last NavNet, 
 				// and make sure there is still a current NavNet for the
@@ -6772,6 +6756,7 @@ static void DelThing(	// Returns nothing.
 					photDel = nullptr;
 				}
 				break;
+        }
 			}
 
 		// If we still have anything to delete . . .

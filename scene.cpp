@@ -657,19 +657,25 @@ CScene::Render3D(
 	int16_t		sRenderOffX;		// Offset to Render().
 	int16_t		sRenderOffY;		// Offset to Render().
 
+   ASSERT(ps3Cur != nullptr);
 	ASSERT(ps3Cur->m_psop != nullptr);
 	ASSERT(ps3Cur->m_ptex != nullptr);
 	ASSERT(ps3Cur->m_pmesh != nullptr);
 	ASSERT(ps3Cur->m_ptrans != nullptr);
 	ASSERT(ps3Cur->m_psphere != nullptr);
 
+   CSprite3* ps3Parent = nullptr;
+
+   if (ps3Cur->m_psprParent != nullptr)
+     ps3Parent = dynamic_cast<CSprite3*>(ps3Cur->m_psprParent);
+
 	// If there's a parent . . .
-	if (ps3Cur->m_psprParent != nullptr)
+   if (ps3Parent != nullptr)
 		{
 		// NOTE: This does NOT work for more than 1 level of child depth.
 		// To make that work, we must put a transform in the CSprite3.
       // Apply child and parent to transChildAbs.
-      transChildAbs.Mul( *((CSprite3*)ps3Cur->m_psprParent)->m_ptrans, *ps3Cur->m_ptrans);
+      transChildAbs.Mul( *ps3Parent->m_ptrans, *ps3Cur->m_ptrans);
 
 		// Use transChildAbs.
 		ptransRender	= &transChildAbs;
@@ -798,8 +804,7 @@ if (g_bSceneDontBlit == false)
 		else
 			{
 			// MUST BE 3D PARENT!
-			ASSERT(ps3Cur->m_psprParent->m_type == CSprite::Standard3d);
-			CSprite3*	ps3Parent	= static_cast<CSprite3*>(ps3Cur->m_psprParent);
+         ASSERT(ps3Cur->m_psprParent->m_type == CSprite::Standard3d);
 
 			// Use the position the parent rendered at.
 			sDirectRenderX		= ps3Parent->m_sDirectRenderX;
@@ -1410,9 +1415,12 @@ void CScene::Render2D(		// Returns nothing.
 						case CSprite::Standard3d:
 							{
 							// For ease of access.
-							CSprite3*	ps3XRayee	= (CSprite3*)psprXRayee;
-							sXRayeeX	= ps3XRayee->m_sCenX - sXRayeeW / 2;
-							sXRayeeY	= ps3XRayee->m_sCenY - sXRayeeH / 2;
+                     CSprite3* ps3XRayee = dynamic_cast<CSprite3*>(psprXRayee);
+                     if(ps3XRayee != nullptr)
+                     {
+                      sXRayeeX = ps3XRayee->m_sCenX - sXRayeeW / 2;
+                      sXRayeeY = ps3XRayee->m_sCenY - sXRayeeH / 2;
+                     }
 							break;
 							}
 						}
@@ -1509,7 +1517,7 @@ void CScene::Render(			// Returns nothing.
 						pimDst,					// Destination image.
 						sDstX,					// Destination 2D x coord.
 						sDstY,					// Destination 2D y coord.
-						(CSprite2*)pSprite,	// Tree of sprites to render.
+                  dynamic_cast<CSprite2*>(pSprite),	// Tree of sprites to render.
 						phood,					// Da hood, homey.
 						prcDstClip,				// Dst clip rect.
 						psprXRayee);			// XRayee, if not nullptr.
@@ -1525,7 +1533,7 @@ void CScene::Render(			// Returns nothing.
 						pimDst,					// Destination image.
 						sDstX,					// Destination 2D x coord.
 						sDstY,					// Destination 2D y coord.
-						(CSprite3*)pSprite,	// Tree of 3D sprites to render.
+                  dynamic_cast<CSprite3*>(pSprite),	// Tree of 3D sprites to render.
 						phood,					// Da hood, homey.
 						prcDstClip);			// Dst clip rect.
 
@@ -1541,7 +1549,7 @@ void CScene::Render(			// Returns nothing.
 						pimDst,							// Destination image.
 						sDstX,							// Destination 2D x coord.
 						sDstY,							// Destination 2D y coord.
-						(CSpriteLine2d*)pSprite,	// Tree of sprites to render.
+                  dynamic_cast<CSpriteLine2d*>(pSprite),	// Tree of sprites to render.
 						prcDstClip);					// Dst clip rect.
 
 		// ****TEMP****
@@ -1561,7 +1569,7 @@ void CScene::Render(			// Returns nothing.
 						pimDst,								// Destination image.
 						sDstX,								// Destination 2D x coord.
 						sDstY,								// Destination 2D y coord.
-						(CSpriteCylinder3d*)pSprite,	// Cylinder sprite.
+                  dynamic_cast<CSpriteCylinder3d*>(pSprite),	// Cylinder sprite.
 						phood,								// Da hood, homey.
 						prcDstClip);						// Dst clip rect.
 
@@ -1963,7 +1971,7 @@ void CScene::DeadRender3D(					// Returns nothing.
 				// Render 'em.
 				DeadRender3D(
 					pimDst, 
-					(CSprite3*)psprite, 
+               dynamic_cast<CSprite3*>(psprite),
 					phood, 
 					sDstX + ps3->m_sX2,
 					sDstY + ps3->m_sY2,

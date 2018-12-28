@@ -45,12 +45,15 @@
 #define WARP_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
 #include "StockPile.h"
 
 class CDude;
 
-class CWarp : public CThing
+class CWarp
+    : public sprite_base_t,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -75,16 +78,11 @@ class CWarp : public CThing
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
-	public:
-		double m_dX;										// Dude's initial position.
-		double m_dY;										// Dude's initial position.
-		double m_dZ;										// Dude's initial position.
+   public:
 		int16_t	m_sRotY;										// Dude's initial rotation 
 																// around the Y axis.
 
-		int16_t m_sSuspend;									// Suspend flag
-														
-		CSprite2	m_sprite;								// Sprite.
+      int16_t m_sSuspend;									// Suspend flag
 
 
 	protected:
@@ -107,7 +105,7 @@ class CWarp : public CThing
 	//---------------------------------------------------------------------------
 	public:
       CWarp(void);
-      ~CWarp(void);
+      virtual ~CWarp(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implementing them as inlines doesn't pay!)
@@ -175,13 +173,13 @@ class CWarp : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 	//---------------------------------------------------------------------------
 	// Handy external functions

@@ -179,7 +179,7 @@ class CHood : public CThing
    //---------------------------------------------------------------------------
     public:
       CHood(void);
-      ~CHood(void);
+      virtual ~CHood(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

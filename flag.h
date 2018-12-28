@@ -79,7 +79,7 @@ class CFlag : public CThing3d
 	//---------------------------------------------------------------------------
    public:
       CFlag(void);
-      ~CFlag(void);
+      virtual ~CFlag(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

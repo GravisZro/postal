@@ -95,13 +95,12 @@ CAnimThing::CAnimThing(void)
   m_sLoop = TRUE;
   m_szResName[0] = '\0';
   m_msg.msg_Generic.sPriority	= 0;
-  //			m_sprite.m_pthing	= this;
 }
 
 CAnimThing::~CAnimThing(void)
 {
   // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
+  //realm()->Scene()->RemoveSprite(&m_sprite);
 
   // Free resources
   FreeResources();
@@ -123,9 +122,9 @@ int16_t CAnimThing::Load(								// Returns 0 if successfull, non-zero otherwise
 			{
 			default:
 			case 1:
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 				pFile->Read(m_szResName);
 				pFile->Read(&m_sLoop);
 				break;
@@ -158,9 +157,9 @@ int16_t CAnimThing::Save(										// Returns 0 if successfull, non-zero otherwi
    int16_t sResult	= CThing::Save(pFile, sFileCount);
 	if (sResult == SUCCESS)
 		{
-		pFile->Write(&m_dX);
-		pFile->Write(&m_dY);
-		pFile->Write(&m_dZ);
+      pFile->Write(&m_position.x);
+      pFile->Write(&m_position.y);
+      pFile->Write(&m_position.z);
 		pFile->Write(m_szResName);
 		pFile->Write(&m_sLoop);
 
@@ -246,31 +245,31 @@ void CAnimThing::Render(void)
 	if (paa != nullptr)
 		{
 		// No special flags
-		m_sprite.m_sInFlags = 0;
+      m_sInFlags = 0;
 		
 		// Map from 3d to 2d coords
-//		m_sprite.m_sX2 = m_dX + paa->m_sX;
-//		m_sprite.m_sY2 = m_dZ - (m_dY - paa->m_sY);
+//		m_sX2 = m_position.x + paa->m_sX;
+//		m_sY2 = m_position.z - (m_position.y - paa->m_sY);
 		Map3Dto2D(
-			m_dX,
-			m_dY,
-			m_dZ,
-			&(m_sprite.m_sX2),
-			&(m_sprite.m_sY2) );
+         m_position.x,
+         m_position.y,
+         m_position.z,
+         &m_sX2,
+         &m_sY2 );
 
 		// Offset by hotspot.
-		m_sprite.m_sX2	+= paa->m_sX;
-		m_sprite.m_sY2	+= paa->m_sY;
+      m_sX2	+= paa->m_sX;
+      m_sY2	+= paa->m_sY;
 		
 		// Priority is based on our position in 3D realm coords.
-		m_sprite.m_sPriority = m_dZ;
+      m_sPriority = m_position.z;
 		
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(int16_t(m_position.x), int16_t(m_position.z)));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
-		m_sprite.m_pImage		= &(paa->m_imColor);
-		m_sprite.m_pimAlpha	= &(paa->m_pimAlphaArray[0]);	// This is an array?  What changes my index?!
+      m_pImage		= &(paa->m_imColor);
+      m_pimAlpha	= &(paa->m_pimAlphaArray[0]);	// This is an array?  What changes my index?!
 
 ///////////////////////////////////////////////////////////
 // Tiny little built-in editor that gets acctivated via
@@ -315,8 +314,7 @@ if (sEdit && (paa->m_sNumAlphas > 2))
 	}
 ///////////////////////////////////////////////////////////
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
+      Object::enqueue(SpriteUpdate);
 		}
 	}
 
@@ -329,9 +327,9 @@ int16_t CAnimThing::Setup(									// Returns 0 if successfull, non-zero otherwi
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	m_lAnimPrevTime = realm()->m_time.GetGameTime();
 
@@ -353,9 +351,9 @@ int16_t CAnimThing::EditNew(									// Returns 0 if successfull, non-zero other
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	sResult	= EditModify();
 
@@ -458,9 +456,9 @@ int16_t CAnimThing::EditMove(									// Returns 0 if successfull, non-zero othe
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	return SUCCESS;
 	}
@@ -473,9 +471,9 @@ void CAnimThing::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 	{
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(prc->sX),
 		&(prc->sY) );
 

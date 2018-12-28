@@ -135,14 +135,10 @@ CBall::CBall(void)
   m_dDX			= 0;
   m_dDY			= 0;
   m_dDZ			= 0;
-  //			m_sprite.m_pthing	= this;
 }
 
 CBall::~CBall(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
-
   // Free resources
   FreeResources();
 }
@@ -182,9 +178,9 @@ int16_t CBall::Load(										// Returns 0 if successfull, non-zero otherwise
 			{
 			default:
 			case 1:
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 				pFile->Read(&m_dDX);
 				pFile->Read(&m_dDY);
 				pFile->Read(&m_dDZ);
@@ -234,9 +230,9 @@ int16_t CBall::Save(										// Returns 0 if successfull, non-zero otherwise
 			}
 
 		// Save object data
-		pFile->Write(&m_dX);
-		pFile->Write(&m_dY);
-		pFile->Write(&m_dZ);
+      pFile->Write(&m_position.x);
+      pFile->Write(&m_position.y);
+      pFile->Write(&m_position.z);
 		pFile->Write(&m_dDX);
 		pFile->Write(&m_dDY);
 		pFile->Write(&m_dDZ);
@@ -258,7 +254,7 @@ int16_t CBall::Save(										// Returns 0 if successfull, non-zero otherwise
 void CBall::Startup(void)								// Returns 0 if successfull, non-zero otherwise
    {
 	// At this point we can assume the CHood was loaded, so we init our height
-	m_sPrevHeight = realm()->GetHeight(m_dX, m_dZ);
+   m_sPrevHeight = realm()->GetHeight(m_position.x, m_position.z);
 
 	// HARD-WIRED CODE ALERT!
 	// Eventually, this should be set via the bounding sphere radius.
@@ -296,13 +292,13 @@ void CBall::Update(void)
 		double dDeltaSeconds		= (lCurTime - m_lPrevTime) / 1000.0;
 
 		// Adjust vertical velocity and calculate new position.
-		double	dNewY		= m_dY;
+      double	dNewY		= m_position.y;
 		double	dNewDY	= m_dDY;
 		AdjustPosVel(&dNewY, &dNewDY, dDeltaSeconds);
 
 		// Calculate new position.
-		double dNewX = m_dX + m_dDX;
-		double dNewZ = m_dZ + m_dDZ;
+      double dNewX = m_position.x + m_dDX;
+      double dNewZ = m_position.z + m_dDZ;
 
 		// Bounce off edges of world.
 
@@ -322,8 +318,8 @@ void CBall::Update(void)
 				m_dDZ = -m_dDZ;
 
 				// Restore previous position to avoid getting embedded in anything
-				dNewX = m_dX;
-				dNewZ = m_dZ;
+            dNewX = m_position.x;
+            dNewZ = m_position.z;
 				}
 			else
 				{
@@ -333,7 +329,7 @@ void CBall::Update(void)
 				dNewDY = -m_dDY;
 
 				// Restore previous position to avoid getting embedded in anything
-				dNewY	= m_dY;
+            dNewY	= m_position.y;
 				}
 			}
 
@@ -341,9 +337,9 @@ void CBall::Update(void)
 		m_sPrevHeight = sHeight;
 
 		// Update position
-		m_dX = dNewX;
-		m_dY = dNewY;
-		m_dZ = dNewZ;
+      m_position.x = dNewX;
+      m_position.y = dNewY;
+      m_position.z = dNewZ;
 
 		// Update velocities.
 		m_dDY	= dNewDY;
@@ -358,43 +354,42 @@ void CBall::Update(void)
 // Render object
 ////////////////////////////////////////////////////////////////////////////////
 void CBall::Render(void)
-	{
-	// No special flags
-	m_sprite.m_sInFlags = 0;
+{
+  // No special flags
+  m_sInFlags = 0;
 
-	// Map from 3d to 2d coords
-	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
-		&(m_sprite.m_sX2),
-		&(m_sprite.m_sY2) );
+  // Map from 3d to 2d coords
+  Map3Dto2D(
+        m_position.x,
+        m_position.y,
+        m_position.z,
+        &m_sX2,
+        &m_sY2 );
 
-	// Priority is based on 3D hotspot which is where we're drawn.
-	m_sprite.m_sPriority = m_dZ;
+  // Priority is based on 3D hotspot which is where we're drawn.
+  m_sPriority = m_position.z;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(
-		realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+  m_sLayer = CRealm::GetLayerViaAttrib(
+                        realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 
-	// Cheese festival rotation.
-	m_trans.Ry(rspMod360(m_dDX));
-	m_trans.Rz(rspMod360(m_dDZ));
+  // Cheese festival rotation.
+  m_trans.Ry(rspMod360(m_dDX));
+  m_trans.Rz(rspMod360(m_dDZ));
 
-	int32_t lTime	= realm()->m_time.GetGameTime();
+  int32_t lTime = realm()->m_time.GetGameTime();
 
-   m_sprite.m_pmesh		= &m_anim.m_pmeshes->atTime(lTime);
-   m_sprite.m_psop		= &m_anim.m_psops->atTime(lTime);
-   m_sprite.m_ptex		= &m_anim.m_ptextures->atTime(lTime);
-   m_sprite.m_psphere	= &m_anim.m_pbounds->atTime(lTime);
+  m_pmesh		= &m_anim.m_pmeshes->atTime(lTime);
+  m_psop		= &m_anim.m_psops->atTime(lTime);
+  m_ptex		= &m_anim.m_ptextures->atTime(lTime);
+  m_psphere	= &m_anim.m_pbounds->atTime(lTime);
 
-	m_sprite.m_ptrans	= &m_trans;
+  m_ptrans	= &m_trans;
 
-	m_sprite.m_sRadius	= m_sCurRadius;
+  m_sRadius	= m_sCurRadius;
 
-	// Update sprite in scene
-	realm()->Scene()->UpdateSprite(&m_sprite);
-	}
+  Object::enqueue(SpriteUpdate); // Update sprite in scene
+}
 
 #if !defined(EDITOR_REMOVED)
 ////////////////////////////////////////////////////////////////////////////////
@@ -408,9 +403,9 @@ int16_t CBall::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = sX;
-	m_dY = sY;
-	m_dZ = sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	// Load resources.
 	sResult = GetResources();
@@ -538,9 +533,9 @@ int16_t CBall::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	m_dX = sX;
-	m_dY = sY;
-	m_dZ = sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
    return SUCCESS;
 	}
@@ -574,9 +569,9 @@ void CBall::EditRect(	// Returns nothiing.
 	RRect*	prc)			// Out: Clickable pos/area of object.
 	{
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(prc->sX),
 		&(prc->sY) );
 

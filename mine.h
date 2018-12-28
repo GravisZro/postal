@@ -67,7 +67,9 @@
 
 
 // CMine is an unguided missile weapon class
-class CMine : public CWeapon
+class CMine
+    : public CWeapon,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -93,8 +95,6 @@ class CMine : public CWeapon
 	protected:
 		int16_t m_sPrevHeight;							// Previous height
 
-		RImage*		m_pImage;						// Pointer to mine image
-		CSprite2		m_sprite;						// Sprite for 2D mine
 		CSmash		m_smash;							// Collision object
 		CBulletFest	m_bulletfest;					// Used for bouncing betty
 		double		m_dVertVel;						// Vertical velocity 
@@ -125,17 +125,7 @@ class CMine : public CWeapon
 	//---------------------------------------------------------------------------
 	// Internal functions
 	//---------------------------------------------------------------------------
-	public:
-		// Resets members.
-		void Reset(void)
-			{
-			m_pImage = nullptr;
-//			m_sprite.m_pthing	= this;
-			m_lFuseTime = 0;
-         m_shooter.reset();
-			m_siMineBeep = 0;
-			}
-
+   public:
 		// Called after load to start the object
       void Startup(void);
 
@@ -151,13 +141,13 @@ class CMine : public CWeapon
 
 		void EditRect(RRect* pRect)
 		{
-			if (m_pImage)
+         if (m_pImage != nullptr)
 			{
 				// Map from 3d to 2d coords
 				Map3Dto2D(
-					(int16_t) m_dX, 
-					(int16_t) m_dY, 
-					(int16_t) m_dZ, 
+               (int16_t) m_position.x,
+               (int16_t) m_position.y,
+               (int16_t) m_position.z,
 					&(pRect->sX), 
 					&(pRect->sY) );
 
@@ -175,7 +165,7 @@ class CMine : public CWeapon
 			int16_t*	psY)			// Out: Y coord of 2D hotspot relative to
 										// EditRect() pos.
 			{
-			if (m_pImage)
+         if (m_pImage != nullptr)
 				{
 				*psX	= m_pImage->m_sWidth / 2;
 				*psY	= m_pImage->m_sHeight / 2;
@@ -238,7 +228,7 @@ class CMine : public CWeapon
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 	//---------------------------------------------------------------------------

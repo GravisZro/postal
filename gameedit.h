@@ -72,7 +72,7 @@ class CGameEditThing : public CThing
 	//---------------------------------------------------------------------------
    public:
       CGameEditThing(void);
-      ~CGameEditThing(void);
+      virtual ~CGameEditThing(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implementing them as inlines doesn't pay!

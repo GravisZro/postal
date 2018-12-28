@@ -356,6 +356,7 @@ void CUnguidedMissile::Update(void)
 		// Check the current state
 		switch (m_eState)
 		{
+        UNHANDLED_SWITCH;
 			case CWeapon::State_Hide:
 			case CWeapon::State_Idle:
 
@@ -364,10 +365,10 @@ void CUnguidedMissile::Update(void)
 				break;
 
 			case CWeapon::State_Fire:
-				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
-				usAttrib = realm()->GetFloorAttribute((int16_t) m_dX, (int16_t) m_dZ);
+            sHeight = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+            usAttrib = realm()->GetFloorAttribute((int16_t) m_position.x, (int16_t) m_position.z);
 				// If it starts at an invalid position like inside a wall, kill it
-				if (m_dY < sHeight)
+            if (m_position.y < sHeight)
 				{
                 Object::enqueue(SelfDestruct);
 					return;
@@ -382,10 +383,10 @@ void CUnguidedMissile::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Go:
 				// Do horizontal velocity
-				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
-				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
+            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
 				// Do vertical velocity
-				dNewY = m_dY;
+            dNewY = m_position.y;
 				dPrevVertVel = m_dVertVel;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds/*, dAccelerationDueToGravity*/);
 				// Check the height to see if it hit the ground
@@ -397,9 +398,9 @@ void CUnguidedMissile::Update(void)
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
-				if (dNewY < sHeight && m_dY >= sHeight)
+            if (dNewY < sHeight && m_position.y >= sHeight)
 				{
-					m_dY = sHeight;
+               m_position.y = sHeight;
 					m_dVertVel = dPrevVertVel;
 					// If its vertical velocity is high enough, it will bounce, else
 					// it will just start rolling
@@ -427,7 +428,7 @@ void CUnguidedMissile::Update(void)
 							m_dHorizVel = MIN(m_dHorizVel, ms_adBounceDimisher[m_style] * ms_dMaxVelFore);
 						else
 							m_dHorizVel = MAX(m_dHorizVel, ms_adBounceDimisher[m_style] * ms_dMaxVelBack);
-						m_dRot = rspMod360(m_dRot - 100 + (GetRand() % 201));
+						m_rotation.y = rspMod360(m_rotation.y - 100 + (GetRand() % 201));
 					}
 				}
 				else
@@ -435,11 +436,11 @@ void CUnguidedMissile::Update(void)
 					// If it is above the last known ground and is now lower
 					// than the height at its new position, assume it hit
 					// a wall and should bounce.
-					if (dNewY < sHeight && m_dY < sHeight)
+               if (dNewY < sHeight && m_position.y < sHeight)
 					{
-						dNewX = m_dX;	// Restore last x position
-						dNewZ = m_dZ;	// Restore last z position
-						m_dRot = BounceAngle(m_dRot);	// Change directions
+                  dNewX = m_position.x;	// Restore last x position
+                  dNewZ = m_position.z;	// Restore last z position
+						m_rotation.y = BounceAngle(m_rotation.y);	// Change directions
 
 						// Cut down its horizontal velocity
 						m_dHorizVel *= ms_adBounceDimisher[m_style];
@@ -450,15 +451,15 @@ void CUnguidedMissile::Update(void)
 						PlaySample(
 							g_smidGrenadeBounce, 
 							SampleMaster::Weapon,
-							DistanceToVolume(m_dX, m_dY, m_dZ, SideEffectSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, SideEffectSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 					else
-						m_dY = dNewY;
+                  m_position.y = dNewY;
 				}
 
 
-				m_dX = dNewX;
-				m_dZ = dNewZ;
+            m_position.x = dNewX;
+            m_position.z = dNewZ;
 
 				Smoke();
 
@@ -506,31 +507,31 @@ void CUnguidedMissile::Update(void)
 				if (m_dHorizVel == 0)
 					m_eState = CWeapon::State_Explode;
 
-				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
-				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
+            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
 				// Check for obstacles
 				usAttrib = realm()->GetFloorAttribute((int16_t) dNewX, (int16_t) dNewZ);
 				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If it hit any obstacles, make it bounce off
-				if (usAttrib & REALM_ATTR_NOT_WALKABLE || sHeight > m_dY)
+            if (usAttrib & REALM_ATTR_NOT_WALKABLE || sHeight > m_position.y)
 				{
 					// Restore previous position 
-					dNewX = m_dX;
-					dNewZ = m_dZ;
+               dNewX = m_position.x;
+               dNewZ = m_position.z;
 					// Change directions
-					m_dRot = BounceAngle(m_dRot);
+					m_rotation.y = BounceAngle(m_rotation.y);
 				}
 				// See if it fell off of something, make it go back to the
 				// airborne state.
-				if (sHeight < (int16_t) m_dY)
+            if (sHeight < (int16_t) m_position.y)
 				{
 					m_dVertVel = 0;
 					m_eState = State_Go;					
 				}
 
-				m_dX = dNewX;
-				m_dZ = dNewZ;
+            m_position.x = dNewX;
+            m_position.z = dNewZ;
 
 				Smoke();
 
@@ -552,10 +553,10 @@ void CUnguidedMissile::Update(void)
                managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
                if (pExplosion)
 					{
-						pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter, 1);
+                  pExplosion->Setup(m_position.x, m_position.y, m_position.z, m_shooter, 1);
 						PlaySample(g_smidGrenadeExplode, 
 							SampleMaster::Destruction,
-							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 
                int16_t a;
@@ -564,7 +565,7 @@ void CUnguidedMissile::Update(void)
                  managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
                   if (pSmoke)
 						{
-							pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::Smoke);
+                     pSmoke->Setup(m_position.x + GetRand() % 8, m_position.y, m_position.z + GetRand() % 8, 2000, true, CFire::Smoke);
 							pSmoke->m_shooter = m_shooter;
 						}
 					}
@@ -610,13 +611,13 @@ void CUnguidedMissile::Render(void)
    if (!parent())
 		{
 		// Map from 3d to 2d coords
-		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
+      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sprite.m_sX2, &m_sprite.m_sY2);
 
 		// Priority is based on bottom edge of sprite
-		m_sprite.m_sPriority = m_dZ;
+      m_sprite.m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 		// Adjust transformation based current rotations.
 		m_trans.makeIdentity();
@@ -652,9 +653,9 @@ int16_t CUnguidedMissile::Setup(									// Returns 0 if successfull, non-zero o
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_dHorizVel = ms_dThrowHorizVel;//dHorizVelocity;
 	m_dVertVel = ms_dThrowVertVel;//dVertVelocity;
 
@@ -768,7 +769,7 @@ void CUnguidedMissile::Smoke(void)
         managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
          if (pSmoke)
 				{
-				pSmoke->Setup(m_dX + GetRand() % 8, m_dY, m_dZ + GetRand() % 8, 2000, true, CFire::SmallSmoke);
+            pSmoke->Setup(m_position.x + GetRand() % 8, m_position.y, m_position.z + GetRand() % 8, 2000, true, CFire::SmallSmoke);
 				pSmoke->m_shooter = m_shooter;
 				}
 			

@@ -50,10 +50,8 @@ class CSentry : public CDoofus
 	//---------------------------------------------------------------------------
 	public:
 		CSprite3		m_spriteBase;						// Base of gun that is stationary
-		CAnim3D*		m_panimCurBase;					// current animation for the base
-		double		m_dXBase;							// Position of base
-		double		m_dYBase;							// Position of base
-		double		m_dZBase;							// Position of base
+      CAnim3D*		m_panimCurBase;					// current animation for the base
+      space3d_t<double> m_base;
 		RTransform	m_transBase;						// Base's rotation/scaling/translation.
 
 	protected:
@@ -97,7 +95,7 @@ class CSentry : public CDoofus
 	//---------------------------------------------------------------------------
    public:
       CSentry(void);
-      ~CSentry(void);
+      virtual ~CSentry(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -180,7 +178,7 @@ class CSentry : public CDoofus
 		// Update the animation radius based on the current frame
 		void UpdateRadius(void);
 
-		// Position the base and turret based on m_dX, Y, & Z.
+      // Position the base and turret based on m_position.x, y, & z.
 		void UpdatePosition(void);
 
 		// Message handling functions ////////////////////////////////////////////

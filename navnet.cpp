@@ -166,7 +166,6 @@ int16_t CNavigationNet::ms_sFileCount;
 
 CNavigationNet::CNavigationNet(void)
 {
-  m_pImage = 0;
   m_sSuspend = 0;
   m_ucNextID = 1;
   // Set yourself to be the new current Nav Net in the realm
@@ -188,9 +187,6 @@ CNavigationNet::CNavigationNet(void)
 
 CNavigationNet::~CNavigationNet(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
-
   // Free resources
   FreeResources();
 }
@@ -227,9 +223,9 @@ int16_t CNavigationNet::Load(							// Returns 0 if successfull, non-zero otherw
 			{
 			default:
 			case 1:
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 
 				// Load the number of bouys that were saved
 				pFile->Read(&m_ucNumSavedBouys);
@@ -279,9 +275,9 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 		}
 
 	// Save object data
-	pFile->Write(&m_dX);
-	pFile->Write(&m_dY);
-	pFile->Write(&m_dZ);
+   pFile->Write(&m_position.x);
+   pFile->Write(&m_position.y);
+   pFile->Write(&m_position.z);
 
 	// Save the number of nodes so we can check after load to see if all
 	// of the Bouys have been loaded yet.
@@ -301,7 +297,7 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 void CNavigationNet::Startup(void)								// Returns 0 if successfull, non-zero otherwise
    {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+   m_position.y = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
 	// Set yourself to be the new current Nav Net
    realm()->setNavNet(this);
 
@@ -388,9 +384,9 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
 	// Load resources
 	sResult = GetResources();
@@ -486,9 +482,9 @@ int16_t CNavigationNet::EditMove(									// Returns 0 if successfull, non-zero 
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
    return SUCCESS;
 	}
@@ -506,34 +502,33 @@ void CNavigationNet::EditUpdate(void)
 // Called by editor to render object
 ////////////////////////////////////////////////////////////////////////////////
 void CNavigationNet::EditRender(void)
-	{
-	// No special flags
-	m_sprite.m_sInFlags = 0;
+{
+  // No special flags
+  m_sInFlags = 0;
 
-	// Map from 3d to 2d coords
-	Map3Dto2D(
-		(int16_t) m_dX, 
-		(int16_t) m_dY, 
-		(int16_t) m_dZ, 
-		&m_sprite.m_sX2, 
-		&m_sprite.m_sY2);
+  // Map from 3d to 2d coords
+  Map3Dto2D(
+        (int16_t) m_position.x,
+        (int16_t) m_position.y,
+        (int16_t) m_position.z,
+        &m_sX2,
+        &m_sY2);
 
-	// Priority is based on bottom edge of sprite
-	m_sprite.m_sPriority = m_dZ;
+  // Priority is based on bottom edge of sprite
+  m_sPriority = m_position.z;
 
-	// Center on image.
-	m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
-	m_sprite.m_sY2	-= m_pImage->m_sHeight;
+  // Center on image.
+  m_sX2	-= m_pImage->m_sWidth / 2;
+  m_sY2	-= m_pImage->m_sHeight;
 
-	// Layer should be based on info we get from attribute map.
-   m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+  // Layer should be based on info we get from attribute map.
+  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-	// Image would normally animate, but doesn't for now
-	m_sprite.m_pImage = m_pImage;
+  // Image would normally animate, but doesn't for now
+  m_pImage = m_pImage;
 
-	// Update sprite in scene
-   realm()->Scene()->UpdateSprite(&m_sprite);
-	}
+  Object::enqueue(SpriteUpdate); // Update sprite in scene
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Give Edit a rectangle around this object
@@ -541,9 +536,9 @@ void CNavigationNet::EditRender(void)
 void CNavigationNet::EditRect(RRect* pRect)
 {
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(pRect->sX),
 		&(pRect->sY) );
 
@@ -683,8 +678,8 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
    for (auto iter = m_NodeMap.begin(); iter != m_NodeMap.end(); ++iter)
 	{
       pBouy = iter->second;
-		dX = pBouy->m_dX - sX;
-		dZ = pBouy->m_dZ - sZ;
+      dX = pBouy->m_position.x - sX;
+      dZ = pBouy->m_position.z - sZ;
 		dSqDist = (dX * dX) + (dZ * dZ);
 		pBouy->m_TreeNode.m_sortkey = dSqDist;
       pBouy->m_TreeNode.m_powner = pBouy.pointer();
@@ -747,8 +742,8 @@ uint8_t CNavigationNet::FindNearestBouy(short sX, short sZ)
 	for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
 	{
 		pBouy = (CBouy*) (*i).second;
-		dX = pBouy->m_dX - sX;
-		dZ = pBouy->m_dZ - sZ;
+      dX = pBouy->m_position.x - sX;
+      dZ = pBouy->m_position.z - sZ;
 		dSqDist = (dX * dX) + (dZ * dZ);
 		if (dSqDist < dMinDist)
 		{

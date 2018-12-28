@@ -183,7 +183,7 @@ void ScoreReset(void);
 void ScoreResetDisplay(void);
 
 // Function called by Characters when they die
-void ScoreRegisterKill(CRealm* pRealm, managed_ptr<CThing3d> deadguy, managed_ptr<CThing3d> killer);
+void ScoreRegisterKill(managed_ptr<CThing3d> deadguy, managed_ptr<CThing3d> killer);
 
 // Function called by play to update the score display
 // Returns true, if pImage was updated; false otherwise.

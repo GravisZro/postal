@@ -267,9 +267,6 @@ CHood::CHood(void)
 	
 	m_sScaleAttribHeights	= TRUE;
 
-	// We want a Startup() call.
-	m_sCallStartup		= 1;
-
 	// No Init() calls yet.
 	m_sNumInits			= 0;
 	}

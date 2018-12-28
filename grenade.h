@@ -68,13 +68,14 @@
 #ifndef GRENADE_H
 #define GRENADE_H
 
-#include <RSPiX.h>
-
 #include "weapon.h"
 
+#include "Anim3D.h"
 
 // CGrenade is an unguided missile weapon class
-class CUnguidedMissile : public CWeapon
+class CUnguidedMissile
+    : public CWeapon,
+      public CSprite3
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -141,7 +142,7 @@ class CUnguidedMissile : public CWeapon
 	//---------------------------------------------------------------------------
    public:
       CUnguidedMissile(void);
-      ~CUnguidedMissile(void);
+      virtual ~CUnguidedMissile(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

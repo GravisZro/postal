@@ -45,12 +45,14 @@
 #ifndef PYLON_H
 #define PYLON_H
 
-#include "thing.h"
+#include <newpix/collisiondetection.h>
 
 #define PYLON_MAX_PYLONS 254
 
 // CPylon is the class for navigation
-class CPylon : public CThing
+class CPylon
+    : public Collidable,
+      public CSprite2
 	{
 	friend class CNavigationNet;
 	//---------------------------------------------------------------------------
@@ -66,13 +68,7 @@ class CPylon : public CThing
 		GameMessage m_msg;						// Place for storing hint messages
 		uint16_t	m_u16TargetDudeID;				// ID of dude you are supposed to attack;
 
-	protected:
-		double m_dX;								// x coord
-		double m_dY;								// y coord
-		double m_dZ;								// z coord
-													
-		RImage* m_pImage;							// Pointer to only image (replace with 3d anim, soon)
-		CSprite2 m_sprite;						// Sprite (replace with CSprite3, soon)
+   protected:
 		CSmash	m_smash;							// Collision region
 
 		int16_t m_sSuspend;							// Suspend flag
@@ -87,7 +83,7 @@ class CPylon : public CThing
 	//---------------------------------------------------------------------------
    public:
       CPylon(void);
-      ~CPylon(void);
+      virtual ~CPylon(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -155,13 +151,13 @@ class CPylon : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 		// Search the list of pylons and return a pointer to the one with the given ID
       managed_ptr<CPylon> GetPylon(uint8_t ucPylonID);

@@ -71,15 +71,16 @@
 #ifndef FIRE_H
 #define FIRE_H
 
-#include "thing.h"
+#include <newpix/collisiondetection.h>
 
 #include "AlphaAnimType.h"
-#include "smash.h"
 
 
 class CThing3d;
 // CFire is a burning flame weapon class
-class CFire : public CThing
+class CFire
+    : public Collidable,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -112,9 +113,6 @@ class CFire : public CThing
 	//---------------------------------------------------------------------------
 
 	public:
-		double m_dX;
-		double m_dY;
-		double m_dZ;
 		int16_t m_sRot;
 		bool  m_bTurnRight;					// A Random number will determine if the 
 													// smoke will curl left or right when it hits an
@@ -149,8 +147,6 @@ class CFire : public CThing
 
 		int32_t m_lPrevTime;						// Previous update time
 
-		CSprite2		m_sprite;				// Sprite (replace with CSprite3, soon)
-
 		ChannelAA*	m_pAnimChannel;		// Alpha animation stored as a channel.
 												
 		int16_t m_sSuspend;						// Suspend flag
@@ -174,7 +170,7 @@ class CFire : public CThing
 	//---------------------------------------------------------------------------
    public:
       CFire(void);
-      ~CFire(void);
+      virtual ~CFire(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

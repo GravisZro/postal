@@ -364,7 +364,7 @@ int16_t COstrich::Init(void)
 
 	// Init position, rotation and velocity
 	m_dVel = 0.0;
-	m_dRot = rspMod360(GetRandom());
+   m_rotation.y = rspMod360(GetRandom());
 	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_state = CCharacter::State_Idle;
 	m_lTimer = realm()->m_time.GetGameTime() + 500;
@@ -458,8 +458,8 @@ void COstrich::Update(void)
 				}
 				else
 				{
-					dX = m_dX;
-					dZ = m_dZ;
+               dX = m_position.x;
+               dZ = m_position.z;
 
 					m_dAcc = ms_dAccUser;
 					UpdateVelocities(dSeconds, ms_dMaxMarchVel, ms_dMaxMarchVel);
@@ -468,9 +468,9 @@ void COstrich::Update(void)
 					{
 					// Update Values /////////////////////////////////////////////////////////
 
-						m_dX	= dNewX;
-						m_dY	= dNewY;
-						m_dZ	= dNewZ;
+                  m_position.x	= dNewX;
+                  m_position.y	= dNewY;
+                  m_position.z	= dNewZ;
 
 						UpdateFirePosition();
 					}
@@ -483,13 +483,13 @@ void COstrich::Update(void)
 
 					// If he didn't move at all, then turn him so he will
 					// avoid the wall
-					if (dX == m_dX && dZ == m_dZ)
+               if (dX == m_position.x && dZ == m_position.z)
 					{
 						// Turn to avoid wall next time
 						if (m_sRotDirection == 0)
-							m_dRot = rspMod360(m_dRot - 20);
+                     m_rotation.y = rspMod360(m_rotation.y - 20);
 						else
-							m_dRot = rspMod360(m_dRot + 20);
+                     m_rotation.y = rspMod360(m_rotation.y + 20);
 					}
 				}
 		
@@ -502,8 +502,8 @@ void COstrich::Update(void)
 //-----------------------------------------------------------------------
 
 			case State_Panic:
-				dX = m_dX;
-				dZ = m_dZ;
+            dX = m_position.x;
+            dZ = m_position.z;
 
 				DeluxeUpdatePosVel(dSeconds);  
 /*
@@ -528,9 +528,9 @@ void COstrich::Update(void)
 				{
 				// Update Values /////////////////////////////////////////////////////////
 
-					m_dX	= dNewX;
-					m_dY	= dNewY;
-					m_dZ	= dNewZ;
+               m_position.x	= dNewX;
+               m_position.y	= dNewY;
+               m_position.z	= dNewZ;
 
 					UpdateFirePosition();
 				}
@@ -543,13 +543,13 @@ void COstrich::Update(void)
 */
 				// If he didn't move at all, then turn him so he will
 				// avoid the wall
-				if (dX == m_dX && dZ == m_dZ)
+            if (dX == m_position.x && dZ == m_position.z)
 				{
 					// Turn to avoid wall next time
 					if (m_sRotDirection == 0)
-						m_dRot = rspMod360(m_dRot - 20);
+                  m_rotation.y = rspMod360(m_rotation.y - 20);
 					else
-						m_dRot = rspMod360(m_dRot + 20);
+                  m_rotation.y = rspMod360(m_rotation.y + 20);
 				}
 
 
@@ -637,11 +637,11 @@ void COstrich::Update(void)
             return;
 		}
 
-		m_smash.m_sphere.sphere.X			= m_dX;
+      m_smash.m_sphere.sphere.X			= m_position.x;
 		// Fudge center of sphere as half way up the dude.
 		// Doesn't work if dude's feet leave the origin.
-		m_smash.m_sphere.sphere.Y			= m_dY + m_sprite.m_sRadius;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
+      m_smash.m_sphere.sphere.Y			= m_position.y + m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
@@ -919,8 +919,6 @@ void COstrich::OnPanicMsg(Panic_Message* pMessage)
 
 void COstrich::AlertFlock(void)
 {
-//	CThing::Things::iterator iNext;
-	CThing* pThing;
 	GameMessage msg;
 //	GameMessage msgStopSound;
 
@@ -929,9 +927,9 @@ void COstrich::AlertFlock(void)
 
 	msg.msg_Panic.eType = typePanic;
 	msg.msg_Panic.sPriority = 0;
-	msg.msg_Panic.sX = (int16_t) m_dX;
-	msg.msg_Panic.sY = (int16_t) m_dY;
-	msg.msg_Panic.sZ = (int16_t) m_dZ;
+   msg.msg_Panic.sX = (int16_t) m_position.x;
+   msg.msg_Panic.sY = (int16_t) m_position.y;
+   msg.msg_Panic.sZ = (int16_t) m_position.z;
 
    for(managed_ptr<CThing>& pThing : realm()->GetThingsByType(COstrichID))
      if(pThing != this)
@@ -958,7 +956,7 @@ void COstrich::ChangeRandomState(void)
 	int16_t sMod;
 	m_lTimer = realm()->m_time.GetGameTime() + ms_lStateChangeTime + GetRandom() % 5000;
 	sMod = m_lTimer % 3;
-	m_dRot = rspMod360(m_dRot - 10 + (GetRandom() % 20));
+   m_rotation.y = rspMod360(m_rotation.y - 10 + (GetRandom() % 20));
 	m_sRotDirection = m_lTimer % 2;
 
 	switch (sMod)

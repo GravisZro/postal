@@ -33,8 +33,11 @@
 #define SNDRELAY_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
-class CSndRelay : public CThing
+class CSndRelay
+    : public sprite_base_t,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -53,9 +56,6 @@ class CSndRelay : public CThing
 		bool m_bInitiallyEnabled;
 
 		CSprite2 m_sprite;						// Sprite (for editor only)
-		double m_dX;								// x coord.
-		double m_dY;								// y coord.
-		double m_dZ;								// z coord.
 
 		bool m_bEnabled;
 
@@ -82,7 +82,7 @@ class CSndRelay : public CThing
 
 			}
 
-      ~CSndRelay(void)
+      virtual ~CSndRelay(void)
 			{
 			Kill();
 			}
@@ -158,13 +158,13 @@ class CSndRelay : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 	//---------------------------------------------------------------------------
 	// Internal functions

@@ -54,19 +54,13 @@
 
 #include "weapon.h"
 
-// CNapalm is a canister of napalm weapon class
-class CNapalm : public CWeapon
-	{
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	public:
+#include "Anim3D.h"
 
-	//---------------------------------------------------------------------------
-	// Variables
-	//---------------------------------------------------------------------------
-	public:
-//		CSprite3		m_sprite;					// 3D Sprite
+// CNapalm is a canister of napalm weapon class
+class CNapalm
+    : public CWeapon,
+      public CSprite3
+   {
 
 	protected:
 		double m_dFireX;							// Last position of fire for comparision

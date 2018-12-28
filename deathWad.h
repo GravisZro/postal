@@ -51,9 +51,13 @@
 #include "weapon.h"
 
 #include "StockPile.h"
+#include "Anim3D.h"
+#include "SampleMaster.h"
 
 // CDeathWad is an unguided projectile weapon class.
-class CDeathWad : public CWeapon
+class CDeathWad
+    : public CWeapon,
+      public CSprite3
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -102,7 +106,7 @@ class CDeathWad : public CWeapon
 	//---------------------------------------------------------------------------
 	public:
       CDeathWad(void);
-      ~CDeathWad(void);
+      virtual ~CDeathWad(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

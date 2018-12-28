@@ -51,13 +51,16 @@
 #define ANIMTHING_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
 #include "AlphaAnimType.h"
 
-class CAnimThing : public CThing
+class CAnimThing
+    : public sprite_base_t,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
-	// Types, enums, etc.
+   // Types, enums, etc.
 	//---------------------------------------------------------------------------
 	public:
 
@@ -66,11 +69,7 @@ class CAnimThing : public CThing
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
-	public:
-		double m_dX;
-		double m_dY;
-		double m_dZ;
-
+   public:
 		int16_t m_sSuspend;							// Suspend flag
 		int16_t	m_sLoop;								// Loops, if true.
 		char	m_szResName[PATH_MAX];		// Resource name.
@@ -81,8 +80,7 @@ class CAnimThing : public CThing
       managed_ptr<CThing> m_sender;			// ID of CThing to send msg to when done.
 		GameMessage	m_msg;						// Message to send to m_pthingSendMsg.
 
-	protected:
-		CSprite2		m_sprite;					// Sprite.
+   protected:
 		ChannelAA*	m_paachannel;				// Animation (with or without alpha).
 														
 	//---------------------------------------------------------------------------
@@ -90,7 +88,7 @@ class CAnimThing : public CThing
 	//---------------------------------------------------------------------------
    public:
       CAnimThing(void);
-      ~CAnimThing(void);
+      virtual ~CAnimThing(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -166,13 +164,13 @@ class CAnimThing : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 	//---------------------------------------------------------------------------
 	// Internal functions

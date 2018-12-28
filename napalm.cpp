@@ -303,15 +303,15 @@ void CNapalm::Update(void)
 		// Check the current state
 		switch (m_eState)
 		{
-
+        UNHANDLED_SWITCH;
 			case CWeapon::State_Idle:
 				break;
 
 			case CWeapon::State_Fire:
 				// Make sure it starts in a valid location.  If it is inside
 				// a wall, delete it now.
-				sHeight = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
-				if (m_dY < sHeight)
+            sHeight = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+            if (m_position.y < sHeight)
 				{
                Object::enqueue(SelfDestruct);
 					return;
@@ -321,7 +321,7 @@ void CNapalm::Update(void)
 				PlaySample(
 					g_smidNapalmShot,
 					SampleMaster::Weapon,
-					DistanceToVolume(m_dX, m_dY, m_dZ, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+               DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 				break;
 
 //-----------------------------------------------------------------------
@@ -330,11 +330,11 @@ void CNapalm::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Go:
 				// Do horizontal velocity
-				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
-				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
+            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
 
 				// Do vertical velocity
-				dNewY = m_dY;
+            dNewY = m_position.y;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 
 				// Check the height to see if it hit the ground
@@ -342,41 +342,41 @@ void CNapalm::Update(void)
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
-				if (dNewY < sHeight && m_dY >= sHeight)
+            if (dNewY < sHeight && m_position.y >= sHeight)
 				{
-					m_dY = sHeight;
+               m_position.y = sHeight;
 					m_eState = CWeapon::State_Slide;	
 					PlaySample(
 						g_smidNapalmFire,
 						SampleMaster::Destruction,
-						DistanceToVolume(m_dX, m_dY, m_dZ, NapalmSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(m_position.x, m_position.y, m_position.z, NapalmSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 
 					PlaySample(
 						g_smidFireLarge,
 						SampleMaster::Destruction,
-						DistanceToVolume(m_dX, m_dY, m_dZ, NapalmSndHalfLife) );
+                  DistanceToVolume(m_position.x, m_position.y, m_position.z, NapalmSndHalfLife) );
 				}
 				else
 				{
 					// If it is above the last known ground and is now lower
 					// than the height at its new position, assume it hit
 					// a wall and should bounce.
-					if (dNewY < sHeight && m_dY < sHeight)
+               if (dNewY < sHeight && m_position.y < sHeight)
 					{
-						dNewX = m_dX;	// Restore last x position
-						dNewZ = m_dZ;	// Restore last z position
-						m_dRot = BounceAngle(m_dRot);	// Change directions
+                  dNewX = m_position.x;	// Restore last x position
+                  dNewZ = m_position.z;	// Restore last z position
+                  m_rotation.y = BounceAngle(m_rotation.y);	// Change directions
 						PlaySample(
 							g_smidNapalmHit,
 							SampleMaster::Weapon,
-							DistanceToVolume(m_dX, m_dY, m_dZ, SideEffectSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, SideEffectSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 					else
-						m_dY = dNewY;
+                  m_position.y = dNewY;
 				}
 
-				m_dX = dNewX;
-				m_dZ = dNewZ;
+            m_position.x = dNewX;
+            m_position.z = dNewZ;
 				break;
 
 //-----------------------------------------------------------------------
@@ -387,18 +387,18 @@ void CNapalm::Update(void)
 				// As the Napalm canister slides on the ground, it lays 
 				// down fire at intervals.  Check the interval to see
 				// it its time to creat a new fire yet.
-				dX = m_dX - m_dFireX;
-				dZ = m_dZ - m_dFireZ;
+            dX = m_position.x - m_dFireX;
+            dZ = m_position.z - m_dFireZ;
 				dDistance = (dX*dX) + (dZ*dZ);
 				if (dDistance > ms_dMinFireInterval)
 				{
-					m_dFireX = m_dX;
-					m_dFireZ = m_dZ;
+               m_dFireX = m_position.x;
+               m_dFireZ = m_position.z;
 					// Start a fire here
                managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
                if (pFire)
 					{
-						if (pFire->Setup(m_dX - 20 + (GetRand() % 40), m_dY, m_dZ - 20 + (GetRand() % 40), 
+                  if (pFire->Setup(m_position.x - 20 + (GetRand() % 40), m_position.y, m_position.z - 20 + (GetRand() % 40),
 						                 4000 + (GetRand() % 9000), false, CFire::LargeFire) != SUCCESS)
                      pFire.reset();
 						else
@@ -423,34 +423,34 @@ void CNapalm::Update(void)
 				if (m_dHorizVel == 0)
 					m_eState = CWeapon::State_Explode;
 
-				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
-				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
+            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
 				// Check for obstacles
 				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 				// If it hit any obstacles, make it bounce off
-				if (sHeight > m_dY)
+            if (sHeight > m_position.y)
 				{
 					// Restore previous position 
-					dNewX = m_dX;
-					dNewZ = m_dZ;
+               dNewX = m_position.x;
+               dNewZ = m_position.z;
 					// Change directions
-					m_dRot = BounceAngle(m_dRot);
+               m_rotation.y = BounceAngle(m_rotation.y);
 					PlaySample(
 						g_smidNapalmHit,
 						SampleMaster::Weapon,
-						DistanceToVolume(m_dX, m_dY, m_dZ, SideEffectSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(m_position.x, m_position.y, m_position.z, SideEffectSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 				}
 
 				// See if it fell off of something.  If so make it go back
 				// to the airborne state
-				if (sHeight < (int16_t) m_dY)
+            if (sHeight < (int16_t) m_position.y)
 				{
 					m_dVertVel = 0;
 					m_eState = State_Go;
 				}
 
-				m_dX = dNewX;
-				m_dZ = dNewZ;
+            m_position.x = dNewX;
+            m_position.z = dNewZ;
 
 				break;
 
@@ -488,7 +488,7 @@ void CNapalm::Render(void)
 	m_trans.makeIdentity();
 
 	// Set its pointing direction
-	m_trans.Ry(rspMod360(m_dRot));
+   m_trans.Ry(rspMod360(m_rotation.y));
 
 	if (m_eState == State_Hide)
 	{
@@ -505,14 +505,14 @@ void CNapalm::Render(void)
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
+      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sprite.m_sX2, &m_sprite.m_sY2);
 		
 
 		// Priority is based on bottom edge of sprite
-		m_sprite.m_sPriority = m_dZ;
+      m_sprite.m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 		m_sprite.m_ptrans		= &m_trans;
 
@@ -543,16 +543,16 @@ int16_t CNapalm::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_dHorizVel = ms_dThrowHorizVel;//dHorizVelocity;
 	m_dVertVel = ms_dThrowVertVel;//dVertVelocity;
 
 	// Default these to the start position so that, when we first enter
 	// the slide state, we'll create some fire right away.
-	m_dFireX	= m_dX;
-	m_dFireZ	= m_dZ;
+   m_dFireX	= m_position.x;
+   m_dFireZ	= m_position.z;
 
 	// Load resources
 	sResult = GetResources();

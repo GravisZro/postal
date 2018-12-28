@@ -303,7 +303,7 @@
 //							generated if the position gets modified by other than the
 //							crawler.  In release mode, it sets him back to the last
 //							successful crawled position.
-//							Added a function to set m_dX, Y, & Z, SetPosition().
+//							Added a function to set m_position.x, Y, & Z, SetPosition().
 //
 //		08/12/97	JMI	Removed unused anims: m_animJump, JumpForward, Land, 
 //							LandForward, Fall.
@@ -484,8 +484,8 @@ class CDude : public CCharacter
 		// INPUT HACK. Normally we can't move in one direction while facing another. Android version
 		// works by reading input while calculating the dude's velocity, but we can't do that with
 		// keyboard input. Thus, these dude-only "twinstick" rotational values.
-		bool			m_bUseRotTS;	// TRUE if we should use m_dRotTS to calculate velocity instead of m_dRot
-		double			m_dRotTS;		// Direction we want to go when twinsticking
+      bool			m_bUseRotTS;	// TRUE if we should use m_dRotTS to calculate velocity instead of m_rotation.y
+      double			m_dRotTS;		// Direction we want to go when twinsticking
 
 		// Actual joystick inputs
 		double			m_dJoyMoveVel;
@@ -606,7 +606,7 @@ class CDude : public CCharacter
 	//---------------------------------------------------------------------------
    public:
       CDude(void);
-      ~CDude(void);
+      virtual ~CDude(void);
 
 
 	//---------------------------------------------------------------------------
@@ -656,13 +656,13 @@ class CDude : public CCharacter
 	//---------------------------------------------------------------------------
 	public:
 		// Return the X position
-      double GetX(void) const { return m_dX; }
+      double GetX(void) const { return m_position.x; }
 
 		// Return the Y position
-      double GetY(void) const { return m_dY; }
+      double GetY(void) const { return m_position.y; }
 
 		// Return the Z position
-      double GetZ(void) const { return m_dZ; }
+      double GetZ(void) const { return m_position.z; }
 
 		// Return the dude's hit points
       int16_t GetHealth(void) const { return m_stockpile.m_sHitPoints; }

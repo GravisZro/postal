@@ -46,16 +46,16 @@
 #ifndef EXPLODE_H
 #define EXPLODE_H
 
-#include <RSPiX.h>
-#include "thing.h"
+#include <newpix/collisiondetection.h>
 
 #include "AlphaAnimType.h"
-#include "smash.h"
 
 
 class CThing3d;
 // CExplode is a firey explosion weapon class
-class CExplode : public CThing
+class CExplode
+    : public Collidable,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -77,9 +77,6 @@ class CExplode : public CThing
 	// Variables
 	//---------------------------------------------------------------------------
 	public:
-		double	m_dX;
-		double	m_dY;
-		double	m_dZ;
       managed_ptr<CThing3d> m_shooter;
       managed_ptr<CThing3d> m_except;									// ID of object to except from explosion.
 
@@ -89,7 +86,6 @@ class CExplode : public CThing
 
       milliseconds_t m_lPrevTime;											// Previous update time
 
-		CSprite2		m_sprite;									// Sprite 
 		ChannelAA*	m_pAnimChannel;							// Alpha Explosion animation stored as a channel
 
 		int16_t m_sSuspend;											// Suspend flag
@@ -108,7 +104,7 @@ class CExplode : public CThing
 	//---------------------------------------------------------------------------
 	public:
       CExplode(void);
-      ~CExplode(void);
+      virtual ~CExplode(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions

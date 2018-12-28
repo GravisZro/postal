@@ -43,9 +43,11 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#include "thing.h"
+#include <newpix/collisiondetection.h>
 
-class CChunk : public CThing
+class CChunk
+    : public Collidable,
+      public CSpriteLine2d
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -71,12 +73,7 @@ class CChunk : public CThing
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
-	public:
-		double m_dX;
-		double m_dY;
-		double m_dZ;
-
-		double m_dRot;
+   public:
 		double m_dVel;
 		double m_dVertVel;
 
@@ -88,8 +85,7 @@ class CChunk : public CThing
 
 		int16_t	m_sLen;									// Length of item.
 														
-	protected:
-		CSpriteLine2d		m_sprite;				// Sprite.
+   protected:
 
 		// Note that this is never reseeded b/c this is just an 'effect'
 		// that does not and SHOULD not affect game play as it can be
@@ -104,7 +100,7 @@ class CChunk : public CThing
 	//---------------------------------------------------------------------------
    public:
       CChunk(void);
-      ~CChunk(void);
+      virtual ~CChunk(void);
 
 	//---------------------------------------------------------------------------
 	// Virtual functions (implementing them as inlines doesn't pay!)

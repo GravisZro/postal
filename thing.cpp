@@ -299,16 +299,14 @@ RProcessGui   CThing::ms_pgDoGui;
 ////////////////////////////////////////////////////////////////////////////////
 CThing::CThing(void)                 // In:  Class ID
 {
-  // Default to calling startup and shutdown.  What could be the harm?!
-  m_sCallStartup  = TRUE;
-  m_sCallShutdown = TRUE;
-
   // Start out with no ID.
   m_u16InstanceId = invalid_id;
   m_MessageQueue.clear();
   m_phot = nullptr;
 
-  Object::connect(SelfDestruct, fslot_t<void>([this]() noexcept { realm()->RemoveThing(this); }));
+  Object::connect(SelfDestruct,
+                  fslot_t<void>([this](void) noexcept
+                  { realm()->RemoveThing(this); }));
 }
 
 

@@ -225,7 +225,6 @@ static const char* ms_apszResNames[] =
 
 CRocket::CRocket(void)
 {
-  //			m_sprite.m_pthing	= this;
   m_lSmokeTimer		= 0;
   m_siThrust			= 0;
 }
@@ -235,8 +234,6 @@ CRocket::~CRocket(void)
   // Stop sound, if any.
   StopLoopingSample(m_siThrust);
 
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -353,10 +350,11 @@ void CRocket::Update(void)
 		// Check the current state
 		switch (m_eState)
 		{
+        UNHANDLED_SWITCH;
 			case CWeapon::State_Hide:
 			case CWeapon::State_Idle:
-				dPrevX = m_dX;
-				dPrevZ = m_dZ;
+            dPrevX = m_position.x;
+            dPrevZ = m_position.z;
 				break;
 
 			case CWeapon::State_Fire:
@@ -364,7 +362,7 @@ void CRocket::Update(void)
 																	// Does not fail.
 					g_smidRocketFire,							// In:  Identifier of sample you want played.
 					SampleMaster::Weapon,					// In:  Sound Volume Category for user adjustment
-					DistanceToVolume(m_dX, m_dY, m_dZ, LaunchSndHalfLife),	// In:  Initial Sound Volume (0 - 255)
+               DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife),	// In:  Initial Sound Volume (0 - 255)
 					&m_siThrust,								// Out: Handle for adjusting sound volume
 					nullptr,											// Out: Sample duration in ms, if not nullptr.
 					2841,											// In:  Where to loop back to in milliseconds.
@@ -396,8 +394,8 @@ void CRocket::Update(void)
 					m_dHorizVel = ms_dMaxVelBack;
 
 				// Adjust position based on velocity (this will clearly be optimized later on!)
-				dNewX = m_dX + COSQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
-				dNewZ = m_dZ - SINQ[(int16_t)m_dRot] * (m_dHorizVel * dSeconds);
+            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
 
 				// Check for obstacles
 				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
@@ -407,17 +405,17 @@ void CRocket::Update(void)
 
 				// If the new position's height is too high, the new position is a ways
 				// off screen, or the path to the new position is not clear of terrain . . .
-				if (sHeight > m_dY                     || 
-					 m_dZ > ms_sOffScreenDist + realm()->GetRealmHeight() ||
-					 m_dZ < -ms_sOffScreenDist ||
-					 m_dX > ms_sOffScreenDist + realm()->GetRealmWidth() ||
-					 m_dX < -ms_sOffScreenDist ||
+            if (sHeight > m_position.y                     ||
+                m_position.z > ms_sOffScreenDist + realm()->GetRealmHeight() ||
+                m_position.z < -ms_sOffScreenDist ||
+                m_position.x > ms_sOffScreenDist + realm()->GetRealmWidth() ||
+                m_position.x < -ms_sOffScreenDist ||
 					 !realm()->IsPathClear(	// Returns true, if the entire path is clear.                 
 														// Returns false, if only a portion of the path is clear.     
 														// (see *psX, *psY, *psZ).                                    
-						(int16_t) m_dX, 				// In:  Starting X.                                           
-						(int16_t) m_dY, 				// In:  Starting Y.                                           
-						(int16_t) m_dZ, 				// In:  Starting Z.                                           
+                  (int16_t) m_position.x, 				// In:  Starting X.
+                  (int16_t) m_position.y, 				// In:  Starting Y.
+                  (int16_t) m_position.z, 				// In:  Starting Z.
 						3.0, 							// In:  Rate at which to scan ('crawl') path in pixels per    
 														// iteration.                                                 
 														// NOTE: Values less than 1.0 are inefficient.                
@@ -440,15 +438,15 @@ void CRocket::Update(void)
 					// Note that these need to be set even if we explode; otherwise, they
 					// never get initialized and totally hosened values are sent to
 					// pSmoke-Setup() which makes Alpha unhappy.
-					dPrevX = m_dX;
-					dPrevZ = m_dZ;
+               dPrevX = m_position.x;
+               dPrevZ = m_position.z;
 				}
 				else
 				{
-					dPrevX = m_dX;
-					dPrevZ = m_dZ;
-					m_dX = dNewX;
-					m_dZ = dNewZ;
+               dPrevX = m_position.x;
+               dPrevZ = m_position.z;
+               m_position.x = dNewX;
+               m_position.z = dNewZ;
 				}
 
 				// Check for collisions with other characters if
@@ -488,8 +486,8 @@ void CRocket::Update(void)
 							{
 								m_eState = CWeapon::State_Explode;
 								// Move back to previous position where expolosion should appear
-								m_dX = dPrevX;
-								m_dZ = dPrevZ;
+                        m_position.x = dPrevX;
+                        m_position.z = dPrevZ;
 							}
 						}
 						// Can't determine the shooter,but we did collide, so blow up.
@@ -499,8 +497,8 @@ void CRocket::Update(void)
 							// Move back to the previous position before doing the explosion so
 							// that the explosion doesn't always go off behind the thing it
 							// hits and blow it forward.
-							m_dX = dPrevX;
-							m_dZ = dPrevZ;
+                     m_position.x = dPrevX;
+                     m_position.z = dPrevZ;
 						}
 					}
 				}
@@ -540,13 +538,13 @@ void CRocket::Update(void)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
-						pSmoke->Setup(dPrevX, m_dY, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
+                  pSmoke->Setup(dPrevX, m_position.y, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
 						pSmoke->m_shooter = m_shooter;
 					}
 				}
 
 				// Update sound position.
-				SetInstanceVolume(m_siThrust, DistanceToVolume(m_dX, m_dY, m_dZ, LaunchSndHalfLife) );
+            SetInstanceVolume(m_siThrust, DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );
 				break;
 
 //-----------------------------------------------------------------------
@@ -574,16 +572,16 @@ void CRocket::Update(void)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
-						pSmoke->Setup(dPrevX, m_dY, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
+                  pSmoke->Setup(dPrevX, m_position.y, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
 						pSmoke->m_shooter = m_shooter;
 					}
 				}
 
-				dPrevX = m_dX;
-				dPrevZ = m_dZ;
+            dPrevX = m_position.x;
+            dPrevZ = m_position.z;
 
 				// Update sound position.
-				SetInstanceVolume(m_siThrust, DistanceToVolume(m_dX, m_dY, m_dZ, LaunchSndHalfLife) );
+            SetInstanceVolume(m_siThrust, DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );
 				break;
 
 //-----------------------------------------------------------------------
@@ -597,12 +595,12 @@ void CRocket::Update(void)
             managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
             if (pExplosion)
 				{
-					pExplosion->Setup(m_dX, MAX(m_dY-30, 0.0), m_dZ, m_shooter);
+               pExplosion->Setup(m_position.x, MAX(m_position.y-30, 0.0), m_position.z, m_shooter);
 					PlaySample(										// Returns nothing.
 																		// Does not fail.
 						g_smidRocketExplode,						// In:  Identifier of sample you want played.
 						SampleMaster::Destruction,				// In:  Sound Volume Category for user adjustment
-						DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 // Old call:	PlaySample(g_smidRocketExplode);
 				}
 
@@ -612,7 +610,7 @@ void CRocket::Update(void)
               managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
               if (pSmoke)
 					{
-						pSmoke->Setup(m_dX - 4 + GetRandom() % 9, m_dY-20, m_dZ - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
+                  pSmoke->Setup(m_position.x - 4 + GetRandom() % 9, m_position.y-20, m_position.z - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 						pSmoke->m_shooter = m_shooter;
 					}
 				}
@@ -622,10 +620,10 @@ void CRocket::Update(void)
 		}
 
 		// Update sphere.
-		m_smash.m_sphere.sphere.X			= m_dX;
-		m_smash.m_sphere.sphere.Y			= m_dY;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
-		m_smash.m_sphere.sphere.lRadius	= 2 * m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.X			= m_position.x;
+      m_smash.m_sphere.sphere.Y			= m_position.y;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.lRadius	= 2 * m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);
@@ -643,41 +641,42 @@ void CRocket::Render(void)
 {
 	int32_t lThisTime = realm()->m_time.GetGameTime();
 
-	m_sprite.m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
-	m_sprite.m_psop = &m_anim.m_psops->atTime(lThisTime);
-	m_sprite.m_ptex = &m_anim.m_ptextures->atTime(lThisTime);
-	m_sprite.m_psphere = &m_anim.m_pbounds->atTime(lThisTime);
+   m_pmesh = &m_anim.m_pmeshes->atTime(lThisTime);
+   m_psop = &m_anim.m_psops->atTime(lThisTime);
+   m_ptex = &m_anim.m_ptextures->atTime(lThisTime);
+   m_psphere = &m_anim.m_pbounds->atTime(lThisTime);
 
 	// Reset rotation so it is not cumulative
 	m_trans.makeIdentity();
 
 	// Set its pointing direction
-	m_trans.Ry(rspMod360(m_dRot));
+	m_trans.Ry(rspMod360(m_rotation.y));
 
 	// Eventually this should be channel driven also
-//	m_sprite.m_sRadius = m_sCurRadius;
+//	m_sRadius = m_sCurRadius;
 
 	if (m_eState == State_Hide)
-		m_sprite.m_sInFlags = CSprite::InHidden;
+      m_sInFlags = CSprite::InHidden;
 	else
-		m_sprite.m_sInFlags = 0;
+      m_sInFlags = 0;
 
 	// If we're not a child of someone else...
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-		Map3Dto2D((int16_t) m_dX, (int16_t) m_dY, (int16_t) m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
+      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sX2, &m_sY2);
 
 		// Priority is based on Z.
-		m_sprite.m_sPriority = m_dZ;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from the attribute map
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-		m_sprite.m_ptrans		= &m_trans;
+      m_ptrans		= &m_trans;
 
 		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
+      //realm()->Scene()->UpdateSprite(this);
+      Object::enqueue(SpriteUpdate);
 		
 		// Render the 2D shadow sprite
 		CWeapon::Render();
@@ -701,9 +700,9 @@ int16_t CRocket::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 	m_dHorizVel = 0.0;
 
 	// Load resources

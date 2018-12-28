@@ -266,9 +266,9 @@ int16_t CPowerUp::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 19:
 			case 18:
 			case 17:
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 				sResult	= m_stockpile.Load(pFile, ulFileVersion);
 				break;
 			case 16:
@@ -288,9 +288,9 @@ int16_t CPowerUp::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 2:
 			case 1:
 				{
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 				uint8_t	u8Type	= (uint8_t)CStockPile::Bullets; 
 				pFile->Read(&u8Type);
 				int32_t	lPowerVal;
@@ -401,7 +401,7 @@ void CPowerUp::Update(void)
 					// Restore powerup cheese spin.
 					m_dExtRotVelY	= Y_AXIS_ROTATION_RATE;
 					m_dExtRotVelZ	= 0.0;
-					m_dRotZ			= 0.0;
+               m_rotation.z			= 0.0;
 					}
 				break;
 			default:
@@ -417,10 +417,10 @@ void CPowerUp::Update(void)
 			}
 
 		// Update sphere.
-		m_smash.m_sphere.sphere.X			= m_dX;
-		m_smash.m_sphere.sphere.Y			= m_dY;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
-		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.X			= m_position.x;
+      m_smash.m_sphere.sphere.Y			= m_position.y;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
 		realm()->m_smashatorium.Update(&m_smash);
@@ -452,9 +452,9 @@ int16_t CPowerUp::Setup(									// Returns 0 if successfull, non-zero otherwise
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	// Load resources and initialize.
 	sResult = Init();
@@ -477,9 +477,9 @@ int16_t CPowerUp::EditNew(								// Returns 0 if successfull, non-zero otherwis
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	sResult	= EditModify();
 
@@ -623,11 +623,11 @@ int16_t CPowerUp::Grab(		// Returns 0 on success..
 	// If we are not already grabbed . . .
    if (m_sprite.m_psprParent == nullptr)
 		{
-		m_dX	= 0.0;
-		m_dY	= 0.0;
-		m_dZ	= 0.0;
+      m_position.x	= 0.0;
+      m_position.y	= 0.0;
+      m_position.z	= 0.0;
 
-		psprParent->AddChild(&m_sprite);
+      psprParent->AddChild(&m_sprite);
 
 		// Don't use this for now b/c the next line that removes the
 		// smash from the smashatorium will be ineffective b/c the
@@ -654,15 +654,15 @@ void CPowerUp::Drop(			// Returns nothing.
 	int16_t sY,					// In:  Position from which to release.
 	int16_t sZ)					// In:  Position from which to release.
 	{
-	m_dX	= sX;
-	m_dY	= sY;
-	m_dZ	= sZ;
+   m_position.x	= sX;
+   m_position.y	= sY;
+   m_position.z	= sZ;
 
 	// If we have a parent . . .
    if (m_sprite.m_psprParent != nullptr)
 		{
 		// Remove from parent.
-		m_sprite.m_psprParent->RemoveChild(&m_sprite);
+      m_sprite.m_psprParent->RemoveChild(&m_sprite);
 		}
 	}
 
@@ -731,7 +731,7 @@ void CPowerUp::OnExplosionMsg(			// Returns nothing.
 					// Clear local item.
 					m_stockpile.GetItem(sTypeIndex)				= 0;
 					// Prepare for the cold, cruel, fire-infested realm.
-					ppowerup->Setup(m_dX, m_dY, m_dZ);
+               ppowerup->Setup(m_position.x, m_position.y, m_position.z);
 					// Slap it some (bypass this function, though..that'd be a waste to 
 					// do again).
 					ppowerup->CItem3d::OnExplosionMsg(pexplosionmsg);

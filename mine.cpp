@@ -163,7 +163,8 @@ int16_t CMine::ms_sFileCount;
 
 CMine::CMine(void)
 {
-  Reset();
+  m_lFuseTime = 0;
+  m_siMineBeep = 0;
 }
 
 CMine::~CMine(void)
@@ -171,8 +172,6 @@ CMine::~CMine(void)
   // Stop sound, if any.
   StopLoopingSample(m_siMineBeep);
 
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
   realm()->m_smashatorium.Remove(&m_smash);
 
   // Free resources
@@ -336,6 +335,8 @@ int16_t CMine::Init(void)
 		case CRemoteControlMineID:
 			m_lTimer = lThisTime;
 			break;
+     default:
+       break;
 	}
 
 	// Set up collision object
@@ -438,7 +439,7 @@ void CMine::Update(void)
 		// Check the current state
 		switch (m_eState)
 		{
-
+        UNHANDLED_SWITCH;
 //-----------------------------------------------------------------------
 // Idle - waiting to arm
 //-----------------------------------------------------------------------
@@ -463,7 +464,7 @@ void CMine::Update(void)
 							PlaySample(
 								g_smidMineSet,				// Sample to play
 								SampleMaster::Weapon,	// Category for user sound adjustment
-								DistanceToVolume(m_dX, m_dY, m_dZ, MineSndHalfLife) ); //Pos
+                        DistanceToVolume(m_position.x, m_position.y, m_position.z, MineSndHalfLife) ); //Pos
 							break;
 
 						case CRemoteControlMineID:
@@ -473,9 +474,9 @@ void CMine::Update(void)
 				}
 				else
 				{
-					int16_t	sX	= m_dX;
-					int16_t	sY	= m_dY;
-					int16_t	sZ	= m_dZ;
+               int16_t	sX	= m_position.x;
+               int16_t	sY	= m_position.y;
+               int16_t	sZ	= m_position.z;
 
                // If we have a parent . . .
                if (parent())
@@ -516,6 +517,8 @@ void CMine::Update(void)
 							// Make it go off right away
 							m_lTimer = lThisTime;
 							break;
+                 default:
+                   break;
 					}
 				}
 				break;
@@ -541,14 +544,14 @@ void CMine::Update(void)
 					PlaySample(
 						g_smidBounceLaunch,
 						SampleMaster::Weapon,
-						DistanceToVolume(m_dX, m_dY, m_dZ, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					// Do motion
 					///////////////////////// Vertical Velocity /////////////////////////////////
 					UpdateVelocity(&m_dVertVel, &m_dVertDeltaVel, g_dAccelerationDueToGravity, dSeconds);
 					
 					// Apply external vertical velocity.
 					dDistance	= (m_dVertVel - m_dVertDeltaVel / 2) * dSeconds;
-					m_dY = m_dY + dDistance;
+               m_position.y = m_position.y + dDistance;
 
 					// If velocity is negative, then explode and shoot in 
 					// several directions using deluxe shot or something.
@@ -558,23 +561,23 @@ void CMine::Update(void)
 						PlaySample(
 							g_smidBounceExplode,
 							SampleMaster::Weapon,
-							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 
 						// Draw some kind of flash on the mine
-						m_bulletfest.Impact(0, m_dX, m_dY, m_dZ, realm());
-						m_bulletfest.Impact(0, m_dX + 5, m_dY, m_dZ, realm());
-						m_bulletfest.Impact(0, m_dX - 5, m_dY, m_dZ, realm());
-						m_bulletfest.Impact(0, m_dX, m_dY + 5, m_dZ, realm());
-						m_bulletfest.Impact(0, m_dX, m_dY - 5, m_dZ, realm());
+                  m_bulletfest.Impact(0, m_position.x, m_position.y, m_position.z, realm());
+                  m_bulletfest.Impact(0, m_position.x + 5, m_position.y, m_position.z, realm());
+                  m_bulletfest.Impact(0, m_position.x - 5, m_position.y, m_position.z, realm());
+                  m_bulletfest.Impact(0, m_position.x, m_position.y + 5, m_position.z, realm());
+                  m_bulletfest.Impact(0, m_position.x, m_position.y - 5, m_position.z, realm());
 
 						// Shoot in all directions
 						for (sShootAngle = 0; sShootAngle < 360; sShootAngle += 20)
 						{
 							m_bulletfest.Fire(sShootAngle,
 													0,
-													(int16_t) m_dX, 
-													(int16_t) m_dY, 
-													(int16_t) m_dZ,
+                                       (int16_t) m_position.x,
+                                       (int16_t) m_position.y,
+                                       (int16_t) m_position.z,
 													ms_sBettyRange,
 													realm(),
 													CSmash::Character,
@@ -589,7 +592,7 @@ void CMine::Update(void)
 								msg.msg_Shot.eType = typeShot;
 								msg.msg_Shot.sPriority = 0;
 								msg.msg_Shot.sDamage = 50;
-								msg.msg_Shot.sAngle = rspATan(m_dZ - sShotZ, sShotX - m_dX);
+                        msg.msg_Shot.sAngle = rspATan(m_position.z - sShotZ, sShotX - m_position.x);
 								msg.msg_Shot.shooter = m_shooter;
 								// Tell this thing that it got shot
 								SendThingMessage(msg, pShotThing);
@@ -615,11 +618,11 @@ void CMine::Update(void)
               managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
               if (pExplosion)
 					{
-						pExplosion->Setup(m_dX, m_dY, m_dZ, m_shooter);
+                  pExplosion->Setup(m_position.x, m_position.y, m_position.z, m_shooter);
 						PlaySample(
 							g_smidGrenadeExplode,
 							SampleMaster::Destruction,
-							DistanceToVolume(m_dX, m_dY, m_dZ, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 
                Object::enqueue(SelfDestruct);
@@ -632,9 +635,9 @@ void CMine::Update(void)
 		m_lPrevTime = lThisTime;
 
 		// Update sphere.
-		m_smash.m_sphere.sphere.X			= m_dX;
-		m_smash.m_sphere.sphere.Y			= m_dY;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
+      m_smash.m_sphere.sphere.X			= m_position.x;
+      m_smash.m_sphere.sphere.Y			= m_position.y;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
 		m_smash.m_sphere.sphere.lRadius	= m_sCurRadius;
 
 		// Update the smash.
@@ -649,42 +652,41 @@ void CMine::Update(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CMine::Render(void)
 {
-	if (m_pImage)
+   if (m_pImage != nullptr)
 	{
 		// Image would normally animate, but doesn't for now
-		m_sprite.m_pImage = m_pImage;
+      m_pImage = m_pImage;
 
 		if (m_eState == State_Hide)
 		{
 			// Hide.
-			m_sprite.m_sInFlags = CSprite::InHidden;
+         m_sInFlags = CSprite::InHidden;
 		}
 		else
 		{
 			// No special flags
-			m_sprite.m_sInFlags = 0;
+         m_sInFlags = 0;
 		}
 
 		// Map from 3d to 2d coords
 		Map3Dto2D(
-			(int16_t) m_dX, 
-			(int16_t) m_dY, 
-			(int16_t) m_dZ, 
-			&m_sprite.m_sX2, 
-			&m_sprite.m_sY2);
+         (int16_t) m_position.x,
+         (int16_t) m_position.y,
+         (int16_t) m_position.z,
+         &m_sX2,
+         &m_sY2);
 
 		// Center on image.
-		m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
-		m_sprite.m_sY2	-= m_pImage->m_sHeight / 2;
+      m_sX2	-= m_pImage->m_sWidth / 2;
+      m_sY2	-= m_pImage->m_sHeight / 2;
 
 		// Priority is based on bottom edge of sprite
-		m_sprite.m_sPriority = m_dZ;
+      m_sPriority = m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-		m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-		// Update sprite in scene
-		realm()->Scene()->UpdateSprite(&m_sprite);
+      Object::enqueue(SpriteUpdate); // Update sprite in scene
 	}
 }
 
@@ -745,7 +747,8 @@ int16_t CMine::GetResources(void)						// Returns 0 if successfull, non-zero oth
    if (m_pImage == nullptr)
 	{
       switch (type())
-		{	
+      {
+        UNHANDLED_SWITCH;
 			case CTimedMineID:
 				sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(TIMEDMINE_FILE), &m_pImage, RFile::LittleEndian);
 				break;
@@ -760,7 +763,7 @@ int16_t CMine::GetResources(void)						// Returns 0 if successfull, non-zero oth
 
 			case CRemoteControlMineID:
 				sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(REMOTEMINE_FILE), &m_pImage, RFile::LittleEndian);
-				break;
+            break;
 		}
 	}
 

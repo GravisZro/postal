@@ -41,8 +41,13 @@
 
 #include "weapon.h"
 
+#include "Anim3D.h"
+#include "SampleMaster.h"
+
 // CHeatseeker is a heat seeking missile
-class CHeatseeker : public CWeapon
+class CHeatseeker
+    : public CWeapon,
+      public CSprite3
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -102,7 +107,7 @@ class CHeatseeker : public CWeapon
 	//---------------------------------------------------------------------------
 	public:
       CHeatseeker(void);
-      ~CHeatseeker(void);
+      virtual ~CHeatseeker(void);
 
 
 	//---------------------------------------------------------------------------
@@ -197,7 +202,7 @@ class CHeatseeker : public CWeapon
 
 		inline int16_t FindAngleTo(double dX, double dZ)
 		{
-			return rspATan((m_dZ - dZ), (dX - m_dX));	
+         return rspATan((m_position.z - dZ), (dX - m_position.x));
 		}
 	};
 

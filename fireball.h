@@ -66,7 +66,9 @@ class CThing3d;
 /////////////////////////////////////////// CFireball /////////////////////////////////////
 
 // CFireball is a burning flame weapon class
-class CFireball : public CWeapon
+class CFireball
+    : public CWeapon,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -112,8 +114,6 @@ class CFireball : public CWeapon
 		int32_t	m_lAnimTime;					// Animation time so anims can be offset frames.
 		int32_t m_lPrevTime;						// Previous update time
 
-		CSprite2		m_sprite;				// 2D sprite to render this object.
-
 		ChannelAA*	m_pAnimChannel;		// Alpha animation stored as a channel.
 												
 		int16_t m_sSuspend;						// Suspend flag
@@ -133,7 +133,7 @@ class CFireball : public CWeapon
 	//---------------------------------------------------------------------------
    public:
       CFireball(void);
-      ~CFireball(void);
+      virtual ~CFireball(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -249,7 +249,7 @@ class CFireball : public CWeapon
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 
@@ -275,7 +275,9 @@ class CFireball : public CWeapon
 /////////////////////////////////// Firestream ////////////////////////////////
 
 // CFirestream is a burning flame weapon class
-class CFirestream : public CWeapon
+class CFirestream
+    : public CWeapon,
+      public CSprite2
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -312,7 +314,6 @@ class CFirestream : public CWeapon
 													// objects telling them to burn or not.
 		int32_t m_lPrevTime;						// Previous update time
 
-		CSprite2	m_sprite;					// False sprite for positioning info
       managed_ptr<CFireball> m_fireball1;
       managed_ptr<CFireball> m_fireball2;
       managed_ptr<CFireball> m_fireball3;
@@ -332,7 +333,7 @@ class CFirestream : public CWeapon
 	//---------------------------------------------------------------------------
    public:
       CFirestream(void);
-      ~CFirestream(void);
+      virtual ~CFirestream(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -438,7 +439,7 @@ class CFirestream : public CWeapon
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 

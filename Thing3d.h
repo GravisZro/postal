@@ -33,7 +33,7 @@
 //
 //		03/18/97	JMI	Made On and While functions virtual.
 //
-//		03/19/97	JMI	Added m_dExtRotVelY, m_dExtRotVelZ, and m_dRotZ.
+//		03/19/97	JMI	Added m_dExtRotVelY, m_dExtRotVelZ, and m_rotation.z.
 //							Also, DetachChild() now returns a pointer to the detached
 //							child.
 //
@@ -164,17 +164,18 @@
 #ifndef THING3D_H
 #define THING3D_H
 
-////////////////////////////////////////////////////////////////////////////////
-// Includes.
-////////////////////////////////////////////////////////////////////////////////
-#include "thing.h"
+#include <newpix/collisiondetection.h>
 
 #include "StockPile.h"
 #include "AnimThing.h"
+#include "Anim3D.h"
+#include "SampleMaster.h"
 
 class CFire;
 
-class CThing3d : public CThing
+class CThing3d
+    : public Collidable,
+      public CSprite3
 	{
 	/////////////////////////////////////////////////////////////////////////////
 	// Typedefs/enums.
@@ -304,18 +305,10 @@ class CThing3d : public CThing
 	// Variables
 	//---------------------------------------------------------------------------
 	public:
-		// General position, motion and time variables
-		double m_dX;							// x coord.
-		double m_dY;							// y coord.
-		double m_dZ;							// z coord.
+      // General position, motion and time variables
 		double m_dVel;							// Velocity.
 		double m_dDeltaVel;					// Change in velocity.
 		double m_dAcc;							// Acceleration.
-		double m_dRot;							// Rotation (in degrees, 0 to 359.999999) around Y.
-		double m_dRotZ;						// Rotation (in degrees, 0 to 359.999999) around Z.
-		double m_dScaleX;						// X-scale relative to scene scale
-		double m_dScaleY;						// Y-scale relative to scene scale
-		double m_dScaleZ;						// Z-scale relative to scene scale
 		double m_dDrag;						// Amount of deceleration that applies to internal
 													// forces.
 		double m_dExtHorzVel;				// Velocity due to external force on X/Z plane.
@@ -386,7 +379,7 @@ class CThing3d : public CThing
 	//---------------------------------------------------------------------------
    public:
       CThing3d(void);
-      ~CThing3d(void);
+      virtual ~CThing3d(void);
 
 
 	public:
@@ -462,13 +455,13 @@ class CThing3d : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 		// Returns a pointer to the smash
 		virtual

@@ -134,9 +134,9 @@ int16_t CSndRelay::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 3:
 			case 2:
 			case 1:
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 
 				int32_t	lBool;
 				pFile->Read(&lBool);
@@ -175,9 +175,9 @@ int16_t CSndRelay::Save(										// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult	= CThing::Save(pFile, sFileCount);
 	if (sResult == SUCCESS)
 		{
-		pFile->Write(m_dX);
-		pFile->Write(m_dY);
-		pFile->Write(m_dZ);
+      pFile->Write(m_position.x);
+      pFile->Write(m_position.y);
+      pFile->Write(m_position.z);
       pFile->Write((int32_t)m_bInitiallyEnabled);
       uint16_t parent_id = parent() ? parent()->GetInstanceID() : UINT16_MAX;
       pFile->Write(parent_id);
@@ -223,7 +223,7 @@ void CSndRelay::Update(void)
             {
               managed_ptr<CSoundThing> pst(parent());
 					// Report volume based on our distance to the ear.
-               pst->RelayVolume(DistanceToVolume(m_dX, m_dY, m_dZ, pst->m_lVolumeHalfLife) );
+               pst->RelayVolume(DistanceToVolume(m_position.x, m_position.y, m_position.z, pst->m_lVolumeHalfLife) );
             }
          else if (parent())
             {
@@ -255,9 +255,9 @@ int16_t CSndRelay::EditNew(								// Returns 0 if successfull, non-zero otherwi
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	sResult	= EditModify();
 
@@ -378,9 +378,9 @@ int16_t CSndRelay::EditMove(									// Returns 0 if successfull, non-zero other
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
    return SUCCESS;
 	}
@@ -393,9 +393,9 @@ void CSndRelay::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 	{
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(prc->sX),
 		&(prc->sY) );
 
@@ -449,20 +449,20 @@ void CSndRelay::EditRender(void)
 	m_sprite.m_sInFlags = 0;
 
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(m_sprite.m_sX2),
 		&(m_sprite.m_sY2) );
 
 	// Priority is based on bottom edge of sprite
-	m_sprite.m_sPriority = m_dZ;
+   m_sprite.m_sPriority = m_position.z;
 
 	// Center on image.
 	m_sprite.m_sX2	-= m_sprite.m_pImage->m_sWidth / 2;
 	m_sprite.m_sY2	-= m_sprite.m_pImage->m_sHeight;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+   m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
 	// Update sprite in scene
 	realm()->Scene()->UpdateSprite(&m_sprite);

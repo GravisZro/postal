@@ -418,7 +418,7 @@ void ScoreResetDisplay(void)
 // ScoreRegisterKill - Characters should call this when they die
 //////////////////////////////////////////////////////////////////////////////
 
-void ScoreRegisterKill(CRealm* pRealm, managed_ptr<CThing3d> deadguy, managed_ptr<CThing3d> killer)
+void ScoreRegisterKill(managed_ptr<CThing3d> deadguy, managed_ptr<CThing3d> killer)
 {
    if (killer && killer->type() == CDudeID)
 	{

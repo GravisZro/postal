@@ -99,7 +99,7 @@ class CBand : public CDoofus
 	//---------------------------------------------------------------------------
    public:
       CBand(void);
-      ~CBand(void);
+      virtual ~CBand(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

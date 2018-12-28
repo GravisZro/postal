@@ -184,7 +184,6 @@ bool  CBouy::ms_bShowBouys = true;
 
 CBouy::CBouy(void)
 {
-  m_pImage = 0;
   m_sSuspend = 0;
   m_paucRouteTable = nullptr;
   m_sRouteTableSize = 0;
@@ -192,9 +191,6 @@ CBouy::CBouy(void)
 
 CBouy::~CBouy(void)
 {
-  // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
-
   if (m_paucRouteTable != nullptr)
     free(m_paucRouteTable);
 
@@ -231,9 +227,9 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 		}
 
 		// Load object data
-		pFile->Read(&m_dX);
-		pFile->Read(&m_dY);
-		pFile->Read(&m_dZ);
+      pFile->Read(&m_position.x);
+      pFile->Read(&m_position.y);
+      pFile->Read(&m_position.z);
 
 		uint16_t u16Data;
 		uint16_t u16NumLinks;
@@ -274,8 +270,8 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 			{
 			// Convert to 3D.
          realm()->MapY2DtoZ3D(
-				m_dZ,
-				&m_dZ);
+            m_position.z,
+            &m_position.z);
 			}
 
 		// Make sure there were no file errors or format errors . . .
@@ -327,9 +323,9 @@ int16_t CBouy::Save(										// Returns 0 if successfull, non-zero otherwise
 	}
 
 	// Save object data
-	pFile->Write(&m_dX);
-	pFile->Write(&m_dY);
-	pFile->Write(&m_dZ);
+   pFile->Write(&m_position.x);
+   pFile->Write(&m_position.y);
+   pFile->Write(&m_position.z);
 
    uint16_t u16Data = m_aplDirectLinks.size();
    pFile->Write(&u16Data); // Save the number of links that will follow in the file
@@ -357,7 +353,7 @@ int16_t CBouy::Save(										// Returns 0 if successfull, non-zero otherwise
 void CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_dY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+   m_position.y = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
 
 	// Init other stuff
 	// Get pointer to Navigation Net
@@ -427,9 +423,9 @@ int16_t CBouy::EditNew(									// Returns 0 if successfull, non-zero otherwise
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	// Since we were created in the editor, set our Nav Net
    m_pParentNavNet = realm()->NavNet();
@@ -459,9 +455,9 @@ int16_t CBouy::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	return SUCCESS;
 }
@@ -477,41 +473,37 @@ void CBouy::EditRender(void)
 	{
       if (m_pParentNavNet == realm()->NavNet())
 		{
-			m_sprite.m_sInFlags = 0;
+         m_sInFlags = 0;
 			m_phot->SetActive(TRUE);
 		}
 		else
 		{
-			m_sprite.m_sInFlags = CSprite::InHidden;
+         m_sInFlags = CSprite::InHidden;
 			m_phot->SetActive(FALSE);
 		}
 	}
 	else
-		m_sprite.m_sInFlags = CSprite::InHidden;
+      m_sInFlags = CSprite::InHidden;
 
 	// Map from 3d to 2d coords
 	Map3Dto2D(
-		(int16_t) m_dX, 
-		(int16_t) m_dY, 
-		(int16_t) m_dZ, 
-		&m_sprite.m_sX2, 
-		&m_sprite.m_sY2);
+      (int16_t) m_position.x,
+      (int16_t) m_position.y,
+      (int16_t) m_position.z,
+      &m_sX2,
+      &m_sY2);
 
 	// Center on image.
-	m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
-	m_sprite.m_sY2	-= m_pImage->m_sHeight;
+   m_sX2	-= m_pImage->m_sWidth / 2;
+   m_sY2	-= m_pImage->m_sHeight;
 
 	// Priority is based on bottom edge of sprite
-	m_sprite.m_sPriority = m_dZ;
+   m_sPriority = m_position.z;
 
 	// Layer should be based on info we get from attribute map.
-   m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-	// Image would normally animate, but doesn't for now
-	m_sprite.m_pImage = m_pImage;
-
-	// Update sprite in scene
-   realm()->Scene()->UpdateSprite(&m_sprite);
+   Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -520,9 +512,9 @@ void CBouy::EditRender(void)
 void CBouy::EditRect(RRect* pRect)
 {
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(pRect->sX),
 		&(pRect->sY) );
 

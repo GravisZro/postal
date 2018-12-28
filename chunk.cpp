@@ -37,7 +37,7 @@
 //							arguments to Setup() so the caller can still control the
 //							the randomization.
 //
-//		08/25/97	JMI	Setup() was mod'ing m_dRot before adding in the random
+//		08/25/97	JMI	Setup() was mod'ing m_rotation.y before adding in the random
 //							sway value causing it to sometimes exceed 359.  Fixed.
 //
 //		09/08/97	JMI	Added Kevlar type for pieces of kevlar vest that 
@@ -98,13 +98,13 @@ CChunk::TypeInfo	CChunk::ms_atiChunks[CChunk::NumTypes]	=
 CChunk::CChunk(void)
 {
   m_sSuspend = 0;
-  m_dRot = 0.0;
+  m_rotation.y = 0.0;
   m_dVel = 0.0;
   m_dVertVel = 0.0;
   m_sLen = 0;
 
   //			m_sprite.m_pthing		= this;
-  m_sprite.m_u8Color	= 1;
+  m_u8Color	= 1;
 
   m_type = Blood;
 }
@@ -112,7 +112,7 @@ CChunk::CChunk(void)
 CChunk::~CChunk(void)
 {
   // Remove sprite from scene (this is safe even if it was already removed!)
-  realm()->Scene()->RemoveSprite(&m_sprite);
+  //realm()->Scene()->RemoveSprite(&m_sprite);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,20 +144,20 @@ void CChunk::Update(void)
 
 	double	dDist		= m_dVel	* dSeconds;
 
-	m_dX					+= COSQ[(int16_t)m_dRot] * dDist;
-	m_dZ					-= SINQ[(int16_t)m_dRot] * dDist;
+   m_position.x					+= COSQ[(int16_t)m_rotation.y] * dDist;
+   m_position.z					-= SINQ[(int16_t)m_rotation.y] * dDist;
 
 	double dVertDeltaVel	= g_dAccelerationDueToGravity * dSeconds;
 	m_dVertVel			+= dVertDeltaVel;
 
-	m_dY					+= (m_dVertVel - dVertDeltaVel / 2) * dSeconds;
+   m_position.y					+= (m_dVertVel - dVertDeltaVel / 2) * dSeconds;
 
 	// If we have hit terrain . . .
-	if (realm()->GetHeight(m_dX, m_dZ) >= m_dY)
+   if (realm()->GetHeight(m_position.x, m_position.z) >= m_position.y)
 		{
 		int16_t	sX2d, sY2d;
 		// Map from 3d to 2d coords.
-		Map3Dto2D(m_dX, m_dY, m_dZ, &sX2d, &sY2d);
+      Map3Dto2D(m_position.x, m_position.y, m_position.z, &sX2d, &sY2d);
 
 		switch (m_type)
 			{
@@ -176,7 +176,7 @@ void CChunk::Update(void)
 					*pu8Dst	= rspBlendColor(						// Alpha color/index.
 						ALPHA_LEVEL,									// Alpha level.
                   realm()->Hood()->m_pmaTransparency,	// Multialpha.
-						m_sprite.m_u8Color,							// Src color/index to blend.
+                  m_u8Color,							// Src color/index to blend.
 						*pu8Dst);										// Dst color/index to blend.
 					}
 				
@@ -193,7 +193,7 @@ void CChunk::Update(void)
 					sY2d);
 
 				rspLine(
-					m_sprite.m_u8Color,
+               m_u8Color,
                realm()->Hood()->m_pimBackground,
 					sX2d, 
 					sY2d,
@@ -213,22 +213,23 @@ void CChunk::Update(void)
 // Render object
 ////////////////////////////////////////////////////////////////////////////////
 void CChunk::Render(void)
-	{
-	// Map from 3d to 2d coords
-	Map3Dto2D(m_dX, m_dY, m_dZ, &m_sprite.m_sX2, &m_sprite.m_sY2);
-	
-	m_sprite.m_sX2End	= m_sprite.m_sX2 + RAND_SWAY(m_sLen);
-	m_sprite.m_sY2End	= m_sprite.m_sY2 + RAND_SWAY(m_sLen);
+{
+  // Map from 3d to 2d coords
+  Map3Dto2D(m_position.x, m_position.y, m_position.z, &m_sX2, &m_sY2);
 
-	// Priority is based on bottom edge of sprite on X/Z plane.
-	m_sprite.m_sPriority = m_dZ;
-	
-	// Layer should be based on info we get from attribute map.
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+  m_sX2End	= m_sX2 + RAND_SWAY(m_sLen);
+  m_sY2End	= m_sY2 + RAND_SWAY(m_sLen);
 
-	// Update sprite in scene
-   realm()->Scene()->UpdateSprite(&m_sprite);
-	}
+  // Priority is based on bottom edge of sprite on X/Z plane.
+  m_sPriority = m_position.z;
+
+  // Layer should be based on info we get from attribute map.
+  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+
+  // Update sprite in scene
+  //realm()->Scene()->UpdateSprite(&m_sprite);
+  Object::enqueue(SpriteUpdate);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -249,9 +250,9 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	m_dVel		= dVel;
 	m_dVertVel	= dVertVel;
@@ -259,11 +260,11 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 	// Apply randomizations.
 	if (sRandRotSway)
 		{
-		m_dRot	= rspMod360(dRot + RAND_SWAY(sRandRotSway) );
+      m_rotation.y	= rspMod360(dRot + RAND_SWAY(sRandRotSway) );
 		}
 	else
 		{
-		m_dRot		= rspMod360(dRot);
+      m_rotation.y		= rspMod360(dRot);
 		}
 
 	if (sRandVelSway)
@@ -281,7 +282,7 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 	m_type		= type;
 
 	ASSERT(type < NumTypes);
-	m_sprite.m_u8Color	= ms_atiChunks[type].u8ColorIndex;
+   m_u8Color	= ms_atiChunks[type].u8ColorIndex;
 	m_sLen					= ms_atiChunks[type].sLen;
 
 	return sResult;

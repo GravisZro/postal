@@ -365,9 +365,9 @@ void CItem3d::Update(void)
 			}
 
 		// Update sphere.
-		m_smash.m_sphere.sphere.X			= m_dX;
-		m_smash.m_sphere.sphere.Y			= m_dY;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
+      m_smash.m_sphere.sphere.X			= m_position.x;
+      m_smash.m_sphere.sphere.Y			= m_position.y;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
@@ -702,9 +702,9 @@ int16_t CItem3d::Setup(			// Returns 0 on success.
 	{
 	int16_t sResult = SUCCESS;
 
-	m_dX	= sX;
-	m_dY	= sY;
-	m_dZ	= sZ;
+   m_position.x	= sX;
+   m_position.y	= sY;
+   m_position.z	= sZ;
 
    m_itemType	= itemtype;
 

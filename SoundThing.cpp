@@ -139,6 +139,62 @@
 int16_t	CSoundThing::ms_sFileCount			= 0;	// File count.         
 int32_t	CSoundThing::ms_lGetRandomSeed	= 0;	// Seed for get random.
 
+
+CSoundThing::CSoundThing(void)
+{
+  m_bInitiallyEnabled = true;
+  m_bInitiallyRepeats = false;
+  m_lMinTime[0] = 0;
+  m_lMinTime[1] = 0;
+  m_lRndTime[0] = 0;
+  m_lRndTime[1] = 0;
+  m_szResName[0] = 0;
+
+  m_id.pszId = m_szResName;
+  m_id.usDescFlags = SMDF_NO_DESCRIPT;
+
+  m_lLastStartTime = 0;
+  m_lNextStartTime = 0;
+  m_sWhichTime = -1;
+  m_bEnabled = m_bInitiallyEnabled;
+  m_bRepeats = m_bInitiallyRepeats;
+
+  m_sSuspend = 0;
+
+  m_siChannel	= 0;
+
+  m_state = State_Happy;
+
+  m_lVolumeHalfLife	= 1000;
+
+  m_sUseLooping = FALSE;
+  m_lStopLoopingTime = 0;
+  m_lNumLoopBacks = 0;
+  m_lLoopBackTo = 0;
+  m_lLoopBackFrom = 0;
+
+  m_sPurgeSampleWhenDone = FALSE;
+
+  m_sAmbient = TRUE;
+
+  m_lCollectiveVolume = 0;
+}
+
+CSoundThing::~CSoundThing(void)
+{
+  if (m_pImage != nullptr)
+    rspReleaseResource(&g_resmgrGame, &m_pImage);
+
+  // If we have a play instance identifier . . .
+  if (m_siChannel != 0)
+  {
+    // Abort it.
+    AbortSample(m_siChannel);
+    // Done with ID.
+    m_siChannel	= 0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,9 +236,9 @@ int16_t CSoundThing::Load(								// Returns 0 if successfull, non-zero otherwis
 			case 36:
 			case 35:
 			case 34:
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 			case 33:
 			case 32:
 			case 31:
@@ -261,9 +317,9 @@ int16_t CSoundThing::Save(										// Returns 0 if successfull, non-zero otherw
 		pFile->Write(m_lNumLoopBacks			);
 		pFile->Write(m_lLoopBackTo				);
 		pFile->Write(m_lLoopBackFrom			);
-		pFile->Write(m_dX);
-		pFile->Write(m_dY);
-		pFile->Write(m_dZ);
+      pFile->Write(m_position.x);
+      pFile->Write(m_position.y);
+      pFile->Write(m_position.z);
 		pFile->Write(m_lVolumeHalfLife);
 		pFile->Write((int32_t)m_bInitiallyEnabled);
 		pFile->Write((int32_t)m_bInitiallyRepeats);
@@ -367,7 +423,7 @@ void CSoundThing::Update(void)
 																									// Does not fail.
 						m_id,																		// In:  Identifier of sample you want played.
 						SampleMaster::Ambient,												// In:  Sound Volume Category for user adjustment
-						DistanceToVolume(m_dX, m_dY, m_dZ, m_lVolumeHalfLife),	// In:  Initial Sound Volume (0 - 255) 
+                  DistanceToVolume(m_position.x, m_position.y, m_position.z, m_lVolumeHalfLife),	// In:  Initial Sound Volume (0 - 255)
 						&m_siChannel,															// Out: Handle for adjusting sound volume
 						&lSampleDuration,														// Out: Sample duration in ms, if not nullptr.
 						lLoopStartTime,														// In:  Where to loop back to in milliseconds.                
@@ -440,7 +496,7 @@ void CSoundThing::Update(void)
 				}
 			
 			// Relay our volume (we act as just another satellite).
-			RelayVolume(DistanceToVolume(m_dX, m_dY, m_dZ, m_lVolumeHalfLife) ); 
+         RelayVolume(DistanceToVolume(m_position.x, m_position.y, m_position.z, m_lVolumeHalfLife) );
 			}
 
 		// If time to stop looping . . .
@@ -486,9 +542,9 @@ int16_t CSoundThing::EditNew(									// Returns 0 if successfull, non-zero othe
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	sResult	= EditModify();
 
@@ -781,9 +837,9 @@ int16_t CSoundThing::EditMove(									// Returns 0 if successfull, non-zero oth
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
    return SUCCESS;
 	}
@@ -796,16 +852,16 @@ void CSoundThing::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 	{
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(prc->sX),
 		&(prc->sY) );
 
 	prc->sW	= 10;	// Safety.
 	prc->sH	= 10;	// Safety.
 
-	if (m_pImage)
+   if (m_pImage != nullptr)
 		{
 		prc->sW	= m_pImage->m_sWidth;
 		prc->sH	= m_pImage->m_sHeight;
@@ -828,7 +884,7 @@ void CSoundThing::EditHotSpot(	// Returns nothiing.
 	*psX	= 5;	// Safety.
 	*psY	= 5;	// Safety.
 
-	if (m_pImage)
+   if (m_pImage != nullptr)
 		{
 		*psX	= m_pImage->m_sWidth / 2;
 		*psY	= m_pImage->m_sHeight;
@@ -849,28 +905,25 @@ void CSoundThing::EditUpdate(void)
 void CSoundThing::EditRender(void)
 	{
 	// Setup simple, non-animating sprite
-	m_sprite.m_sInFlags = 0;
+   m_sInFlags = 0;
 
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
-		&(m_sprite.m_sX2),
-		&(m_sprite.m_sY2) );
+      m_position.x,
+      m_position.y,
+      m_position.z,
+      &m_sX2,
+      &m_sY2 );
 
 	// Priority is based on bottom edge of sprite
-	m_sprite.m_sPriority = m_dZ;
+   m_sPriority = m_position.z;
 
 	// Center on image.
-	m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
-	m_sprite.m_sY2	-= m_pImage->m_sHeight;
+   m_sX2	-= m_pImage->m_sWidth / 2;
+   m_sY2	-= m_pImage->m_sHeight;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-	m_sprite.m_pImage = m_pImage;
-
-	// Update sprite in scene
-	realm()->Scene()->UpdateSprite(&m_sprite);
+   Object::enqueue(SpriteUpdate); // Update sprite in scene
 	}
 #endif // !defined(EDITOR_REMOVED)
 
@@ -880,8 +933,6 @@ void CSoundThing::EditRender(void)
 int16_t CSoundThing::Init(void)							// Returns 0 if successfull, non-zero otherwise
 	{
 	int16_t sResult = SUCCESS;
-
-	Kill();
 
 	m_lLastStartTime = 0;
 	m_lNextStartTime = 0;
@@ -909,30 +960,6 @@ int16_t CSoundThing::Init(void)							// Returns 0 if successfull, non-zero othe
 
 	return sResult;
 	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CSoundThing::Kill(void)							// Returns 0 if successfull, non-zero otherwise
-	{
-   if (m_pImage != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_pImage);
-
-	realm()->Scene()->RemoveSprite(&m_sprite);
-
-	// If we have a play instance identifier . . .
-	if (m_siChannel != 0)
-		{
-		// Abort it.
-		AbortSample(m_siChannel);
-		// Done with ID.
-		m_siChannel	= 0;
-		}
-
-   return SUCCESS;
-	}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Don't call this from outside of CSoundThing.  It should affect only

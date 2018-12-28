@@ -54,6 +54,8 @@
 
 #include "thing.h"
 
+#include "sprites.h"
+
 class CDispenser : public CThing
 	{
 	//---------------------------------------------------------------------------
@@ -157,7 +159,7 @@ class CDispenser : public CThing
 			m_sDispenseeHotSpotY	= 0;
 			}
 
-      ~CDispenser(void)
+      virtual ~CDispenser(void)
 			{
 			// Kill dispenser
 			Kill();
@@ -231,13 +233,13 @@ class CDispenser : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return (double)m_sX; }
+      double GetX(void)	const { return m_sX; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return (double)m_sY; }
+      double GetY(void)	const { return m_sY; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return (double)m_sZ; }
+      double GetZ(void)	const { return m_sZ; }
 
 	//---------------------------------------------------------------------------
 	// Other functions

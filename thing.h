@@ -261,7 +261,8 @@
 #include <ORANGE/Channel/channel.h>
 #include <deque>
 
-#include <put/object.h>
+//#include <put/object.h>
+#include <newpix/halfobject.h>
 
 //#include "game.h"
 #include "message.h"
@@ -411,28 +412,7 @@ class CThing : public Object
 		// this pointer outside of gameedit.cpp.
       RHot* m_phot;
 
-	protected:
-		// Flag indicating whether object wants it's Startup() to be called
-		int16_t m_sCallStartup;
-
-		// Flag indicating whether object wants it's Shutdown() to be called
-		int16_t m_sCallShutdown;
-
-/*
-		// Iterator that specifies this object's position in the realm's container
-		// of every object and its class-based container of objects.
-#if _MSC_VER >= 1020
-		Things::const_iterator m_iterEvery;
-		Things::const_iterator m_iterClass;
-#else
-		Things::iterator m_iterEvery;
-		Things::iterator m_iterClass;
-#endif
-*/
-
-		// Class ID is stored here for instant access
-//		ClassIDType m_id;
-
+   protected:
 		// Unique ID specific to this instance of CThing (set in constructor,
       // released in destructor).
 		uint16_t			m_u16InstanceId;
@@ -446,14 +426,14 @@ public:
   CThing(void);
   virtual ~CThing(void);
 
-  constexpr managed_ptr<CThing>& child (void) noexcept { return m_child; }
-  constexpr managed_ptr<CThing>& parent(void) noexcept { return m_parent; }
-  constexpr void setChild (const managed_ptr<CThing>& nc) noexcept { m_child = nc; }
-  constexpr void setParent(const managed_ptr<CThing>& np) noexcept { m_parent = np; }
+  managed_ptr<CThing>& child (void) noexcept { return m_child; }
+  managed_ptr<CThing>& parent(void) noexcept { return m_parent; }
+  void setChild (const managed_ptr<CThing>& nc) noexcept { m_child = nc; }
+  void setParent(const managed_ptr<CThing>& np) noexcept { m_parent = np; }
 
-  constexpr CRealm* realm(void) const noexcept { return m_realm; }
-  constexpr ClassIDType type(void) const noexcept { return m_type; }
-  constexpr bool instantiable(void) const noexcept { return m_instantiable; }
+  CRealm* realm(void) const noexcept { return m_realm; }
+  ClassIDType type(void) const noexcept { return m_type; }
+  bool instantiable(void) const noexcept { return m_instantiable; }
 
   void* operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept;
 

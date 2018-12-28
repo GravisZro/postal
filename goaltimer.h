@@ -30,26 +30,15 @@
 #define GOALTIMER_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
 
 // CGoalTimer keeps track of the time and goal for a challenge level
-class CGoalTimer : public CThing
+class CGoalTimer
+    : public sprite_base_t,
+      public CSprite2
 	{
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	public:
 
-	//---------------------------------------------------------------------------
-	// Variables
-	//---------------------------------------------------------------------------
-	public:
-
-	protected:
-		double m_dX;												// x coord
-		double m_dY;												// y coord
-		double m_dZ;												// z coord
-		RImage* m_pImage;											// Pointer to only image (replace with 3d anim, soon)
-		CSprite2 m_sprite;										// Sprite (replace with CSprite3, soon)
+   protected:
 		int32_t		m_lTimerMS;										// Timer value in Milliseconds
 		int16_t		m_sKillGoal;									// Number of kills to achieve
 		int16_t		m_sUpDown;										// Up or down timer
@@ -66,7 +55,7 @@ class CGoalTimer : public CThing
 	//---------------------------------------------------------------------------
    public:
       CGoalTimer(void);
-      ~CGoalTimer(void);
+      virtual ~CGoalTimer(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

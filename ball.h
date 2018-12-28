@@ -47,9 +47,13 @@
 #define BALL_H
 
 #include "thing.h"
+#include <newpix/sprite_base.h>
+#include "Anim3D.h"
 
 // This is a sample game object
-class CBall : public CThing
+class CBall
+    : public sprite_base_t,
+      public CSprite3
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -60,18 +64,13 @@ class CBall : public CThing
 	// Variables
 	//---------------------------------------------------------------------------
 	protected:
-		double m_dX;
-		double m_dY;
-		double m_dZ;
 		double m_dDX;
 		double m_dDY;
 		double m_dDZ;
 		int16_t m_sPrevHeight;
 		int16_t m_sSuspend;
 
-		int32_t	m_lPrevTime;
-		
-		CSprite3		m_sprite;	// Container (contains ref's to below).
+      int32_t	m_lPrevTime;
 
 		CAnim3D		m_anim;		// 3D animation.
 
@@ -88,7 +87,7 @@ class CBall : public CThing
    //---------------------------------------------------------------------------
     public:
       CBall(void);
-      ~CBall(void);
+      virtual ~CBall(void);
 
 	public:
 		// Load object (should call base class version!)
@@ -156,13 +155,13 @@ class CBall : public CThing
 
 		// Get the coordinates of this thing.
 		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
+      double GetX(void)	const { return m_position.x; }
 
 		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
+      double GetY(void)	const { return m_position.y; }
 
 		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      double GetZ(void)	const { return m_position.z; }
 
 	//---------------------------------------------------------------------------
 	// Internal functions

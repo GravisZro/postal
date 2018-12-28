@@ -68,14 +68,14 @@
 #ifndef WEAPON_H
 #define WEAPON_H
 
-#include <RSPiX.h>
-#include "thing.h"
-
+#include <newpix/collisiondetection.h>
+#include <newpix/sprite_base.h>
 
 class CThing3d;
 
 // CWeapon is the base class for the weapons
-class CWeapon : public CThing
+class CWeapon
+    : public Collidable
 {
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -110,13 +110,9 @@ class CWeapon : public CThing
 	//---------------------------------------------------------------------------
 	// Variables
 	//---------------------------------------------------------------------------
-	public:
-		double m_dX;							// x coord
-		double m_dY;							// y coord
-		double m_dZ;							// z coord
+   public:
 		double m_dVertVel;					// Vertical Velocity
 		double m_dHorizVel;					// Horizontal Velocity								
-		double m_dRot;							// Rotation (in degrees, 0 to 359.999999)
 
 		CWeaponState m_eState;				// State variable for run routine
 
@@ -138,7 +134,7 @@ class CWeapon : public CThing
 
    public:
       CWeapon(void);
-      ~CWeapon(void);
+      virtual ~CWeapon(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -205,14 +201,9 @@ class CWeapon : public CThing
 #endif // !defined(EDITOR_REMOVED)
 
 		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_dX; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_dY; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_dZ; }
+      virtual double GetX(void) const { return m_position.x; }
+      virtual double GetY(void) const { return m_position.y; }
+      virtual double GetZ(void) const { return m_position.z; }
 
 		virtual int16_t GetResources(void);
 

@@ -165,7 +165,7 @@ public:
 	// Static Variables
 	//---------------------------------------------------------------------------
 	public:
-      constexpr const managed_ptr<CWeapon>& weapon(void) const noexcept { return m_weapon; }
+      const managed_ptr<CWeapon>& weapon(void) const noexcept { return m_weapon; }
 protected:
       managed_ptr<CWeapon> m_weapon;
 	//---------------------------------------------------------------------------
@@ -179,7 +179,7 @@ protected:
 			m_lStopLoopingWeaponSoundTime	= 0;
          }
 
-      ~CCharacter(void)
+      virtual ~CCharacter(void)
 			{
 			Kill();
 			}
@@ -441,7 +441,7 @@ protected:
 		// Give the angle from yourself to this x,z position
 		inline int16_t FindAngleTo(double dX, double dZ)
 		{
-			return rspATan((m_dZ - dZ), (dX - m_dX));	
+         return rspATan((m_position.z - dZ), (dX - m_position.x));
 		}
 
 		// Called by destructor.

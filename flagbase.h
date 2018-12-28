@@ -66,7 +66,7 @@ class CFlagbase : public CThing3d
 	//---------------------------------------------------------------------------
    public:
       CFlagbase(void);
-      ~CFlagbase(void);
+      virtual ~CFlagbase(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)

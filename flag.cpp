@@ -141,8 +141,8 @@ static const char* ms_apszBlueResNames[] =
 CFlag::CFlag(void)
    {
    m_sSuspend = 0;
-   m_dRot = 0;
-   m_dX = m_dY = m_dZ = m_dVel = m_dAcc = 0;
+   m_rotation.y = 0;
+   m_position.x = m_position.y = m_position.z = m_dVel = m_dAcc = 0;
    m_panimCur = nullptr;
 //			m_sprite.m_pthing	= this;
    m_u16FlagID = 1;
@@ -325,7 +325,7 @@ int16_t CFlag::Init(void)
 
 	// Init other stuff
 	m_dVel = 0.0;
-	m_dRot = 0.0;
+   m_rotation.y = 0.0;
 	// Set to different starting state based on the design of the animation, but
 	// for now, ok.  Then also set his current animation.
 	m_state = CFlag::State_Wait;
@@ -421,7 +421,7 @@ void CFlag::Update(void)
 						PlaySample(
 							g_smidDemonYes2, 
 							SampleMaster::Demon, 
-							DistanceToVolume(m_dX, m_dY, m_dZ, 250) );
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, 250) );
 					}
 				}
 
@@ -469,9 +469,9 @@ void CFlag::Update(void)
 //-----------------------------------------------------------------------
 
 				case CFlag::State_Die:
-					m_dX = m_sSavedX;
-					m_dY = m_sSavedY;
-					m_dZ = m_sSavedZ;
+               m_position.x = m_sSavedX;
+               m_position.y = m_sSavedY;
+               m_position.z = m_sSavedZ;
 					m_smash.m_bits = 0;
 					m_state = State_Dead;
 					break;
@@ -542,9 +542,9 @@ void CFlag::Update(void)
 
 	
 		// Update sphere.
-		m_smash.m_sphere.sphere.X			= m_dX;
-		m_smash.m_sphere.sphere.Y			= m_dY;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
+      m_smash.m_sphere.sphere.X			= m_position.x;
+      m_smash.m_sphere.sphere.Y			= m_position.y;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
 		m_smash.m_sphere.sphere.lRadius	= 30; //m_spriteBase.m_sRadius;
 
 		// Update the smash.
@@ -623,9 +623,9 @@ void CFlag::EditHotSpot(			// Returns nothiing.
 	int16_t	sX;
 	int16_t	sY;
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&sX,
 		&sY);
 

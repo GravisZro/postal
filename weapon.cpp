@@ -71,7 +71,7 @@ int16_t CWeapon::ms_sFileCount;
 CWeapon::CWeapon(void)
 {
   m_sSuspend = 0;
-  m_dX = m_dY = m_dZ = m_dRot = m_dVertVel = m_dHorizVel = 0.0;
+  m_position.x = m_position.y = m_position.z = m_rotation.y = m_dVertVel = m_dHorizVel = 0.0;
   m_eState = State_Idle;
   m_spriteShadow.m_sInFlags = CSprite::InHidden;
   m_spriteShadow.m_pImage = nullptr;
@@ -122,10 +122,10 @@ int16_t CWeapon::Load(										// Returns 0 if successfull, non-zero otherwise
 			default:
 			case 1:
 				// Load object data
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
-				pFile->Read(&m_dRot);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
+            pFile->Read(&m_rotation.y);
 				pFile->Read(&m_dVertVel);
 				pFile->Read(&m_dHorizVel);
             pFile->Read(reinterpret_cast<uint8_t*>(&m_eState));
@@ -138,8 +138,8 @@ int16_t CWeapon::Load(										// Returns 0 if successfull, non-zero otherwise
 			{
 			// Convert to 3D.
 			realm()->MapY2DtoZ3D(
-				m_dZ,
-				&m_dZ);
+            m_position.z,
+            &m_position.z);
 			}
 
 		// Make sure there were no file errors or format errors . . .
@@ -182,10 +182,10 @@ int16_t CWeapon::Save(										// Returns 0 if successfull, non-zero otherwise
 		}
 
 	// Save object data
-	pFile->Write(&m_dX);
-	pFile->Write(&m_dY);
-	pFile->Write(&m_dZ);
-	pFile->Write(&m_dRot);
+   pFile->Write(&m_position.x);
+   pFile->Write(&m_position.y);
+   pFile->Write(&m_position.z);
+   pFile->Write(&m_rotation.y);
 	pFile->Write(&m_dVertVel);
 	pFile->Write(&m_dHorizVel);
    pFile->Write(uint8_t(m_eState));
@@ -211,9 +211,9 @@ void CWeapon::Startup(void)								// Returns 0 if successfull, non-zero otherwi
 
 int16_t CWeapon::Setup(int16_t sX, int16_t sY, int16_t sZ)
 	{
-	m_dX = sX;
-	m_dY = sY;
-	m_dZ = sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
    return SUCCESS;
 	}
 
@@ -253,21 +253,21 @@ void CWeapon::Render(void)
 	if (m_spriteShadow.m_pImage && (pSprite->m_sInFlags & CSprite::InHidden) == 0)
 	{
 		// Get the height of the terrain from the attribute map
-		int16_t sY = realm()->GetHeight((int16_t) m_dX, (int16_t) m_dZ);
+      int16_t sY = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
 		// Map from 3d to 2d coords
-		Map3Dto2D(m_dX, (double) sY, m_dZ, &(m_spriteShadow.m_sX2), &(m_spriteShadow.m_sY2) );
+      Map3Dto2D(m_position.x, (double) sY, m_position.z, &(m_spriteShadow.m_sX2), &(m_spriteShadow.m_sY2) );
 		// Offset hotspot to center of image.
 		m_spriteShadow.m_sX2 -= m_spriteShadow.m_pImage->m_sWidth / 2;
 		m_spriteShadow.m_sY2 -= m_spriteShadow.m_pImage->m_sHeight / 2;
 
 		// Priority is based on bottom edge of sprite on X/Z plane!
-		m_spriteShadow.m_sPriority = MAX(pSprite->m_sPriority - 1, 0);//m_dZ;
+      m_spriteShadow.m_sPriority = MAX(pSprite->m_sPriority - 1, 0);//m_position.z;
 
 		// Layer should be based on info we get from attribute map.
 		m_spriteShadow.m_sLayer = pSprite->m_sLayer;
 
 		// Set the alpha level based on the height difference
-		m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) m_dY - sY);
+      m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) m_position.y - sY);
 		// Check bounds . . .
 		if (m_spriteShadow.m_sAlphaLevel < 0)
 			{
@@ -279,7 +279,7 @@ void CWeapon::Render(void)
 			}
 
 		// If the main sprite is on the ground, then hide the shadow.
-		if ((int16_t) m_dY - sY == 0)
+      if ((int16_t) m_position.y - sY == 0)
 			m_spriteShadow.m_sInFlags |= CSprite::InHidden;
 		else
 			m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
@@ -305,9 +305,9 @@ int16_t CWeapon::EditNew(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
 	return sResult;
 	}
@@ -330,9 +330,9 @@ int16_t CWeapon::EditMove(									// Returns 0 if successfull, non-zero otherwi
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = (double)sX;
+   m_position.y = (double)sY;
+   m_position.z = (double)sZ;
 
    return SUCCESS;
 	}

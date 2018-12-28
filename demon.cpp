@@ -400,6 +400,32 @@ int16_t CDemon::Preload(
 	return SUCCESS;
 }
 
+CDemon::CDemon(void)
+{
+  m_lIdleTime = 0;
+  m_lKillTimer = 0;
+  m_sRecentKills = 0;
+  m_sCommentCount = 0;
+
+  m_sSuspend = 0;
+
+  m_state = State_Happy;
+
+  // Default to position on the screen for old .rlms that did not
+  // save their demon's position.
+  m_position.x		= 100.0;
+  m_position.y		= 0.0;
+  m_position.z		= 50.0;
+
+  m_sSoundBank	= 0;
+}
+
+CDemon::~CDemon(void)
+{
+  if (m_pImage != nullptr)
+     rspReleaseResource(&g_resmgrGame, &m_pImage);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load object (should call base class version!)
 ////////////////////////////////////////////////////////////////////////////////
@@ -417,9 +443,9 @@ int16_t CDemon::Load(								// Returns 0 if successfull, non-zero otherwise
 			default:
 			case 47:
 				pFile->Read(&m_sSoundBank);
-				pFile->Read(&m_dX);
-				pFile->Read(&m_dY);
-				pFile->Read(&m_dZ);
+            pFile->Read(&m_position.x);
+            pFile->Read(&m_position.y);
+            pFile->Read(&m_position.z);
 				break;
 
 			case 46:
@@ -508,9 +534,9 @@ int16_t CDemon::Save(										// Returns 0 if successfull, non-zero otherwise
 	if (sResult == SUCCESS)
 	{
 		pFile->Write(m_sSoundBank);
-		pFile->Write(&m_dX);
-		pFile->Write(&m_dY);
-		pFile->Write(&m_dZ);
+      pFile->Write(&m_position.x);
+      pFile->Write(&m_position.y);
+      pFile->Write(&m_position.z);
 
 		// Make sure there were no file errors
 		sResult	= pFile->Error();
@@ -574,9 +600,9 @@ int16_t CDemon::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	sResult = Init();
 
@@ -650,9 +676,9 @@ int16_t CDemon::EditMove(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-	m_dX = (double)sX;
-	m_dY = (double)sY;
-	m_dZ = (double)sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	return SUCCESS;
 }
@@ -665,16 +691,16 @@ void CDemon::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 {
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
+      m_position.x,
+      m_position.y,
+      m_position.z,
 		&(prc->sX),
 		&(prc->sY) );
 
 	prc->sW	= 10;	// Safety.
 	prc->sH	= 10;	// Safety.
 
-	if (m_pImage)
+   if (m_pImage != nullptr)
 	{
 		prc->sW	= m_pImage->m_sWidth;
 		prc->sH	= m_pImage->m_sHeight;
@@ -697,7 +723,7 @@ void CDemon::EditHotSpot(	// Returns nothiing.
 	*psX	= 5;	// Safety.
 	*psY	= 5;	// Safety.
 
-	if (m_pImage)
+   if (m_pImage != nullptr)
 	{
 		*psX	= m_pImage->m_sWidth / 2;
 		*psY	= m_pImage->m_sHeight;
@@ -718,28 +744,25 @@ void CDemon::EditUpdate(void)
 void CDemon::EditRender(void)
 {
 	// Setup simple, non-animating sprite
-	m_sprite.m_sInFlags = 0;
+   m_sInFlags = 0;
 
 	Map3Dto2D(
-		m_dX,
-		m_dY,
-		m_dZ,
-		&(m_sprite.m_sX2),
-		&(m_sprite.m_sY2) );
+      m_position.x,
+      m_position.y,
+      m_position.z,
+      &m_sX2,
+      &m_sY2);
 
 	// Priority is based on bottom edge of sprite
-	m_sprite.m_sPriority = m_dZ;
+   m_sPriority = m_position.z;
 
 	// Center on image.
-	m_sprite.m_sX2	-= m_pImage->m_sWidth / 2;
-	m_sprite.m_sY2	-= m_pImage->m_sHeight;
+   m_sX2	-= m_pImage->m_sWidth / 2;
+   m_sY2	-= m_pImage->m_sHeight;
 
-	m_sprite.m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_dX, (int16_t) m_dZ));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
 
-	m_sprite.m_pImage = m_pImage;
-
-	// Update sprite in scene
-	realm()->Scene()->UpdateSprite(&m_sprite);
+   Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
 #endif // !defined(EDITOR_REMOVED)
 
@@ -750,9 +773,7 @@ int16_t CDemon::Init(void)							// Returns 0 if successfull, non-zero otherwise
 {
 	int16_t sResult = SUCCESS;
 
-	Kill();
-
-	if (m_pImage == 0)
+   if (m_pImage == nullptr)
 	{
 		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(IMAGE_FILE), &m_pImage);
 		if (sResult == SUCCESS)
@@ -769,21 +790,6 @@ int16_t CDemon::Init(void)							// Returns 0 if successfull, non-zero otherwise
 
 	return sResult;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Kill object
-////////////////////////////////////////////////////////////////////////////////
-int16_t CDemon::Kill(void)							// Returns 0 if successfull, non-zero otherwise
-{
-   if (m_pImage != nullptr)
-		rspReleaseResource(&g_resmgrGame, &m_pImage);
-
-	realm()->Scene()->RemoveSprite(&m_sprite);
-
-	return SUCCESS;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Process our message queue.

@@ -497,7 +497,7 @@ int16_t CBand::Init(void)
 
 	// Init position, rotation and velocity
 	m_dVel = 0.0;
-	m_dRot = 0.0;
+   m_rotation.y = 0.0;
    m_lPrevTime = realm()->m_time.GetGameTime();
 	m_state = CCharacter::State_Idle;
    m_lTimer = realm()->m_time.GetGameTime() + 500;
@@ -512,14 +512,14 @@ int16_t CBand::Init(void)
 
 	// Set them facing their first bouy so they are lined up ready to march
 //	m_ucDestBouyID = 1;		// This is the end of the parade route bouy
-//	m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
+//	m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
 	m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
 //	ASSERT(m_pNextBouy);
    if (m_pNextBouy)
 		{
 		m_sNextX = m_pNextBouy->GetX();
 		m_sNextZ = m_pNextBouy->GetZ();
-	//	m_dRot = rspATan(m_dZ - m_sNextZ, m_sNextX - m_dX);
+   //	m_rotation.y = rspATan(m_position.z - m_sNextZ, m_sNextX - m_position.x);
 		AlignToBouy();
 		}
 	else
@@ -628,13 +628,13 @@ void CBand::Update(void)
 						// his previous position will be fine.
 						SetInstanceVolume(
 							ms_siBandSongInstance,
-							DistanceToVolume(m_dX, m_dY, m_dZ, BAND_SONG_HALF_LIFE) );
+                     DistanceToVolume(m_position.x, m_position.y, m_position.z, BAND_SONG_HALF_LIFE) );
 						}
 				}
 
 				// Check distance to target bouy
-				dX = m_dX - m_sNextX;
-				dZ = m_dZ - m_sNextZ;
+            dX = m_position.x - m_sNextX;
+            dZ = m_position.z - m_sNextZ;
 				if ((dX*dX + dZ*dZ) < ms_dCloseToBouy)
 				{
 					// Set next bouy, x, z, and rotation
@@ -659,7 +659,7 @@ void CBand::Update(void)
 						m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
 						m_sNextX = m_pNextBouy->GetX();
 						m_sNextZ = m_pNextBouy->GetZ();
-//						m_dRot = rspATan(m_dZ - m_sNextZ, m_sNextX - m_dX);
+//						m_rotation.y = rspATan(m_position.z - m_sNextZ, m_sNextX - m_position.x);
 						AlignToBouy();
 					}
 				}
@@ -671,9 +671,9 @@ void CBand::Update(void)
 				{
 				// Update Values /////////////////////////////////////////////////////////
 
-					m_dX	= dNewX;
-					m_dY	= dNewY;
-					m_dZ	= dNewZ;
+               m_position.x	= dNewX;
+               m_position.y	= dNewY;
+               m_position.z	= dNewZ;
 
 					UpdateFirePosition();
 				}
@@ -696,7 +696,7 @@ void CBand::Update(void)
 				{
 					m_state = State_Mingle;
 					m_ucDestBouyID = SelectRandomBouy();
-					m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
+               m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
 					m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
 					m_lTimer = lThisTime + ms_lMingleTime;
                if (m_ucDestBouyID == 0 || !m_pNextBouy)
@@ -711,7 +711,7 @@ void CBand::Update(void)
 						{
 							m_sNextX = m_pNextBouy->GetX();
 							m_sNextZ = m_pNextBouy->GetZ();
-//							m_dRot = rspATan(m_dZ - m_sNextZ, m_sNextX - m_dX);
+//							m_rotation.y = rspATan(m_position.z - m_sNextZ, m_sNextX - m_position.x);
 							AlignToBouy();
 							m_dAcc = 150;
 							m_state = State_Mingle;
@@ -728,8 +728,8 @@ void CBand::Update(void)
 /*
 			case State_Mingle:
 				// Check distance to target bouy
-				dX = m_dX - m_sNextX;
-				dZ = m_dZ - m_sNextZ;
+            dX = m_position.x - m_sNextX;
+            dZ = m_position.z - m_sNextZ;
 				if ((dX*dX + dZ*dZ) < ms_dMingleBouyDist)
 				{
 					m_lTimer = lThisTime + ms_lMingleTime;
@@ -743,9 +743,9 @@ void CBand::Update(void)
 				{
 				// Update Values /////////////////////////////////////////////////////////
 
-					m_dX	= dNewX;
-					m_dY	= dNewY;
-					m_dZ	= dNewZ;
+               m_position.x	= dNewX;
+               m_position.y	= dNewY;
+               m_position.z	= dNewZ;
 
 					UpdateFirePosition();
 				}
@@ -766,17 +766,17 @@ void CBand::Update(void)
 			case State_Panic:
 			case State_Mingle:
 				// Check distance to target bouy
-				dStartX = m_dX;
-				dStartZ = m_dZ;
-				dX = m_dX - m_sNextX;
-				dZ = m_dZ - m_sNextZ;
+            dStartX = m_position.x;
+            dStartZ = m_position.z;
+            dX = m_position.x - m_sNextX;
+            dZ = m_position.z - m_sNextZ;
 
 				// BEGIN TEMP.
 				LOG(dX, GetInstanceID() );
 				LOG(dZ, GetInstanceID() );
 
-				LOG(m_dX, GetInstanceID() );
-				LOG(m_dZ, GetInstanceID() );
+            LOG(m_position.x, GetInstanceID() );
+            LOG(m_position.z, GetInstanceID() );
 
 				LOG(m_sNextX, GetInstanceID() );
 				LOG(m_sNextZ, GetInstanceID() );
@@ -917,7 +917,7 @@ void CBand::Update(void)
 					|| (sHeight - dNewY > 10) )// && m_bAboveTerrain == false && m_dExtHorzVel == 0.0))
 				{
 					m_ucDestBouyID = SelectRandomBouy();
-					m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
+               m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
 					m_sNextX = m_pNextBouy->GetX();
 					m_sNextZ = m_pNextBouy->GetZ();
 					m_lAlignTimer = lThisTime + 3000;
@@ -928,9 +928,9 @@ void CBand::Update(void)
 				{
 				// Update Values /////////////////////////////////////////////////////////
 
-					m_dX	= dNewX;
-					m_dY	= dNewY;
-					m_dZ	= dNewZ;
+               m_position.x	= dNewX;
+               m_position.y	= dNewY;
+               m_position.z	= dNewZ;
 
 					UpdateFirePosition();
 				}
@@ -940,20 +940,20 @@ void CBand::Update(void)
 	
 					m_dVel			-= m_dDeltaVel;
 					m_ucDestBouyID = SelectRandomBouy();
-					m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
+               m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
 					m_sNextX = m_pNextBouy->GetX();
 					m_sNextZ = m_pNextBouy->GetZ();
 					m_lAlignTimer = lThisTime + 3000;
-					m_dRot = rspMod360(m_dRot + 20);
+               m_rotation.y = rspMod360(m_rotation.y + 20);
 				}
 
 				// If not moving when you are trying to, rotate
-				if (m_dX == dStartX && m_dZ == dStartZ)
+            if (m_position.x == dStartX && m_position.z == dStartZ)
 				{
 					if (m_sRotateDir)
-						m_dAnimRot = m_dRot = rspMod360(m_dRot + 20);
+                  m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y + 20);
 					else
-						m_dAnimRot = m_dRot = rspMod360(m_dRot - 20);
+                  m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y - 20);
 				}
 				else
 				{
@@ -973,7 +973,7 @@ void CBand::Update(void)
 					m_lAnimTime = 0;
 					m_panimCur = &m_animShot;
 					// Fall down in a more random direction.
-					m_dRot = rspMod360(m_dRot - 90 + (GetRand() % 180));
+               m_rotation.y = rspMod360(m_rotation.y - 90 + (GetRand() % 180));
 				}				
 				break;
 
@@ -996,7 +996,7 @@ void CBand::Update(void)
 				if (!WhileShot())
 				{
 					m_state = State_Die;
-					m_dRot = rspMod360(m_dRot - 90 + (GetRand() % 180));
+               m_rotation.y = rspMod360(m_rotation.y - 90 + (GetRand() % 180));
 				}
 				break;
 
@@ -1028,11 +1028,11 @@ void CBand::Update(void)
             return;
 		}
 
-		m_smash.m_sphere.sphere.X			= m_dX;
+      m_smash.m_sphere.sphere.X			= m_position.x;
 		// Fudge center of sphere as half way up the dude.
 		// Doesn't work if dude's feet leave the origin.
-		m_smash.m_sphere.sphere.Y			= m_dY + m_sprite.m_sRadius;
-		m_smash.m_sphere.sphere.Z			= m_dZ;
+      m_smash.m_sphere.sphere.Y			= m_position.y + m_sprite.m_sRadius;
+      m_smash.m_sphere.sphere.Z			= m_position.z;
 		m_smash.m_sphere.sphere.lRadius	= m_sprite.m_sRadius;
 
 		// Update the smash.
@@ -1534,7 +1534,7 @@ void CBand::OnPanicMsg(Panic_Message* pMessage)
       m_lAnimTime = GetRand() % m_panimCur->m_psops->totalTime;
 		// Pick a random bouy to run to
 		m_ucDestBouyID = SelectRandomBouy();
-		m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_dX, m_dZ);
+      m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
 		m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
 		if (m_pNextBouy)
 		{
@@ -1580,9 +1580,9 @@ void CBand::AlertBand(void)
 
 	msg.msg_Panic.eType = typePanic;
 	msg.msg_Panic.sPriority = 0;
-	msg.msg_Panic.sX = (int16_t) m_dX;
-	msg.msg_Panic.sY = (int16_t) m_dY;
-	msg.msg_Panic.sZ = (int16_t) m_dZ;
+   msg.msg_Panic.sX = (int16_t) m_position.x;
+   msg.msg_Panic.sY = (int16_t) m_position.y;
+   msg.msg_Panic.sZ = (int16_t) m_position.z;
 
    for(const managed_ptr<CThing>& pThing : realm()->GetThingsByType(CBandID))
    {
@@ -1659,7 +1659,7 @@ void CBand::DropItem(void)	// Returns nothing.
          child3d()->m_dExtRotVelZ	= GetRand() % 720;
 			// Send it forward (from our perspective)
 			// with our current velocity.
-         child3d()->m_dExtHorzRot	= m_dRot;
+         child3d()->m_dExtHorzRot	= m_rotation.y;
          child3d()->m_dExtHorzVel	= m_dVel;
 			// ... and air drag.
          if (child3d()->m_dExtHorzVel > 0.0)

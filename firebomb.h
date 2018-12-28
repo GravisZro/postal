@@ -57,25 +57,18 @@
 
 #include "weapon.h"
 
+#include "Anim3D.h"
+
 // CFirebomb is hand thrown fire grenade weapon class
-class CFirebomb : public CWeapon
+class CFirebomb
+    : public CWeapon,
+      public CSprite3
 {
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	public:
-
-	//---------------------------------------------------------------------------
-	// Variables
-	//---------------------------------------------------------------------------
-	public:
-
 	protected:
 		int16_t m_sPrevHeight;										// Previous height
 
 		CAnim3D		m_anim;										// 3D animation
-		RTransform	m_trans;										// Transform
-		CSprite3		m_sprite;									// 3D sprite to render this thing.
+      RTransform	m_trans;										// Transform
 
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
@@ -90,7 +83,7 @@ class CFirebomb : public CWeapon
 	//---------------------------------------------------------------------------
    public:
       CFirebomb(void);
-      ~CFirebomb(void);
+      virtual ~CFirebomb(void);
 
 	//---------------------------------------------------------------------------
 	// Optional static functions
@@ -133,7 +126,7 @@ class CFirebomb : public CWeapon
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 		// Function to modify the velocity for a requested range
@@ -161,7 +154,9 @@ class CFirebomb : public CWeapon
 
 class CFire;
 // CFirefrag a fragment that comes out of the CFirebomb weapon
-class CFirefrag : public CWeapon
+class CFirefrag
+    : public CWeapon,
+      public CSprite2
 {
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.
@@ -176,9 +171,7 @@ class CFirefrag : public CWeapon
 	protected:
 		int16_t m_sPrevHeight;										// Previous height
       managed_ptr<CFire> m_fire;											// Pointer to controlled fire object
-		RImage* m_pImage;											// Pointer to only image (replace with 3d anim, soon)
-		CSprite2 m_sprite;										// 2D sprite to render this object.
-		int16_t		m_sNumExplosions;								// Total Number of explosions.
+      int16_t	m_sNumExplosions;								// Total Number of explosions.
 
 		// Tracks file counter so we know when to load/save "common" data 
 		static int16_t ms_sFileCount;
@@ -199,7 +192,7 @@ class CFirefrag : public CWeapon
 	//---------------------------------------------------------------------------
    public:
       CFirefrag(void);
-      ~CFirefrag(void);
+      virtual ~CFirefrag(void);
 
 	//---------------------------------------------------------------------------
 	// Required virtual functions (implimenting them as inlines doesn't pay!)
@@ -220,8 +213,6 @@ class CFirefrag : public CWeapon
 		// Update object
 		void Update(void);
 
-		// Render object
-		void Render(void);
 
 		// Called by the object that is creating this weapon
 		int16_t Setup(
@@ -234,7 +225,7 @@ class CFirefrag : public CWeapon
 		virtual			// Overriden here.
 		CSprite* GetSprite(void)	// Returns this weapon's sprite.
 			{
-			return &m_sprite;
+         return this;
 			}
 
 	//---------------------------------------------------------------------------
