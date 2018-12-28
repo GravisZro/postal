@@ -496,7 +496,7 @@ ValidateTextures(
         int16_t	sOrigNum	= ptex->size();
 
         // Create temp space for the existing colors.
-        uint8_t*	pau8	= new uint8_t[sOrigNum];
+        uint8_t* pau8 = new uint8_t[sOrigNum];
 
         // Duplicate the existing colors.
         int16_t sColor;
@@ -524,8 +524,8 @@ ValidateTextures(
           ptex->setIndex(sColor, 250); // Part of static Postal palette.
         }
 
-        delete pau8;
-        pau8	= 0;
+        delete[] pau8;
+        pau8 = nullptr;
 
         break;
       }
