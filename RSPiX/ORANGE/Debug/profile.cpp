@@ -331,7 +331,7 @@ void RProfile::Report()
 		
 		fprintf(fp,"Number of profile ranges was %hd.\n",m_sNumTracked);
 
-		fprintf(fp,"Maximum nesting depth was %hd\n\n",m_sMaxDepth-1);
+      fprintf(fp,"Maximum nesting depth was %hd\n\n",int16_t(m_sMaxDepth-1));
 		//--------------------------------------------------------------------------------------------
 		// See if there are any typos which make this run invalid:
 
