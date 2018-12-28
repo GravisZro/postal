@@ -195,10 +195,10 @@ void RMeter::Compose(				// Returns nothing.
 	int16_t	sCellH;
 	m_pprint->GetPos(nullptr, nullptr, nullptr, &sCellH);
 
-	int16_t	sMeterX;
-	int16_t	sMeterY;
-	int16_t	sMeterW;
-	int16_t	sMeterH;
+   int16_t	sMeterX = 0;
+   int16_t	sMeterY = 0;
+   int16_t	sMeterW = 0;
+   int16_t	sMeterH = 0;
 
 	// Behave by type.
 	switch (m_dtType)
