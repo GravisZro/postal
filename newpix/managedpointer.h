@@ -72,7 +72,8 @@ private:
 #include <algorithm>
 #include <memory>
 
-#include <put/object.h>
+//#include <put/object.h>
+#include <newpix/halfobject.h>
 
 extern bool operator ==(const std::shared_ptr<Object> shobj, Object *const obj);
 

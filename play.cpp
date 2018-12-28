@@ -3983,7 +3983,7 @@ class CPlayRealm : public CPlay
 
 					// Prepare Realm for rendering (Snap()).
                Object::enqueue(prealm->Render);
-               Application::process_events(0);
+               HalfApp::process_events(0);
 
 					// In demo mode (record or playback) we don't draw the results of the frame if
 					// we're falling behind.  However, we always draw when doing a demo-mode-movie .
@@ -4102,7 +4102,7 @@ class CPlayRealm : public CPlay
 
             // Shutdown realm
             Object::enqueue(pinfo->realm()->Shutdown);
-            Application::process_events(0);
+            HalfApp::process_events(0);
 				}
 			}
 

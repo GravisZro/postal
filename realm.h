@@ -379,7 +379,8 @@ class CSndRelay;
 #include "trigger.h"
 
 #include <newpix/managedpointer.h>
-#include <put/object.h>
+//#include <put/object.h>
+#include <newpix/halfobject.h>
 
 
 // The overall "universe" in which a game takes place is represented by one or
