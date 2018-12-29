@@ -1395,7 +1395,7 @@ void CBand::OnExplosionMsg(Explosion_Message* pMessage)
           child3d,
           m_panimCur->m_ptransRigid->atTime(m_lAnimTime));
     // If we got something back . . .
-    if (child())
+    if (child3d)
     {
       // Let it know about the explosion.
       GameMessage msg;

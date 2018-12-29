@@ -156,7 +156,6 @@ enum
 ////////////////////////////////////////////////////////////////////////////////
 
 class CThing3d;
-class CFlag;
 
 struct Generic_Message
 {
@@ -308,7 +307,7 @@ struct PutMeDown_Message
 {
 	MessageType eType;// = typePutMeDown
 	int16_t			sPriority;
-   managed_ptr<CFlag> flag;
+   managed_ptr<CThing3d> flag;
 };
 
 struct GameMessage

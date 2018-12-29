@@ -1,6 +1,5 @@
 #include "message.h"
 
-#include "flag.h"
 #include "Thing3d.h"
 
 GameMessage::GameMessage(const GameMessage& other) noexcept
@@ -153,7 +152,7 @@ int16_t GameMessage::Load(RFile* pFile)
       case typePutMeDown:
         uint16_t flag_id = 0;
         pFile->Read(&flag_id);
-        //msg_PutMeDown.flag = well shit
+        msg_PutMeDown.flag->SetInstanceID(flag_id);
         break;
     }
   }

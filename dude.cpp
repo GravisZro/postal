@@ -5130,10 +5130,9 @@ void CDude::OnPutMeDownMsg(		// Returns nothing
   // If he is carrying the flag item, then he should put it down
   if (pputmedownmsg->flag)
   {
-    managed_ptr<CThing3d> child3d = pputmedownmsg->flag;
     // Detatch child and update its position
     DetachChild(
-          child3d,
+          pputmedownmsg->flag,
           static_cast<CDudeAnim3D*>(m_panimCur)->m_ptransLeft->atTime(m_lAnimTime));
     pputmedownmsg->flag->m_position.x = m_position.x;
     pputmedownmsg->flag->m_position.y = m_position.y;
