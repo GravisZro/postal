@@ -149,16 +149,6 @@ class CPylon
 										// EditRect() pos.
 #endif // !defined(EDITOR_REMOVED)
 
-		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_position.x; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_position.y; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_position.z; }
-
 		// Search the list of pylons and return a pointer to the one with the given ID
       managed_ptr<CPylon> GetPylon(uint8_t ucPylonID);
 

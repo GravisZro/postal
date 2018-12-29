@@ -392,33 +392,6 @@ int16_t CThing::Load(             // Returns 0 if successfull, non-zero otherwis
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Maps a 3D coordinate onto the viewing plane.
-////////////////////////////////////////////////////////////////////////////////
-void CThing::Map3Dto2D(           // Returns nothing.
-    int16_t  sX,                    // In.
-    int16_t  sY,                    // In.
-    int16_t  sZ,                    // In.
-    int16_t* psX,                   // Out.
-    int16_t* psY)                   // Out.
-{
-  realm()->Map3Dto2D(sX, sY, sZ, psX, psY);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Maps a 3D coordinate onto the viewing plane.
-////////////////////////////////////////////////////////////////////////////////
-void CThing::Map3Dto2D(           // Returns nothing.
-    double  dX,                     // In.
-    double  dY,                     // In.
-    double  dZ,                     // In.
-    double* pdX,                    // Out.
-    double* pdY)                    // Out.
-{
-  realm()->Map3Dto2D(dX, dY, dZ, pdX, pdY);
-}
-
-
 #include <new>
 
 void* CThing::operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept

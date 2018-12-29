@@ -266,13 +266,8 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 		}
 
 		// If the file version is earlier than the change to real 3D coords . . .
-		if (ulFileVersion < 24)
-			{
-			// Convert to 3D.
-         realm()->MapY2DtoZ3D(
-            m_position.z,
-            &m_position.z);
-			}
+      if (ulFileVersion < 24)
+        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -486,12 +481,8 @@ void CBouy::EditRender(void)
       m_sInFlags = CSprite::InHidden;
 
 	// Map from 3d to 2d coords
-	Map3Dto2D(
-      (int16_t) m_position.x,
-      (int16_t) m_position.y,
-      (int16_t) m_position.z,
-      &m_sX2,
-      &m_sY2);
+   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                      m_sX2, m_sY2);
 
 	// Center on image.
    m_sX2	-= m_pImage->m_sWidth / 2;
@@ -511,12 +502,8 @@ void CBouy::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CBouy::EditRect(RRect* pRect)
 {
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&(pRect->sX),
-		&(pRect->sY) );
+   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                      pRect->sX, pRect->sY);
 
 	pRect->sW	= 10;	// Safety.
 	pRect->sH	= 10;	// Safety.

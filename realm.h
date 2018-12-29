@@ -379,6 +379,7 @@ class CSndRelay;
 #include "trigger.h"
 
 #include <newpix/managedpointer.h>
+#include <newpix/3dmath.h>
 //#include <put/object.h>
 #include <newpix/halfobject.h>
 
@@ -1096,80 +1097,62 @@ public:
 			RImage*	pim,	// In:  Image in which to draw status.
 			RRect*	prc);	// In:  Rectangle in which to draw status.  Clips to.
 
-		// Maps a 3D coordinate onto the viewing plane.
-		void Map3Dto2D(	// Returns nothing.
-			int16_t sX,		// In.
-			int16_t	sY,		// In.
-			int16_t	sZ,		// In.
-			int16_t* psX,		// Out.
-			int16_t* psY);	// Out.
 
-		// Maps a 3D coordinate onto the viewing plane.
-		void Map3Dto2D(		// Returns nothing.
-			double	dX,		// In.
-			double	dY,		// In.
-			double	dZ,		// In.
-			double* pdX,		// Out.
-			double* pdY);		// Out.
+      // Maps a 3D coordinate onto the viewing plane.
+      template <class TIn, class TOut>
+      inline void Map3Dto2D(	// Returns nothing.
+         TIn x_in,		// In.
+         TIn y_in,		// In.
+         TIn z_in,		// In.
+         TOut& x_out,		// Out.
+         TOut& y_out)	// Out.
+        { ::Map3Dto2D(x_in, y_in, z_in, x_out, y_out, m_hood->GetRealmRotX() ); }
 
-		// Scales a Z coordinate onto the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapZ3DtoY2D(		// Returns nothing.
-			double	dZIn,		// In.
-			double*	pdYOut);	// Out.
 
-		// Scales a Z coordinate onto the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapZ3DtoY2D(		// Returns nothing.
-			int16_t		sZIn,		// In.
-			int16_t*	psYOut);	// Out.
+      // Scales a Z coordinate onto the viewing plane using the
+      // view angle (~angle of projection).
+      template <class TIn, class TOut>
+      inline void MapZ3DtoY2D(		// Returns nothing.
+         TIn	z_in,		// In.
+         TOut&	y_out)	// Out.
+        { ::MapZ3DtoY2D(z_in, y_out, m_hood->GetRealmRotX() ); }
 
-		// Scales a Y coordinate from the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapY2DtoZ3D(		// Returns nothing.
-			double	dYIn,		// In.
-			double*	pdZOut);	// Out.
 
-		// Scales a Y coordinate from the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapY2DtoZ3D(		// Returns nothing.
-			int16_t		sYIn,		// In.
-			int16_t*	psZOut);	// Out.
+      // Scales a Y coordinate from the viewing plane using the
+      // view angle (~angle of projection).
+      template <class TIn, class TOut>
+      inline void MapY2DtoZ3D(		// Returns nothing.
+         TIn	y_in,		// In.
+         TOut&	z_out)	// Out.
+        { ::MapY2DtoZ3D(y_in, z_out, m_hood->GetRealmRotX() ); }
 
-		// Scales a Y coordinate onto the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapY3DtoY2D(		// Returns nothing.
-			double	dYIn,		// In.
-			double*	pdYOut);	// Out.
 
-		// Scales a Y coordinate onto the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapY3DtoY2D(		// Returns nothing.
-			int16_t		sYIn,		// In.
-			int16_t*	psYOut);	// Out.
+      // Scales a Y coordinate onto the viewing plane using the
+      // view angle (~angle of projection).
+      template <class TIn, class TOut>
+      inline void MapY3DtoY2D(		// Returns nothing.
+         TIn	y_in,		// In.
+         TOut&	y_out)	// Out.
+        { ::MapY3DtoY2D(y_in, y_out, m_hood->GetRealmRotX() ); }
 
-		// Scales a Y coordinate from the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapY2DtoY3D(		// Returns nothing.
-			double	dYIn,		// In.
-			double*	pdYOut);	// Out.
-
-		// Scales a Y coordinate from the viewing plane using the 
-		// view angle (~angle of projection).
-		void MapY2DtoY3D(		// Returns nothing.
-			int16_t		sYIn,		// In.
-			int16_t*	psYOut);	// Out.
+      // Scales a Y coordinate from the viewing plane using the
+      // view angle (~angle of projection).
+      template <class TIn, class TOut>
+      inline void MapY2DtoY3D(		// Returns nothing.
+         TIn    y_in,		// In.
+         TOut&  y_out)	// Out.
+        { ::MapY2DtoY3D(y_in, y_out, m_hood->GetRealmRotX() ); }
 
 		// If enabled, scales the specified height based on the view angle.
 		void MapAttribHeight(	// Returns nothing.
-			int16_t		sHIn,			// In.
-			int16_t*	psHOut);		// Out.
+         int16_t  sHIn,			// In.
+         int16_t&	sHOut);		// Out.
 
 		// Get dimension of realm on X/Z plane.
 		int16_t GetRealmWidth(void)	// Returns width of realm's X/Z plane.
 			{
 			int16_t	sRealmW;
-         MapY2DtoZ3D(m_hood->GetWidth(), &sRealmW);
+         MapY2DtoZ3D(m_hood->GetWidth(), sRealmW);
 			return sRealmW;
 			}
 
@@ -1177,7 +1160,7 @@ public:
 		int16_t GetRealmHeight(void)	// Returns height of realm's X/Z plane.
 			{
 			int16_t	sRealmH;
-         MapY2DtoZ3D(m_hood->GetHeight(), &sRealmH);
+         MapY2DtoZ3D(m_hood->GetHeight(), sRealmH);
 			return sRealmH;
 			}
 

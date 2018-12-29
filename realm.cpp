@@ -511,108 +511,6 @@ static RPrint	ms_print;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Function prototypes
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Non-member functions.
-////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-// Maps a 3D coordinate onto the viewing plane provided the view angle
-// (~angle of projection).
-///////////////////////////////////////////////////////////////////////////////
-template <class TIn, class TOut>
-void Map3Dto2D(	// Returns nothing.
-	TIn tX,				// In.
-	TIn tY,				// In.
-	TIn tZ,				// In.
-	TOut* ptX,			// Out.
-	TOut* ptY,			// Out.
-	int16_t	sViewAngle)	// In:  View angle in degrees.
-	{
-	*ptX	= tX;
-	*ptY	= SINQ[sViewAngle] * tZ - COSQ[sViewAngle] * tY;
-	}
-
-///////////////////////////////////////////////////////////////////////////////
-// Scales a Z coordinate onto the viewing plane provided the 
-// view angle (~angle of projection).
-///////////////////////////////////////////////////////////////////////////////
-template <class TIn, class TOut>
-void MapZ3DtoY2D(		// Returns nothing.
-	TIn	tZIn,			// In.
-	TOut* ptYOut,		// Out.
-	int16_t	sViewAngle)	// In:  View angle in degrees.
-	{
-	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
-
-	*ptYOut	= SINQ[sViewAngle] * tZIn;
-	}
-
-///////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate from the viewing plane provided the 
-// view angle (~angle of projection).
-///////////////////////////////////////////////////////////////////////////////
-template <class TIn, class TOut>
-void MapY2DtoZ3D(		// Returns nothing.
-	TIn	tYIn,			// In.
-	TOut* ptZOut,		// Out.
-	int16_t	sViewAngle)	// In:  View angle in degrees.
-	{
-	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
-
-	real_t	rSin	= SINQ[sViewAngle];
-	if (rSin != 0.0)
-		{
-		*ptZOut	= tYIn / rSin;
-		}
-	else
-		{
-		*ptZOut	= 0;
-		}
-	}
-
-///////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate onto the viewing plane provided the 
-// view angle (~angle of projection).
-///////////////////////////////////////////////////////////////////////////////
-template <class TIn, class TOut>
-void MapY3DtoY2D(		// Returns nothing.
-	TIn	tYIn,			// In.
-	TOut* ptYOut,		// Out.
-	int16_t	sViewAngle)	// In:  View angle in degrees.
-	{
-	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
-
-	*ptYOut	= COSQ[sViewAngle] * tYIn;
-	}
-
-///////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate from the viewing plane provided the 
-// view angle (~angle of projection).
-///////////////////////////////////////////////////////////////////////////////
-template <class TIn, class TOut>
-void MapY2DtoY3D(		// Returns nothing.
-	TIn	tYIn,			// In.
-	TOut* ptYOut,		// Out.
-	int16_t	sViewAngle)	// In:  View angle in degrees.
-	{
-	ASSERT(sViewAngle >= 0 && sViewAngle < 360);
-
-	real_t	rCos	= COSQ[sViewAngle];
-	if (rCos != 0.0)
-		{
-		*ptYOut	= tYIn / rCos;
-		}
-	else
-		{
-		*ptYOut	= 0;
-		}
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Default (and only) constructor
 ////////////////////////////////////////////////////////////////////////////////
 CRealm::CRealm(void)
@@ -1659,128 +1557,11 @@ void CRealm::DrawStatus(	// Returns nothing.
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
-// Maps a 3D coordinate onto the viewing plane provided the view angle
-// (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::Map3Dto2D(	// Returns nothing.
-	int16_t sX,				// In.
-	int16_t	sY,				// In.
-	int16_t	sZ,				// In.
-	int16_t* psX,				// Out.
-	int16_t* psY)				// Out.
-	{
-   ::Map3Dto2D(sX, sY, sZ, psX, psY, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Maps a 3D coordinate onto the viewing plane provided the view angle
-// (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::Map3Dto2D(	// Returns nothing.
-	double	dX,			// In.
-	double	dY,			// In.
-	double	dZ,			// In.
-	double* pdX,			// Out.
-	double* pdY)			// Out.
-	{
-   ::Map3Dto2D(dX, dY, dZ, pdX, pdY, m_hood->GetRealmRotX() );
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Z coordinate onto the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapZ3DtoY2D(	// Returns nothing.
-	double	dZIn,				// In.
-	double*	pdYOut)			// Out.
-	{
-   ::MapZ3DtoY2D(dZIn, pdYOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Z coordinate onto the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapZ3DtoY2D(	// Returns nothing.
-	int16_t		sZIn,				// In.
-	int16_t*	psYOut)			// Out.
-	{
-   ::MapZ3DtoY2D(sZIn, psYOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate from the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapY2DtoZ3D(	// Returns nothing.
-	double	dYIn,				// In.
-	double*	pdZOut)			// Out.
-	{
-   ::MapY2DtoZ3D(dYIn, pdZOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate from the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapY2DtoZ3D(	// Returns nothing.
-	int16_t		sYIn,				// In.
-	int16_t*	psZOut)			// Out.
-	{
-   ::MapY2DtoZ3D(sYIn, psZOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate onto the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapY3DtoY2D(	// Returns nothing.
-	double	dYIn,				// In.
-	double*	pdYOut)			// Out.
-	{
-   ::MapY3DtoY2D(dYIn, pdYOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate onto the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapY3DtoY2D(	// Returns nothing.
-	int16_t		sYIn,				// In.
-	int16_t*	psYOut)			// Out.
-	{
-   ::MapY3DtoY2D(sYIn, psYOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate from the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapY2DtoY3D(	// Returns nothing.
-	double	dYIn,				// In.
-	double*	pdYOut)			// Out.
-	{
-   ::MapY2DtoY3D(dYIn, pdYOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
-// Scales a Y coordinate from the viewing plane using the 
-// view angle (~angle of projection).
-////////////////////////////////////////////////////////////////////////////////
-void CRealm::MapY2DtoY3D(	// Returns nothing.
-	int16_t		sYIn,				// In.
-	int16_t*	psYOut)			// Out.
-	{
-   ::MapY2DtoY3D(sYIn, psYOut, m_hood->GetRealmRotX() );
-	}
-
-////////////////////////////////////////////////////////////////////////////////
 // If enabled, scales the specified height based on the view angle.
 ////////////////////////////////////////////////////////////////////////////////
 void CRealm::MapAttribHeight(	// Returns nothing.
-	int16_t		sHIn,					// In.
-	int16_t*	psHOut)				// Out.
+   int16_t  sHIn,					// In.
+   int16_t&	sHOut)				// Out.
 	{
 	// If scaling attrib map heights . . .
    if (m_hood->m_sScaleAttribHeights != FALSE)
@@ -1788,11 +1569,11 @@ void CRealm::MapAttribHeight(	// Returns nothing.
       int16_t	sRotX	= m_hood->GetRealmRotX();
 
 		// Scale into realm.
-		::MapY2DtoY3D(sHIn, psHOut, sRotX);
+      ::MapY2DtoY3D(sHIn, sHOut, sRotX);
 		}
 	else
 		{
-		*psHOut	= sHIn;
+      sHOut	= sHIn;
 		}
 	}
 
@@ -1808,12 +1589,12 @@ int16_t CRealm::GetHeight(int16_t sX, int16_t sZ)
 	{
    int16_t	sRotX	= m_hood->GetRealmRotX();
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, sRotX);
+   ::MapZ3DtoY2D(sZ, sZ, sRotX);
 
 	int16_t	sH = 4 * (m_pTerrainMap->GetVal(sX, sZ, 0x0000) & REALM_ATTR_HEIGHT_MASK); 
 
 	// Scale into realm.
-	MapAttribHeight(sH, &sH);
+   MapAttribHeight(sH, sH);
 
 	return sH;
 	}
@@ -1827,14 +1608,14 @@ int16_t CRealm::GetHeightAndNoWalk(	// Returns height at new location.
 	{
    int16_t	sRotX	= m_hood->GetRealmRotX();
 	// Scale the Z based on the view angle.
-	::MapZ3DtoY2D(sZ, &sZ, sRotX);
+   ::MapZ3DtoY2D(sZ, sZ, sRotX);
 
 	uint16_t	u16Attrib	= m_pTerrainMap->GetVal(sX, sZ, REALM_ATTR_NOT_WALKABLE);
 
 	int16_t	sH = 4 * (u16Attrib & REALM_ATTR_HEIGHT_MASK); 
 
 	// Scale into realm.
-	MapAttribHeight(sH, &sH);
+   MapAttribHeight(sH, sH);
 
 	// Get 'no walk'.
 	if (u16Attrib & REALM_ATTR_NOT_WALKABLE)
@@ -1854,7 +1635,7 @@ int16_t CRealm::GetHeightAndNoWalk(	// Returns height at new location.
 int16_t CRealm::GetTerrainAttributes(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, sZ, m_hood->GetRealmRotX());
 
 	return m_pTerrainMap->GetVal(sX, sZ, REALM_ATTR_NOT_WALKABLE); 
 	}
@@ -1864,7 +1645,7 @@ int16_t CRealm::GetTerrainAttributes(int16_t sX, int16_t sZ)
 int16_t CRealm::GetFloorAttribute(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, sZ, m_hood->GetRealmRotX());
 
 	return m_pTerrainMap->GetVal(sX, sZ, 0) & REALM_ATTR_FLOOR_MASK; 
 	}
@@ -1874,7 +1655,7 @@ int16_t CRealm::GetFloorAttribute(int16_t sX, int16_t sZ)
 int16_t CRealm::GetFloorMapValue(int16_t sX, int16_t sZ, int16_t sMask/* = 0x007F*/)
 	{
 	// Scale the Z based on the view angle.
-   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, sZ, m_hood->GetRealmRotX());
 
 	return m_pTerrainMap->GetVal(sX, sZ, sMask); 
 	}
@@ -1884,7 +1665,7 @@ int16_t CRealm::GetFloorMapValue(int16_t sX, int16_t sZ, int16_t sMask/* = 0x007
 int16_t CRealm::GetLayer(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, sZ, m_hood->GetRealmRotX());
 
 	return m_pLayerMap->GetVal(sX, sZ, 0) & REALM_ATTR_LAYER_MASK; 
 	}
@@ -1894,7 +1675,7 @@ int16_t CRealm::GetLayer(int16_t sX, int16_t sZ)
 int16_t CRealm::GetEffectAttribute(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, sZ, m_hood->GetRealmRotX());
 
 	return m_pTerrainMap->GetVal(sX, sZ, 0) & REALM_ATTR_EFFECT_MASK; 
 	}
@@ -1904,7 +1685,7 @@ int16_t CRealm::GetEffectAttribute(int16_t sX, int16_t sZ)
 int16_t CRealm::GetEffectMapValue(int16_t sX, int16_t sZ)
 	{
 	// Scale the Z based on the view angle.
-   ::MapZ3DtoY2D(sZ, &sZ, m_hood->GetRealmRotX() );
+   ::MapZ3DtoY2D(sZ, sZ, m_hood->GetRealmRotX());
 
 	return m_pTerrainMap->GetVal(sX, sZ, 0); 
 	}

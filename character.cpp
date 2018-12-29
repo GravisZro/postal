@@ -510,35 +510,35 @@ int16_t CCharacter::Save(									// Returns 0 if successfull, non-zero otherwis
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
 void CCharacter::Update(void)										// Returns nothing.
-   {
-      if (m_weapon)
-			{
-         RTransform&	transWeapon	= m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
-			// Position weapon.
-			PositionChild(
-            m_weapon->GetSprite(),	// In:  Child sprite to position.
-            &transWeapon,				// In:  Transform specifying position.
-            &(m_weapon->m_position.x),			// Out: New position of child.
-            &(m_weapon->m_position.y),			// Out: New position of child.
-            &(m_weapon->m_position.z) );		// Out: New position of child.
-         }
+{
+  if (m_weapon)
+  {
+    RTransform&	transWeapon	= m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
+    // Position weapon.
+    PositionChild(
+          m_weapon.pointer(),	// In:  Child sprite to position.
+          transWeapon,				// In:  Transform specifying position.
+          m_weapon->m_position.x,			// Out: New position of child.
+          m_weapon->m_position.y,			// Out: New position of child.
+          m_weapon->m_position.z);		// Out: New position of child.
+  }
 
-	// If we have a weapon sound play instance . . .
-	if (m_siLastWeaponPlayInstance)
-		{
-		// If time has expired . . .
-      if (realm()->m_time.GetGameTime() > m_lStopLoopingWeaponSoundTime)
-			{
-			// Stop looping the sound.
-			StopLoopingSample(m_siLastWeaponPlayInstance);
-			// Forget about it.
-			m_siLastWeaponPlayInstance	= 0;
-			}
-		}
+  // If we have a weapon sound play instance . . .
+  if (m_siLastWeaponPlayInstance)
+  {
+    // If time has expired . . .
+    if (realm()->m_time.GetGameTime() > m_lStopLoopingWeaponSoundTime)
+    {
+      // Stop looping the sound.
+      StopLoopingSample(m_siLastWeaponPlayInstance);
+      // Forget about it.
+      m_siLastWeaponPlayInstance	= 0;
+    }
+  }
 
-	// Call base class.
-	CThing3d::Update();
-	}
+  // Call base class.
+  CThing3d::Update();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Render object
@@ -1009,9 +1009,9 @@ void CCharacter::MakeBloodPool(void)
 		// Make sure blood lands on the ground (terrain).
       double	dTerrainH	= realm()->GetHeight(dHitX, dHitZ);
 
-		Map3Dto2D(dHitX, dTerrainH, dHitZ,
-			&(pat->m_msg.msg_DrawBlood.s2dX),
-			&(pat->m_msg.msg_DrawBlood.s2dY) );
+      realm()->Map3Dto2D(dHitX, dTerrainH, dHitZ,
+                         pat->m_msg.msg_DrawBlood.s2dX,
+                         pat->m_msg.msg_DrawBlood.s2dY);
 
 		// NOTE:  sAngle is currently not utilized.
 		pat->Setup(dHitX, dTerrainH, dHitZ);
@@ -1136,10 +1136,10 @@ void CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 	// Get weapon's position relative to this character.
 	double dWeaponRelX, dWeaponRelY, dWeaponRelZ;
 	GetLinkPoint(
-      &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),
-		&dWeaponRelX,
-		&dWeaponRelY,
-		&dWeaponRelZ);
+      m_panimCur->m_ptransRigid->atTime(m_lAnimTime),
+      dWeaponRelX,
+      dWeaponRelY,
+      dWeaponRelZ);
 
    Vector3D	pt3WeaponRel	= { static_cast<float>(dWeaponRelX), static_cast<float>(dWeaponRelY), static_cast<float>(dWeaponRelZ), 1 };
 
@@ -1216,10 +1216,9 @@ void CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
 				
 				// Detach parent pointer
             m_weapon->parent().reset();
-				// Detatch weapon's sprite
-            CSprite*	pspriteWeapon	= m_weapon->GetSprite();
-            if (pspriteWeapon && pspriteWeapon->m_psprParent) // Some weapons (one weapon, the flamer) are never parented.
-              RemoveChild(pspriteWeapon);
+            // Detatch weapon's sprite
+            if (m_weapon  && m_weapon->m_psprParent) // Some weapons (one weapon, the flamer) are never parented.
+              RemoveChild(m_weapon.pointer());
 				
 				// Specific behavior by type.
             if(m_weapon->type() == CDeathWadID)
@@ -1265,7 +1264,7 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
 						// Get the position to check for terrain obstacles.
 						// Remember this is an offset from our hotspot (origin).
 						double	dX, dY, dZ;
-                  GetLinkPoint(&transWeapon, &dX, &dY, &dZ);
+                  GetLinkPoint(transWeapon, dX, dY, dZ);
 
 						// Check position to make sure it's not inside terrain.
                   int16_t	sTerrainH	= realm()->GetHeight(m_position.x + dX, m_position.z + dZ);
@@ -1368,8 +1367,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 			// this->m_id == CDudeID.
 
 			GameMessage	msg;
-			msg.msg_Shot.eType			= typeShot;
-			msg.msg_Shot.sPriority		= 0;
+         msg.msg_Shot.eType			= typeShot;
 			msg.msg_Shot.sAngle			= sFireAngle;
          msg.msg_Shot.shooter	= this;
 
@@ -1548,7 +1546,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 		&& fPosZ < sMaxZ
 		&& fTotalDistXZ < sRangeXZ)
 		{
-		GetFloorAttributes((int16_t)fPosX, (int16_t)fPosZ, &u16Attribute, &sCurH);
+      GetFloorAttributes((int16_t)fPosX, (int16_t)fPosZ, u16Attribute, sCurH);
 		// If too big a height difference or completely not walkable . . .
 		if (	(u16Attribute & REALM_ATTR_NOT_WALKABLE)
 			|| (sCurH - fPosY > sVerticalTolerance) )

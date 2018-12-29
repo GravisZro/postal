@@ -132,14 +132,6 @@ class CNapalm
 			double dHorizVel = ms_dThrowHorizVel,			// In: Starting horizontal velocity
 			double dVertVel = ms_dThrowVertVel*/);			// In: Starting vertical velocity
 
-		// Get this class's sprite.  Note that the type will vary.
-		// This is a pure virtual functionin the base class.
-		virtual			// Overriden here.
-		CSprite* GetSprite(void)	// Returns this weapon's sprite.
-			{
-         return this;
-			}
-
 		// Function to modify the velocity for a requested range
 		virtual int16_t SetRangeToTarget(int16_t sRequestedRange)
 		{

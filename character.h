@@ -427,10 +427,6 @@ protected:
          return rspATan((m_position.z - dZ), (dX - m_position.x));
 		}
 
-		// Called by destructor.
-		void Kill(void);
-
-
 	};
 
 #endif	// CHARACTER_H

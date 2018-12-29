@@ -1399,10 +1399,10 @@ bool CDoofus::TryClearShot(double dRot, int16_t sVariance)
 
 		double	dMuzzleX, dMuzzleY, dMuzzleZ;
 		GetLinkPoint(														// Returns nothing.
-         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
-			&dMuzzleX,														// Out: Point speicfied.
-			&dMuzzleY,														// Out: Point speicfied.
-			&dMuzzleZ);														// Out: Point speicfied.			// Update execution point via link point.
+         m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
+         dMuzzleX,														// Out: Point speicfied.
+         dMuzzleY,														// Out: Point speicfied.
+         dMuzzleZ);														// Out: Point speicfied.			// Update execution point via link point.
 
 		while (!bFoundPath && sTries < 2)
 		{
@@ -1833,7 +1833,7 @@ void CDoofus::Logic_Guard(void)
             if (m_weapon)
 				{
 					// Keep it hidden, for now.
-               m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+               m_weapon->m_sInFlags |= CSprite::InHidden;
                m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 				}
 				m_panimCur = &m_animShoot;
@@ -1944,7 +1944,7 @@ void CDoofus::Logic_HuntHold(void)
                if (m_weapon)
 					{
 						// Keep it hidden, for now.
-                  m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+                  m_weapon->m_sInFlags |= CSprite::InHidden;
                   m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 					}
 					m_panimCur = &m_animShoot;
@@ -2222,7 +2222,7 @@ void CDoofus::Logic_DelayShoot(void)
          PrepareWeapon();
          if (m_weapon)
 			{
-            m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+            m_weapon->m_sInFlags |= CSprite::InHidden;
             m_weapon->SetRangeToTarget(rspSqrt(int32_t(SQDistanceToDude())));
 			}
 			m_panimCur = &m_animShoot;
@@ -2257,7 +2257,7 @@ void CDoofus::Logic_PositionMove(void)
          if (m_weapon)
 			{
 				// Keep it hidden, for now.
-            m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+            m_weapon->m_sInFlags |= CSprite::InHidden;
             m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 			}
 			m_state = State_Shoot;
@@ -2613,7 +2613,7 @@ void CDoofus::Logic_Popout(void)
       if (m_weapon)
 		{
 			// Keep it hidden, for now.
-         m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+         m_weapon->m_sInFlags |= CSprite::InHidden;
 		}
 		m_panimCur = &m_animShoot;
 		m_lAnimTime = 0;
@@ -2829,7 +2829,7 @@ void CDoofus::Logic_RunShoot(void)
          if (m_weapon)
 			{
 				// Keep it hidden, for now.
-            m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+            m_weapon->m_sInFlags |= CSprite::InHidden;
 			}
 			SelectDude();
 
@@ -3160,7 +3160,7 @@ void CDoofus::Logic_Helping(void)
             if (m_weapon)
 				{
 					// Keep it hidden, for now.
-               m_weapon->GetSprite()->m_sInFlags |= CSprite::InHidden;
+               m_weapon->m_sInFlags |= CSprite::InHidden;
                m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 				}
 				m_panimCur = &m_animShoot;
@@ -3877,10 +3877,10 @@ void CDoofus::PositionSmash(void)
 			double	dVitalOrganY;
 			double	dVitalOrganZ;
 			GetLinkPoint(														// Returns nothing.
-            &m_ptransExecutionTarget->atTime(m_lAnimTime),	// In:  Transform specifying point.
-				&dVitalOrganX,													// Out: Point speicfied.
-				&dVitalOrganY,													// Out: Point speicfied.
-				&dVitalOrganZ);												// Out: Point speicfied.			// Update execution point via link point.
+            m_ptransExecutionTarget->atTime(m_lAnimTime),	// In:  Transform specifying point.
+            dVitalOrganX,													// Out: Point speicfied.
+            dVitalOrganY,													// Out: Point speicfied.
+            dVitalOrganZ);												// Out: Point speicfied.			// Update execution point via link point.
 
 			// Offset from hotspot to set collision sphere position.
          m_smash.m_sphere.sphere.X			= m_position.x + dVitalOrganX;

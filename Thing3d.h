@@ -380,12 +380,6 @@ class CThing3d
       CThing3d(void);
       virtual ~CThing3d(void);
 
-
-	public:
-      managed_ptr<CThing3d> child3d (void) noexcept { return child(); }
-      //managed_ptr<CThing3d> parent3d(void) noexcept { return parent(); }
-
-
 	//---------------------------------------------------------------------------
 	// Not necessarily required virtual functions (implementing them as inlines 
 	// doesn't pay!)
@@ -445,22 +439,6 @@ class CThing3d
 			int16_t*	psY);			// Out: Y coord of 2D hotspot relative to
 										// EditRect() pos.
 #endif // !defined(EDITOR_REMOVED)
-
-		// Get the sprite for this thing.  If there's more than one, pick one
-		// or none to return.
-		virtual	// If you override this, do NOT call this base class.
-		CSprite* GetSprite(void)	// Returns the sprite for this thing or nullptr.
-         { return this; }
-
-		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_position.x; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_position.y; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_position.z; }
 
 		// Returns a pointer to the smash
 		virtual
@@ -604,38 +582,38 @@ class CThing3d
 		void GetFloorAttributes(	// Returns nothing
 			int16_t  sX,					// In:  X coord.
 			int16_t  sZ,					// In:  Z coord.
-			uint16_t*   pu16Attrib,		// Out: Combined attributes, if not nullptr
-			int16_t* psHeight);			// Out: Max height, if not nullptr
+         uint16_t& u16Attrib,		// Out: Combined attributes, if not nullptr
+         int16_t& sHeight);			// Out: Max height, if not nullptr
 
 		// Get Effect attributes (effects attributes like light, camera, oil, blood)
 		void GetEffectAttributes(	// Returns nothing
 			int16_t  sX,					// In:  X coord.
 			int16_t  sZ,					// In:  Z coord.
-			uint16_t*   pu16Attrib,		// Out: Combined attributes, if not nullptr
-			int16_t* psLightBits);		// Out: Tally of light bits set, if not nullptr.
+         uint16_t& u16Attrib,		// Out: Combined attributes,
+         int16_t& sLightBits);		// Out: Tally of light bits set
 
 		// Get the layer based on the attribute points array.
 		void GetLayer(
 			int16_t  sX,					// In:  X coord.
 			int16_t  sZ,					// In:  Z coord.
-			int16_t* psLayer);			// Out: Combined layer.
+         int16_t& sLayer);			// Out: Combined layer.
 
 		// Detach the specified Thing3d.
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
       void DetachChild(			// Returns ptr to the child or nullptr, if none.
-         managed_ptr<CThing3d> child,	// In:  Instance ID of child to detach.
-			RTransform*	ptrans);			// In:  Transform for positioning child.
+         managed_ptr<CThing3d>& child,	// In:  Instance ID of child to detach.
+         RTransform&	ptrans);			// In:  Transform for positioning child.
 
 		// Detach the specified child sprite (can be any sprite type).
 		virtual			// Override to implement additional functionality.
 							// Call base class to get default functionality.
 		void DetachChild(					// Returns nothing.
 			CSprite*		psprite,			// In:  Child sprite to detach.
-			RTransform*	ptrans,			// In:  Transform for positioning child.
-			double*		pdX,				// Out: New position of child.
-			double*		pdY,				// Out: New position of child.
-			double*		pdZ);				// Out: New position of child.
+         RTransform& ptrans,			// In:  Transform for positioning child.
+         double& dX,				// Out: New position of child.
+         double& dY,				// Out: New position of child.
+         double& dZ);				// Out: New position of child.
 
 
 		// Position the specified child sprite (can be any sprite type).
@@ -643,17 +621,17 @@ class CThing3d
 							// Call base class to get default functionality.
 		void PositionChild(				// Returns nothing.
 			CSprite*	psprite,				// In:  Child sprite to detach.
-			RTransform*	ptrans,			// In:  Transform for positioning child.
-			double*	pdX,					// Out: New position of child.
-			double*	pdY,					// Out: New position of child.
-			double*	pdZ);					// Out: New position of child.
+         RTransform& trans,			// In:  Transform for positioning child.
+         double& dX,					// Out: New position of child.
+         double& dY,					// Out: New position of child.
+         double& dZ);					// Out: New position of child.
 
 		// Get the link point specified by the provided transform.
 		void GetLinkPoint(				// Returns nothing.
-			RTransform*	ptrans,			// In:  Transform specifying point.
-			double*	pdX,					// Out: Point speicfied.
-			double*	pdY,					// Out: Point speicfied.
-			double*	pdZ);					// Out: Point speicfied.
+         RTransform& trans,			// In:  Transform specifying point.
+         double& dX,					// Out: Point speicfied.
+         double& dY,					// Out: Point speicfied.
+         double& dZ);					// Out: Point speicfied.
 
 
 		// Add a force vector to this thing's external horizontal velocity vector.

@@ -250,12 +250,8 @@ void CAnimThing::Render(void)
 		// Map from 3d to 2d coords
 //		m_sX2 = m_position.x + paa->m_sX;
 //		m_sY2 = m_position.z - (m_position.y - paa->m_sY);
-		Map3Dto2D(
-         m_position.x,
-         m_position.y,
-         m_position.z,
-         &m_sX2,
-         &m_sY2 );
+      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                         m_sX2, m_sY2);
 
 		// Offset by hotspot.
       m_sX2	+= paa->m_sX;
@@ -469,30 +465,26 @@ int16_t CAnimThing::EditMove(									// Returns 0 if successfull, non-zero othe
 ////////////////////////////////////////////////////////////////////////////////
 void CAnimThing::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
-	{
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&(prc->sX),
-		&(prc->sY) );
+{
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     prc->sX, prc->sY);
 
-	prc->sW	= 10;	// Safety.
-	prc->sH	= 10;	// Safety.
+  prc->sW = 10;	// Safety.
+  prc->sH = 10;	// Safety.
 
-	if (m_paachannel != nullptr)
-		{
-      CAlphaAnim* paa = m_paachannel->GetAtTime(m_lAnimTime);
-		if (paa != nullptr)
-			{
-			// Offset by hotspot.
-			prc->sX	+= paa->m_sX;
-			prc->sY	+= paa->m_sY;
-			prc->sW	= paa->m_imColor.m_sWidth;
-			prc->sH	= paa->m_imColor.m_sHeight;
-			}
-		}
-	}
+  if (m_paachannel != nullptr)
+  {
+    CAlphaAnim* paa = m_paachannel->GetAtTime(m_lAnimTime);
+    if (paa != nullptr)
+    {
+      // Offset by hotspot.
+      prc->sX	+= paa->m_sX;
+      prc->sY	+= paa->m_sY;
+      prc->sW	= paa->m_imColor.m_sWidth;
+      prc->sH	= paa->m_imColor.m_sHeight;
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Called by editor to get the hotspot of an object in 2D.

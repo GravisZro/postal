@@ -426,14 +426,14 @@ public:
   CThing(void);
   virtual ~CThing(void);
 
-  managed_ptr<CThing>& child (void) noexcept { return m_child; }
-  managed_ptr<CThing>& parent(void) noexcept { return m_parent; }
-  void setChild (const managed_ptr<CThing>& nc) noexcept { m_child = nc; }
-  void setParent(const managed_ptr<CThing>& np) noexcept { m_parent = np; }
+  constexpr managed_ptr<CThing>& child (void) noexcept { return m_child; }
+  constexpr managed_ptr<CThing>& parent(void) noexcept { return m_parent; }
+  constexpr void setChild (const managed_ptr<CThing>& nc) noexcept { m_child = nc; }
+  constexpr void setParent(const managed_ptr<CThing>& np) noexcept { m_parent = np; }
 
-  CRealm* realm(void) const noexcept { return m_realm; }
-  ClassIDType type(void) const noexcept { return m_type; }
-  bool instantiable(void) const noexcept { return m_instantiable; }
+  constexpr CRealm* realm(void) const noexcept { return m_realm; }
+  constexpr ClassIDType type(void) const noexcept { return m_type; }
+  constexpr bool instantiable(void) const noexcept { return m_instantiable; }
 
   void* operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept;
 
@@ -493,22 +493,6 @@ protected:
         pThing->m_MessageQueue.push_back(pMessage);
         return true;
       }
-
-		// Maps a 3D coordinate onto the viewing plane.
-		void Map3Dto2D(		// Returns nothing.
-			int16_t sX,			// In.
-			int16_t	sY,			// In.
-			int16_t	sZ,			// In.
-			int16_t* psX,			// Out.
-			int16_t* psY);		// Out.
-
-		// Maps a 3D coordinate onto the viewing plane.
-		void Map3Dto2D(		// Returns nothing.
-			double	dX,		// In.
-			double	dY,		// In.
-			double	dZ,		// In.
-			double* pdX,		// Out.
-			double* pdY);		// Out.
 
 	//---------------------------------------------------------------------------
 	// Virtual functions that should be overloaded for additional functionality.
@@ -630,7 +614,7 @@ protected:
 		// Get the sprite for this thing.  If there's more than one, pick one
 		// or none to return.
 		virtual	// If you override this, do NOT call this base class.
-		CSprite* GetSprite(void)	// Returns the sprite for this thing or nullptr.
+      CSprite* GetSprite(void) // Returns the sprite for this thing or nullptr.
 			{ return nullptr; }
 
 		// Get the coordinates of this thing.  This implementation returns 

@@ -301,16 +301,6 @@ class CBouy
 										// EditRect() pos.
 #endif // !defined(EDITOR_REMOVED)
 
-		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_position.x; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_position.y; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_position.z; }
-
 		// Add a link to this bouy - it is directly connected, ie, 1 hop away
       int16_t AddLink(managed_ptr<CBouy> pBouy);
 

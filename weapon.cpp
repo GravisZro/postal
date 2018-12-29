@@ -134,13 +134,8 @@ int16_t CWeapon::Load(										// Returns 0 if successfull, non-zero otherwise
 
 		
 		// If the file version is earlier than the change to real 3D coords . . .
-		if (ulFileVersion < 24)
-			{
-			// Convert to 3D.
-			realm()->MapY2DtoZ3D(
-            m_position.z,
-            &m_position.z);
-			}
+      if (ulFileVersion < 24)
+        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -247,24 +242,23 @@ void CWeapon::Resume(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CWeapon::Render(void)
 {
-	CSprite* pSprite = GetSprite();
-
 	// If the shadow is enabled and the main sprite is visible . . .
-	if (m_spriteShadow.m_pImage && (pSprite->m_sInFlags & CSprite::InHidden) == 0)
+   if (m_spriteShadow.m_pImage && (m_sInFlags & CSprite::InHidden) == 0)
 	{
 		// Get the height of the terrain from the attribute map
       int16_t sY = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
 		// Map from 3d to 2d coords
-      Map3Dto2D(m_position.x, (double) sY, m_position.z, &(m_spriteShadow.m_sX2), &(m_spriteShadow.m_sY2) );
+      realm()->Map3Dto2D(m_position.x, double(sY), m_position.z,
+                         m_spriteShadow.m_sX2, m_spriteShadow.m_sY2);
 		// Offset hotspot to center of image.
 		m_spriteShadow.m_sX2 -= m_spriteShadow.m_pImage->m_sWidth / 2;
 		m_spriteShadow.m_sY2 -= m_spriteShadow.m_pImage->m_sHeight / 2;
 
 		// Priority is based on bottom edge of sprite on X/Z plane!
-      m_spriteShadow.m_sPriority = MAX(pSprite->m_sPriority - 1, 0);//m_position.z;
+      m_spriteShadow.m_sPriority = MAX(m_sPriority - 1, 0);//m_position.z;
 
 		// Layer should be based on info we get from attribute map.
-		m_spriteShadow.m_sLayer = pSprite->m_sLayer;
+      m_spriteShadow.m_sLayer = m_sLayer;
 
 		// Set the alpha level based on the height difference
       m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) m_position.y - sY);

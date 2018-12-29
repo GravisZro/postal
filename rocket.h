@@ -168,14 +168,6 @@ class CRocket
 			int16_t sY,
 			int16_t sZ);
 
-		// Get this class's sprite.  Note that the type will vary.
-		// This is a pure virtual functionin the base class.
-		virtual			// Overriden here.
-		CSprite* GetSprite(void)	// Returns this weapon's sprite.
-			{
-         return this;
-			}
-
 	//---------------------------------------------------------------------------
 	// Internal functions
 	//---------------------------------------------------------------------------

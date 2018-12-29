@@ -202,20 +202,6 @@ class CDemon
 		void EditRender(void);
 #endif // !defined(EDITOR_REMOVED)
 
-		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_position.x; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_position.y; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_position.z; }
-
-	//---------------------------------------------------------------------------
-	// Optional Static  functions
-	//---------------------------------------------------------------------------
-
 		// Preload the sound samples that might be used.
 		static int16_t Preload(
 			CRealm* prealm);				// In:  Calling realm.

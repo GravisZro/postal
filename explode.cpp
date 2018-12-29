@@ -321,7 +321,8 @@ void CExplode::Render(void)
 		// Map from 3d to 2d coords
 //		m_sX2 = m_position.x + pAnim->m_sX;
 //		m_sY2 = m_position.z + pAnim->m_sY;
-      Map3Dto2D((int16_t) (m_position.x + pAnim->m_sX), (int16_t) m_position.y, (int16_t) (m_position.z + pAnim->m_sY), &m_sX2, &m_sY2);
+      realm()->Map3Dto2D(m_position.x + pAnim->m_sX, m_position.y, m_position.z + pAnim->m_sY,
+                         m_sX2, m_sY2);
 
 		// Priority is based on our Z position.
       m_sPriority = m_position.z;

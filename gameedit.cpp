@@ -6577,10 +6577,10 @@ static void EditPylonTriggerRegion(	// Returns nothing.
 			// position.
          pthingPylon->realm()->Map3Dto2D(
 				pylon->GetX(),
-				0,
+            0.0,
 				pylon->GetZ(),
-				&(ms_argns[pylon->m_ucID].sX),
-				&(ms_argns[pylon->m_ucID].sY) );
+            ms_argns[pylon->m_ucID].sX,
+            ms_argns[pylon->m_ucID].sY);
 
 			ms_argns[pylon->m_ucID].sX	-= TriggerRgn::MaxRgnWidth / 2;
 			ms_argns[pylon->m_ucID].sY	-= TriggerRgn::MaxRgnHeight / 2;
@@ -7038,7 +7038,7 @@ static void MapScreen2Realm(	// Returns nothing.
 		{
 		// Map to realm's X/Z plane:
 		// Z is stretched.
-		prealm->MapY2DtoZ3D(sRealmY2, psRealmZ);
+      prealm->MapY2DtoZ3D(sRealmY2, *psRealmZ);
 		// X is trivial.
 		*psRealmX	= sRealmX2;
 
@@ -7070,28 +7070,24 @@ static void MapScreen2Realm(	// Returns nothing.
 // Map a realm coordinate to a screen coordinate.
 ////////////////////////////////////////////////////////////////////////////////
 static void Maprealm2Screen(	// Returns nothing.
-	CRealm*	prealm,				// In:  Realm.
-	CCamera*	pcamera,				// In:  View of prealm.
-	int16_t		sRealmX,				// In:  Realm x coord.
-	int16_t		sRealmY,				// In:  Realm y coord.
-	int16_t		sRealmZ,				// In:  Realm z coord.
-	int16_t*	psScreenX,			// Out: Screen x coord.
-	int16_t*	psScreenY)			// Out: Screen y coord.
-	{
-	// Map coordinate onto 2D viewing plane.
-	int16_t	sViewX2;
-	int16_t	sViewY2;
-	prealm->Map3Dto2D(
-		sRealmX,
-		sRealmY,
-		sRealmZ,
-		&sViewX2,
-		&sViewY2);
+   CRealm* prealm,				// In:  Realm.
+   CCamera* pcamera,				// In:  View of prealm.
+   int16_t sRealmX,				// In:  Realm x coord.
+   int16_t sRealmY,				// In:  Realm y coord.
+   int16_t sRealmZ,				// In:  Realm z coord.
+   int16_t* psScreenX,			// Out: Screen x coord.
+   int16_t* psScreenY)			// Out: Screen y coord.
+{
+  // Map coordinate onto 2D viewing plane.
+  int16_t	sViewX2;
+  int16_t	sViewY2;
+  prealm->Map3Dto2D(sRealmX, sRealmY, sRealmZ,
+                    sViewX2, sViewY2);
 
-	// Offset to screen.
-	*psScreenX	= sViewX2 - pcamera->m_sScene2FilmX;
-	*psScreenY	= sViewY2 - pcamera->m_sScene2FilmY;
-	}
+  // Offset to screen.
+  *psScreenX	= sViewX2 - pcamera->m_sScene2FilmX;
+  *psScreenY	= sViewY2 - pcamera->m_sScene2FilmY;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Blit attribute areas lit by the specified mask into the specified image.

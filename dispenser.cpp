@@ -308,15 +308,16 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 				}
 			}
 
-		// Load object data
+      // Load object data
+      uint16_t x,y,z;
 		switch (ulFileVersion)
 			{
 			default:
 			case 35:
 				pFile->Read(&m_sMaxDispensees);
-				pFile->Read(&m_sX);
-				pFile->Read(&m_sY);
-				pFile->Read(&m_sZ);
+            pFile->Read(&x); m_position.x = x;
+            pFile->Read(&y); m_position.y = y;
+            pFile->Read(&z); m_position.z = z;
             pFile->Read(reinterpret_cast<uint8_t*>(&m_idDispenseeType));
 				uint16_t	u16LogicType;
 				pFile->Read(&u16LogicType);
@@ -383,9 +384,9 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 			case 2:
 			case 1:
 				{
-				pFile->Read(&m_sX);
-				pFile->Read(&m_sY);
-				pFile->Read(&m_sZ);
+            pFile->Read(&x); m_position.x = x;
+            pFile->Read(&y); m_position.y = y;
+            pFile->Read(&z); m_position.z = z;
             pFile->Read(reinterpret_cast<uint8_t*>(&m_idDispenseeType));
 				uint16_t	u16LogicType;
 				pFile->Read(&u16LogicType);
@@ -416,13 +417,8 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 			}
 		
 		// If the file version is earlier than the change to real 3D coords . . .
-		if (ulFileVersion < 24)
-			{
-			// Convert to 3D.
-			realm()->MapY2DtoZ3D(
-				m_sZ,
-				&m_sZ);
-			}
+      if (ulFileVersion < 24)
+        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -466,10 +462,10 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 			// Save static data
 			}
 
-		pFile->Write(m_sMaxDispensees);
-		pFile->Write(m_sX);
-		pFile->Write(m_sY);
-		pFile->Write(m_sZ);
+      pFile->Write(m_sMaxDispensees);
+      pFile->Write(uint16_t(m_position.x));
+      pFile->Write(uint16_t(m_position.y));
+      pFile->Write(uint16_t(m_position.z));
       pFile->Write(uint8_t(m_idDispenseeType));
 		pFile->Write((uint16_t)m_logictype);
 		pFile->Write(m_alLogicParms, 4);
@@ -480,11 +476,7 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 		// Update position . . .
       managed_ptr<CThing> pthing;
       if (InstantiateDispensee(pthing, false) == SUCCESS)
-			{
-#if !defined(EDITOR_REMOVED)
-			// Update position.
-			pthing->EditMove(m_sX, m_sY, m_sZ);
-#endif
+         {
 			// Resave.
 			SaveDispensee(pthing);
 			// Get rid of.
@@ -1046,7 +1038,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
          if (pthing)
 				{
 				// New it in the correct location.
-				sResult	= pthing->EditNew(m_sX, m_sY, m_sZ);
+            sResult	= pthing->EditNew(m_position.x, m_position.y, m_position.z);
 				if (sResult == SUCCESS)
 					{
 					// Success.
@@ -1103,9 +1095,9 @@ int16_t CDispenser::EditMove(							// Returns 0 if successfull, non-zero otherw
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
-	m_sX	= sX;
-	m_sY	= sY;
-	m_sZ	= sZ;
+   m_position.x = sX;
+   m_position.y = sY;
+   m_position.z = sZ;
 
 	return sResult;
 	}
@@ -1117,22 +1109,18 @@ int16_t CDispenser::EditMove(							// Returns 0 if successfull, non-zero otherw
 void CDispenser::EditRender(void)
 	{
 	// Map from 3d to 2d coords
-	Map3Dto2D(
-		(int16_t) m_sX, 
-		(int16_t) m_sY, 
-		(int16_t) m_sZ, 
-      &m_sX2,
-      &m_sY2);
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     m_sX2, m_sY2);
 
 	// Priority is based on hotspot of sprite
-   m_sPriority = m_sZ;
+   m_sPriority = m_position.z;
 
 	// Center on dispensee's hotspot.
    m_sX2	-= m_sDispenseeHotSpotX;
    m_sY2	-= m_sDispenseeHotSpotY;
 
 	// Layer should be based on info we get from attribute map.
-   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(m_sX, m_sZ));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(m_position.x, m_position.x));
 
 	// Image would normally animate, but doesn't for now
    m_pImage = &m_imRender;
@@ -1147,12 +1135,8 @@ void CDispenser::EditRender(void)
 void CDispenser::EditRect(RRect* prc)
 	{
 	// Map from 3d to 2d coords
-	Map3Dto2D(
-		(int16_t) m_sX, 
-		(int16_t) m_sY, 
-		(int16_t) m_sZ, 
-		&(prc->sX), 
-		&(prc->sY) );
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     prc->sX, prc->sY);
 
 #if 0
 	// Center on image.
@@ -1297,15 +1281,6 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
                  ppthing->SetInstanceID(instance_id);
                  m_dispensee = ppthing;
 
-#if !defined(EDITOR_REMOVED)
-						// If in edit mode . . .
-						if (bEditMode == true)
-							{
-							// Update position.
-                     ppthing->EditMove(m_sX, m_sY, m_sZ);
-							}
-#endif // !defined(EDITOR_REMOVED)
-
 						// Startup, if requested.  We only give one chance
 						// UNlike CRealm::Startup().
    //					if (ppthing->m_sCallStartup != 0)
@@ -1418,12 +1393,8 @@ int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
 		else
 			{
 			// Map from 3d to 2d coords
-			Map3Dto2D(
-				(int16_t) m_sX, 
-				(int16_t) m_sY, 
-				(int16_t) m_sZ, 
-				&(m_rcDispensee.sX), 
-				&(m_rcDispensee.sY) );
+        realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                           m_rcDispensee.sX, m_rcDispensee.sY);
 
 			m_rcDispensee.sW	= WIDTH_IF_NO_THING;
 			m_rcDispensee.sH	= HEIGHT_IF_NO_THING;
@@ -1527,8 +1498,8 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 		if (pdude->m_state != CThing3d::State_Dead)
 			{
 			// Determine square distance on X/Z plane.
-         ulDistX	= pdude->m_position.x - m_sX;
-         ulDistZ	= pdude->m_position.z - m_sZ;
+         ulDistX	= pdude->m_position.x - m_position.x;
+         ulDistZ	= pdude->m_position.z - m_position.z;
 			ulSqrDistance	= ulDistX * ulDistX + ulDistZ * ulDistZ;
 			// If closer than the last guy . . .
 			if (ulSqrDistance < ulCurSqrDistance)

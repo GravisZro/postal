@@ -655,15 +655,6 @@ class CDude : public CCharacter
 	// Other functions
 	//---------------------------------------------------------------------------
 	public:
-		// Return the X position
-      double GetX(void) const { return m_position.x; }
-
-		// Return the Y position
-      double GetY(void) const { return m_position.y; }
-
-		// Return the Z position
-      double GetZ(void) const { return m_position.z; }
-
 		// Return the dude's hit points
       int16_t GetHealth(void) const { return m_stockpile.m_sHitPoints; }
 

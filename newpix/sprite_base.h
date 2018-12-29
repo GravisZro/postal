@@ -16,6 +16,12 @@ public:
   sprite_base_t(void) noexcept;
   virtual ~sprite_base_t(void) noexcept;
 
+  virtual CSprite* GetSprite(void) final { return this; }
+
+  virtual double GetX(void) const final { return m_position.x; }
+  virtual double GetY(void) const final { return m_position.y; }
+  virtual double GetZ(void) const final { return m_position.z; }
+
   space3d_t<double> m_position;
   space3d_t<double> m_rotation;
 

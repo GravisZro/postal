@@ -669,12 +669,8 @@ void CMine::Render(void)
 		}
 
 		// Map from 3d to 2d coords
-		Map3Dto2D(
-         (int16_t) m_position.x,
-         (int16_t) m_position.y,
-         (int16_t) m_position.z,
-         &m_sX2,
-         &m_sY2);
+      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                         m_sX2, m_sY2);
 
 		// Center on image.
       m_sX2	-= m_pImage->m_sWidth / 2;
@@ -844,6 +840,40 @@ int16_t CMine::EditNew(									// Returns 0 if successfull, non-zero otherwise
 
 	return sResult;
 }
+
+
+void CMine::EditRect(RRect* pRect)
+{
+   if (m_pImage != nullptr)
+   {
+      // Map from 3d to 2d coords
+     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                        pRect->sX, pRect->sY);
+
+      // Center on image.
+      pRect->sX	-= m_pImage->m_sWidth / 2;
+      pRect->sY	-= m_pImage->m_sHeight / 2;
+      pRect->sW	= m_pImage->m_sWidth;
+      pRect->sH	= m_pImage->m_sHeight;
+   }
+}
+
+void CMine::EditHotSpot(			// Returns nothiing.
+   int16_t*	psX,			// Out: X coord of 2D hotspot relative to
+                        // EditRect() pos.
+   int16_t*	psY)			// Out: Y coord of 2D hotspot relative to
+                        // EditRect() pos.
+   {
+   if (m_pImage != nullptr)
+      {
+      *psX	= m_pImage->m_sWidth / 2;
+      *psY	= m_pImage->m_sHeight / 2;
+      }
+   else
+      {
+      CWeapon::EditHotSpot(psX, psY);
+      }
+   }
 #endif // !defined(EDITOR_REMOVED)
 
 ////////////////////////////////////////////////////////////////////////////////

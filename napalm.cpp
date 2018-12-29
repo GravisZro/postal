@@ -492,8 +492,8 @@ void CNapalm::Render(void)
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sX2, &m_sY2);
-		
+     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                        m_sX2, m_sY2);
 
 		// Priority is based on bottom edge of sprite
       m_sPriority = m_position.z;

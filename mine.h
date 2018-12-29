@@ -139,42 +139,12 @@ class CMine
 		// Sets up new item in the editor
 		int16_t EditNew(int16_t sX, int16_t sY, int16_t sZ);
 
-		void EditRect(RRect* pRect)
-		{
-         if (m_pImage != nullptr)
-			{
-				// Map from 3d to 2d coords
-				Map3Dto2D(
-               (int16_t) m_position.x,
-               (int16_t) m_position.y,
-               (int16_t) m_position.z,
-					&(pRect->sX), 
-					&(pRect->sY) );
-
-				// Center on image.
-				pRect->sX	-= m_pImage->m_sWidth / 2;
-				pRect->sY	-= m_pImage->m_sHeight / 2;
-				pRect->sW	= m_pImage->m_sWidth;
-				pRect->sH	= m_pImage->m_sHeight;
-			}
-		}
-
+      void EditRect(RRect* pRect);
 		void EditHotSpot(			// Returns nothiing.
 			int16_t*	psX,			// Out: X coord of 2D hotspot relative to
 										// EditRect() pos.
-			int16_t*	psY)			// Out: Y coord of 2D hotspot relative to
-										// EditRect() pos.
-			{
-         if (m_pImage != nullptr)
-				{
-				*psX	= m_pImage->m_sWidth / 2;
-				*psY	= m_pImage->m_sHeight / 2;
-				}
-			else
-				{
-				CWeapon::EditHotSpot(psX, psY);
-				}
-			}
+         int16_t*	psY);			// Out: Y coord of 2D hotspot relative to
+                              // EditRect() pos.
 #endif // !defined(EDITOR_REMOVED)
 
 	//---------------------------------------------------------------------------
@@ -222,14 +192,6 @@ class CMine
 			int16_t sX,												// In: Starting X position
 			int16_t sY,												// In: Starting Y position
 			int16_t sZ);												// In: Starting Z position
-
-		// Get this class's sprite.  Note that the type will vary.
-		// This is a pure virtual functionin the base class.
-		virtual			// Overriden here.
-		CSprite* GetSprite(void)	// Returns this weapon's sprite.
-			{
-         return this;
-			}
 
 	//---------------------------------------------------------------------------
 	// Internal functions

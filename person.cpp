@@ -914,7 +914,7 @@ void CPerson::Logic_Writhing(void)
 		// Check pseudo-head point.
 		uint16_t	u16Attrib	= 0;	// Safety.
 		int16_t	sHeight		= 0;	// Safety.
-		GetFloorAttributes(sPseudoHeadX, sPseudoHeadY, &u16Attrib, &sHeight);
+      GetFloorAttributes(sPseudoHeadX, sPseudoHeadY, u16Attrib, sHeight);
       if ( (u16Attrib & REALM_ATTR_NOT_WALKABLE) || sHeight > m_position.y + WRITHING_VERTICAL_TOLERANCE
          || (dX == m_position.x && dZ == m_position.z) )
 		{

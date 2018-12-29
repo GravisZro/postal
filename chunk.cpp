@@ -155,7 +155,8 @@ void CChunk::Update(void)
 		{
 		int16_t	sX2d, sY2d;
 		// Map from 3d to 2d coords.
-      Map3Dto2D(m_position.x, m_position.y, m_position.z, &sX2d, &sY2d);
+      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                         sX2d, sY2d);
 
 		switch (m_type)
 			{
@@ -213,7 +214,8 @@ void CChunk::Update(void)
 void CChunk::Render(void)
 {
   // Map from 3d to 2d coords
-  Map3Dto2D(m_position.x, m_position.y, m_position.z, &m_sX2, &m_sY2);
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     m_sX2, m_sY2);
 
   m_sX2End	= m_sX2 + RAND_SWAY(m_sLen);
   m_sY2End	= m_sY2 + RAND_SWAY(m_sLen);

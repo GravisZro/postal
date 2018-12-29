@@ -521,7 +521,7 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 			// Convert to 3D.
 			realm()->MapY2DtoZ3D(
             m_position.z,
-            &m_position.z);
+            m_position.z);
 			}
 
 		// Make sure there were no file errors or format errors . . .
@@ -617,7 +617,7 @@ void CThing3d::Render(void)
 	{
 	uint16_t	u16CombinedAttributes;
 	int16_t	sLightTally;
-   GetEffectAttributes(m_position.x, m_position.z, &u16CombinedAttributes, &sLightTally);
+   GetEffectAttributes(m_position.x, m_position.z, u16CombinedAttributes, sLightTally);
 
 	// Brightness.
    m_sBrightness = m_sBaseBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
@@ -633,13 +633,13 @@ void CThing3d::Render(void)
       m_trans.Rz(rspMod360(m_rotation.z) );
 
 		// Map from 3d to 2d coords
-      Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, &m_sX2, &m_sY2);
+      realm()->Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, m_sX2, m_sY2);
 
 		// If no layer override . . .
 		if (m_sLayerOverride < 0)
 			{
 			// Layer should be based on info from attribute map.
-         GetLayer(m_position.x, m_position.z, &m_sLayer);
+         GetLayer(m_position.x, m_position.z, m_sLayer);
 			}
 		else
 			{
@@ -667,7 +667,9 @@ void CThing3d::Render(void)
 			// Get the height of the terrain from the attribute map
          int16_t sY = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
 			// Map from 3d to 2d coords
-         Map3Dto2D(m_position.x, (double) sY, m_position.z, &(m_spriteShadow.m_sX2), &(m_spriteShadow.m_sY2) );
+         realm()->Map3Dto2D(m_position.x, double(sY), m_position.z,
+                            m_spriteShadow.m_sX2, m_spriteShadow.m_sY2);
+
 			// Offset hotspot to center of image.
 			m_spriteShadow.m_sX2 -= m_spriteShadow.m_pImage->m_sWidth / 2;
 			m_spriteShadow.m_sY2 -= m_spriteShadow.m_pImage->m_sHeight / 2;
@@ -783,16 +785,17 @@ void CThing3d::EditRect(RRect* pRect)
 			realm()->Scene()->TransformPtsToRealm(&trans, apt3dSrc, apt3dDst, 2);
          m_sRadius = (apt3dDst[1] - apt3dDst[0]).magnatude();
 
-			Map3Dto2D(
+         realm()->Map3Dto2D(
             m_position.x + apt3dDst[0].x(),
             m_position.y + apt3dDst[0].y(),
             m_position.z + apt3dDst[0].z(),
-				&(pRect->sX), &(pRect->sY) );
+            pRect->sX, pRect->sY);
 			}
 		}
 	else
 		{
-      Map3Dto2D(m_position.x, m_position.y, m_position.z, &(pRect->sX), &(pRect->sY) );
+      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                         pRect->sX, pRect->sY);
 
       m_sRadius	= 10;	// **FUDGE.
 		}
@@ -817,14 +820,9 @@ void CThing3d::EditHotSpot(		// Returns nothiing.
 	RRect	rc;
 	EditRect(&rc);
 	// Get 2D hotspot.
-	int16_t	sX;
-	int16_t	sY;
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&sX,
-		&sY);
+   int16_t sX, sY;
+   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                      sX, sY);
 
 	// Get relation.
 	*psX	= sX - rc.sX;
@@ -884,7 +882,7 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 	// Get height at new position.
 	uint16_t	usAttrib;
 	int16_t		sHeight;
-	GetFloorAttributes(dNewX, dNewZ, &usAttrib, &sHeight);
+   GetFloorAttributes(dNewX, dNewZ, usAttrib, sHeight);
 
 	// If it was above the ground last time and is now below the ground, it must have
 	// hit the ground and the blown up state is complete
@@ -920,7 +918,7 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 			m_dDrag			= 0.0;
 			
 			// Make sure it's not underground at this position with the new y position.
-			GetFloorAttributes(dNewX, dNewZ, &usAttrib, &sHeight);
+         GetFloorAttributes(dNewX, dNewZ, usAttrib, sHeight);
 			if (dNewY <= sHeight)
 				{
 				// Get out of the ground.
@@ -1221,7 +1219,7 @@ bool CThing3d::MakeValidPosition(	// Returns true, if new position was valid.
 	// Get height at new position.
 	uint16_t	usAttrib;
 	int16_t		sHeight;
-	GetFloorAttributes(*pdNewX, *pdNewZ, &usAttrib, &sHeight);
+   GetFloorAttributes(*pdNewX, *pdNewZ, usAttrib, sHeight);
 
 	// If too big a height difference or completely not walkable . . .
 	if (usAttrib & REALM_ATTR_NOT_WALKABLE
@@ -1233,7 +1231,7 @@ bool CThing3d::MakeValidPosition(	// Returns true, if new position was valid.
 		bValidatedPosition	= true;
 
 		// Get height in that spot.
-		GetFloorAttributes(*pdNewX, *pdNewZ, &usAttrib, &sHeight);
+      GetFloorAttributes(*pdNewX, *pdNewZ, usAttrib, sHeight);
 		}
 	else
 		{
@@ -1497,8 +1495,8 @@ void CThing3d::UpdateFirePosition(void)
 void CThing3d::GetFloorAttributes(	// Returns nothing.
 	int16_t		sX,						// In:  X coord.
 	int16_t		sZ,						// In:  Z coord.
-	uint16_t*		pu16Attrib,				// Out: Combined attribs, if not nullptr.
-	int16_t*	psHeight)				// Out: Max height, if not nullptr.
+   uint16_t& u16Attrib,				// Out: Combined attribs, if not nullptr.
+   int16_t& sHeight)				// Out: Max height, if not nullptr.
 	{
 	uint16_t	u16CurAttrib;
 	uint16_t	u16CombinedAttrib	= 0;
@@ -1526,14 +1524,11 @@ void CThing3d::GetFloorAttributes(	// Returns nothing.
 	// Strip off the height information from the attributes
 	u16CombinedAttrib &= REALM_ATTR_FLOOR_MASK;
 	
-	// If concerned with the height . . .
-	if (psHeight)
-		{
+
 		// Map into realm.
-		realm()->MapAttribHeight(sMaxHeight * 4, psHeight);
-		}
-	
-	SET(pu16Attrib, u16CombinedAttrib);
+      realm()->MapAttribHeight(sMaxHeight * 4, sHeight);
+
+   u16Attrib = u16CombinedAttrib;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1542,8 +1537,8 @@ void CThing3d::GetFloorAttributes(	// Returns nothing.
 void CThing3d::GetEffectAttributes(	// Returns nothing.
 	int16_t		sX,							// In:  X coord.
 	int16_t		sZ,							// In:  Z coord.
-	uint16_t*		pu16Attrib,					// Out: Combined attribs, if not nullptr.
-	int16_t*	psLightBits)				// Out: Tally of light bits set, if not nullptr.
+   uint16_t& u16Attrib,					// Out: Combined attribs, if not nullptr.
+   int16_t& sLightBits)				// Out: Tally of light bits set, if not nullptr.
 	{
 	uint16_t	u16CurAttrib;
 	uint16_t	u16CombinedAttrib	= 0;
@@ -1564,8 +1559,8 @@ void CThing3d::GetEffectAttributes(	// Returns nothing.
 			sLightTally++;
 		}
 
-	SET(pu16Attrib, u16CombinedAttrib);
-	SET(psLightBits, sLightTally);
+   u16Attrib = u16CombinedAttrib;
+   sLightBits = sLightTally;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1575,7 +1570,7 @@ void CThing3d::GetEffectAttributes(	// Returns nothing.
 void CThing3d::GetLayer(	// Returns nothing.
 	int16_t  sX,					// In:  X coord.
 	int16_t  sZ,					// In:  Z coord.
-	int16_t* psLayer)			// Out: Combined layer.
+   int16_t& sLayer)			// Out: Combined layer.
 	{
 	uint16_t	u16CombinedLayer	= 0;
 
@@ -1587,22 +1582,22 @@ void CThing3d::GetLayer(	// Returns nothing.
 			);
 		}
 
-	SET(psLayer, realm()->GetLayerViaAttrib(u16CombinedLayer) );
+   sLayer = realm()->GetLayerViaAttrib(u16CombinedLayer);
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get the link point specified by the provided transform.
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::GetLinkPoint(	// Returns nothing.
-	RTransform*	ptrans,			// In:  Transform specifying point.
-	double*	pdX,					// Out: Point speicfied.
-	double*	pdY,					// Out: Point speicfied.
-	double*	pdZ)					// Out: Point speicfied.
+   RTransform& trans,			// In:  Transform specifying point.
+   double& dX,					// Out: Point speicfied.
+   double& dY,					// Out: Point speicfied.
+   double& dZ)					// Out: Point speicfied.
 	{
 	// Set up translation based on the combined character and rigid body transforms.
 	RTransform transChildAbsolute;
    // Apply child and parent to transChildAbs.
-   transChildAbsolute.Mul(*m_ptrans, *ptrans);
+   transChildAbsolute.Mul(*m_ptrans, trans);
 	// Set up pt at origin for weapon.
    Vector3D pt3Src = {0, 0, 0, 1};
    Vector3D pt3Dst;
@@ -1610,9 +1605,9 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 	realm()->Scene()->TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 
 	// Output link point.
-	*pdX	= pt3Dst.x();
-	*pdY	= pt3Dst.y();
-	*pdZ	= pt3Dst.z();
+   dX	= pt3Dst.x();
+   dY	= pt3Dst.y();
+   dZ	= pt3Dst.z();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1620,18 +1615,17 @@ void CThing3d::GetLinkPoint(	// Returns nothing.
 // (virtual).
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
-   managed_ptr<CThing3d> childThing,		// In:  Instance ID of child to detach.
-	RTransform*	ptrans)				// In:  Transform for positioning child.
-	{
-   managed_ptr<CThing3d> pthing3d;
+   managed_ptr<CThing3d>& childThing,		// In:  Instance ID of child to detach.
+   RTransform& trans)				// In:  Transform for positioning child.
+   {
    if (childThing)
 		{
 		DetachChild(
          static_cast<CSprite*>(childThing.pointer()),		// In:  Child sprite to detach.
-			ptrans,							// In:  Transform for positioning child.
-         &(childThing->m_position.x),			// Out: Position of child.
-         &(childThing->m_position.y),			// Out: Position of child.
-         &(childThing->m_position.z) );			// Out: Position of child.
+         trans,							// In:  Transform for positioning child.
+         childThing->m_position.x,			// Out: Position of child.
+         childThing->m_position.y,			// Out: Position of child.
+         childThing->m_position.z);			// Out: Position of child.
 
 		// Child is done with us.
       childThing->parent().reset();
@@ -1644,18 +1638,18 @@ void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::DetachChild(	// Returns nothing.
 	CSprite*	psprite,				// In:  Child sprite to detach.
-	RTransform*	ptrans,			// In:  Transform for positioning child.
-	double*	pdX,					// Out: New position of child.
-	double*	pdY,					// Out: New position of child.
-	double*	pdZ)					// Out: New position of child.
+   RTransform&	trans,			// In:  Transform for positioning child.
+   double& dX,					// Out: New position of child.
+   double& dY,					// Out: New position of child.
+   double& dZ)					// Out: New position of child.
 	{
 	// Get the link point via the transform.
-	GetLinkPoint(ptrans, pdX, pdY, pdZ);
+   GetLinkPoint(trans, dX, dY, dZ);
 
 	// Set child position to character's position offset by rigid body's realm offset.
-   *pdX += m_position.x;
-   *pdY += m_position.y;
-   *pdZ += m_position.z;
+   dX += m_position.x;
+   dY += m_position.y;
+   dZ += m_position.z;
 	
 	// Detatch child's sprite
    RemoveChild(psprite);
@@ -1667,17 +1661,17 @@ void CThing3d::DetachChild(	// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::PositionChild(	// Returns nothing.
 	CSprite*	psprite,				// In:  Child sprite to position.
-	RTransform*	ptrans,			// In:  Transform for positioning child.
-	double*	pdX,					// Out: New position of child.
-	double*	pdY,					// Out: New position of child.
-	double*	pdZ)					// Out: New position of child.
+   RTransform& trans,			// In:  Transform for positioning child.
+   double& dX,					// Out: New position of child.
+   double& dY,					// Out: New position of child.
+   double& dZ)					// Out: New position of child.
 	{
 	switch (psprite->GetType())
 		{
 		case CSprite::Standard3d:
 			// Set transform from our rigid body transfanimation for the child
 			// sprite.
-         dynamic_cast<CSprite3*>(psprite)->m_ptrans	= ptrans;
+         dynamic_cast<CSprite3*>(psprite)->m_ptrans	= &trans;
 			break;
 
 		case CSprite::Standard2d:	// This only works for 1st level children.
@@ -1697,7 +1691,7 @@ void CThing3d::PositionChild(	// Returns nothing.
 			// Note that we don't need to try to extract the rotations from the
 			// transform since CSprite2's cannot rotate currently.
 
-			GetLinkPoint(ptrans, pdX, pdY, pdZ);
+         GetLinkPoint(trans, dX, dY, dZ);
 			
 			break;
 			}

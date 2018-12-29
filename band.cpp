@@ -1056,14 +1056,16 @@ void CBand::Render(void)
 	// Update child, if any . . .
    if (child())
    {
+
+     managed_ptr<CThing3d> child3d = child();
 			// Set transform from our rigid body transfanimation for the child
 			// sprite.
-         child3d()->m_ptrans	= &m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
+         child3d->m_ptrans = &m_panimCur->m_ptransRigid->atTime(m_lAnimTime);
 			// If the item is not our child . . .
-         if (child3d()->m_psprParent != this)
+         if (child3d->m_psprParent != this)
 				{
 				// Make it so.
-            AddChild( child3d().pointer());
+            AddChild(child3d.pointer());
             }
 	}
 }
@@ -1172,14 +1174,15 @@ int16_t CBand::EditModify(void)
 						}
 
                if (child())
-						{
+                  {
 						// If it is not of the new type . . .
                   if (managed_ptr<CItem3d>(child())->m_itemType != itChild)
-							{
+                     {
+                    managed_ptr<CThing3d> child3d = child();
 							// Disable item.
 							DetachChild(
-                        child(),
-                        &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
+                        child3d,
+                        m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 							// Be gone.
                       Object::enqueue(SelfDestruct);
 							}
@@ -1383,71 +1386,71 @@ void CBand::OnShotMsg(Shot_Message* pMessage)
 
 void CBand::OnExplosionMsg(Explosion_Message* pMessage)
 {
-	if (m_state != State_BlownUp)
-	{
-		CCharacter::OnExplosionMsg(pMessage);
+  if (m_state != State_BlownUp)
+  {
+    CCharacter::OnExplosionMsg(pMessage);
+    managed_ptr<CThing3d> child3d = child();
+    // Drop item, if we have one still.
+    DetachChild(
+          child3d,
+          m_panimCur->m_ptransRigid->atTime(m_lAnimTime));
+    // If we got something back . . .
+    if (child())
+    {
+      // Let it know about the explosion.
+      GameMessage msg;
+      msg.msg_Explosion	= *pMessage;
 
-		// Drop item, if we have one still.
-      DetachChild(
-         child(),
-         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
-		// If we got something back . . . 
-      if (child())
-			{
-			// Let it know about the explosion.
-			GameMessage msg;
-			msg.msg_Explosion	= *pMessage;
-			
-         SendThingMessage(msg, child());
-			}
+      SendThingMessage(msg, child());
+    }
 
-		// Explosion kills the guy
-		m_stockpile.m_sHitPoints = 0;
-		m_state = State_BlownUp;
-		m_lAnimTime = 0;
-		m_panimCur = &m_animBlownup;
-		switch (GetRand() % 8)
-		{
-			case 0:
-				PlaySample(g_smidBlownupFemaleYell, SampleMaster::Voices);
-				break;
+    // Explosion kills the guy
+    m_stockpile.m_sHitPoints = 0;
+    m_state = State_BlownUp;
+    m_lAnimTime = 0;
+    m_panimCur = &m_animBlownup;
+    switch (GetRand() % 8)
+    {
+      case 0:
+        PlaySample(g_smidBlownupFemaleYell, SampleMaster::Voices);
+        break;
 
-			case 1:
-				PlaySample(g_smidCarynScream, SampleMaster::Voices);
-				break;
+      case 1:
+        PlaySample(g_smidCarynScream, SampleMaster::Voices);
+        break;
 
-			case 2:
-				PlaySample(g_smidTinaScream1, SampleMaster::Voices);
-				break;
+      case 2:
+        PlaySample(g_smidTinaScream1, SampleMaster::Voices);
+        break;
 
-			case 3:
-				PlaySample(g_smidPaulAhah, SampleMaster::Voices);
-				break;
+      case 3:
+        PlaySample(g_smidPaulAhah, SampleMaster::Voices);
+        break;
 
-			case 4:
-				PlaySample(g_smidScottYell1, SampleMaster::Voices);
-				break;
+      case 4:
+        PlaySample(g_smidScottYell1, SampleMaster::Voices);
+        break;
 
-			case 5:
-				PlaySample(g_smidScottYell2, SampleMaster::Voices);
-				break;
+      case 5:
+        PlaySample(g_smidScottYell2, SampleMaster::Voices);
+        break;
 
-			case 6:
-				PlaySample(g_smidMikeOhh, SampleMaster::Voices);
-				break;
+      case 6:
+        PlaySample(g_smidMikeOhh, SampleMaster::Voices);
+        break;
 
-			case 7:
-				PlaySample(g_smidSteveAhBlowup, SampleMaster::Voices);
-				break;
-		}
-		AlertBand();
-		GameMessage msg;
-		msg.msg_Explosion.eType = typeExplosion;
-		msg.msg_Explosion.sPriority = 0;
-      auto list = realm()->GetThingsByType(CDemonID);
-      if (!list.empty())
-         SendThingMessage(msg, list.front());
-	}
+      case 7:
+        PlaySample(g_smidSteveAhBlowup, SampleMaster::Voices);
+        break;
+    }
+    AlertBand();
+    GameMessage msg;
+    msg.msg_Explosion.eType = typeExplosion;
+    msg.msg_Explosion.sPriority = 0;
+    auto list = realm()->GetThingsByType(CDemonID);
+    if (!list.empty())
+      SendThingMessage(msg, list.front());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1643,36 +1646,37 @@ bool CBand::WhileShot(void)	// Returns true until state is complete.
 // Drop item and apply appropriate forces.
 ////////////////////////////////////////////////////////////////////////////////
 void CBand::DropItem(void)	// Returns nothing.
-	{
-	// If we still have the child item . . .
-   if (child())
-		{
-		// Drop it.
-      DetachChild(
-         child(),
-         &m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
+{
+  // If we still have the child item . . .
+  if (child())
+  {
+    managed_ptr<CThing3d> child3d = child();
+    // Drop it.
+    DetachChild(
+          child3d,
+          m_panimCur->m_ptransRigid->atTime(m_lAnimTime) );
 
-			// Send it spinning.
-         child3d()->m_dExtRotVelY	= GetRand() % 720;
-         child3d()->m_dExtRotVelZ	= GetRand() % 720;
-			// Send it forward (from our perspective)
-			// with our current velocity.
-         child3d()->m_dExtHorzRot	= m_rotation.y;
-         child3d()->m_dExtHorzVel	= m_dVel;
-			// ... and air drag.
-         if (child3d()->m_dExtHorzVel > 0.0)
-				{
-            child3d()->m_dExtHorzDrag = -ms_dDefaultAirDrag;
-				}
-         else if (child3d()->m_dExtHorzVel < 0.0)
-				{
-            child3d()->m_dExtHorzDrag = ms_dDefaultAirDrag;
-				}
+    // Send it spinning.
+    child3d->m_dExtRotVelY = GetRand() % 720;
+    child3d->m_dExtRotVelZ = GetRand() % 720;
+    // Send it forward (from our perspective)
+    // with our current velocity.
+    child3d->m_dExtHorzRot = m_rotation.y;
+    child3d->m_dExtHorzVel = m_dVel;
+    // ... and air drag.
+    if (child3d->m_dExtHorzVel > 0.0)
+    {
+      child3d->m_dExtHorzDrag = -ms_dDefaultAirDrag;
+    }
+    else if (child3d->m_dExtHorzVel < 0.0)
+    {
+      child3d->m_dExtHorzDrag = ms_dDefaultAirDrag;
+    }
 
-			// Similar enough to blown up.
-         child3d()->m_state			= State_BlownUp;
-         }
-	}
+    // Similar enough to blown up.
+    child3d->m_state = State_BlownUp;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // EOF

@@ -2522,10 +2522,10 @@ void CDude::Update(void)
               // Position powerup.
 					PositionChild(
                   ppowerup.pointer(),	// In:  Child sprite to detach.
-                  &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying position.
-                  &(ppowerup->m_position.x),		// Out: New position of child.
-                  &(ppowerup->m_position.y),		// Out: New position of child.
-                  &(ppowerup->m_position.z) );		// Out: New position of child.
+                  m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying position.
+                  ppowerup->m_position.x,		// Out: New position of child.
+                  ppowerup->m_position.y,		// Out: New position of child.
+                  ppowerup->m_position.z);		// Out: New position of child.
 					}
 				break;
 				}
@@ -3452,8 +3452,8 @@ else
 		// Map through view angle which is the angle of the trigger plane.
 		// (it is created by the user in the editor parallel with the
 		// screen).
-		double	dTriggerY;
-      realm()->MapZ3DtoY2D(m_position.z, &dTriggerY);
+      double dTriggerY;
+      realm()->MapZ3DtoY2D(m_position.z, dTriggerY);
 		// Spew triggers.
       SpewTriggers(realm(), GetInstanceID(), m_position.x, dTriggerY);
 
@@ -3483,15 +3483,16 @@ void CDude::Render(void)
 	CCharacter::Render();
 
 	// Update children, if any . . .
-	CFlag*	pflag	= GetNextFlag(nullptr);
-	while (pflag)
+   CFlag* pflag	= GetNextFlag(nullptr);
+   double dummy = 0.0;
+   while (pflag != nullptr)
 		{
 		PositionChild(
-			pflag->GetSprite(),
-         & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime),	// In:  Transform specifying position.
-			nullptr,
-			nullptr,
-			nullptr);
+         pflag->GetSprite(),
+         static_cast<CDudeAnim3D*>(m_panimCur)->m_ptransLeft->atTime(m_lAnimTime),	// In:  Transform specifying position.
+         dummy,
+         dummy,
+         dummy);
 
 		// Update flag's position so it can correctly collision detect.
       pflag->m_position.x	= m_position.x;
@@ -4815,10 +4816,10 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 	{
 	double	dBrainX, dBrainY, dBrainZ;
 	GetLinkPoint(														// Returns nothing.
-      &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
-		&dBrainX,														// Out: Point specified.
-		&dBrainY,														// Out: Point specified.
-		&dBrainZ);														// Out: Point specified.
+      m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
+      dBrainX,														// Out: Point specified.
+      dBrainY,														// Out: Point specified.
+      dBrainZ);														// Out: Point specified.
 
 	// Make absolute by adding dude's position to relative position.
    dBrainX	+= m_position.x;
@@ -5125,20 +5126,21 @@ void CDude::OnBurnMsg(			// Returns nothing.
 
 void CDude::OnPutMeDownMsg(		// Returns nothing
 	PutMeDown_Message* pputmedownmsg)
-	{
-	// If he is carrying the flag item, then he should put it down
-   if (pputmedownmsg->flag)
-		{
-		// Detatch child and update its position
-      DetachChild(
-         pputmedownmsg->flag,
-         & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime) );
-         pputmedownmsg->flag->m_position.x		= m_position.x;
-         pputmedownmsg->flag->m_position.y		= m_position.y;
-         pputmedownmsg->flag->m_position.z		= m_position.z;
-         pputmedownmsg->flag->m_state = State_Die;
-		}
-	}
+{
+  // If he is carrying the flag item, then he should put it down
+  if (pputmedownmsg->flag)
+  {
+    managed_ptr<CThing3d> child3d = pputmedownmsg->flag;
+    // Detatch child and update its position
+    DetachChild(
+          child3d,
+          static_cast<CDudeAnim3D*>(m_panimCur)->m_ptransLeft->atTime(m_lAnimTime));
+    pputmedownmsg->flag->m_position.x = m_position.x;
+    pputmedownmsg->flag->m_position.y = m_position.y;
+    pputmedownmsg->flag->m_position.z = m_position.z;
+    pputmedownmsg->flag->m_state = State_Die;
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5226,10 +5228,10 @@ void CDude::OnExecute(void)		// Returns nothing.
 	// Update execution point via link point.
 	double	dMuzzleX, dMuzzleY, dMuzzleZ;
 	GetLinkPoint(														// Returns nothing.
-      &m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
-		&dMuzzleX,														// Out: Point speicfied.
-		&dMuzzleY,														// Out: Point speicfied.
-		&dMuzzleZ);														// Out: Point speicfied.
+      m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying point.
+      dMuzzleX,														// Out: Point speicfied.
+      dMuzzleY,														// Out: Point speicfied.
+      dMuzzleZ);														// Out: Point speicfied.
 
 	// Get current weapon and stockpile.
 	int16_t*		psNumLeft;
@@ -5404,12 +5406,12 @@ void CDude::ShowTarget()
 			m_TargetSprite.m_psprParent->RemoveChild(&m_TargetSprite);
       AddChild(&m_TargetSprite);
 		// Map from 3d to 2d coords
-		Map3Dto2D(
-         fRateX - m_sRadius / 2,
-         m_sRadius * 2,
-			fRateZ,
-			&m_TargetSprite.m_sX2,
-			&m_TargetSprite.m_sY2);
+      realm()->Map3Dto2D(
+            fRateX - m_sRadius / 2,
+            float(m_sRadius * 2),
+            fRateZ,
+            m_TargetSprite.m_sX2,
+            m_TargetSprite.m_sY2);
 		m_TargetSprite.m_sInFlags &= ~CSprite::InHidden;
 		m_TargetSprite.m_sLayer = CRealm::LayerSprite16;
 	}
@@ -5754,7 +5756,7 @@ bool CDude::FindExecutee(void)		// Returns true, if we found one; false, otherwi
 		if ( (psmashee->m_pThing->GetX() != CThing::InvalidPosition
 			&&	psmashee->m_pThing->GetY() != CThing::InvalidPosition
 			&&	psmashee->m_pThing->GetZ() != CThing::InvalidPosition)
-			|| psmashee->m_pThing->GetSprite() )
+         || psmashee->m_pThing->GetSprite() != nullptr)
 			{
 			// Found one.
 			bFoundOne	= true;

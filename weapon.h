@@ -200,10 +200,6 @@ class CWeapon
 		}
 #endif // !defined(EDITOR_REMOVED)
 
-		// Get the coordinates of this thing.
-      virtual double GetX(void) const { return m_position.x; }
-      virtual double GetY(void) const { return m_position.y; }
-      virtual double GetZ(void) const { return m_position.z; }
 
 		virtual int16_t GetResources(void);
 
@@ -219,13 +215,6 @@ class CWeapon
 		{
 			return sRequestedRange;
 		}
-
-		// Get the descended class's sprite.  Note that the type will vary.
-		// This is a pure virtual function, making this an abstract
-		// (i.e., uninstantiable) class.
-		virtual			// A descended class must define this virtual
-							// in order to be instantiable.
-		CSprite* GetSprite(void) = 0;	// Returns this weapon's sprite.
 
 		// Process all messages currently in the message queue through 
 		// ProcessMessage().

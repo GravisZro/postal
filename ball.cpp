@@ -359,12 +359,8 @@ void CBall::Render(void)
   m_sInFlags = 0;
 
   // Map from 3d to 2d coords
-  Map3Dto2D(
-        m_position.x,
-        m_position.y,
-        m_position.z,
-        &m_sX2,
-        &m_sY2 );
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     m_sX2, m_sY2);
 
   // Priority is based on 3D hotspot which is where we're drawn.
   m_sPriority = m_position.z;
@@ -567,19 +563,15 @@ void CBall::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CBall::EditRect(	// Returns nothiing.
 	RRect*	prc)			// Out: Clickable pos/area of object.
-	{
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&(prc->sX),
-		&(prc->sY) );
+{
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     prc->sX, prc->sY);
 
-	prc->sX -= m_sCurRadius;
-	prc->sY -= m_sCurRadius;
-	prc->sW = m_sCurRadius * 2;
-	prc->sH = m_sCurRadius * 2;
-	}
+  prc->sX -= m_sCurRadius;
+  prc->sY -= m_sCurRadius;
+  prc->sW = m_sCurRadius * 2;
+  prc->sH = m_sCurRadius * 2;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Called by editor to get the hotspot of an object in 2D.

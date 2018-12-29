@@ -557,7 +557,8 @@ void CFire::Render(void)
 	if (pAnim)
 	{
 		// Map from 3d to 2d coords
-      Map3Dto2D(m_position.x, m_position.y, m_position.z, &m_sX2, &m_sY2);
+     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                        m_sX2, m_sY2);
 		// Offset by animations 2D offsets.
       m_sX2	+= pAnim->m_sX;
       m_sY2	+= pAnim->m_sY;

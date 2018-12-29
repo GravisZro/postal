@@ -851,12 +851,8 @@ int16_t CSoundThing::EditMove(									// Returns 0 if successfull, non-zero oth
 void CSoundThing::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 	{
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&(prc->sX),
-		&(prc->sY) );
+  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                     prc->sX, prc->sY);
 
 	prc->sW	= 10;	// Safety.
 	prc->sH	= 10;	// Safety.
@@ -907,12 +903,8 @@ void CSoundThing::EditRender(void)
 	// Setup simple, non-animating sprite
    m_sInFlags = 0;
 
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-      &m_sX2,
-      &m_sY2 );
+   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                      m_sX2, m_sY2);
 
 	// Priority is based on bottom edge of sprite
    m_sPriority = m_position.z;

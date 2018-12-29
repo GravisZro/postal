@@ -4011,7 +4011,7 @@ class CPlayRealm : public CPlay
 						{
 						// Update grip/camera
 						int16_t	sX, sY;
-                  prealm->Map3Dto2D(pinfo->m_localDude->GetX(), pinfo->m_localDude->GetY(), pinfo->m_localDude->GetZ(), &sX, &sY);
+                  prealm->Map3Dto2D(pinfo->m_localDude->GetX(), pinfo->m_localDude->GetY(), pinfo->m_localDude->GetZ(), sX, sY);
 						pinfo->Grip()->TrackTarget(sX, sY, 30);
 
 						// Set coordinates for the "ear"

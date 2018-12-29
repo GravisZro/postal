@@ -153,16 +153,6 @@ class CBall
 										// EditRect() pos.
 #endif // !defined(EDITOR_REMOVED)
 
-		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_position.x; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_position.y; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_position.z; }
-
 	//---------------------------------------------------------------------------
 	// Internal functions
 	//---------------------------------------------------------------------------

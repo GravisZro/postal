@@ -397,7 +397,7 @@ void CSentry::Render(void)
 	// Do our own render of the stationary base
 	uint16_t	u16CombinedAttributes;
 	int16_t	sLightTally;
-   GetEffectAttributes(m_base.x, m_base.z, &u16CombinedAttributes, &sLightTally);
+   GetEffectAttributes(m_base.x, m_base.z, u16CombinedAttributes, sLightTally);
 
 	// Brightness.
 	m_spriteBase.m_sBrightness	= m_sBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
@@ -413,10 +413,11 @@ void CSentry::Render(void)
       m_trans.Rz(rspMod360(m_rotation.z) );
 
 		// Map from 3d to 2d coords
-      Map3Dto2D((int16_t) m_base.x, (int16_t) m_base.y, (int16_t) m_base.z, &m_spriteBase.m_sX2, &m_spriteBase.m_sY2);
+      realm()->Map3Dto2D(m_base.x, m_base.y, m_base.z,
+                         m_spriteBase.m_sX2, m_spriteBase.m_sY2);
 
 		// Layer should be based on info from attribute map.
-      GetLayer(m_base.x, m_base.z, &(m_spriteBase.m_sLayer) );
+      GetLayer(m_base.x, m_base.z, m_spriteBase.m_sLayer);
 
 		// Priority is based on bottom edge of sprite which is currently the origin
       m_spriteBase.m_sPriority = m_base.z;
@@ -828,12 +829,8 @@ void CSentry::EditHotSpot(			// Returns nothiing.
 	// Get 2D hotspot.
 	int16_t	sX;
 	int16_t	sY;
-	Map3Dto2D(
-      m_base.x,
-      m_base.y,
-      m_base.z,
-		&sX,
-		&sY);
+   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                      sX, sY);
 
 	// Get relation.
 	*psX	= sX - rc.sX;

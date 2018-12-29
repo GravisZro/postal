@@ -893,14 +893,14 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 				fStartX, 
 				fStartY, 
 				fStartZ, 
-				&(psl2d->m_sX2), 
-				&(psl2d->m_sY2) );
+            psl2d->m_sX2,
+            psl2d->m_sY2);
 			pRealm->Map3Dto2D(
 				fStartX + fRateX * sRand2, 
 				fStartY + fRateY * sRand2, 
 				fStartZ + fRateZ * sRand2, 
-				&(psl2d->m_sX2End), 
-				&(psl2d->m_sY2End) );
+            psl2d->m_sX2End,
+            psl2d->m_sY2End);
 			psl2d->m_sPriority	= fStartZ;
 			psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(pRealm->GetLayer((int16_t) fStartX, (int16_t) fStartZ));
 			psl2d->m_u8Color		= ms_u8TracerIndex;

@@ -99,9 +99,9 @@ class CDispenser
 		uint32_t			m_ulFileVersion;						// File version of data stored
 																	// in m_fileDispensee.
 
-		int16_t			m_sX;										// Location of this object,
-		int16_t			m_sY;										// the dispenser, which is
-		int16_t			m_sZ;										// also the location at which
+//		int16_t			m_sX;										// Location of this object,
+//		int16_t			m_sY;										// the dispenser, which is
+//		int16_t			m_sZ;										// also the location at which
 																	// we will dispense the 
 																	// dispensee.
 
@@ -212,16 +212,6 @@ class CDispenser
 			int16_t*	psY);			// Out: Y coord of 2D hotspot relative to
 										// EditRect() pos.
 #endif // !defined(EDITOR_REMOVED)
-
-		// Get the coordinates of this thing.
-		virtual					// Overriden here.
-      double GetX(void)	const { return m_sX; }
-
-		virtual					// Overriden here.
-      double GetY(void)	const { return m_sY; }
-
-		virtual					// Overriden here.
-      double GetZ(void)	const { return m_sZ; }
 
 	//---------------------------------------------------------------------------
 	// Other functions

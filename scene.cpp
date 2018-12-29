@@ -323,6 +323,8 @@
 #include "alphablitforpostal.h"
 #include "reality.h"
 
+#include <newpix/3dmath.h>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros/types/etc.
@@ -1100,9 +1102,9 @@ void DrawLine3d(			// Returns nothing.
 	RRect*	prcDstClip)	// Dst clip rect.
 	{
 	int16_t	s2dX1, s2dY1;
-	phood->Map3Dto2D(sDstX1, sDstY1, sDstZ1, &s2dX1, &s2dY1);
+   Map3Dto2D(sDstX1, sDstY1, sDstZ1, s2dX1, s2dY1, phood->GetRealmRotX());
 	int16_t s2dX2, s2dY2;
-	phood->Map3Dto2D(sDstX2, sDstY2, sDstZ2, &s2dX2, &s2dY2);
+   Map3Dto2D(sDstX2, sDstY2, sDstZ2, s2dX2, s2dY2, phood->GetRealmRotX());
 
 	DrawLine2d(u8Color, pimDst, s2dX1, s2dY1, s2dX2, s2dY2, prcDstClip);
 	}

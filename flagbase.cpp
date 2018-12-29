@@ -502,12 +502,8 @@ void CFlagbase::EditHotSpot(			// Returns nothiing.
 	// Get 2D hotspot.
 	int16_t	sX;
 	int16_t	sY;
-	Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
-		&sX,
-		&sY);
+   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+                      sX, sY);
 
 	// Get relation.
 	*psX	= sX - rc.sX;
