@@ -1710,7 +1710,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
       psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sX, sZ));
 		psl2d->m_u8Color		= (bEntirelyClear == false) ? 249 : 250;
 		// Destroy when done.
-		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+      psl2d->flags.DeleteOnRender = true;
 		// Put 'er there.
       realm()->Scene()->UpdateSprite(psl2d);
 		}
@@ -1893,7 +1893,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
       psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sX, sZ));
 		psl2d->m_u8Color		= (bEntirelyClear == false) ? 249 : 250;
 		// Destroy when done.
-		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+      psl2d->flags.DeleteOnRender = true;
 		// Put 'er there.
       realm()->Scene()->UpdateSprite(psl2d);
 		}

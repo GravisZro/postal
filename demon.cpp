@@ -739,9 +739,8 @@ void CDemon::EditUpdate(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CDemon::EditRender(void)
 {
-	// Setup simple, non-animating sprite
-   m_sInFlags = 0;
-
+  flags.clear();
+   // Setup simple, non-animating sprite
    realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
                       m_sX2, m_sY2);
 

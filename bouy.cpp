@@ -463,22 +463,17 @@ int16_t CBouy::EditMove(									// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 void CBouy::EditRender(void)
 {
-	// No special flags
-	if (ms_bShowBouys)
-	{
-      if (m_pParentNavNet == realm()->NavNet())
-		{
-         m_sInFlags = 0;
-			m_phot->SetActive(TRUE);
-		}
-		else
-		{
-         m_sInFlags = CSprite::InHidden;
-			m_phot->SetActive(FALSE);
-		}
-	}
-	else
-      m_sInFlags = CSprite::InHidden;
+  flags.Hidden = true;
+  if (ms_bShowBouys)
+  {
+    if (m_pParentNavNet == realm()->NavNet())
+    {
+      flags.Hidden = false;
+      m_phot->SetActive(TRUE);
+    }
+    else
+      m_phot->SetActive(FALSE);
+  }
 
 	// Map from 3d to 2d coords
    realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,

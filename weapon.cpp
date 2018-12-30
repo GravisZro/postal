@@ -73,7 +73,7 @@ CWeapon::CWeapon(void)
   m_sSuspend = 0;
   m_position.x = m_position.y = m_position.z = m_rotation.y = m_dVertVel = m_dHorizVel = 0.0;
   m_eState = State_Idle;
-  m_spriteShadow.m_sInFlags = CSprite::InHidden;
+  m_spriteShadow.flags.Hidden = true;
   m_spriteShadow.m_pImage = nullptr;
   //			m_spriteShadow.m_pthing = this;
   m_lPrevTime = 0;  // valgrind fix.  --ryan.
@@ -243,7 +243,7 @@ void CWeapon::Resume(void)
 void CWeapon::Render(void)
 {
 	// If the shadow is enabled and the main sprite is visible . . .
-   if (m_spriteShadow.m_pImage && (m_sInFlags & CSprite::InHidden) == 0)
+   if (m_spriteShadow.m_pImage && !flags.Hidden)
 	{
 		// Get the height of the terrain from the attribute map
       int16_t sY = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
@@ -273,17 +273,14 @@ void CWeapon::Render(void)
 			}
 
 		// If the main sprite is on the ground, then hide the shadow.
-      if ((int16_t) m_position.y - sY == 0)
-			m_spriteShadow.m_sInFlags |= CSprite::InHidden;
-		else
-			m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
+      m_spriteShadow.flags.Hidden = int16_t(m_position.y) == sY;
 
 		// Update sprite in scene
 		realm()->Scene()->UpdateSprite(&m_spriteShadow);
 	}
 	else
 	{
-		m_spriteShadow.m_sInFlags |= CSprite::InHidden;
+     m_spriteShadow.flags.Hidden = true;
 	}
 }
 
@@ -484,7 +481,7 @@ int16_t CWeapon::PrepareShadow(void)
 
 	// If a resource is available, set the shadow to visible.
 	if (sResult == SUCCESS)
-		m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
+      m_spriteShadow.flags.Hidden = false;
 
 	return sResult;
 }

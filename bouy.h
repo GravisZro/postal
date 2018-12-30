@@ -333,7 +333,7 @@ class CBouy
 		// Used by gameedit to know is this bouy is visible or hidden
 		bool Visible(void)
 		{
-         return (m_sInFlags & CSprite::InHidden) == 0;
+         return flags.Hidden == 0;
 		}
 
 		// Toggle the show/hide flag

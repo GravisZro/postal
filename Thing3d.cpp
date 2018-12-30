@@ -429,7 +429,7 @@ CThing3d::CThing3d(void)
   m_sBaseBrightness		= 0;
   m_bAboveTerrain	= false;
   m_stockpile.m_sHitPoints	= DefHitPoints;
-  m_spriteShadow.m_sInFlags = CSprite::InHidden;
+  m_spriteShadow.flags.Hidden = true;
   m_spriteShadow.m_pImage = nullptr;
   //			m_spriteShadow.m_pthing = this;
   m_lAnimTime = 0;
@@ -567,14 +567,12 @@ int16_t CThing3d::Save(									// Returns 0 if successfull, non-zero otherwise
 // Startup object
 ////////////////////////////////////////////////////////////////////////////////
 void CThing3d::Startup(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	// Init other stuff
-	m_lPrevTime = realm()->m_time.GetGameTime();
-	m_lAnimPrevUpdateTime	= m_lPrevTime;
-
-	// No special flags
-   m_sInFlags = 0;
-	}
+{
+  flags.clear();
+  // Init other stuff
+  m_lPrevTime = realm()->m_time.GetGameTime();
+  m_lAnimPrevUpdateTime	= m_lPrevTime;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Suspend object
@@ -656,13 +654,10 @@ void CThing3d::Render(void)
       m_ptrans = &m_trans;
 
 		// If the item is above the ground, show the shadow sprite, else hide it.
-		if (m_bAboveTerrain)
-			m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
-		else
-			m_spriteShadow.m_sInFlags |= CSprite::InHidden;
+      m_spriteShadow.flags.Hidden = !m_bAboveTerrain;
 
 		// If the shadow is enabled
-		if (!(m_spriteShadow.m_sInFlags & CSprite::InHidden) && m_spriteShadow.m_pImage != nullptr)
+      if (!m_spriteShadow.flags.Hidden && m_spriteShadow.m_pImage != nullptr)
 			{
 			// Get the height of the terrain from the attribute map
          int16_t sY = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
@@ -1775,7 +1770,7 @@ int16_t CThing3d::PrepareShadow(void)
 
 	// If a resource is available, set the shadow to visible.
 	if (sResult == SUCCESS)
-		m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
+     m_spriteShadow.flags.Hidden = false;
 
 	return sResult;
 }

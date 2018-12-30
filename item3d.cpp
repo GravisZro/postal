@@ -588,7 +588,7 @@ int16_t CItem3d::Init(void)									// Returns 0 if successfull, non-zero otherw
 		}
 
 	// No special flags.
-   m_sInFlags = 0;
+   flags.clear();
 
 	return sResult;
 	}

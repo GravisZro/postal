@@ -504,7 +504,7 @@ void CNavigationNet::EditUpdate(void)
 void CNavigationNet::EditRender(void)
 {
   // No special flags
-  m_sInFlags = 0;
+  flags.clear();
 
   // Map from 3d to 2d coords
   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,

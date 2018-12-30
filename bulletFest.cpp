@@ -263,8 +263,8 @@ int16_t GetMaxHeight(
 				psl2d->m_sPriority	= 0;
             psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(realm()->GetLayer(sIterX, sIterZ));
 				psl2d->m_u8Color		= 250;
-				// Destroy when done.
-				psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+            // Destroy when done.
+            psl2d->flags.DeleteOnRender = true;
 				// Put 'er there.
             pRealm->Scene()->UpdateSprite(psl2d);
 				}
@@ -905,7 +905,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 			psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(pRealm->GetLayer((int16_t) fStartX, (int16_t) fStartZ));
 			psl2d->m_u8Color		= ms_u8TracerIndex;
 			// Destroy when done.
-			psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+         psl2d->flags.DeleteOnRender = true;
 			// Put 'er there.
          pRealm->Scene()->UpdateSprite(psl2d);
 #if METHOD == 3
@@ -944,7 +944,7 @@ bool CBulletFest::Fire(			// Returns true if a hit, false otherwise.
 		psl2d->m_sLayer		= CRealm::GetLayerViaAttrib(pRealm->GetLayer(sX, sZ));
 		psl2d->m_u8Color		= ms_u8TracerIndex;
 		// Destroy when done.
-		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+      psl2d->flags.DeleteOnRender = true;
 		// Put 'er there.
       pRealm->Scene()->UpdateSprite(psl2d);
 		}

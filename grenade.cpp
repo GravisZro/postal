@@ -599,10 +599,7 @@ void CUnguidedMissile::Render(void)
    m_sRadius	= m_sCurRadius;
 
 	// See if it is hidden or not
-	if (m_eState == State_Hide)
-      m_sInFlags = CSprite::InHidden;
-	else
-      m_sInFlags	= 0;
+   flags.Hidden = m_eState == State_Hide;
 	
 	// If we're not a child of someone else . . .
    if (!parent())

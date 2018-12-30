@@ -544,10 +544,7 @@ void CFire::Render(void)
 		// For a performance gain, don't blit the smoke at all if alpha
 		// blending is turned off - its impossible to see through when
 		// alpha blending is off anyway.
-		if (g_GameSettings.m_sAlphaBlend)
-         m_sInFlags = 0;
-		else
-         m_sInFlags = CSprite::InHidden;
+      flags.Hidden = g_GameSettings.m_sAlphaBlend;
 	}
 	else
 	{

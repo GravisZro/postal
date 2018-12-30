@@ -520,7 +520,7 @@ void CPylon::EditUpdate(void)
 void CPylon::EditRender(void)
 {
 	// No special flags
-   m_sInFlags = 0;
+   flags.clear();
 
 	// Map from 3d to 2d coords
    realm()->Map3Dto2D(

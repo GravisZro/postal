@@ -4267,7 +4267,7 @@ static void PlayRealm(
                    if (pdude)
                    {
                      // Make him X-Rayable.
-                     pdude->m_sInFlags |= CSprite::InXrayee;
+                     pdude->flags.Xrayee = true;
                    }
                   }
 

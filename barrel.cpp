@@ -378,7 +378,7 @@ int16_t CBarrel::Init(void)
 	m_sBrightness = 0;	// Default Brightness level
 
 	// Make the shadow visible
-//	m_spriteShadow.m_sInFlags &= ~CSprite::InHidden;
+   //m_spriteShadow.flags.Hidden = false;
 	PrepareShadow();
 
 	return sResult;

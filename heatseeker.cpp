@@ -636,7 +636,7 @@ void CHeatseeker::Render(void)
 	// Eventually this should be channel driven also
 //	m_sRadius = m_sCurRadius;
 
-   m_sInFlags = m_eState == State_Hide ? CSprite::InHidden : 0;
+   flags.Hidden = m_eState == State_Hide;
 
 	// If we're not a child of someone else...
    if (!parent())
@@ -680,7 +680,7 @@ void CHeatseeker::Render(void)
 			psl2d->m_sLayer		= realm()->GetLayerViaAttrib(realm()->GetLayer(m_smashSeeker.m_sphere.sphere.X, m_smashSeeker.m_sphere.sphere.Z));
 			psl2d->m_u8Color		= 249;
 			// Destroy when done.
-			psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+         psl2d->flags.DeleteOnRender = true;
 			// Put 'er there.
 			realm()->Scene()->UpdateSprite(psl2d);
 			}

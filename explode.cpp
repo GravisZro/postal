@@ -314,10 +314,7 @@ void CExplode::Render(void)
 	CAlphaAnim* pAnim = (CAlphaAnim*) m_pAnimChannel->GetAtTime(m_lTimer);
 
 	if (pAnim)
-	{
-		// No special flags
-      m_sInFlags = 0; //CSprite::InXrayable;
-
+   {
 		// Map from 3d to 2d coords
 //		m_sX2 = m_position.x + pAnim->m_sX;
 //		m_sY2 = m_position.z + pAnim->m_sY;

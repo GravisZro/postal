@@ -243,9 +243,8 @@ void CAnimThing::Render(void)
 
    CAlphaAnim* paa = m_paachannel->GetAtTime(m_lAnimTime);
 	if (paa != nullptr)
-		{
-		// No special flags
-      m_sInFlags = 0;
+      {
+     flags.clear();
 		
 		// Map from 3d to 2d coords
 //		m_sX2 = m_position.x + paa->m_sX;

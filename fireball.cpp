@@ -354,7 +354,6 @@ void CFirestream::Render(void)
 
 	// This should never ever be rendered.
    ASSERT(m_psprParent == nullptr);
-   ASSERT( (m_sInFlags & CSprite::PrivInserted) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -813,7 +812,7 @@ void CFireball::Render(void)
 	if (pAnim) // && m_sCurrentAlphaChannel >= 0)
 	{
 		// No special flags
-      m_sInFlags = 0;
+      flags.clear();
 
 		// Map from 3d to 2d coords
       realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,

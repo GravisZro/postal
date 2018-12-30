@@ -657,16 +657,7 @@ void CMine::Render(void)
 		// Image would normally animate, but doesn't for now
       m_pImage = m_pImage;
 
-		if (m_eState == State_Hide)
-		{
-			// Hide.
-         m_sInFlags = CSprite::InHidden;
-		}
-		else
-		{
-			// No special flags
-         m_sInFlags = 0;
-		}
+      flags.Hidden = m_eState == State_Hide;
 
 		// Map from 3d to 2d coords
       realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,

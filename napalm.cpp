@@ -486,7 +486,7 @@ void CNapalm::Render(void)
 	// Set its pointing direction
    m_trans.Ry(rspMod360(m_rotation.y));
 
-   m_sInFlags = m_eState == State_Hide ? CSprite::InHidden : 0;
+   flags.Hidden = m_eState == State_Hide;
 
 	// If we're not a child of someone else...
    if (!parent())

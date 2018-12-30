@@ -3523,7 +3523,7 @@ void CDude::Render(void)
 	if (panimWeapon->m_pmeshes)
 		{
 		// Show weapon sprite.
-		m_spriteWeapon.m_sInFlags	&= ~CSprite::InHidden;
+      m_spriteWeapon.flags.Hidden = false;
 
       m_spriteWeapon.m_pmesh		= &panimWeapon->m_pmeshes->atTime(m_lAnimTime);
       m_spriteWeapon.m_psop		= &panimWeapon->m_psops->atTime(m_lAnimTime);
@@ -3534,14 +3534,14 @@ void CDude::Render(void)
 	else
 		{
 		// Hide weapon sprite.
-		m_spriteWeapon.m_sInFlags	|= CSprite::InHidden;
+      m_spriteWeapon.flags.Hidden = true;
 		}
 
 	// If we have a backpack . . .
 	if (m_stockpile.m_sBackpack)
 		{
 		// Show backpack sprite.
-		m_spriteBackpack.m_sInFlags	&= ~CSprite::InHidden;
+      m_spriteBackpack.flags.Hidden = false;
 
 		ASSERT(m_animBackpack.m_pmeshes);
       m_spriteBackpack.m_pmesh	= &m_animBackpack.m_pmeshes->atTime(m_lAnimTime);
@@ -3553,7 +3553,7 @@ void CDude::Render(void)
 	else
 		{
 		// Hide bakcpack sprite.
-		m_spriteBackpack.m_sInFlags	|= CSprite::InHidden;
+      m_spriteBackpack.flags.Hidden = true;
 		}
 	}
 
@@ -3660,10 +3660,10 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
    m_smash.m_pThing = this;
 
 	// No special flags.
-   m_sInFlags = 0;
+   flags.clear();
 
 	// Targeting flag initially starts out as Hidden
-	m_TargetSprite.m_sInFlags		= CSprite::InHidden;
+   m_TargetSprite.flags.Hidden = true;
 	// Set alpha blendage.
 	m_TargetSprite.m_sAlphaLevel	= TARGET_ALPHA_LEVEL;
 	// This can be changed with the toggle, and should probably be 
@@ -3671,13 +3671,11 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 	m_bTargetingHelpEnabled = false;
 
 	// Setup weapon sprite.
-	m_spriteWeapon.m_sInFlags	= 0;
-//	m_spriteWeapon.m_pthing		= this;
+   m_spriteWeapon.flags.clear();
    AddChild(&m_spriteWeapon);
 
 	// Setup backpack sprite.
-	m_spriteBackpack.m_sInFlags	= 0;
-//	m_spriteBackpack.m_pthing		= this;
+   m_spriteBackpack.flags.clear();
    AddChild(&m_spriteBackpack);
 
 	// Setup our crawler.
@@ -5411,11 +5409,11 @@ void CDude::ShowTarget()
             fRateZ,
             m_TargetSprite.m_sX2,
             m_TargetSprite.m_sY2);
-		m_TargetSprite.m_sInFlags &= ~CSprite::InHidden;
+      m_TargetSprite.flags.Hidden = false;
 		m_TargetSprite.m_sLayer = CRealm::LayerSprite16;
 	}
 	else
-		m_TargetSprite.m_sInFlags |= CSprite::InHidden;
+      m_TargetSprite.flags.Hidden = true;
 }
 /*
 void CDude::ShowTarget(void)
@@ -5446,15 +5444,15 @@ void CDude::ShowTarget(void)
 				(short) 0, 
 				&m_TargetSprite.m_sX2, 
 				&m_TargetSprite.m_sY2);
-			m_TargetSprite.m_sInFlags &= ~CSprite::InHidden;
+         m_TargetSprite.flags.Hidden = false;
 		}
 		else
 		{
-			m_TargetSprite.m_sInFlags |= CSprite::InHidden;
+         m_TargetSprite.flags.Hidden = true;
 		}
 	}
 	else
-		m_TargetSprite.m_sInFlags |= CSprite::InHidden;
+      m_TargetSprite.flags.Hidden = true;
 }
 */
 

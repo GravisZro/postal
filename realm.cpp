@@ -1441,7 +1441,7 @@ bool CRealm::IsPathClear(			// Returns true, if the entire path is clear.
 		psl2d->m_sLayer		= GetLayerViaAttrib(GetLayer(sX, sZ));
 		psl2d->m_u8Color		= (bEntirelyClear == false) ? 249 : 250;
 		// Destroy when done.
-		psl2d->m_sInFlags	= CSprite::InDeleteOnRender;
+      psl2d->flags.DeleteOnRender = true;
 		// Put 'er there.
       m_scene.UpdateSprite(psl2d);
 		}

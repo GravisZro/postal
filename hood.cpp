@@ -817,7 +817,8 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 			pSprite2->m_sPriority = 0;
 			pSprite2->m_pImage = m_pimBackground;
 			pSprite2->m_sLayer = CRealm::LayerBg;
-			pSprite2->m_sInFlags = CSprite::InDeleteOnClear | CSprite::InBlitOpaque;
+         pSprite2->flags.DeleteOnClear = true;
+         pSprite2->flags.BlitOpaque = true;
 			realm()->Scene()->UpdateSprite(pSprite2);
 
 			// Attempt to load all layers . . .
@@ -839,7 +840,8 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 						pSprite2->m_sPriority = pSprite->m_sZ;
 						pSprite2->m_pImage = pSprite->m_pImage;
 						pSprite2->m_sLayer = CRealm::LayerAlpha1 + (int16_t)lIndex * (CRealm::LayerAlpha2 - CRealm::LayerAlpha1);
-						pSprite2->m_sInFlags = CSprite::InDeleteOnClear | CSprite::InAlpha;
+                  pSprite2->flags.DeleteOnClear = true;
+                  pSprite2->flags.Alpha = true;
 						realm()->Scene()->UpdateSprite(pSprite2);
 
 						p = m_apspryAlphas[lIndex]->m_listSprites.GetNext(p);
@@ -860,7 +862,8 @@ int16_t CHood::Init(void)									// Returns 0 if successfull, non-zero otherwis
 						pSprite2->m_sPriority = pSprite->m_sZ;
 						pSprite2->m_pImage = pSprite->m_pImage;
 						pSprite2->m_sLayer = CRealm::LayerOpaque1 + (int16_t)lIndex * (CRealm::LayerOpaque2 - CRealm::LayerOpaque1);
-						pSprite2->m_sInFlags = CSprite::InDeleteOnClear | CSprite::InOpaque;
+                  pSprite2->flags.DeleteOnClear = true;
+                  pSprite2->flags.Opaque = true;
 						realm()->Scene()->UpdateSprite(pSprite2);
 						
 						p = m_apspryOpaques[lIndex]->m_listSprites.GetNext(p);

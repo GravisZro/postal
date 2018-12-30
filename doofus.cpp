@@ -1001,7 +1001,7 @@ void CDoofus::Startup(void)								// Returns 0 if successfull, non-zero otherwi
    m_smashAvoid.m_pThing = this;
 
 	// Setup weapon sprite.
-	m_spriteWeapon.m_sInFlags	= CSprite::InHidden;
+   m_spriteWeapon.flags.Hidden = true;
    AddChild(&m_spriteWeapon);
 
 
@@ -1085,8 +1085,8 @@ void CDoofus::Render(void)
 		// If we have the necessary components . . .
 		if (panimWeapon->m_pmeshes && m_panimCur->m_ptransWeapon)
 		{
-			// Show weapon sprite.
-			m_spriteWeapon.m_sInFlags	&= ~CSprite::InHidden;
+         // Show weapon sprite.
+        m_spriteWeapon.flags.Hidden = false;
 
          m_spriteWeapon.m_pmesh		= &panimWeapon->m_pmeshes->atTime(m_lAnimTime);
          m_spriteWeapon.m_psop		= &panimWeapon->m_psops->atTime(m_lAnimTime);
@@ -1096,14 +1096,14 @@ void CDoofus::Render(void)
 		}
 		else
 		{
-			// Hide weapon sprite.
-			m_spriteWeapon.m_sInFlags	|= CSprite::InHidden;
+         // Hide weapon sprite.
+        m_spriteWeapon.flags.Hidden = true;
 		}
 	}
 	else
 	{
 		// Hide weapon sprite.
-		m_spriteWeapon.m_sInFlags	|= CSprite::InHidden;
+      m_spriteWeapon.flags.Hidden = true;
 	}
 }
 
@@ -1833,7 +1833,7 @@ void CDoofus::Logic_Guard(void)
             if (m_weapon)
 				{
 					// Keep it hidden, for now.
-               m_weapon->m_sInFlags |= CSprite::InHidden;
+               m_weapon->flags.Hidden = true;
                m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 				}
 				m_panimCur = &m_animShoot;
@@ -1944,7 +1944,7 @@ void CDoofus::Logic_HuntHold(void)
                if (m_weapon)
 					{
 						// Keep it hidden, for now.
-                  m_weapon->m_sInFlags |= CSprite::InHidden;
+                  m_weapon->flags.Hidden = true;
                   m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 					}
 					m_panimCur = &m_animShoot;
@@ -2222,7 +2222,7 @@ void CDoofus::Logic_DelayShoot(void)
          PrepareWeapon();
          if (m_weapon)
 			{
-            m_weapon->m_sInFlags |= CSprite::InHidden;
+            m_weapon->flags.Hidden = true;
             m_weapon->SetRangeToTarget(rspSqrt(int32_t(SQDistanceToDude())));
 			}
 			m_panimCur = &m_animShoot;
@@ -2257,7 +2257,7 @@ void CDoofus::Logic_PositionMove(void)
          if (m_weapon)
 			{
 				// Keep it hidden, for now.
-            m_weapon->m_sInFlags |= CSprite::InHidden;
+            m_weapon->flags.Hidden = true;
             m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 			}
 			m_state = State_Shoot;
@@ -2613,7 +2613,7 @@ void CDoofus::Logic_Popout(void)
       if (m_weapon)
 		{
 			// Keep it hidden, for now.
-         m_weapon->m_sInFlags |= CSprite::InHidden;
+         m_weapon->flags.Hidden = true;
 		}
 		m_panimCur = &m_animShoot;
 		m_lAnimTime = 0;
@@ -2829,7 +2829,7 @@ void CDoofus::Logic_RunShoot(void)
          if (m_weapon)
 			{
 				// Keep it hidden, for now.
-            m_weapon->m_sInFlags |= CSprite::InHidden;
+            m_weapon->flags.Hidden = true;
 			}
 			SelectDude();
 
@@ -3160,7 +3160,7 @@ void CDoofus::Logic_Helping(void)
             if (m_weapon)
 				{
 					// Keep it hidden, for now.
-               m_weapon->m_sInFlags |= CSprite::InHidden;
+               m_weapon->flags.Hidden = true;
                m_weapon->SetRangeToTarget(rspSqrt(SQDistanceToDude()));
 				}
 				m_panimCur = &m_animShoot;

@@ -480,7 +480,7 @@ void CDeathWad::Render(void)
 	// Eventually this should be channel driven also
    m_sRadius = ms_sCollisionRadius;
 
-   m_sInFlags = (m_eState == State_Hide || m_bInsideTerrain) ? CSprite::InHidden : 0;
+   flags.Hidden = m_eState == State_Hide || m_bInsideTerrain;
 
 	// If we're not a child of someone else...
    if (!parent())

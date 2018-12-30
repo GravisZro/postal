@@ -1203,8 +1203,8 @@ int16_t CDispenser::Init(	// Returns 0 if successfull, non-zero otherwise
       DestroyDispensee(pthing);
 		}
 
-	// No special flags.
-   m_sInFlags = 0;
+   // No special flags.
+   flags.clear();
 
 	return sResult;
 	}

@@ -54,8 +54,6 @@
 // the "same" as far as sorting goes.
 class CSprite;	// Forward declaration
 
-class CThing;	// Another handy forward.
-
 // This is the function object used to sort the set of sprites.
 // It is a template NOT because we want to use it with other types
 // (after all, how many types will have a m_sZ member?!) but because
@@ -72,7 +70,6 @@ template <class T>
 		};
 
   typedef std::multiset<CSprite*, SpriteLess<CSprite>> msetSprites;
-  typedef std::vector<CSprite*> vSprites;
 
 
 // A CSprite is a base class for sprites designed to work with CScene.
@@ -100,17 +97,6 @@ class CSprite
 															// for 2D uncompressed, non-alpha objects).
 			};
 
-		// Define bit usage within "m_sOutFlags"
-      enum
-			{
-			OutRendered = 1										// Set whenever rendered (cleared by user)
-			};
-
-		// Define bit usage within "m_sPrivFlags"
-      enum
-			{
-			PrivInserted = 1										// Set if inserted in scene
-			};
 
 		// Types of sprites (or primitives).
       typedef enum
@@ -125,10 +111,22 @@ class CSprite
 		int16_t m_sX2;												// Sprite's 2d x coord
 		int16_t m_sY2;												// Sprite's 2d y coord
 		int16_t m_sPriority;										// Sprite's priority
-		int16_t m_sLayer;											// Sprite's layer
-		int16_t m_sInFlags;											// Sprite's input flags
-		int16_t m_sOutFlags;										// Sprite's output flags
-      //CThing*	m_pthing;										// Owner of this sprite (for debugging).
+      int16_t m_sLayer;											// Sprite's layer
+
+
+      struct flags_t
+      {
+        uint32_t Alpha          : 1; // Set if on alpha layer, clear otherwise
+        uint32_t Opaque         : 1; // Set if on opaque layer, clear otherwise
+        uint32_t Xrayee         : 1; // Set if xray target, clear otherwise
+        uint32_t Hidden         : 1; // Set if hidden, clear otherwise
+        uint32_t DeleteOnClear  : 1; // Set to delete sprite when layer is cleared
+        uint32_t HighIntensity  : 1; // Set to use higher light intensities when
+        uint32_t DeleteOnRender : 1; // // After rendering object, delete it.
+        uint32_t BlitOpaque     : 1; // Blit sprite opaque (currently only supported for 2D uncompressed, non-alpha objects).
+
+        inline void clear(void) { *reinterpret_cast<uint32_t*>(this) = 0; }
+      } flags;
 
       const char*	m_pszText;											// Point this at your text.
 																		// DO NOT strcpy/cat/etc to this until
@@ -139,8 +137,8 @@ class CSprite
 		CSprite*	m_psprParent;		// Parent sprite.
 
 	protected:
-		Type m_type;												// Sprite's type
-		int16_t m_sPrivFlags;										// Sprite's private flags
+      Type m_type;												// Sprite's type
+      bool m_InScene;
 		int16_t m_sSavedLayer;										// Sprite's saved layer (used to detect changes)
 		int16_t m_sSavedPriority;									// Sprite's saved priority (used to detect changes)
 		msetSprites::iterator m_iter;							// Sprite's iterator into layer's container
@@ -148,9 +146,8 @@ class CSprite
 	public:
 		CSprite()
 			{
-			m_sInFlags = 0;
-			m_sOutFlags = 0;
-			m_sPrivFlags = 0;
+        flags.clear();
+        m_InScene = false;
 
 			m_sX2		= 0;		// Any sprite's 2D dest x coord.
 			m_sY2		= 0;		// Any sprite's 2D dest y coord.
@@ -159,9 +156,7 @@ class CSprite
 
 			m_psprHeadChild	= nullptr;
 			m_psprNext			= nullptr;
-			m_psprParent		= nullptr;
-
-//			m_pthing				= nullptr;
+         m_psprParent		= nullptr;
 			}
 
       virtual ~CSprite(void)
@@ -181,7 +176,7 @@ class CSprite
 				}
 
 			// Make sure we're not in any lists.
-			ASSERT( (m_sPrivFlags & CSprite::PrivInserted) == 0);
+         ASSERT(!m_InScene);
 			}
 
 		// Adds a child CSprite.

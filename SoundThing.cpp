@@ -900,8 +900,8 @@ void CSoundThing::EditUpdate(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CSoundThing::EditRender(void)
 	{
-	// Setup simple, non-animating sprite
-   m_sInFlags = 0;
+   // Setup simple, non-animating sprite
+  flags.clear();
 
    realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
                       m_sX2, m_sY2);

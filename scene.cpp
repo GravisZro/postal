@@ -448,10 +448,10 @@ void CScene::RemoveSprites(
 		CSprite* pSprite = *i;
 
 		// Clear inserted flag
-		pSprite->m_sPrivFlags &= ~CSprite::PrivInserted;
+      pSprite->m_InScene = false;
 
 		// Delete sprite if delete-on-clear flag is set
-		if (pSprite->m_sInFlags & CSprite::InDeleteOnClear)
+      if (pSprite->flags.DeleteOnClear)
 			delete pSprite;
 		}
 
@@ -491,7 +491,7 @@ void CScene::UpdateSprite(
 	ASSERT(pSprite != nullptr);
 
 	// Check if it's already in the scene
-	if (pSprite->m_sPrivFlags & CSprite::PrivInserted)
+   if (pSprite->m_InScene)
 		{
 		// Check if layer has changed
 		if (pSprite->m_sLayer != pSprite->m_sSavedLayer)
@@ -502,7 +502,7 @@ void CScene::UpdateSprite(
 			// Add to specified layer and save iterator for fast access later on
 			ASSERT(pSprite->m_sLayer < m_sNumLayers);
 			ASSERT(pSprite->m_sLayer >= 0);
-			pSprite->m_iter = m_pLayers[pSprite->m_sLayer].m_sprites.insert(pSprite);
+         pSprite->m_iter = m_pLayers[pSprite->m_sLayer].m_sprites.insert(pSprite);
 			pSprite->m_sSavedLayer = pSprite->m_sLayer;
 			}
 
@@ -513,7 +513,7 @@ void CScene::UpdateSprite(
 			// a faster way to do this, but since we'll likely be revamping the
 			// entire draw-order logic, I'll leave it like this.
 			m_pLayers[pSprite->m_sSavedLayer].m_sprites.erase(pSprite->m_iter);
-			pSprite->m_iter = m_pLayers[pSprite->m_sLayer].m_sprites.insert(pSprite);
+         pSprite->m_iter = m_pLayers[pSprite->m_sLayer].m_sprites.insert(pSprite);
 			pSprite->m_sSavedPriority = pSprite->m_sPriority;
 			}
 		}
@@ -522,14 +522,14 @@ void CScene::UpdateSprite(
 		// Add to specified layer and save iterator for fast access later on
 		ASSERT(pSprite->m_sLayer < m_sNumLayers);
 		ASSERT(pSprite->m_sLayer >= 0);
-		pSprite->m_iter = m_pLayers[pSprite->m_sLayer].m_sprites.insert(pSprite);
+      pSprite->m_iter = m_pLayers[pSprite->m_sLayer].m_sprites.insert(pSprite);
  
 		// Save layer and priority so we can detect changes to them
 		pSprite->m_sSavedLayer = pSprite->m_sLayer;
 		pSprite->m_sSavedPriority = pSprite->m_sPriority;
 
 		// Set inserted flag
-		pSprite->m_sPrivFlags |= CSprite::PrivInserted;
+      pSprite->m_InScene = true;
 		}
 	}
 
@@ -546,14 +546,14 @@ void CScene::RemoveSprite(
 	// not treated as an error because there may be situations where the
 	// caller doesn't know the sprite has already been removed from the layer,
 	// such as when someone else has called Clear() or some similar function.
-	if(pSprite->m_sPrivFlags & CSprite::PrivInserted)
+   if(pSprite->m_InScene)
 		{
 		// Erase sprite from layer.  Knowing the iterator makes this very fast.
 		ASSERT(pSprite->m_sSavedLayer < m_sNumLayers);
 		m_pLayers[pSprite->m_sSavedLayer].m_sprites.erase(pSprite->m_iter);
 
 		// Clear inserted flag
-		pSprite->m_sPrivFlags &= ~CSprite::PrivInserted;
+      pSprite->m_InScene = false;
 		}
 	}
 
@@ -574,7 +574,7 @@ CScene::Render3D(
 	{
 	RAlpha* palphaLight;
 	// If high intensity indicated . . .
-	if (ps3Cur->m_sInFlags & CSprite::InHighIntensity)
+   if (ps3Cur->flags.HighIntensity)
 		{
 		// Use spot lighting.
 		palphaLight	= phood->m_pltSpot;
@@ -1392,15 +1392,11 @@ void CScene::Render2D(		// Returns nothing.
 
 				if (sUseXRay)
 #else
-				if (	(		(ps2Cur->m_sInFlags & CSprite::InAlpha) 
-							|| ( (ps2Cur->m_sInFlags & CSprite::InOpaque) 
-								&& m_bXRayAll == true
-								)
-						)
-						&& psprXRayee 
-						&& 
-						(		g_GameSettings.m_sXRayEffect != FALSE
-							||	m_bXRayAll == true)
+            if (	(ps2Cur->flags.Alpha ||
+                   (ps2Cur->flags.Opaque && m_bXRayAll)
+                  ) &&
+                  psprXRayee &&
+                  (g_GameSettings.m_sXRayEffect != FALSE || m_bXRayAll)
 					)
 #endif
 					{
@@ -1502,12 +1498,8 @@ void CScene::Render(			// Returns nothing.
 	while (pSprite != nullptr)
 		{
 		// Make sure sprite isn't hidden (if it is, skip it)
-		if (!(pSprite->m_sInFlags & CSprite::InHidden))
-			{
-			// Set flag to indicate sprite was rendered.  As of right now, the sprite WILL
-			// be rendered if we get this far, but if the logic changes, the setting of
-			// this flag might need to be moved to somewhere else.
-			pSprite->m_sOutFlags |= CSprite::OutRendered;
+      if (!pSprite->flags.Hidden)
+         {
 
 			// Determine whether this is a 2d or 3d sprite
 			switch (pSprite->m_type)
@@ -1697,7 +1689,7 @@ void CScene::Render(
 				iSprite++;
 
 				// If this sprite wanted to be deleted after use . . .
-				if (pSprite->m_sInFlags & CSprite::InDeleteOnRender)
+            if (pSprite->flags.DeleteOnRender)
 					{
 					RemoveSprite(pSprite);
 					// Be gone, vile weed.
@@ -1706,7 +1698,7 @@ void CScene::Render(
 				else
 					{
 					// If this sprite is an xrayee, add it to the container
-					if (pSprite->m_sInFlags & CSprite::InXrayee)
+               if (pSprite->flags.Xrayee)
 						{
 						psprXRayee	= pSprite;
 						}
@@ -1938,7 +1930,7 @@ void CScene::DeadRender3D(					// Returns nothing.
 	RRect*		prcDstClip /*= nullptr*/)	// Dst clip rect.
 	{
 	// Make sure sprite isn't hidden (if it is, skip it)
-	if (!(ps3->m_sInFlags & CSprite::InHidden))
+   if (!ps3->flags.Hidden)
 		{
 		ASSERT(pimDst	!= nullptr);
 		ASSERT(ps3		!= nullptr);
