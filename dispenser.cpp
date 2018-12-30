@@ -893,30 +893,27 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 
 				pguiSel	= nullptr;
 
-#if defined (RELEASE)
             // Add available objects to listbox.
-            for (uint8_t idCur	= 0; idCur < TotalIDs; idCur++)
-					{
-					// If item is editor creatable . . .
-               if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
-						{
-						// Add string for each item to listbox.
-                  pguiItem	= plbThings->AddString(CThing::ms_aClassInfo[idCur].pszClassName);
-						if (pguiItem != nullptr)
-							{
-							pguiItem->m_ulUserData	= (uint32_t)idCur;
-
-							// If this is the current type . . .
-							if (m_idDispenseeType == idCur)
-								{
-								pguiSel	= pguiItem;
-								// Select it.
-								plbThings->SetSel(pguiItem);
-								}
-							}
-						}
-					}
-#endif
+            for (uint8_t idCur = 0; idCur < TotalIDs; idCur++)
+            {
+              CThing* thing = realm()->makeType(ClassIDType(idCur));
+              if(thing->instantiable())
+              {
+                pguiItem  = plbThings->AddString(thing->name());
+                if (pguiItem != nullptr)
+                {
+                  pguiItem->m_ulUserData	= (uint32_t)idCur;
+                  // If this is the current type . . .
+                  if (m_idDispenseeType == idCur)
+                  {
+                    pguiSel = pguiItem;
+                    // Select it.
+                    plbThings->SetSel(pguiItem);
+                  }
+                }
+              }
+              delete thing;
+            }
 
 				// Format list items.
 				plbThings->AdjustContents();
@@ -1440,21 +1437,21 @@ int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
 					&rcClip,						// Dst clip rect.            
 					nullptr);						// XRayee, if not nullptr.      
 				}
-			else
-				{
-				// Use text alternative.
-				RPrint	print;
-				print.SetFont(FONT_SIZE, &g_fontBig);
-				print.SetColor(FONT_COLOR, 0, 0);
-#if defined (RELEASE)
-				print.print(
-					&m_imRender,
-					0,
-					0,
-					"%s",
-					ms_aClassInfo[m_idDispenseeType].pszClassName);
-#endif
-				}
+         else
+         {
+           // Use text alternative.
+           RPrint	print;
+           print.SetFont(FONT_SIZE, &g_fontBig);
+           print.SetColor(FONT_COLOR, 0, 0);
+
+           CThing* thing = realm()->makeType(m_idDispenseeType);
+           print.print(
+                 &m_imRender,
+                 0,
+                 0,
+                 "%s", thing->name());
+           delete thing;
+         }
 #if 1
 			// Draw dispenser icon on top.
 			rspBlit(

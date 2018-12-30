@@ -1805,27 +1805,26 @@ extern void GameEdit(
 			ASSERT(plbPicker->m_type == RGuiItem::ListBox);
 
          RGuiItem*				pguiItem;
-#if defined (RELEASE)
-			// Add available objects to listbox.
-         ClassIDType	idCur;
-			for (idCur	= 1; idCur < TotalIDs; idCur++)
-				{
-				// If item is editor creatable . . .
-				if (CThing::ms_aClassInfo[idCur].bEditorCreatable == true)
-					{
-					// Add string for each item to listbox.
-               pguiItem	= plbPicker->AddString(CThing::ms_aClassInfo[idCur].pszClassName);
-					if (pguiItem != nullptr)
-						{
-						pguiItem->m_lId			= LIST_ITEM_GUI_ID_BASE + idCur;
-						pguiItem->m_ulUserData	= (uint32_t)idCur;
 
-						// Set the callback on pressed.
-						pguiItem->m_bcUser		= ListItemPressedCall;
-						}
-					}
-				}
-#endif
+         // Add available objects to listbox.
+         for (uint8_t idCur = 0; idCur < TotalIDs; idCur++)
+         {
+           CThing* thing = prealm->makeType(ClassIDType(idCur));
+           if(thing->instantiable())
+           {
+             // Add string for each item to listbox.
+             pguiItem	= plbPicker->AddString(thing->name());
+             if (pguiItem != nullptr)
+             {
+               pguiItem->m_lId = LIST_ITEM_GUI_ID_BASE + idCur;
+               pguiItem->m_ulUserData = idCur;
+
+               // Set the callback on pressed.
+               pguiItem->m_bcUser = ListItemPressedCall;
+             }
+           }
+           delete thing;
+         }
 
 			// Format list items.
 			plbPicker->AdjustContents();
@@ -6807,30 +6806,25 @@ static void DelThing(	// Returns nothing.
 static void DelClass(	// Returns nothing.
    managed_ptr<CThing> pthingDel,	// In:  CThing to be deleted.
 	CRealm* prealm)		// In:  Current realm
-	{
-	char	szTitle[512];
-#if defined (RELEASE)
-	sprintf(
-		szTitle, 
-		"Delete entire \"%s\" class",
-		(pthingDel != nullptr) 
-         ? CThing::ms_aClassInfo[pthingDel->type()].pszClassName
-			: "CThing"
-		);
-#endif
-	// VERIFY . . .
-	if (rspMsgBox(
-		RSP_MB_ICN_QUERY | RSP_MB_BUT_YESNO,
-		szTitle,
-		"Are you sure you want to perform this group delete?!"
-		) == RSP_MB_RET_YES)
-      {
-       for(managed_ptr<CThing>& pthing : prealm->GetThingsByType(pthingDel->type()))
-       {
-         DelThing(pthing, nullptr, prealm);
-       }
-		}
-	}
+{
+  ASSERT(pthingDel);
+  char szTitle[512];
+
+  sprintf(szTitle, "Delete entire \"%s\" class", pthingDel->name());
+
+  // VERIFY . . .
+  if (rspMsgBox(
+        RSP_MB_ICN_QUERY | RSP_MB_BUT_YESNO,
+        szTitle,
+        "Are you sure you want to perform this group delete?!"
+        ) == RSP_MB_RET_YES)
+  {
+    for(managed_ptr<CThing>& pthing : prealm->GetThingsByType(pthingDel->type()))
+    {
+      DelThing(pthing, nullptr, prealm);
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Delete all but the pylons, bouys, soundthings and soundrelays.
@@ -6897,13 +6891,11 @@ static int16_t CopyItem(	// Returns 0 on success.
 			case CPylonID:
 			case CNavigationNetID:
 			case CHoodID:
-#if defined (RELEASE)
 				rspMsgBox(
 					RSP_MB_ICN_INFO | RSP_MB_BUT_OK,
 					"Cannot Copy",
                "Cannot Copy %s",
-               CThing::ms_aClassInfo[pthingCopy->type()].pszClassName);
-#endif
+               pthingCopy->name());
 				break;
 			default:
 				{
@@ -7546,7 +7538,7 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 					szThingDescription, 
                "%i) \"%s\" ID: %u X: %s Y: %s Z: %s",
 					lNum,
-               pthing->GetClassName(),
+               pthing->name(),
 					pthing->GetInstanceID(),
 					szX,
 					szY,

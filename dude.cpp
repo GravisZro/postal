@@ -3483,27 +3483,27 @@ void CDude::Render(void)
 	CCharacter::Render();
 
 	// Update children, if any . . .
-   CFlag* pflag	= GetNextFlag(nullptr);
+   managed_ptr<CThing3d> flag = GetNextFlag(nullptr);
    double dummy = 0.0;
-   while (pflag != nullptr)
+   while (flag)
 		{
 		PositionChild(
-         pflag->GetSprite(),
+         flag.pointer(),
          static_cast<CDudeAnim3D*>(m_panimCur)->m_ptransLeft->atTime(m_lAnimTime),	// In:  Transform specifying position.
          dummy,
          dummy,
          dummy);
 
 		// Update flag's position so it can correctly collision detect.
-      pflag->m_position.x	= m_position.x;
-      pflag->m_position.y	= m_position.y;
-      pflag->m_position.z	= m_position.z;
+      flag->m_position.x	= m_position.x;
+      flag->m_position.y	= m_position.y;
+      flag->m_position.z	= m_position.z;
 
 		// For asthetics, rotate it a bit.
-      pflag->m_rotation.y	= rspMod360(pflag->m_rotation.y + RAND_SWAY(10) );
+      flag->m_rotation.y	= rspMod360(flag->m_rotation.y + RAND_SWAY(10) );
 
 		// Get next.
-		pflag	= GetNextFlag(pflag);
+      flag	= GetNextFlag(flag);
 		}
 
 	// Get anim . . .
@@ -6008,32 +6008,21 @@ void CDude::SetPosition(		// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 // Get the next child flag item after the specified flag item.
 ////////////////////////////////////////////////////////////////////////////////
-CFlag* CDude::GetNextFlag(			// Returns the next flag item after pflag.
-	CFlag*	pflag)					// In:  The flag to get the follower of.
+managed_ptr<CThing3d> CDude::GetNextFlag(			// Returns the next flag item after pflag.
+   managed_ptr<CThing3d> pflag)					// In:  The flag to get the follower of.
 											// nullptr for first child flag.
-   {
-	CFlag*	pflagNext	= nullptr;   
-#if defined(RELEASE)
-	CSprite*	psprite	= pflag ? pflag->m_sprite.m_psprNext : m_sprite.m_psprHeadChild;
-	while (psprite && pflagNext == nullptr)
-		{
-		// If this sprite names its owner . . .
-		CThing*	pthing	= psprite->m_pthing;
-		if (pthing)
-			{
-			// If it is a flag . . .
-         if (pthing->type() == CFlagID)
-				{
-				pflagNext	= (CFlag*)pthing;
-				}
-			}
-
-		// Next Please.
-		psprite	= psprite->m_psprNext;
-		}
-#endif
-	return pflagNext;
-	}
+{
+  managed_ptr<CThing3d> flagNext;
+  CSprite* psprite = pflag ? pflag->m_psprNext : m_psprHeadChild;
+  while (psprite && !flagNext)
+  {
+    CThing3d* pthing = dynamic_cast<CThing3d*>(psprite);
+    if (pthing != nullptr && pthing->type() == CFlagID) // If it is a flag...
+        flagNext = pthing;
+    psprite	= psprite->m_psprNext;
+  }
+  return flagNext;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Drop all child flag items.
@@ -6067,28 +6056,26 @@ void CDude::DropAllFlags(	// Returns nothing.
          std::memcpy(&msg, pmsg, sizeof(GameMessage));
 			}
 		}
-#if defined(RELEASE)
+
 	// Loop through all child flags and send them a message and remove them.
-	CFlag*	pflag	= GetNextFlag(nullptr);
-	CFlag*	pflagNext;
-	while (pflag)
+   managed_ptr<CThing3d> flag = GetNextFlag(nullptr);
+   managed_ptr<CThing3d> flagNext;
+   while (flag)
 		{
 		// Get the next now b/c this won't be a sibling after we detach it.
-		pflagNext	= GetNextFlag(pflag);
-
-		uint16_t	u16IdFlag	= pflag->GetInstanceID();
+      flagNext	= GetNextFlag(flag);
 		
 		// Detach the flag.
 		DetachChild(
-			&u16IdFlag,
-         & ((CDudeAnim3D*) m_panimCur)->m_ptransLeft->atTime(m_lAnimTime) );
+         flag,
+         static_cast<CDudeAnim3D*>(m_panimCur)->m_ptransLeft->atTime(m_lAnimTime));
 
 		// Move it to our position rather than the transformed position b/c we
 		// don't know if that's a valid position but we do know that our position
 		// is.
-      pflag->m_position.x	= m_position.x;
-      pflag->m_position.y	= m_position.y;
-      pflag->m_position.z	= m_position.z;
+      flag->m_position.x	= m_position.x;
+      flag->m_position.y	= m_position.y;
+      flag->m_position.z	= m_position.z;
 
 		// If it's an explosion . . .
 		if (pmsg->msg_Generic.eType == typeExplosion)
@@ -6100,13 +6087,12 @@ void CDude::DropAllFlags(	// Returns nothing.
 
 		// Forward the specified message.
 		SendThingMessage(
-			pmsg,
-			pflag);
+         *pmsg,
+         flag);
 
 		// Next please.
-		pflag	= pflagNext;
-		}
-#endif
+      flag	= flagNext;
+      }
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

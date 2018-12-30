@@ -855,8 +855,8 @@ class CDude : public CCharacter
 			double	dZ);					// In:  New position for dude.
 
 		// Get the next child flag item after the specified flag item.
-		CFlag* GetNextFlag(			// Returns the next flag item after pflag.
-			CFlag*	pflag);			// In:  The flag to get the follower of.
+      managed_ptr<CThing3d> GetNextFlag(// Returns the next flag item after pflag.
+         managed_ptr<CThing3d> pflag);			// In:  The flag to get the follower of.
 											// nullptr for first child flag.
 		
 		// Drop all child flag items.

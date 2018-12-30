@@ -247,7 +247,7 @@ void CSndRelay::Update(void)
             {
                TRACE("Update(): ID %hu is not a \"SoundThing\", it is a \"%s\".\n",
                      parent()->type(),
-                     parent()->GetClassName());
+                     parent()->name());
 				}
 			}
 		}

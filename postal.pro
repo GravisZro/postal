@@ -29,52 +29,8 @@ DEFINES+="MULTIPLAYER_REMOVED"
 INCLUDEPATH += RSPiX
 INCLUDEPATH += WishPiX
 INCLUDEPATH += newpix
-INCLUDEPATH += newtypes
-
-DISTFILES += \
-    makeit.sh \
-    build.sh \
-    Makefile.gravis \
-    postal1.sh \
-    BLiT.vcproj \
-    BLiT3D.vcproj \
-    Blue Audio.vcproj \
-    Blue Video.vcproj \
-    Blue.vcproj \
-    Cyan.vcproj \
-    Green.vcproj \
-    Japan Add On.vcproj \
-    Orange.vcproj \
-    Postal Common.vcproj \
-    Postal Plus Demo.vcproj \
-    Postal Plus MP.vcproj \
-    Postal Plus.vcproj \
-    Super Postal.vcproj \
-    WishPiX.vcproj \
-    BLiT.vcxproj \
-    BLiT.vcxproj.filters \
-    BLiT3D.vcxproj \
-    BLiT3D.vcxproj.filters \
-    Blue.vcxproj \
-    Blue.vcxproj.filters \
-    Cyan.vcxproj \
-    Green.vcxproj \
-    Green.vcxproj.filters \
-    Orange.vcxproj \
-    Orange.vcxproj.filters \
-    Postal Common.vcxproj \
-    Postal Common.vcxproj.filters \
-    Postal Overview.txt \
-    Postal Plus Demo.txt \
-    Postal Plus.txt \
-    Postal Plus.vcxproj \
-    Postal Plus.vcxproj.filters \
-    Postal.sln \
-    WishPiX.vcxproj \
-    WishPiX.vcxproj.filters
 
 HEADERS += \
-    res/resource.h \
     RSPiX/RSPiX.h \
     RSPiX/CompileOptions.h \
     RSPiX/BLUE/Blue.h \

@@ -748,8 +748,8 @@ private:
       template<> constexpr ClassIDType lookupType<CDynamite         >(void) { return CDynamiteID         ; }
       template<> constexpr ClassIDType lookupType<CSndRelay         >(void) { return CSndRelayID         ; }
 
-      CThing* makeType(ClassIDType type_it);
 public: // for shitty existing code
+      CThing* makeType(ClassIDType type_it);
       std::set<managed_ptr<CThing>> m_every_thing;
 private:
       std::map<ClassIDType, std::list<managed_ptr<CThing>>> m_thing_by_type;

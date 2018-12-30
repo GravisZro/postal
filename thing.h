@@ -348,36 +348,9 @@ enum ClassIDType : uint8_t
 class CThing : public Object
 	{
 	// Make CRealm a friend so it can access private stuff
-	friend class CRealm;
-
-	//---------------------------------------------------------------------------
-	// Types, enums, etc.
-	//---------------------------------------------------------------------------
-	public:
-
-		// Typedefs for static functions that all derived classes should have
-		typedef int16_t (*FuncConstruct)(CRealm* pRealm, CThing** ppNew);
-		typedef short (*FuncPreload)(CRealm* pRealm);
-		typedef short (*FuncDestroy)(void);
-
-		// Struct containing info about derived classes
-		typedef struct
-			{
-			FuncConstruct funcConstruct;						// Construct() function pointer
-			FuncPreload funcPreload;							// Preload() function pointer
-			const char* pszClassName;							// Pointer to class name
-			bool bEditorCreatable;								// true indicates the editor can
-																		// create this object at user 
-																		// request.  false indicates it
-																		// cannot.
-			} ClassInfo;
-
-
-		typedef enum	// Macros within CThing namespace.
-			{
-			InvalidPosition	= -5770321
-			} Macros;
-
+   friend class CRealm;
+public:
+   enum { InvalidPosition = -5770321 };
 
 	//---------------------------------------------------------------------------
 	// Protected static member variables
@@ -391,15 +364,7 @@ class CThing : public Object
 		static int16_t ms_sDetectStaticInits;
 
 		// This is used by DoGui() to perform GUI processing.
-		static RProcessGui	ms_pgDoGui;
-
-	//---------------------------------------------------------------------------
-	// Public static member variables
-	//---------------------------------------------------------------------------
-	public:
-		// Array of class info for each derived class
-//		static ClassInfo ms_aClassInfo[TotalIDs];
-
+      static RProcessGui	ms_pgDoGui;
 
 	//---------------------------------------------------------------------------
 	// Non-static variables
@@ -433,26 +398,23 @@ public:
 
   constexpr CRealm* realm(void) const noexcept { return m_realm; }
   constexpr ClassIDType type(void) const noexcept { return m_type; }
+  constexpr const char* name(void) const noexcept { return m_name; }
   constexpr bool instantiable(void) const noexcept { return m_instantiable; }
 
-  void* operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept;
+  void* operator new(std::size_t sz, ClassIDType type_id, const char* type_name, CRealm* realm_ptr, bool instantiable) noexcept;
 
 protected:
   managed_ptr<CThing> m_child;
   managed_ptr<CThing> m_parent;
- private:
+private:
   CRealm* m_realm;
   ClassIDType m_type;
+  const char* m_name;
   bool m_instantiable;
 	//---------------------------------------------------------------------------
 	// CThing-only functions
 	//---------------------------------------------------------------------------
-	public:
-      const char* GetClassName(void)
-      {
-        return "";
-      }
-
+   public:
 		// Get object instance's unique ID.
       uint16_t GetInstanceID(void) const noexcept { return m_u16InstanceId; }
       void SetInstanceID(uint16_t id) noexcept { m_u16InstanceId = id; }
@@ -621,61 +583,13 @@ protected:
 		// InvalidPosition to indicate that it is not implemented for this 
 		// class type.  Override these functions for your class type to 
 		// enable this feature.
-		virtual					// Override to implement this functionality.
-      double GetX(void)	const { return InvalidPosition; }
-
-		virtual					// Override to implement this functionality.
-      double GetY(void)	const { return InvalidPosition; }
-
-		virtual					// Override to implement this functionality.
-      double GetZ(void) const { return InvalidPosition; }
+      virtual double GetX(void) const { return InvalidPosition; }
+      virtual double GetY(void) const { return InvalidPosition; }
+      virtual double GetZ(void) const { return InvalidPosition; }
 
 		// Get the smash - for normal CThings that don't have a smash, it
 		// will return nullptr, CThing3d's though always have a smash.
-		virtual 
-      CSmash* GetSmash(void) { return nullptr; }
-
-		//////////////////////////////////////////////////////////////////////////
-		// These are defined merely to discourage their use within CThings.
-		// They can cause problems when they are used in a chain of events that
-		// leads up to a rand() b/c they do not act the same from run to run and/or
-		// from machine to machine.
-		//
-		// DO NOT USE THE THESE FUNCTIONS!!! DO __NOT__ SIMPLY PUT A '::' IN FRONT
-		// OF YOUR REF TO THESE FUNCTIONS!!!!
-		//////////////////////////////////////////////////////////////////////////
-
-		// Never rely on sounds finishing w/i a CThing.  This varies greatly from
-		// machine to machine (and, in many cases, from run to run).
-		bool IsSamplePlaying(	 
-										
-			SampleMasterID	/*id*/)	
-			{
-			ASSERT(0);
-			return false;
-			}
-
-		bool IsSamplePlaying(	
-			RSnd*	/*psnd*/,				
-			SampleMasterID /*id*/)	
-			{
-			ASSERT(0);
-			return false;
-			}
-
-      milliseconds_t rspGetMilliseconds(void)
-			{
-			ASSERT(0);
-			return 0;
-			}
-		
-		int32_t rspGetMicroseconds(
-			int16_t /*sReset	= FALSE*/)
-			{
-			ASSERT(0);
-			return 0;
-			}
-
+      virtual CSmash* GetSmash(void) { return nullptr; }
 	};
 
 

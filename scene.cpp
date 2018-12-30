@@ -1003,11 +1003,12 @@ if (g_bSceneDontBlit == false)
 */
 			char	szMsg[1024];
 #if defined (RELEASE)
-			if (ps3Cur->m_pthing)
+         CThing* thing = dynamic_cast<CThing*>(ps3Cur);
+         if (thing != nullptr)
 				{
-				sprintf(szMsg, "Render3D(): %s with ID %d",
-               CThing::ms_aClassInfo[ps3Cur->m_pthing->type()].pszClassName,
-					ps3Cur->m_pthing->GetInstanceID());
+            sprintf(szMsg, "Render3D(): %s with ID %d",
+                    thing->name(),
+                    thing->GetInstanceID());
 				}
 			else
 				{
@@ -1018,12 +1019,14 @@ if (g_bSceneDontBlit == false)
 			CSprite*	psprParent	= ps3Cur->m_psprParent;
 			if (psprParent != nullptr)
 				{
-				if (psprParent->m_pthing)
+           thing = dynamic_cast<CThing*>(psprParent);
+
+            if (thing != nullptr)
 					{
-					sprintf(szMsg, "%s, child of %s with ID %d,",
-						szMsg,
-                  CThing::ms_aClassInfo[psprParent->m_pthing->type()].pszClassName,
-						psprParent->m_pthing->GetInstanceID());
+               sprintf(szMsg, "%s, child of %s with ID %d,",
+                       szMsg,
+                       thing->name(),
+                       thing->GetInstanceID());
 					}
 				}
 #endif

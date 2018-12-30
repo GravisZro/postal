@@ -394,10 +394,11 @@ int16_t CThing::Load(             // Returns 0 if successfull, non-zero otherwis
 
 #include <new>
 
-void* CThing::operator new(std::size_t sz, ClassIDType type_id, CRealm* realm_ptr, bool instantiable) noexcept
+void* CThing::operator new(std::size_t sz, ClassIDType type_id, const char* type_name, CRealm* realm_ptr, bool instantiable) noexcept
 {
   CThing* rval = reinterpret_cast<CThing*>(::operator new(sz, std::nothrow));
   rval->m_type = type_id;
+  rval->m_name = type_name;
   rval->m_realm = realm_ptr;
   rval->m_instantiable = instantiable;
   return rval;
