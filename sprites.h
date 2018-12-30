@@ -81,23 +81,6 @@ class CSprite
 
 	public:
 
-		// Define bit usage within "m_sInFlags"
-      enum
-			{
-			InAlpha				= 0x0001,			// Set if on alpha layer, clear otherwise
-			InOpaque				= 0x0002,			// Set if on opaque layer, clear otherwise
-			InXrayee				= 0x0004,			// Set if xray target, clear otherwise
-			InHidden				= 0x0008,			// Set if hidden, clear otherwise
-			InDeleteOnClear	= 0x0010,			// Set to delete sprite when layer is cleared
-			InHighIntensity	= 0x0020,			// Set to use higher light intensities when
-															// BLiT'ing/rendering (currently only supported
-															// for 3D objects).
-			InDeleteOnRender	= 0x0040,			// After rendering object, delete it.	
-			InBlitOpaque		= 0x0080				// Blit sprite opaque (currently only supported
-															// for 2D uncompressed, non-alpha objects).
-			};
-
-
 		// Types of sprites (or primitives).
       typedef enum
 			{
@@ -122,7 +105,7 @@ class CSprite
         uint32_t Hidden         : 1; // Set if hidden, clear otherwise
         uint32_t DeleteOnClear  : 1; // Set to delete sprite when layer is cleared
         uint32_t HighIntensity  : 1; // Set to use higher light intensities when
-        uint32_t DeleteOnRender : 1; // // After rendering object, delete it.
+        uint32_t DeleteOnRender : 1; // After rendering object, delete it.
         uint32_t BlitOpaque     : 1; // Blit sprite opaque (currently only supported for 2D uncompressed, non-alpha objects).
 
         inline void clear(void) { *reinterpret_cast<uint32_t*>(this) = 0; }
