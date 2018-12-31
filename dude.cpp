@@ -53,7 +53,7 @@
 //		02/11/97	JMI	Added the 3D animation for throwing and an associated
 //							rigid body transform for a grenade.
 //
-//		02/12/97	JMI	Forgot to set m_pGrenade->m_rotation.y again on release so the
+//		02/12/97	JMI	Forgot to set m_pGrenade->rotation.y again on release so the
 //							grenade would have correct trajectory even if the dude
 //							had rotated since the start of the throw.  Fixed.
 //
@@ -719,7 +719,7 @@
 //		07/01/97	JMI	Strafing was not playing anim backwards for left strafe
 //							when shooting.
 //							Also, a bug caused the strafe to not go backwards for
-//							the regular (non-shooting) strafe if m_rotation.y was less than
+//							the regular (non-shooting) strafe if rotation.y was less than
 //							90.
 //
 //		07/02/97 BRH	Changed the flamethrower to use CFirestreamID rather than
@@ -970,7 +970,7 @@
 //							generated if the position gets modified by other than the
 //							crawler.  In release mode, it sets him back to the last
 //							successful crawled position.
-//							Added a function to set m_position.x, Y, & Z, SetPosition().
+//							Added a function to set position.x, Y, & Z, SetPosition().
 //
 //		08/12/97 BRH	Added CSmash::Ducking bits to the smash when he is
 //							ducking down.  When he is ducking, he won't get hit
@@ -1802,8 +1802,8 @@ void CDude::Startup(void)						// Returns 0 if successfull, non-zero otherwise
    m_lNextBulletTime = realm()->m_time.GetGameTime() + MS_BETWEEN_BULLETS;
 
 	// Set start position for crawler verification.
-   m_dLastCrawledToPosX	= m_position.x;
-   m_dLastCrawledToPosZ	= m_position.z;
+   m_dLastCrawledToPosX	= position.x;
+   m_dLastCrawledToPosZ	= position.z;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1949,7 +1949,7 @@ void CDude::Update(void)
 			case State_Burning:
 				{
 				// Tweak out.
-            m_rotation.y	= rspMod360(m_rotation.y + RAND_SWAY(ON_FIRE_ROT_TWEAKAGE) );
+            rotation.y	= rspMod360(rotation.y + RAND_SWAY(ON_FIRE_ROT_TWEAKAGE) );
 				m_dVel	+= RAND_SWAY(ON_FIRE_VEL_TWEAKAGE) + ON_FIRE_VEL_TWEAKAGE / 4;	// **FUDGE**
 				}
 
@@ -2180,7 +2180,7 @@ void CDude::Update(void)
 			case State_StrafeAndShoot:
 
 				// If going left of forwards . . .
-            if (m_rotation.y - sStrafeAngle < 0)
+            if (rotation.y - sStrafeAngle < 0)
 					{
 					// Subtract twice the time to make up for fact that it was already added once above
 					m_lAnimTime	-= lDifTime * 2;
@@ -2197,7 +2197,7 @@ void CDude::Update(void)
 				break;
 			case State_Strafe:
 				// If going left of forwards . . .
-            if (m_rotation.y - sStrafeAngle < 0)
+            if (rotation.y - sStrafeAngle < 0)
 					{
 					// Subtract twice the time to make up for fact that it was already added once above
 					m_lAnimTime	-= lDifTime * 2;
@@ -2523,20 +2523,20 @@ void CDude::Update(void)
 					PositionChild(
                   ppowerup.pointer(),	// In:  Child sprite to detach.
                   m_panimCur->m_ptransRigid->atTime(m_lAnimTime),	// In:  Transform specifying position.
-                  ppowerup->m_position.x,		// Out: New position of child.
-                  ppowerup->m_position.y,		// Out: New position of child.
-                  ppowerup->m_position.z);		// Out: New position of child.
+                  ppowerup->position.x,		// Out: New position of child.
+                  ppowerup->position.y,		// Out: New position of child.
+                  ppowerup->position.z);		// Out: New position of child.
 					}
 				break;
 				}
 			}
 
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
+      m_smash.m_sphere.sphere.X			= position.x;
 		// Fudge center of sphere as half way up the dude.
 		// Doesn't work if dude's feet leave the origin.
-      m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.Y			= position.y + m_sRadius;
+      m_smash.m_sphere.sphere.Z			= position.z;
       m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
@@ -3038,17 +3038,17 @@ if (!demoCompat)
 
 				// Then point in the correct direction
 				if (input & INPUT_FIRE_UP)
-               m_rotation.y = 90 + (input & INPUT_FIRE_LEFT ? 45 : 0) + (input & INPUT_FIRE_RIGHT ? -45 : 0);
+               rotation.y = 90 + (input & INPUT_FIRE_LEFT ? 45 : 0) + (input & INPUT_FIRE_RIGHT ? -45 : 0);
 				else if (input & INPUT_FIRE_DOWN)
-               m_rotation.y = -90 + (input & INPUT_FIRE_LEFT ? -45 : 0) + (input & INPUT_FIRE_RIGHT ? 45 : 0);
+               rotation.y = -90 + (input & INPUT_FIRE_LEFT ? -45 : 0) + (input & INPUT_FIRE_RIGHT ? 45 : 0);
 				else if (input & INPUT_FIRE_LEFT)
-               m_rotation.y = 180;
+               rotation.y = 180;
 				else if (input & INPUT_FIRE_RIGHT)
-               m_rotation.y = 0;
+               rotation.y = 0;
 			}
 			else
 				// otherwise, point in the direction we're going
-            m_rotation.y = m_dRotTS;
+            rotation.y = m_dRotTS;
 		}
 	}
 	//else
@@ -3100,16 +3100,16 @@ if (!demoCompat)
 			//input |= INPUT_FIRE;
 
 			// Then point in the correct direction
-         m_rotation.y = m_dJoyFireAngle;
+         rotation.y = m_dJoyFireAngle;
 		}
 		else
 			// otherwise, point in the direction we're going
-         m_rotation.y = m_dJoyMoveAngle;
+         rotation.y = m_dJoyMoveAngle;
 	}
 }
 #endif // defined(ALLOW_TWINSTICK)
 
-   //TRACE("TSD Acc %f MA %f AA %f Fire %i\n", m_dAcc, m_dRotTS, m_rotation.y, m_bJoyFire);
+   //TRACE("TSD Acc %f MA %f AA %f Fire %i\n", m_dAcc, m_dRotTS, rotation.y, m_bJoyFire);
 	//TRACE("JoyVel %f JoyAngle %f Fire %i FireAngle %f\n", m_dJoyMoveVel, m_dJoyMoveAngle, m_bJoyFire, m_dJoyFireAngle);
 
 //#if defined(__ANDROID__)
@@ -3182,11 +3182,11 @@ if (!demoCompat)
 		{
 		if (input & INPUT_LEFT)
 			{
-         *psStrafeAngle	= m_rotation.y + 90;
+         *psStrafeAngle	= rotation.y + 90;
 			}
 		else if (input & INPUT_RIGHT)
 			{
-         *psStrafeAngle	= m_rotation.y - 90;
+         *psStrafeAngle	= rotation.y - 90;
 			}
 		}
 
@@ -3197,9 +3197,9 @@ if (!demoCompat)
 			sRotDelta	-= 360;
 
 		if (input & INPUT_ROT_IS_ABS)
-         m_rotation.y	= (double) sRotDelta;
+         rotation.y	= (double) sRotDelta;
 		else
-         m_rotation.y	+= (double) sRotDelta;
+         rotation.y	+= (double) sRotDelta;
 
 
 		// If there was any rotation while standing . . .
@@ -3218,17 +3218,17 @@ else
 		{
 		if (input & INPUT_LEFT)
 			{
-         *psStrafeAngle	= m_rotation.y + 90;
+         *psStrafeAngle	= rotation.y + 90;
 			}
 		else if (input & INPUT_RIGHT)
 			{
-         *psStrafeAngle	= m_rotation.y - 90;
+         *psStrafeAngle	= rotation.y - 90;
 			}
 		}
 	else if (input & INPUT_STRAFE_LEFT)
-      *psStrafeAngle = m_rotation.y + 90;
+      *psStrafeAngle = rotation.y + 90;
 	else if (input & INPUT_STRAFE_RIGHT)
-      *psStrafeAngle = m_rotation.y - 90;
+      *psStrafeAngle = rotation.y - 90;
 	else
 		{
 		int16_t sRotDelta	= (int16_t)(input & INPUT_ROT_MASK);
@@ -3237,9 +3237,9 @@ else
 			sRotDelta	-= 360;
 
 		// Adjust by input delta.
-      m_rotation.y	+= (double) sRotDelta;
+      rotation.y	+= (double) sRotDelta;
 
-//printf("dRotDelta == (%f), m_rotation.y == (%f)\n", (float) dRotDelta, (float) m_rotation.y);
+//printf("dRotDelta == (%f), rotation.y == (%f)\n", (float) dRotDelta, (float) rotation.y);
 
 
 		// If there was any rotation while standing . . .
@@ -3445,17 +3445,17 @@ else
 		{
 		// Update Values /////////////////////////////////////////////////////////
 
-      m_position.x	= dNewX;
-      m_position.y	= dNewY;
-      m_position.z	= dNewZ;
+      position.x	= dNewX;
+      position.y	= dNewY;
+      position.z	= dNewZ;
 
 		// Map through view angle which is the angle of the trigger plane.
 		// (it is created by the user in the editor parallel with the
 		// screen).
       double dTriggerY;
-      realm()->MapZ3DtoY2D(m_position.z, dTriggerY);
+      realm()->MapZ3DtoY2D(position.z, dTriggerY);
 		// Spew triggers.
-      SpewTriggers(realm(), GetInstanceID(), m_position.x, dTriggerY);
+      SpewTriggers(realm(), GetInstanceID(), position.x, dTriggerY);
 
 		UpdateFirePosition();
 		}
@@ -3495,12 +3495,12 @@ void CDude::Render(void)
          dummy);
 
 		// Update flag's position so it can correctly collision detect.
-      flag->m_position.x	= m_position.x;
-      flag->m_position.y	= m_position.y;
-      flag->m_position.z	= m_position.z;
+      flag->position.x	= position.x;
+      flag->position.y	= position.y;
+      flag->position.z	= position.z;
 
 		// For asthetics, rotate it a bit.
-      flag->m_rotation.y	= rspMod360(flag->m_rotation.y + RAND_SWAY(10) );
+      flag->rotation.y	= rspMod360(flag->rotation.y + RAND_SWAY(10) );
 
 		// Get next.
       flag	= GetNextFlag(flag);
@@ -4078,7 +4078,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
             // If there's a powerup that we haven't let go of . . .
             if (child())
 					{
-              managed_ptr<CPowerUp>(child())->Drop(m_position.x, m_position.y, m_position.z);
+              managed_ptr<CPowerUp>(child())->Drop(position.x, position.y, position.z);
 					}
 				break;
 				}
@@ -4093,7 +4093,7 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
                {
 					// It should drop like a rock.
                weapon()->m_dHorizVel	= (GetRand() % (int16_t)CGrenade::ms_dThrowHorizVel);	// NOTE:   ****USING RAND()****
-               weapon()->m_rotation.y	= GetRand() % 360;
+               weapon()->rotation.y	= GetRand() % 360;
 					ShootWeapon();
 					// Delete it!
                Object::enqueue(weapon()->SelfDestruct);
@@ -4820,9 +4820,9 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
       dBrainZ);														// Out: Point specified.
 
 	// Make absolute by adding dude's position to relative position.
-   dBrainX	+= m_position.x;
-   dBrainY	+= m_position.y;
-   dBrainZ	+= m_position.z;
+   dBrainX	+= position.x;
+   dBrainY	+= position.y;
+   dBrainZ	+= position.z;
 
 	// Create blood chunks.
 	int16_t	i;
@@ -4836,7 +4836,7 @@ void CDude::StartBrainSplat(void)	// Returns nothing.
 				dBrainX,				// Source position.
 				dBrainY,				// Source position.
 				dBrainZ,				// Source position.
-            m_rotation.y - 180,		// Angle of velocity.
+            rotation.y - 180,		// Angle of velocity.
 				BRAIN_SPLAT_SWAY,	// Angle sway.
 				40,					// Velocity (X/Z plane).
 				80,					// Velocity (X/Z plane) sway.
@@ -4871,23 +4871,23 @@ bool CDude::MakeValidPosition(		// Returns true, if new position was valid.
 	int16_t		sTerrainH;
 
 	// Make sure the position has not changed since our crawlage.
-   ASSERT(m_position.x == m_dLastCrawledToPosX);
-   ASSERT(m_position.z == m_dLastCrawledToPosZ);
+   ASSERT(position.x == m_dLastCrawledToPosX);
+   ASSERT(position.z == m_dLastCrawledToPosZ);
 
 	// Restore invalid movements to last good crawl position.
 	// The crawler cannot keep us out of things unless it is the only
 	// thing responsible for the movement.
-   if (m_position.x != m_dLastCrawledToPosX)
-      m_position.x	= m_dLastCrawledToPosX;
+   if (position.x != m_dLastCrawledToPosX)
+      position.x	= m_dLastCrawledToPosX;
 
-   if (m_position.z != m_dLastCrawledToPosZ)
-      m_position.z	= m_dLastCrawledToPosZ;
+   if (position.z != m_dLastCrawledToPosZ)
+      position.z	= m_dLastCrawledToPosZ;
 
 	// Ask crawler for valid position as close as possible to new position
 	if (m_crawler.Move(		// Returns 0 if successfull, non-zero otherwise
-      m_position.x, 					// In:  Position #1 xcoord
-      m_position.y, 					// In:  Position #1 ycoord
-      m_position.z, 					// In:  Position #1 zcoord
+      position.x, 					// In:  Position #1 xcoord
+      position.y, 					// In:  Position #1 ycoord
+      position.z, 					// In:  Position #1 zcoord
 		*pdNewX, 				// In:  Position #2 xcoord                     
 		*pdNewY, 				// In:  Position #2 ycoord                     
 		*pdNewZ, 				// In:  Position #2 zcoord                     
@@ -4993,11 +4993,11 @@ void CDude::OnShotMsg(			// Returns nothing.
 		{
 		// Audible and visual feedback.
 		PlaySample(g_smidBulletIntoVest, SampleMaster::Weapon);
-      double	dHitY	= m_position.y + m_sRadius + RAND_SWAY(VEST_HIT_SWAY);
+      double	dHitY	= position.y + m_sRadius + RAND_SWAY(VEST_HIT_SWAY);
 		// X/Z position depends on angle of shot (it is opposite).
 		int16_t	sDeflectionAngle	= rspMod360(pshotmsg->sAngle + 180);
-      double	dHitX	= m_position.x + COSQ[sDeflectionAngle] * TORSO_RADIUS;
-      double	dHitZ	= m_position.z - SINQ[sDeflectionAngle] * TORSO_RADIUS;
+      double	dHitX	= position.x + COSQ[sDeflectionAngle] * TORSO_RADIUS;
+      double	dHitZ	= position.z - SINQ[sDeflectionAngle] * TORSO_RADIUS;
 
 		StartAnim(VEST_HIT_RES_NAME, dHitX, dHitY, dHitZ, false);
 
@@ -5132,9 +5132,9 @@ void CDude::OnPutMeDownMsg(		// Returns nothing
     DetachChild(
           pputmedownmsg->flag,
           static_cast<CDudeAnim3D*>(m_panimCur)->m_ptransLeft->atTime(m_lAnimTime));
-    pputmedownmsg->flag->m_position.x = m_position.x;
-    pputmedownmsg->flag->m_position.y = m_position.y;
-    pputmedownmsg->flag->m_position.z = m_position.z;
+    pputmedownmsg->flag->position.x = position.x;
+    pputmedownmsg->flag->position.y = position.y;
+    pputmedownmsg->flag->position.z = position.z;
     pputmedownmsg->flag->m_state = State_Die;
   }
 }
@@ -5177,9 +5177,9 @@ bool CDude::WhileBlownUp(void)	// Returns true until state is complete.
 		{
 		// Update Values /////////////////////////////////////////////////////////
 
-      m_position.x	= dNewX;
-      m_position.y	= dNewY;
-      m_position.z	= dNewZ;
+      position.x	= dNewX;
+      position.y	= dNewY;
+      position.z	= dNewZ;
 
 		UpdateFirePosition();
 		}
@@ -5238,17 +5238,17 @@ void CDude::OnExecute(void)		// Returns nothing.
 		{
 		// Muzzle flare and sound feedback.
 		m_bullets.Flare(
-         m_rotation.y,
-         m_position.x + dMuzzleX,
-         m_position.y + dMuzzleY,
-         m_position.z + dMuzzleZ,
+         rotation.y,
+         position.x + dMuzzleX,
+         position.y + dMuzzleY,
+         position.z + dMuzzleZ,
          realm());
 
 		// Shoot this thing.
 		GameMessage	msg;
 		msg.msg_Shot.eType			= typeShot;
 		msg.msg_Shot.sPriority		= 0;
-      msg.msg_Shot.sAngle			= m_rotation.y;
+      msg.msg_Shot.sAngle			= rotation.y;
       msg.msg_Shot.shooter	= this;
 		msg.msg_Shot.sDamage			= 10;
 
@@ -5386,7 +5386,7 @@ void CDude::ShowTarget()
 	if (m_bTargetingHelpEnabled && m_bDead == false)
 	{
 		// sAngle must be between 0 and 359.
-      int16_t sRotY = rspMod360((int16_t) m_rotation.y);
+      int16_t sRotY = rspMod360((int16_t) rotation.y);
 		int16_t sRangeXZ = 100;
 //		int16_t sRadius = 20;
 
@@ -5395,9 +5395,9 @@ void CDude::ShowTarget()
 //		float	fRateY = 0.0;	// If we ever want vertical movement . . .
 
 		// Set initial position to first point to check (NEVER checks original position).
-//		float	fPosX = m_position.x + fRateX;
-//		float	fPosY = m_position.y + fRateY;
-//		float	fPosZ = m_position.z + fRateZ;
+//		float	fPosX = position.x + fRateX;
+//		float	fPosY = position.y + fRateY;
+//		float	fPosZ = position.z + fRateZ;
 
 		if (m_TargetSprite.m_psprParent)
 			m_TargetSprite.m_psprParent->RemoveChild(&m_TargetSprite);
@@ -5422,10 +5422,10 @@ void CDude::ShowTarget(void)
 	{
 		CThing* pTargetThing = nullptr;
 
-      if (IlluminateTarget((short) m_position.x,
-                           (short) m_position.y,
-                           (short) m_position.z,
-                           (short) m_rotation.y,
+      if (IlluminateTarget((short) position.x,
+                           (short) position.y,
+                           (short) position.z,
+                           (short) rotation.y,
 									300,
 									20,
 									CSmash::Character,
@@ -5698,7 +5698,7 @@ managed_ptr<CPowerUp> CDude::DropPowerUp(		// Returns new powerup on success; nu
 				}
 
 			// Place powerup at our feet.
-         ppowerup->Setup(m_position.x, m_position.y, m_position.z);
+         ppowerup->Setup(position.x, position.y, position.z);
 			}
 		}
 
@@ -5750,10 +5750,8 @@ bool CDude::FindExecutee(void)		// Returns true, if we found one; false, otherwi
 		{
 		// We can handle anyone that wants to reveal their location . . .
 		// This can be done via the GetX/Y/Z() functions or their smash . . .
-		if ( (psmashee->m_pThing->GetX() != CThing::InvalidPosition
-			&&	psmashee->m_pThing->GetY() != CThing::InvalidPosition
-			&&	psmashee->m_pThing->GetZ() != CThing::InvalidPosition)
-         || psmashee->m_pThing->GetSprite() != nullptr)
+      if (psmashee->m_pThing->position != invalid_position ||
+          psmashee->m_pThing->GetSprite() != nullptr)
 			{
 			// Found one.
 			bFoundOne	= true;
@@ -5793,20 +5791,20 @@ bool CDude::TrackExecutee(		// Returns true to persist, false, if we lost the ta
          dVictimZ	= m_victim->GetZ();
 			}
 
-      double sDistX         = dVictimX - m_position.x;
-      double sDistZ         = m_position.z - dVictimZ;
+      double sDistX         = dVictimX - position.x;
+      double sDistZ         = position.z - dVictimZ;
       double dSqrDistanceXZ = ABS2(sDistX, sDistZ);
 
 		// Determine angle to target.
       double dRot	  = rspATan(sDistZ, sDistX);
 		// Determine which rotation direction to target is smaller.
-      double dDelta = rspDegDelta(m_rotation.y, dRot);
+      double dDelta = rspDegDelta(rotation.y, dRot);
 
 		// If turning counter clockwise . . .
       if (dDelta > 0.0)
-         m_rotation.y += MIN(dDelta, g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
+         rotation.y += MIN(dDelta, g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
       else
-        m_rotation.y	+= MAX(dDelta, -g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
+        rotation.y	+= MAX(dDelta, -g_InputSettings.m_dStillFastDegreesPerSec * dSeconds);
 
 #if 1
 		// If too close . . .
@@ -5970,9 +5968,9 @@ void CDude::TossPowerUp(		// Returns nothing.
 	GameMessage	msg;
    msg.msg_Explosion.eType				= typeExplosion;
 	msg.msg_Explosion.sDamage			= 0;
-   msg.msg_Explosion.sX					= m_position.x;
-   msg.msg_Explosion.sY					= m_position.y;
-   msg.msg_Explosion.sZ					= m_position.z;
+   msg.msg_Explosion.sX					= position.x;
+   msg.msg_Explosion.sY					= position.y;
+   msg.msg_Explosion.sZ					= position.z;
 	msg.msg_Explosion.sVelocity		= sVelocity;
    msg.msg_Explosion.shooter = this;
 
@@ -5997,9 +5995,9 @@ void CDude::SetPosition(		// Returns nothing.
 	double	dZ)					// In:  New position for dude.
 	{
 	// Set position and update crawler position.
-   m_dLastCrawledToPosX	= m_position.x	= dX;
-   m_position.y	= dY;
-   m_dLastCrawledToPosZ	= m_position.z	= dZ;
+   m_dLastCrawledToPosX	= position.x	= dX;
+   position.y	= dY;
+   m_dLastCrawledToPosZ	= position.z	= dZ;
 	}
 
 
@@ -6036,9 +6034,9 @@ void CDude::DropAllFlags(	// Returns nothing.
 		msg.msg_Explosion.eType = typeExplosion;
 		msg.msg_Explosion.sPriority = 0;
 		msg.msg_Explosion.sDamage = 10;
-      msg.msg_Explosion.sX = (int16_t) m_position.x;
-      msg.msg_Explosion.sY = (int16_t) m_position.y;
-      msg.msg_Explosion.sZ = (int16_t) m_position.z;
+      msg.msg_Explosion.sX = (int16_t) position.x;
+      msg.msg_Explosion.sY = (int16_t) position.y;
+      msg.msg_Explosion.sZ = (int16_t) position.z;
 		msg.msg_Explosion.sVelocity = 30;
       msg.msg_Explosion.shooter = this;
 
@@ -6071,16 +6069,16 @@ void CDude::DropAllFlags(	// Returns nothing.
 		// Move it to our position rather than the transformed position b/c we
 		// don't know if that's a valid position but we do know that our position
 		// is.
-      flag->m_position.x	= m_position.x;
-      flag->m_position.y	= m_position.y;
-      flag->m_position.z	= m_position.z;
+      flag->position.x	= position.x;
+      flag->position.y	= position.y;
+      flag->position.z	= position.z;
 
 		// If it's an explosion . . .
 		if (pmsg->msg_Generic.eType == typeExplosion)
 			{
 			// Tweak the message a little.
-         pmsg->msg_Explosion.sX = (int16_t) m_position.x + RAND_SWAY(30);
-         pmsg->msg_Explosion.sZ = (int16_t) m_position.z + RAND_SWAY(30);
+         pmsg->msg_Explosion.sX = (int16_t) position.x + RAND_SWAY(30);
+         pmsg->msg_Explosion.sZ = (int16_t) position.z + RAND_SWAY(30);
 			}
 
 		// Forward the specified message.

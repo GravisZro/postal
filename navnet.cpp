@@ -223,9 +223,9 @@ int16_t CNavigationNet::Load(							// Returns 0 if successfull, non-zero otherw
 			{
 			default:
 			case 1:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 
 				// Load the number of bouys that were saved
 				pFile->Read(&m_ucNumSavedBouys);
@@ -275,9 +275,9 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 		}
 
 	// Save object data
-   pFile->Write(&m_position.x);
-   pFile->Write(&m_position.y);
-   pFile->Write(&m_position.z);
+   pFile->Write(&position.x);
+   pFile->Write(&position.y);
+   pFile->Write(&position.z);
 
 	// Save the number of nodes so we can check after load to see if all
 	// of the Bouys have been loaded yet.
@@ -297,7 +297,7 @@ int16_t CNavigationNet::Save(										// Returns 0 if successfull, non-zero oth
 void CNavigationNet::Startup(void)								// Returns 0 if successfull, non-zero otherwise
    {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_position.y = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+   position.y = realm()->GetHeight((int16_t) position.x, (int16_t) position.z);
 	// Set yourself to be the new current Nav Net
    realm()->setNavNet(this);
 
@@ -384,9 +384,9 @@ int16_t CNavigationNet::EditNew(									// Returns 0 if successfull, non-zero o
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
 	// Load resources
 	sResult = GetResources();
@@ -482,9 +482,9 @@ int16_t CNavigationNet::EditMove(									// Returns 0 if successfull, non-zero 
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
    return SUCCESS;
 	}
@@ -507,18 +507,18 @@ void CNavigationNet::EditRender(void)
   flags.clear();
 
   // Map from 3d to 2d coords
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      m_sX2, m_sY2);
 
   // Priority is based on bottom edge of sprite
-  m_sPriority = m_position.z;
+  m_sPriority = position.z;
 
   // Center on image.
   m_sX2	-= m_pImage->m_sWidth / 2;
   m_sY2	-= m_pImage->m_sHeight;
 
   // Layer should be based on info we get from attribute map.
-  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
   // Image would normally animate, but doesn't for now
   m_pImage = m_pImage;
@@ -531,7 +531,7 @@ void CNavigationNet::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CNavigationNet::EditRect(RRect* pRect)
 {
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      pRect->sX, pRect->sY);
 
 	pRect->sW	= 10;	// Safety.
@@ -670,8 +670,8 @@ uint8_t CNavigationNet::FindNearestBouy(int16_t sX, int16_t sZ)
    for (auto iter = m_NodeMap.begin(); iter != m_NodeMap.end(); ++iter)
 	{
       pBouy = iter->second;
-      dX = pBouy->m_position.x - sX;
-      dZ = pBouy->m_position.z - sZ;
+      dX = pBouy->position.x - sX;
+      dZ = pBouy->position.z - sZ;
 		dSqDist = (dX * dX) + (dZ * dZ);
 		pBouy->m_TreeNode.m_sortkey = dSqDist;
       pBouy->m_TreeNode.m_powner = pBouy.pointer();
@@ -734,8 +734,8 @@ uint8_t CNavigationNet::FindNearestBouy(short sX, short sZ)
 	for (i = m_NodeMap.begin(); i != m_NodeMap.end(); i++)
 	{
 		pBouy = (CBouy*) (*i).second;
-      dX = pBouy->m_position.x - sX;
-      dZ = pBouy->m_position.z - sZ;
+      dX = pBouy->position.x - sX;
+      dZ = pBouy->position.z - sZ;
 		dSqDist = (dX * dX) + (dZ * dZ);
 		if (dSqDist < dMinDist)
 		{

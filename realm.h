@@ -82,7 +82,7 @@
 //							m_sMaxDispensees.
 //
 //		04/24/97	JMI	Upped file version to 8 for newly saved CBarrel parameter,
-//							m_rotation.y.
+//							rotation.y.
 //
 //		04/24/97	JMI	Upped file version to 9 for new CDude parameter,
 //							m_sNumShells.

@@ -53,8 +53,8 @@
 //
 //		04/23/97	JMI	Now sets its m_smash's bits to Barrel instead of Item.
 //
-//		04/24/97	JMI	Now saves and loads m_rotation.y and picks a random value for
-//							m_rotation.y when EditNew() is called.
+//		04/24/97	JMI	Now saves and loads rotation.y and picks a random value for
+//							rotation.y when EditNew() is called.
 //
 //		05/15/97 BRH	Moved the smash sphere up so that the sphere will encircle
 //							the barrel and not the hotspot on the ground so that
@@ -173,8 +173,8 @@ static const char* ms_apszSpinResNames[] =
 CBarrel::CBarrel(void)
    {
    m_sSuspend = 0;
-   m_rotation.y = 0;
-   m_position.x = m_position.y = m_position.z = m_dVel = m_dAcc = 0;
+   rotation.y = 0;
+   position.x = position.y = position.z = m_dVel = m_dAcc = 0;
    m_sScreenRadius = 20;
    m_panimCur = m_pPreviousAnim = nullptr;
 //			m_sprite.m_pthing	= this;
@@ -274,7 +274,7 @@ int16_t CBarrel::Load(				// Returns 0 if successfull, non-zero otherwise
 			case 10:
 			case 9:
 			case 8:
-            pFile->Read(&m_rotation.y);
+            pFile->Read(&rotation.y);
 			case 7:
 			case 6:
 			case 5:
@@ -335,7 +335,7 @@ int16_t CBarrel::Save(										// Returns 0 if successfull, non-zero otherwise
 	else
 		sData = 0;
 	pFile->Write(sData);
-   pFile->Write(m_rotation.y);
+   pFile->Write(rotation.y);
 
 	if (!pFile->Error())
 	{
@@ -458,7 +458,7 @@ void CBarrel::Update(void)
               managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
                if (pExplosion)
 					{
-                  pExplosion->Setup(m_position.x, m_position.y, m_position.z, m_shooter);
+                  pExplosion->Setup(position.x, position.y, position.z, m_shooter);
 						PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
 					}
 					m_state = State_BlownUp;
@@ -502,7 +502,7 @@ void CBarrel::Update(void)
                  pFire = realm()->AddThing<CFire>();
                   if (pFire)
 						{
-                     if (pFire->Setup(m_position.x - 20 + (GetRandom() % 40), m_position.y, m_position.z - 20 + (GetRandom() % 40),
+                     if (pFire->Setup(position.x - 20 + (GetRandom() % 40), position.y, position.z - 20 + (GetRandom() % 40),
 											  4000 + (GetRandom() % 9000), false, CFire::LargeFire) != SUCCESS)
                         pFire.reset();
 							else
@@ -519,9 +519,9 @@ void CBarrel::Update(void)
 		}
 
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y		   = m_position.y + m_sRadius;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y		   = position.y + m_sRadius;
+      m_smash.m_sphere.sphere.Z			= position.z;
       m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
@@ -547,7 +547,7 @@ int16_t CBarrel::EditNew(									// Returns 0 if successfull, non-zero otherwis
 	sResult = CThing3d::EditNew(sX, sY, sZ);
 
 	// Pick a random rotation.
-   m_rotation.y	= (double)(GetRandom() % 360);
+   rotation.y	= (double)(GetRandom() % 360);
 
 	if (sResult == SUCCESS)
 	{
@@ -668,7 +668,7 @@ void CBarrel::OnShotMsg(Shot_Message* pMessage)
          managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
          if (pExplosion)
 			{
-            pExplosion->Setup(m_position.x, m_position.y, m_position.z, m_shooter);
+            pExplosion->Setup(position.x, position.y, position.z, m_shooter);
 				PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
 			}
 		}
@@ -678,12 +678,12 @@ void CBarrel::OnShotMsg(Shot_Message* pMessage)
 			PlaySample(g_smidShotBarrel1, SampleMaster::Weapon);
 			// X/Z position depends on angle of shot (it is opposite).
 			int16_t	sDeflectionAngle	= rspMod360(pMessage->sAngle + 180);
-         double	dHitX	= m_position.x + COSQ[sDeflectionAngle] * HULL_RADIUS;
-         double	dHitZ	= m_position.z - SINQ[sDeflectionAngle] * HULL_RADIUS;
+         double	dHitX	= position.x + COSQ[sDeflectionAngle] * HULL_RADIUS;
+         double	dHitZ	= position.z - SINQ[sDeflectionAngle] * HULL_RADIUS;
 			StartAnim(
 				BARREL_HIT_RES_NAME, 
 				dHitX, 
-            m_position.y + m_sRadius + (GetRandom() % m_sRadius),
+            position.y + m_sRadius + (GetRandom() % m_sRadius),
 				dHitZ,
 				false);
 		}
@@ -728,7 +728,7 @@ void CBarrel::OnExplosionMsg(Explosion_Message* pMessage)
 
 		realm()->Scene()->TransformPtsToRealm(&m_trans, &pt3dSrc, &pt3dDst, 1 );
 
-      m_position.y	+=	pt3dDst.y();
+      position.y	+=	pt3dDst.y();
 	}
 }
 
@@ -750,7 +750,7 @@ void CBarrel::OnBurnMsg(Burn_Message* pMessage)
          managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
          if (pExplosion)
 			{
-            pExplosion->Setup(m_position.x, m_position.y, m_position.z, m_shooter);
+            pExplosion->Setup(position.x, position.y, position.z, m_shooter);
 				PlaySample(g_smidGrenadeExplode, SampleMaster::Destruction);
 			}
 		}

@@ -183,7 +183,7 @@ void	SpewTriggers(CRealm* pRealm,	uint16_t	usDudeUID,int16_t sX,int16_t sZ)
 	while (*pHit && sNum) // got a hit:
 		{
 		// send a trigger message out:
-      managed_ptr<CThing> pThing = pRealm->GetThingById<CThing>(pRealm->m_asPylonUIDs[*pHit]);
+      managed_ptr<sprite_base_t> pThing = pRealm->GetThingById<sprite_base_t>(pRealm->m_asPylonUIDs[*pHit]);
 
       if (pThing)
         pThing->SendThingMessage(msg, pThing); // post the trigger!

@@ -1129,7 +1129,7 @@ static char	ms_szFileName[PATH_MAX]	= "";
 
 static int16_t	ms_sMoving		= FALSE;	// TRUE, if moving/placing a thing (ms_pthingSel).
 
-static managed_ptr<CThing> ms_pthingSel;	// CThing* to thing currently selected.
+static managed_ptr<sprite_base_t> ms_pthingSel;	// CThing* to thing currently selected.
 static RHot* ms_photSel = nullptr;	// RHot* to hotbox associated with selected thing.
 
 // Initial width and height of display so we can
@@ -1309,14 +1309,14 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 	int16_t		sPosX,					// Position for new CThing.
 	int16_t		sPosY,					// Position for new CThing.
 	int16_t		sPosZ,					// Position for new CThing.
-   managed_ptr<CThing>& ppthing,					// Out: Pointer to new thing.
+   managed_ptr<sprite_base_t>& ppthing,					// Out: Pointer to new thing.
    RHot*& pphot,					// Out: Pointer to new hotbox for thing.
 	RFile*	pfile = nullptr);			// In:  Optional file to load from (instead of EditNew()).
 
 // Move a thing to the specified location and update its RHot with an
 // EditRect() call.
 static void MoveThing(				// Returns nothing.
-   managed_ptr<CThing>	pthing,					// Thing to move.
+   managed_ptr<sprite_base_t>	pthing,					// Thing to move.
    RHot* phot,						// Thing's hotbox.
 	int16_t		sPosX,					// New position.
 	int16_t		sPosY,					// New position.
@@ -1492,22 +1492,22 @@ static int16_t CreateTriggerRegions(	// Returns 0 on success.
 
 // Change or clear the current pylon being edited.
 static void EditPylonTriggerRegion(	// Returns nothing.
-   const managed_ptr<CThing>& pthingPylon);				// In:  Pylon whose trigger area we want to
+   const managed_ptr<sprite_base_t>& pthingPylon);				// In:  Pylon whose trigger area we want to
 
 // Set the selection to the specified CThing.
-static managed_ptr<CThing>	SetSel(	// Returns CThing that previously was selected.
-   const managed_ptr<CThing>& pthingSel,	// In:  CThing to be selected.
+static managed_ptr<sprite_base_t>	SetSel(	// Returns CThing that previously was selected.
+   const managed_ptr<sprite_base_t>& pthingSel,	// In:  CThing to be selected.
    RHot* photSel);		// In:  Hotbox of CThing to be selected.
 
 // Delete the specified item.
 static void DelThing(	// Returns nothing.
-   managed_ptr<CThing>& pthingDel,	// In:  CThing to be deleted.
+   managed_ptr<sprite_base_t>& pthingDel,	// In:  CThing to be deleted.
    RHot*  photDel,			// In:  Hotbox of CThing to be deleted.
 	CRealm* prealm);		// In:  Current realm
 
 // Delete all the items in the currently selected class.
 static void DelClass(	// Returns nothing.
-   managed_ptr<CThing> pthingDel,	// In:  CThing to be deleted.
+   managed_ptr<sprite_base_t> pthingDel,	// In:  CThing to be deleted.
 	CRealm* prealm);		// In:  Current realm
 
 // Delete all but the basic items from the realm in order to make template levels
@@ -1516,7 +1516,7 @@ static void DelMost(		// Return nothing
 
 // Copy a thing to the paste buffer.
 static int16_t CopyItem(	// Returns 0 on success.
-   managed_ptr<CThing> pthingCopy);	// In:  CThing to copy.
+   managed_ptr<sprite_base_t> pthingCopy);	// In:  CThing to copy.
 
 // Copy a thing to the paste buffer.
 static int16_t PasteItem(	// Returns 0 on success.
@@ -2917,7 +2917,7 @@ static bool DoInput(		// Returns true when done.
 						&&	ms_lPressedId < LIST_ITEM_GUI_ID_BASE + TotalIDs
 						&& ms_sMoving == FALSE)
 						{
-                  managed_ptr<CThing>	pthingNew;
+                  managed_ptr<sprite_base_t>	pthingNew;
                   RHot* photNew;
 
 						if (CreateNewThing(								// CThing* to new thing.
@@ -3563,7 +3563,7 @@ static int16_t NewRealm(
 		// Set disk path for this realm.
 		prealm->m_resmgr.SetBasePath(g_GameSettings.m_szNoSakDir);
 
-      managed_ptr<CThing> pthing;
+      managed_ptr<sprite_base_t> pthing;
       int16_t		sResult	= CreateNewThing(prealm, CHoodID, 0, 0, 0, pthing, ms_photHood);
 		// Create hood object because we can't really do anything without it
 		if (sResult == SUCCESS)
@@ -4710,7 +4710,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 	int16_t		sPosX,					// Position for new CThing.
 	int16_t		sPosY,					// Position for new CThing.
 	int16_t		sPosZ,					// Position for new CThing.
-   managed_ptr<CThing>& ppthing,					// Out: Pointer to new thing.
+   managed_ptr<sprite_base_t>& ppthing,					// Out: Pointer to new thing.
    RHot*&  pphot,					// Out: Pointer to new hotbox for thing.
 	RFile*	pfile/* = nullptr*/)		// In:  Optional file to load from (instead of EditNew()).
 	{
@@ -4885,7 +4885,7 @@ static int16_t CreateNewThing(		// Returns 0 on success.
 //
 ////////////////////////////////////////////////////////////////////////////////
 static void MoveThing(				// Returns nothing.
-   managed_ptr<CThing> pthing,					// Thing to move.
+   managed_ptr<sprite_base_t> pthing,					// Thing to move.
    RHot* phot,						// Thing's hotbox.
 	int16_t		sPosX,					// New position.
 	int16_t		sPosY,					// New position.
@@ -5332,6 +5332,7 @@ void NavNetListPressedCall(	// Returns nothing
 
 CGameEditThing::CGameEditThing(void)
 {
+  position = invalid_position;
   // Set defaults.
   m_u16CameraTrackId	= invalid_id;
   m_sViewPosX				= 0;
@@ -6460,7 +6461,7 @@ static int16_t CreateTriggerRegions(	// Returns 0 on success.
 
 		TRACE("CreateTriggerRegions(): No default CThing to hold triggers!\n");
 		TRACE("CreateTriggerRegions(): Adding one for your convenience!\n");
-      managed_ptr<CThing> pThing;
+      managed_ptr<sprite_base_t> pThing;
       RHot* photdummy = nullptr;
 
       sResult = CreateNewThing(prealm, CTriggerID, 0, 0, 0, pThing, photdummy);
@@ -6544,7 +6545,7 @@ static int16_t CreateTriggerRegions(	// Returns 0 on success.
 // Change or clear the current pylon being edited.
 ////////////////////////////////////////////////////////////////////////////////
 static void EditPylonTriggerRegion(	// Returns nothing.
-   const managed_ptr<CThing>& pthingPylon)					// In:  Pylon whose trigger area we want to
+   const managed_ptr<sprite_base_t>& pthingPylon)					// In:  Pylon whose trigger area we want to
 	{
 	// If there's a current pylon being edited . . .
    if (ms_pylonEdit)
@@ -6610,8 +6611,8 @@ static void EditPylonTriggerRegion(	// Returns nothing.
 ////////////////////////////////////////////////////////////////////////////////
 // Set the selection to the specified CThing.
 ////////////////////////////////////////////////////////////////////////////////
-static managed_ptr<CThing> SetSel(	// Returns CThing that previously was selected.
-   const managed_ptr<CThing>& pthingSel,	// In:  CThing to be selected.
+static managed_ptr<sprite_base_t> SetSel(	// Returns CThing that previously was selected.
+   const managed_ptr<sprite_base_t>& pthingSel,	// In:  CThing to be selected.
    RHot* photSel)			// In:  Hotbox of CThing to be selected.
 	{
    managed_ptr<CThing>	pthingRes	= ms_pthingSel;
@@ -6642,7 +6643,7 @@ static managed_ptr<CThing> SetSel(	// Returns CThing that previously was selecte
 // Delete the specified item.
 ////////////////////////////////////////////////////////////////////////////////
 static void DelThing(	// Returns nothing.
-   managed_ptr<CThing>& pthingDel,	// In:  CThing to be deleted.
+   managed_ptr<sprite_base_t>& pthingDel,	// In:  CThing to be deleted.
    RHot* photDel,			// In:  Hotbox of CThing to be deleted.
 	CRealm* prealm)		// In:  Current Realm
    {
@@ -6804,7 +6805,7 @@ static void DelThing(	// Returns nothing.
 // Delete all the items in the currently selected class.
 ////////////////////////////////////////////////////////////////////////////////
 static void DelClass(	// Returns nothing.
-   managed_ptr<CThing> pthingDel,	// In:  CThing to be deleted.
+   managed_ptr<sprite_base_t> pthingDel,	// In:  CThing to be deleted.
 	CRealm* prealm)		// In:  Current realm
 {
   ASSERT(pthingDel);
@@ -6821,7 +6822,8 @@ static void DelClass(	// Returns nothing.
   {
     for(managed_ptr<CThing>& pthing : prealm->GetThingsByType(pthingDel->type()))
     {
-      DelThing(pthing, nullptr, prealm);
+      managed_ptr<sprite_base_t> thing = pthing;
+      DelThing(thing, nullptr, prealm);
     }
   }
 }
@@ -6853,7 +6855,7 @@ static void DelMost(	// Returns nothing.
             {
                 default:
               {
-                managed_ptr<CThing> pthing = pos;
+                managed_ptr<sprite_base_t> pthing = pos;
                   DelThing(pthing, nullptr, prealm);
                   break;
               }
@@ -6877,7 +6879,7 @@ static void DelMost(	// Returns nothing.
 // Copy a thing to the paste buffer.
 ////////////////////////////////////////////////////////////////////////////////
 static int16_t CopyItem(	// Returns 0 on success.
-   managed_ptr<CThing> pthingCopy)	// In:  CThing to copy.
+   managed_ptr<sprite_base_t> pthingCopy)	// In:  CThing to copy.
 	{
    int16_t		sResult = SUCCESS;	// Assume success.
 
@@ -7361,28 +7363,6 @@ static void KillFileCounter(void)	// Returns nothing.
 	rspClearAllInputEvents();
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Helper function explicity for UpdateSelectionInfo().
-////////////////////////////////////////////////////////////////////////////////
-inline
-void SetPosInfo(			// Returns nothing.
-	RGuiItem*	pgui,		// In:  GUI to update.  nullptr is safe.
-	double		dVal)		// In:  Value to udpate to GUI.
-	{
-	if (pgui)
-		{
-		if (dVal != CThing::InvalidPosition)
-			{
-			pgui->SetText("%g", dVal);
-			}
-		else
-			{
-			pgui->SetText("%s", "N/A");
-			}
-
-		pgui->Compose();
-		}
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Update selection info in the info GUI.
@@ -7414,15 +7394,15 @@ static void UpdateSelectionInfo(	// Returns nothing.
 		// Always update other fields.
 		if (ms_pthingSel)
 			{
-			SetPosInfo(ms_pguiInfoXPos, ms_pthingSel->GetX() );
-			SetPosInfo(ms_pguiInfoYPos, ms_pthingSel->GetY() );
-			SetPosInfo(ms_pguiInfoZPos, ms_pthingSel->GetZ() );
+        ms_pguiInfoXPos->SetText("%g", ms_pthingSel->GetX());
+        ms_pguiInfoYPos->SetText("%g", ms_pthingSel->GetY());
+        ms_pguiInfoZPos->SetText("%g", ms_pthingSel->GetZ());
 			}
 		else
 			{
-			SetPosInfo(ms_pguiInfoXPos, CThing::InvalidPosition);
-			SetPosInfo(ms_pguiInfoYPos, CThing::InvalidPosition);
-			SetPosInfo(ms_pguiInfoZPos, CThing::InvalidPosition);
+        ms_pguiInfoXPos->SetText("%s", "N/A");
+        ms_pguiInfoYPos->SetText("%s", "N/A");
+        ms_pguiInfoZPos->SetText("%s", "N/A");
 			}
 		}
 	}
@@ -7472,24 +7452,6 @@ static int16_t TmpFileName(								// Returns 0 if successfull, non-zero otherwi
 	return sResult;
 	}
 
-////////////////////////////////////////////////////////////////////////////////
-// Helper for ShowRealmStatistics() to display an item position or N/A,
-// if invalid.
-////////////////////////////////////////////////////////////////////////////////
-inline
-void Pos2Str(		// Returns nothing.
-	double dPos,	// In:  CThing position.
-	char* pszStr)	// Out: String representation.
-	{
-	if (dPos != CThing::InvalidPosition)
-		{
-		sprintf(pszStr, "%g", dPos);
-		}
-	else
-		{
-      std::strcpy(pszStr, "N/A");
-		}
-	}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Show statistics for the specified realm.
@@ -7524,22 +7486,32 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 			int32_t	lNum	= 0;
 
          for(const managed_ptr<CThing>& pthing : prealm->m_every_thing)
-				{
+         {
+           managed_ptr<sprite_base_t> thing = pthing;
             lNum++;
-				dX			= pthing->GetX();
-				dY			= pthing->GetY();
-				dZ			= pthing->GetZ();
+            dX			= thing->GetX();
+            dY			= thing->GetY();
+            dZ			= thing->GetZ();
 
-				Pos2Str(dX, szX);
-				Pos2Str(dY, szY);
-				Pos2Str(dZ, szZ);
+            if (thing->position == invalid_position)
+            {
+              std::strcpy(szX, "N/A");
+              std::strcpy(szY, "N/A");
+              std::strcpy(szZ, "N/A");
+            }
+            else
+            {
+              sprintf(szX, "%g", dX);
+              sprintf(szY, "%g", dY);
+              sprintf(szZ, "%g", dZ);
+            }
 
 				sprintf(
 					szThingDescription, 
                "%i) \"%s\" ID: %u X: %s Y: %s Z: %s",
 					lNum,
-               pthing->name(),
-					pthing->GetInstanceID(),
+               thing->name(),
+               thing->GetInstanceID(),
 					szX,
 					szY,
 					szZ);
@@ -7549,7 +7521,7 @@ static int16_t ShowRealmStatistics(	// Returns 0 on success.
 				if (pguiThing)
 					{
                // Success.
-               pguiThing->m_lId	= uintptr_t(pthing);
+               pguiThing->m_lId	= uintptr_t(thing);
 					}
 				else
 					{

@@ -227,9 +227,9 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 		}
 
 		// Load object data
-      pFile->Read(&m_position.x);
-      pFile->Read(&m_position.y);
-      pFile->Read(&m_position.z);
+      pFile->Read(&position.x);
+      pFile->Read(&position.y);
+      pFile->Read(&position.z);
 
 		uint16_t u16Data;
 		uint16_t u16NumLinks;
@@ -267,7 +267,7 @@ int16_t CBouy::Load(										// Returns 0 if successfull, non-zero otherwise
 
 		// If the file version is earlier than the change to real 3D coords . . .
       if (ulFileVersion < 24)
-        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
+        realm()->MapY2DtoZ3D(position.z, position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -318,9 +318,9 @@ int16_t CBouy::Save(										// Returns 0 if successfull, non-zero otherwise
 	}
 
 	// Save object data
-   pFile->Write(&m_position.x);
-   pFile->Write(&m_position.y);
-   pFile->Write(&m_position.z);
+   pFile->Write(&position.x);
+   pFile->Write(&position.y);
+   pFile->Write(&position.z);
 
    uint16_t u16Data = m_aplDirectLinks.size();
    pFile->Write(&u16Data); // Save the number of links that will follow in the file
@@ -348,7 +348,7 @@ int16_t CBouy::Save(										// Returns 0 if successfull, non-zero otherwise
 void CBouy::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_position.y = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+   position.y = realm()->GetHeight((int16_t) position.x, (int16_t) position.z);
 
 	// Init other stuff
 	// Get pointer to Navigation Net
@@ -418,9 +418,9 @@ int16_t CBouy::EditNew(									// Returns 0 if successfull, non-zero otherwise
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	// Since we were created in the editor, set our Nav Net
    m_pParentNavNet = realm()->NavNet();
@@ -450,9 +450,9 @@ int16_t CBouy::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	return SUCCESS;
 }
@@ -476,7 +476,7 @@ void CBouy::EditRender(void)
   }
 
 	// Map from 3d to 2d coords
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       m_sX2, m_sY2);
 
 	// Center on image.
@@ -484,10 +484,10 @@ void CBouy::EditRender(void)
    m_sY2	-= m_pImage->m_sHeight;
 
 	// Priority is based on bottom edge of sprite
-   m_sPriority = m_position.z;
+   m_sPriority = position.z;
 
 	// Layer should be based on info we get from attribute map.
-   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
    Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
@@ -497,7 +497,7 @@ void CBouy::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CBouy::EditRect(RRect* pRect)
 {
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       pRect->sX, pRect->sY);
 
 	pRect->sW	= 10;	// Safety.

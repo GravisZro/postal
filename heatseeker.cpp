@@ -340,7 +340,7 @@ void CHeatseeker::Update(void)
 				PlaySample(
 					g_smidRocketFire,			// In:  Sample to play
 					SampleMaster::Weapon,	// In:  User volume adjustment category
-               DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife), // In:  distance to dude
+               DistanceToVolume(position.x, position.y, position.z, LaunchSndHalfLife), // In:  distance to dude
 					&m_siThrust,				// Out: Handle for adjusting sound volume
 					nullptr,							// Out: Sample duration
 					2841,							// In:  Where to loop back to in ms
@@ -368,8 +368,8 @@ void CHeatseeker::Update(void)
 					m_dHorizVel = ms_dMaxVelBack;
 
 				// Adjust position based on velocity 
-            dNewX = m_position.x + rspCos(m_rotation.y) * (m_dHorizVel * dSeconds);
-            dNewZ = m_position.z - rspSin(m_rotation.y) * (m_dHorizVel * dSeconds);
+            dNewX = position.x + rspCos(rotation.y) * (m_dHorizVel * dSeconds);
+            dNewZ = position.z - rspSin(rotation.y) * (m_dHorizVel * dSeconds);
 
 				// Check for obstacles
 				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
@@ -381,30 +381,30 @@ void CHeatseeker::Update(void)
 
 				// Once a bit off screen, it should start turning back towards
 				// the center of the hood.
-            if (m_position.z > ms_sOffScreenDist + sRealmH ||
-                m_position.z < -ms_sOffScreenDist ||
-                m_position.x > ms_sOffScreenDist + sRealmW ||
-                m_position.x < -ms_sOffScreenDist)
+            if (position.z > ms_sOffScreenDist + sRealmH ||
+                position.z < -ms_sOffScreenDist ||
+                position.x > ms_sOffScreenDist + sRealmW ||
+                position.x < -ms_sOffScreenDist)
 				{
 					int16_t sTargetAngle = FindAngleTo(sRealmW / 2, 
 																sRealmH / 2);
-					int16_t sAngleCCL = rspMod360(sTargetAngle - m_rotation.y);
-					int16_t sAngleCL  = rspMod360((360 - sTargetAngle) + m_rotation.y);
+               int16_t sAngleCCL = rspMod360(sTargetAngle - rotation.y);
+               int16_t sAngleCL  = rspMod360((360 - sTargetAngle) + rotation.y);
 					int16_t sAngleDistance = MIN(sAngleCCL, sAngleCL);
 					double dAngleChange = MIN((double) sAngleDistance, ms_sAngularVelocity * dSeconds);
 					if (sAngleCCL < sAngleCL)
-						m_rotation.y = rspMod360(m_rotation.y + dAngleChange);
+                  rotation.y = rspMod360(rotation.y + dAngleChange);
 					else
-						m_rotation.y = rspMod360(m_rotation.y - dAngleChange);
+                  rotation.y = rspMod360(rotation.y - dAngleChange);
 				}
 
-            if (sHeight > m_position.y ||
+            if (sHeight > position.y ||
 					 !realm()->IsPathClear(	// Returns true, if the entire path is clear.                 
 														// Returns false, if only a portion of the path is clear.     
 														// (see *psX, *psY, *psZ).                                    
-                  (int16_t) m_position.x, 				// In:  Starting X.
-                  (int16_t) m_position.y, 				// In:  Starting Y.
-                  (int16_t) m_position.z, 				// In:  Starting Z.
+                  (int16_t) position.x, 				// In:  Starting X.
+                  (int16_t) position.y, 				// In:  Starting Y.
+                  (int16_t) position.z, 				// In:  Starting Z.
 						3.0, 							// In:  Rate at which to scan ('crawl') path in pixels per    
 														// iteration.                                                 
 														// NOTE: Values less than 1.0 are inefficient.                
@@ -427,15 +427,15 @@ void CHeatseeker::Update(void)
 					// Note that these need to be set even if we explode; otherwise, they
 					// never get initialized and totally hosened values are sent to
 					// pSmoke-Setup() which makes Alpha unhappy.
-               dPrevX = m_position.x;
-               dPrevZ = m_position.z;
+               dPrevX = position.x;
+               dPrevZ = position.z;
 				}
 				else
 				{
-               dPrevX = m_position.x;
-               dPrevZ = m_position.z;
-               m_position.x = dNewX;
-               m_position.z = dNewZ;
+               dPrevX = position.x;
+               dPrevZ = position.z;
+               position.x = dNewX;
+               position.z = dNewZ;
 				}
 
 				// Check for collisions with other characters if
@@ -452,18 +452,18 @@ void CHeatseeker::Update(void)
 																				  m_u32SeekBitsExclude, &pSmashed))
 					// Find the angle to the closest thing
 					{
-                  if (realm()->IsPathClear((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, ms_dLineCheckRate,
+                  if (realm()->IsPathClear((int16_t) position.x, (int16_t) position.y, (int16_t) position.z, ms_dLineCheckRate,
 						                (int16_t) pSmashed->m_sphere.sphere.X, (int16_t) pSmashed->m_sphere.sphere.Z) )
 						{
 							int16_t sTargetAngle = FindAngleTo(pSmashed->m_sphere.sphere.X, pSmashed->m_sphere.sphere.Z);
-							int16_t sAngleCCL = rspMod360(sTargetAngle - m_rotation.y);
-							int16_t sAngleCL  = rspMod360((360 - sTargetAngle) + m_rotation.y);
+                     int16_t sAngleCCL = rspMod360(sTargetAngle - rotation.y);
+                     int16_t sAngleCL  = rspMod360((360 - sTargetAngle) + rotation.y);
 							int16_t sAngleDistance = MIN(sAngleCCL, sAngleCL);
 							double dAngleChange = MIN((double) sAngleDistance, ms_sAngularVelocity * dSeconds);
 							if (sAngleCCL < sAngleCL)
-								m_rotation.y = rspMod360(m_rotation.y + dAngleChange);
+                        rotation.y = rspMod360(rotation.y + dAngleChange);
 							else
-								m_rotation.y = rspMod360(m_rotation.y - dAngleChange);
+                        rotation.y = rspMod360(rotation.y - dAngleChange);
 						}
 					}
 					realm()->m_smashatorium.QuickCheckReset(
@@ -498,8 +498,8 @@ void CHeatseeker::Update(void)
 							{
 								m_eState = CWeapon::State_Explode;
 								// Go back to previous spot where explosion should be created
-                        m_position.x = dPrevX;
-                        m_position.z = dPrevZ;
+                        position.x = dPrevX;
+                        position.z = dPrevZ;
 							}
 						}
 						// Can't determine the shooter,but we did collide, so blow up.
@@ -508,8 +508,8 @@ void CHeatseeker::Update(void)
 							m_eState = CWeapon::State_Explode;
 							// Go back to last position before exploding so it doesn't hit behind
 							// the target.
-                     m_position.x = dPrevX;
-                     m_position.z = dPrevZ;
+                     position.x = dPrevX;
+                     position.z = dPrevZ;
 						}
 					}
 				}
@@ -549,13 +549,13 @@ void CHeatseeker::Update(void)
 					{
 						// This needs to be fixed by calculating the position of the back end of
 						// the rocket in 3D based on the rotation.  
-                  pSmoke->Setup(dPrevX, m_position.y, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
+                  pSmoke->Setup(dPrevX, position.y, dPrevZ, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
 						pSmoke->m_shooter = m_shooter;
 					}
 				}
 
 				// Update sound position
-            SetInstanceVolume(m_siThrust, DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );
+            SetInstanceVolume(m_siThrust, DistanceToVolume(position.x, position.y, position.z, LaunchSndHalfLife) );
 
 				break;
 			}
@@ -573,11 +573,11 @@ void CHeatseeker::Update(void)
           managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
           if (pExplosion)
 				{
-               pExplosion->Setup(m_position.x, MAX(m_position.y-30, 0.0), m_position.z, m_shooter);
+               pExplosion->Setup(position.x, MAX(position.y-30, 0.0), position.z, m_shooter);
 					PlaySample(
 						g_smidRocketExplode,
 						SampleMaster::Destruction,
-                  DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(position.x, position.y, position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 				}
 
             int16_t a;
@@ -586,7 +586,7 @@ void CHeatseeker::Update(void)
               managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
                if (pSmoke)
 					{
-                  pSmoke->Setup(m_position.x - 4 + GetRandom() % 9, m_position.y-20, m_position.z - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
+                  pSmoke->Setup(position.x - 4 + GetRandom() % 9, position.y-20, position.z - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 						pSmoke->m_shooter = m_shooter;
 					}
 				}
@@ -596,14 +596,14 @@ void CHeatseeker::Update(void)
 		}
 
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y			= position.y;
+      m_smash.m_sphere.sphere.Z			= position.z;
       m_smash.m_sphere.sphere.lRadius	= 2 * m_sRadius;
 
-      m_smashSeeker.m_sphere.sphere.X = m_position.x + (rspCos(m_rotation.y) * ms_lSeekRadius);
-      m_smashSeeker.m_sphere.sphere.Y = m_position.y;
-      m_smashSeeker.m_sphere.sphere.Z = m_position.z - (rspSin(m_rotation.y) * ms_lSeekRadius);
+      m_smashSeeker.m_sphere.sphere.X = position.x + (rspCos(rotation.y) * ms_lSeekRadius);
+      m_smashSeeker.m_sphere.sphere.Y = position.y;
+      m_smashSeeker.m_sphere.sphere.Z = position.z - (rspSin(rotation.y) * ms_lSeekRadius);
 		m_smashSeeker.m_sphere.sphere.lRadius = ms_lSeekRadius;
 
 		// Update the smash.
@@ -631,7 +631,7 @@ void CHeatseeker::Render(void)
 	m_trans.makeIdentity();
 
 	// Set its pointing direction
-	m_trans.Ry(rspMod360(m_rotation.y));
+   m_trans.Ry(rspMod360(rotation.y));
 
 	// Eventually this should be channel driven also
 //	m_sRadius = m_sCurRadius;
@@ -642,14 +642,14 @@ void CHeatseeker::Render(void)
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+      realm()->Map3Dto2D(position.x, position.y, position.z,
                          m_sX2, m_sY2);
 
 		// Priority is based on Z.
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
 		// Layer should be based on info we get from the attribute map
-      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
       m_ptrans		= &m_trans;
 
@@ -665,9 +665,9 @@ void CHeatseeker::Render(void)
 		if (psl2d != nullptr)
 			{
 			Map3Dto2D(
-            m_position.x,
-            m_position.y,
-            m_position.z,
+            position.x,
+            position.y,
+            position.z,
 				&(psl2d->m_sX2), 
 				&(psl2d->m_sY2) );
 			Map3Dto2D(
@@ -706,9 +706,9 @@ int16_t CHeatseeker::Setup(									// Returns 0 if successfull, non-zero otherw
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 	m_dHorizVel = 0.0;
 
 	// Load resources
@@ -719,15 +719,15 @@ int16_t CHeatseeker::Setup(									// Returns 0 if successfull, non-zero otherw
 
 	m_bArmed = false;
 
-   m_smash.m_sphere.sphere.X			= m_position.x;
-   m_smash.m_sphere.sphere.Y			= m_position.y;
-   m_smash.m_sphere.sphere.Z			= m_position.z;
+   m_smash.m_sphere.sphere.X			= position.x;
+   m_smash.m_sphere.sphere.Y			= position.y;
+   m_smash.m_sphere.sphere.Z			= position.z;
 	m_smash.m_bits = CSmash::Projectile;
    m_smash.m_pThing = this;
 
-   m_smashSeeker.m_sphere.sphere.X = m_position.x + (rspCos(m_rotation.y) * ms_lSeekRadius);
-   m_smashSeeker.m_sphere.sphere.Y = m_position.y;
-   m_smashSeeker.m_sphere.sphere.Z = m_position.z - (rspSin(m_rotation.y) * ms_lSeekRadius);
+   m_smashSeeker.m_sphere.sphere.X = position.x + (rspCos(rotation.y) * ms_lSeekRadius);
+   m_smashSeeker.m_sphere.sphere.Y = position.y;
+   m_smashSeeker.m_sphere.sphere.Z = position.z - (rspSin(rotation.y) * ms_lSeekRadius);
 	m_smashSeeker.m_bits = 0;
    m_smashSeeker.m_pThing = this;
 

@@ -33,7 +33,7 @@
 //
 //		03/18/97	JMI	Made On and While functions virtual.
 //
-//		03/19/97	JMI	Added m_dExtRotVelY, m_dExtRotVelZ, and m_rotation.z.
+//		03/19/97	JMI	Added m_dExtRotVelY, m_dExtRotVelZ, and rotation.z.
 //							Also, DetachChild() now returns a pointer to the detached
 //							child.
 //

@@ -20,6 +20,13 @@ struct space3d_t
 
   template<typename V>
   inline T& operator [](V index) { return *(reinterpret_cast<T*>(this) + index); }
+  constexpr bool operator !=(const space3d_t<T>& other) const { return !operator ==(other); }
+  constexpr bool operator ==(const space3d_t<T>& other) const
+  {
+    return x == other.x &&
+           y == other.y &&
+           z == other.z;
+  }
 };
 #pragma pack(pop)
 

@@ -303,7 +303,7 @@
 //							generated if the position gets modified by other than the
 //							crawler.  In release mode, it sets him back to the last
 //							successful crawled position.
-//							Added a function to set m_position.x, Y, & Z, SetPosition().
+//							Added a function to set position.x, Y, & Z, SetPosition().
 //
 //		08/12/97	JMI	Removed unused anims: m_animJump, JumpForward, Land, 
 //							LandForward, Fall.
@@ -484,7 +484,7 @@ class CDude : public CCharacter
 		// INPUT HACK. Normally we can't move in one direction while facing another. Android version
 		// works by reading input while calculating the dude's velocity, but we can't do that with
 		// keyboard input. Thus, these dude-only "twinstick" rotational values.
-      bool			m_bUseRotTS;	// TRUE if we should use m_dRotTS to calculate velocity instead of m_rotation.y
+      bool			m_bUseRotTS;	// TRUE if we should use m_dRotTS to calculate velocity instead of rotation.y
       double			m_dRotTS;		// Direction we want to go when twinsticking
 
 		// Actual joystick inputs
@@ -559,7 +559,7 @@ class CDude : public CCharacter
 
 		uint8_t				m_u8LastEvent;						// Last anim event.
 
-      managed_ptr<CThing> m_victim;							// Instance ID of victim to be executed or
+      managed_ptr<sprite_base_t> m_victim;							// Instance ID of victim to be executed or
 																// used as human shield.
 
 		bool			m_bDead;								// true, if dead; false otherwise.

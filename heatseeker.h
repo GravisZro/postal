@@ -193,7 +193,7 @@ class CHeatseeker
 
 		inline int16_t FindAngleTo(double dX, double dZ)
 		{
-         return rspATan((m_position.z - dZ), (dX - m_position.x));
+         return rspATan((position.z - dZ), (dX - position.x));
 		}
 	};
 

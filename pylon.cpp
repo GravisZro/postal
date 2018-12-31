@@ -139,9 +139,9 @@ int16_t CPylon::Load(										// Returns 0 if successfull, non-zero otherwise
          ms_sFileCount = sFileCount;
 
 		// Load object data
-      pFile->Read(&m_position.x);
-      pFile->Read(&m_position.y);
-      pFile->Read(&m_position.z);
+      pFile->Read(&position.x);
+      pFile->Read(&position.y);
+      pFile->Read(&position.z);
 
 		// Switch on the parts that have changed
 		switch (ulFileVersion)
@@ -164,7 +164,7 @@ int16_t CPylon::Load(										// Returns 0 if successfull, non-zero otherwise
 
 		// If the file version is earlier than the change to real 3D coords . . .
       if (ulFileVersion < 24)
-        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
+        realm()->MapY2DtoZ3D(position.z, position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -210,9 +210,9 @@ int16_t CPylon::Save(										// Returns 0 if successfull, non-zero otherwise
 	}
 
 	// Save object data
-   pFile->Write(&m_position.x);
-   pFile->Write(&m_position.y);
-   pFile->Write(&m_position.z);
+   pFile->Write(&position.x);
+   pFile->Write(&position.y);
+   pFile->Write(&position.z);
 
 	pFile->Write(&m_ucID);
 
@@ -231,15 +231,15 @@ int16_t CPylon::Save(										// Returns 0 if successfull, non-zero otherwise
 void CPylon::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_position.y = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+   position.y = realm()->GetHeight((int16_t) position.x, (int16_t) position.z);
 
 	// Init other stuff
    GetResources();
 
 	// Update sphere.
-   m_smash.m_sphere.sphere.X			= m_position.x;
-   m_smash.m_sphere.sphere.Y			= m_position.y;
-   m_smash.m_sphere.sphere.Z			= m_position.z;
+   m_smash.m_sphere.sphere.X			= position.x;
+   m_smash.m_sphere.sphere.Y			= position.y;
+   m_smash.m_sphere.sphere.Z			= position.z;
    m_smash.m_sphere.sphere.lRadius	= m_pImage->m_sWidth;
 	m_smash.m_bits		= CSmash::Pylon;
    m_smash.m_pThing = this;
@@ -304,9 +304,9 @@ int16_t CPylon::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
 	// Get Pylon ID
 	m_ucID = GetFreePylonID();
@@ -315,9 +315,9 @@ int16_t CPylon::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	sResult = GetResources();
 
 	// Update sphere.
-   m_smash.m_sphere.sphere.X			= m_position.x;
-   m_smash.m_sphere.sphere.Y			= m_position.y;
-   m_smash.m_sphere.sphere.Z			= m_position.z;
+   m_smash.m_sphere.sphere.X			= position.x;
+   m_smash.m_sphere.sphere.Y			= position.y;
+   m_smash.m_sphere.sphere.Z			= position.z;
    m_smash.m_sphere.sphere.lRadius	= m_pImage->m_sWidth;
 	m_smash.m_bits		= CSmash::Pylon;
    m_smash.m_pThing = this;
@@ -487,14 +487,14 @@ int16_t CPylon::EditMove(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
 	// Update sphere.
-   m_smash.m_sphere.sphere.X			= m_position.x;
-   m_smash.m_sphere.sphere.Y			= m_position.y;
-   m_smash.m_sphere.sphere.Z			= m_position.z;
+   m_smash.m_sphere.sphere.X			= position.x;
+   m_smash.m_sphere.sphere.Y			= position.y;
+   m_smash.m_sphere.sphere.Z			= position.z;
    m_smash.m_sphere.sphere.lRadius	= m_pImage->m_sWidth;
 	m_smash.m_bits		= CSmash::Pylon;
    m_smash.m_pThing = this;
@@ -524,21 +524,21 @@ void CPylon::EditRender(void)
 
 	// Map from 3d to 2d coords
    realm()->Map3Dto2D(
-      m_position.x,
-      m_position.y,
-      m_position.z,
+      position.x,
+      position.y,
+      position.z,
       m_sX2,
       m_sY2);
 
 	// Priority is based on bottom edge of sprite
-   m_sPriority = m_position.z;
+   m_sPriority = position.z;
 
 	// Center on image.
    m_sX2	-= m_pImage->m_sWidth / 2;
    m_sY2	-= m_pImage->m_sHeight;
 
 	// Layer should be based on info we get from attribute map.
-   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
    Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
@@ -548,7 +548,7 @@ void CPylon::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CPylon::EditRect(RRect* pRect)
 {
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       pRect->sX, pRect->sY);
 
 	pRect->sW	= 10;	// Safety.
@@ -785,8 +785,8 @@ void CPylon::ProcessMessages(void)
     GameMessage& msg = m_MessageQueue.front();
     if(msg.msg_Generic.eType == typeDudeTrigger)
     {
-      dTempSqDistance = (m_position.x-msg.msg_DudeTrigger.dX) * (m_position.x-msg.msg_DudeTrigger.dX) +
-                        (m_position.z-msg.msg_DudeTrigger.dZ) * (m_position.z-msg.msg_DudeTrigger.dZ);
+      dTempSqDistance = (position.x-msg.msg_DudeTrigger.dX) * (position.x-msg.msg_DudeTrigger.dX) +
+                        (position.z-msg.msg_DudeTrigger.dZ) * (position.z-msg.msg_DudeTrigger.dZ);
       if (dTempSqDistance < dMinSqDistance)
       {
         m_msg.msg_Popout.u16UniqueDudeID = m_u16TargetDudeID = msg.msg_DudeTrigger.u16DudeUniqueID;

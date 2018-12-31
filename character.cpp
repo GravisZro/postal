@@ -518,9 +518,9 @@ void CCharacter::Update(void)										// Returns nothing.
     PositionChild(
           m_weapon.pointer(),	// In:  Child sprite to position.
           transWeapon,				// In:  Transform specifying position.
-          m_weapon->m_position.x,			// Out: New position of child.
-          m_weapon->m_position.y,			// Out: New position of child.
-          m_weapon->m_position.z);		// Out: New position of child.
+          m_weapon->position.x,			// Out: New position of child.
+          m_weapon->position.y,			// Out: New position of child.
+          m_weapon->position.z);		// Out: New position of child.
   }
 
   // If we have a weapon sound play instance . . .
@@ -598,7 +598,7 @@ bool CCharacter::WhileBurning(void)	// Returns true until state is complete.
 
 	// Make character run around while on fire, varying in direction.
 	m_dAcc = 150;
-	m_rotation.y = rspMod360(m_rotation.y + (GetRand() % 30) - 15);
+   rotation.y = rspMod360(rotation.y + (GetRand() % 30) - 15);
 	DeluxeUpdatePosVel(dSeconds);
 
 	// If the fire still exists . . .
@@ -909,7 +909,7 @@ void CCharacter::MakeBloody(
 	if (g_GameSettings.m_sKidMode == FALSE)
 	{
 #endif
-   double	dHitY	= m_position.y + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
+   double	dHitY	= position.y + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
 	double	dHitX;
 	double	dHitZ;
 	// If writhing on the ground . . .
@@ -926,8 +926,8 @@ void CCharacter::MakeBloody(
 		// source (where the bullet came from, the epicenter of the explosion, etc.)
 		// giving us a little more feedback and realism.
 		int16_t	sDeflectionAngle	= rspMod360(sDamageAngle + 180);
-      dHitX	= m_position.x + COSQ[sDeflectionAngle] * TORSO_RADIUS;
-      dHitZ	= m_position.z - SINQ[sDeflectionAngle] * TORSO_RADIUS;
+      dHitX	= position.x + COSQ[sDeflectionAngle] * TORSO_RADIUS;
+      dHitZ	= position.z - SINQ[sDeflectionAngle] * TORSO_RADIUS;
 
 		// Put it up about half way up character's body.
       dHitY	+= m_sRadius;
@@ -1004,8 +1004,8 @@ void CCharacter::MakeBloodPool(void)
 		pat->m_msg.msg_DrawBlood.sPriority	= 0;
       pat->m_sender = this;
 
-      double	dHitX			= m_position.x + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
-      double	dHitZ			= m_position.z + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
+      double	dHitX			= position.x + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
+      double	dHitZ			= position.z + GetRandSway(BLOOD_SPLAT_SWAY, realm()->Hood()->m_dScale3d);
 		// Make sure blood lands on the ground (terrain).
       double	dTerrainH	= realm()->GetHeight(dHitX, dHitZ);
 
@@ -1106,7 +1106,7 @@ void CCharacter::PrepareWeapon(void)	// Returns the weapon ptr or nullptr.
         m_weapon->setParent(this);
         // Set it up.
         m_weapon->Setup(0, 0, 0);
-        m_weapon->m_rotation.y = m_rotation.y;
+        m_weapon->rotation.y = rotation.y;
         // Set its initial state to hidden.
         m_weapon->m_eState = CWeapon::State_Hide;
         // Let the scene know to render the weapon as a child of this.
@@ -1198,12 +1198,12 @@ void CCharacter::ShootWeapon(	// Returns the weapon ptr or nullptr
          if (m_weapon)
 				{
 				// Set weapon position to character's position offset by rigid body's realm offset.
-            m_weapon->m_position.x = m_position.x + pt3WeaponRel.x();
-            m_weapon->m_position.y = m_position.y + pt3WeaponRel.y();
-            m_weapon->m_position.z = m_position.z + pt3WeaponRel.z();
+            m_weapon->position.x = position.x + pt3WeaponRel.x();
+            m_weapon->position.y = position.y + pt3WeaponRel.y();
+            m_weapon->position.z = position.z + pt3WeaponRel.z();
 				// I guess we usually want to launch in the direction we are _currently_ facing and
 				// not the direction we were in when we prepared the weapon.
-            m_weapon->m_rotation.y	= m_rotation.y;
+            m_weapon->rotation.y	= rotation.y;
 
 				// Set the collision bits for the weapon
             m_weapon->SetCollideBits(bitsInclude, bitsDontcare, bitsExclude);
@@ -1267,8 +1267,8 @@ bool CCharacter::ValidateWeaponPosition(void)	// Returns true, if weapon is in a
                   GetLinkPoint(transWeapon, dX, dY, dZ);
 
 						// Check position to make sure it's not inside terrain.
-                  int16_t	sTerrainH	= realm()->GetHeight(m_position.x + dX, m_position.z + dZ);
-                  if (sTerrainH > m_position.y + dY)
+                  int16_t	sTerrainH	= realm()->GetHeight(position.x + dX, position.z + dZ);
+                  if (sTerrainH > position.y + dY)
 							{
 							// Send the object a delete message.
                       Object::enqueue(m_weapon->SelfDestruct);
@@ -1329,14 +1329,14 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 	for (i = 0; i < sNumShots; i ++)
 		{
 		int16_t	sX, sY, sZ;	
-      int16_t	sFireAngle	= m_rotation.y + GetRandSway(FIRE_ANGLE_Y_SWAY, realm()->Hood()->m_dScale3d);
-      managed_ptr<CThing> pthingTarget;
+      int16_t	sFireAngle	= rotation.y + GetRandSway(FIRE_ANGLE_Y_SWAY, realm()->Hood()->m_dScale3d);
+      managed_ptr<sprite_base_t> pthingTarget;
 		bool bResult = m_bullets.FireDeluxe(
 			sFireAngle,				// In:  Angle of launch in degrees (on X/Z plane).
          GetRandSway(FIRE_ANGLE_Z_SWAY, realm()->Hood()->m_dScale3d),				// In:  Angle of launch in degrees (on X/Y plane).
-         m_position.x + ppt3d->x(),		// In:  Launch position.
-         m_position.y + ppt3d->y(),		// In:  Launch position.
-         m_position.z + ppt3d->z(),		// In:  Launch position.
+         position.x + ppt3d->x(),		// In:  Launch position.
+         position.y + ppt3d->y(),		// In:  Launch position.
+         position.z + ppt3d->z(),		// In:  Launch position.
 			sRange,					// In:  Maximum distance.
          realm(),				// In:  Realm in which to fire.
 			bitsInclude,			// In:  Mask of CSmash masks that this bullet can hit.
@@ -1418,7 +1418,7 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
 				// Spread this out.
 				msg.msg_Explosion.sDamage = ms_asBulletDamageChart[sIndex] / sNumShots + 1;
 				// Just in front of where bullet hit.
-				int16_t	sAngle	= rspMod360(m_rotation.y);
+            int16_t	sAngle	= rspMod360(rotation.y);
 				msg.msg_Explosion.sX = (int16_t) pthingTarget->GetX() - COSQ[sAngle] * 10;
 				msg.msg_Explosion.sY = (int16_t) pthingTarget->GetY();
 				msg.msg_Explosion.sZ = (int16_t) pthingTarget->GetZ() + SINQ[sAngle] * 10;
@@ -1451,10 +1451,10 @@ bool CCharacter::FireBullets(				// Returns true, if we hit someone/thing.
    if (pchunk)
 		{
 		pchunk->Setup(
-         m_position.x + ppt3d->x(),			// Source position.
-         m_position.y + ppt3d->y(),			// Source position.
-         m_position.z + ppt3d->z(),			// Source position.
-			m_rotation.y + 90,				// Angle of velocity.
+         position.x + ppt3d->x(),			// Source position.
+         position.y + ppt3d->y(),			// Source position.
+         position.z + ppt3d->z(),			// Source position.
+         rotation.y + 90,				// Angle of velocity.
 			0,								// Angle sway.
 			30,							// Velocity (X/Z plane).
 			20,							// Velocity sway.
@@ -1492,7 +1492,7 @@ bool CCharacter::IsPathClear(	// Returns true, if the entire path is clear.
 	int16_t* psX,						// Out: Point of intercept, if any, on path.
 	int16_t* psY,						// Out: Point of intercept, if any, on path.
 	int16_t* psZ,						// Out: Point of intercept, if any, on path.
-   managed_ptr<CThing>& ppthing,				// Out: Thing that intercepted us or nullptr, if none.
+   managed_ptr<sprite_base_t>& ppthing,				// Out: Thing that intercepted us or nullptr, if none.
 	CSmash*	psmashExclude/*= nullptr*/)	// In:  Optional CSmash to exclude or nullptr, if none.
 	{
 	bool	bEntirelyClear	= false;	// Assume entire path is not clear.
@@ -1733,7 +1733,7 @@ bool CCharacter::IlluminateTarget(			// Returns true if there is a target
 	CSmash::Bits bitsInclude,		// In:  Mask of CSmash bits that would count as a hit
 	CSmash::Bits bitsDontCare,		// In:  Mask of CSmash bits that would not affect path
 	CSmash::Bits bitsExclude,		// In:  Mask of CSmash bits that cannot affect path
-   managed_ptr<CThing>& hThing,					// Out: Handle to thing that is the Target or nullptr if none
+   managed_ptr<sprite_base_t>& hThing,					// Out: Handle to thing that is the Target or nullptr if none
 	CSmash* psmashExclude)			// In: Optional CSmash to exclude or nullptr, if none. 
 {
 	bool bTargetFound = false;

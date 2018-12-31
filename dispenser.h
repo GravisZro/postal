@@ -239,16 +239,16 @@ class CDispenser
 
 		// Create a dispensee from the memfile, if open.
 		int16_t InstantiateDispensee(	// Returns 0 on success.
-         managed_ptr<CThing>& ppthing,				// Out: New thing loaded from m_fileDispensee.
+         managed_ptr<sprite_base_t>& ppthing,				// Out: New thing loaded from m_fileDispensee.
 			bool		bEditMode);			// In:  true if in edit mode.
 
 		// Write dispensee to the memfile.
 		int16_t SaveDispensee(		// Returns 0 on success.
-         managed_ptr<CThing> pthing);		// In:  Instance of Dispensee to save.
+         managed_ptr<sprite_base_t> pthing);		// In:  Instance of Dispensee to save.
 
 		// Render dispensee to m_imRender.
 		int16_t RenderDispensee(	// Returns 0 on success.
-         managed_ptr<CThing> pthing);		// In:  Instance of Dispensee to render.
+         managed_ptr<sprite_base_t> pthing);		// In:  Instance of Dispensee to render.
 
 		// Get the closest dude.
 		int16_t GetClosestDudeDistance(	// Returns 0 on success.  Fails, if no dudes.
@@ -256,7 +256,7 @@ class CDispenser
 
 		// Destroy an instantiated dispensee.
 		void DestroyDispensee(	// Returns nothing.
-         managed_ptr<CThing>& ppthing);	// In:  Ptr to the instance.
+         managed_ptr<sprite_base_t>& ppthing);	// In:  Ptr to the instance.
 	};
 
 

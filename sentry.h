@@ -178,7 +178,7 @@ class CSentry : public CDoofus
 		// Update the animation radius based on the current frame
 		void UpdateRadius(void);
 
-      // Position the base and turret based on m_position.x, y, & z.
+      // Position the base and turret based on position.x, y, & z.
 		void UpdatePosition(void);
 
 		// Message handling functions ////////////////////////////////////////////

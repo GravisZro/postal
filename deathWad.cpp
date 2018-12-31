@@ -251,8 +251,8 @@ void CDeathWad::Update(void)
 	double dNewX;
 	double dNewZ;
 
-   ASSERT(m_rotation.y >= 0);
-   ASSERT(m_rotation.y < 360);
+   ASSERT(rotation.y >= 0);
+   ASSERT(rotation.y < 360);
 
 	if (!m_sSuspend)
 		{
@@ -298,14 +298,14 @@ void CDeathWad::Update(void)
 					m_dHorizVel = ms_dMaxVelBack;
 
 				// Adjust position based on velocity.
-            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
-            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewX = position.x + COSQ[(int16_t)rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = position.z - SINQ[(int16_t)rotation.y] * (m_dHorizVel * dSeconds);
 
 				// If the new position is a ways off screen
-            if (	m_position.z > ms_sOffScreenDist + realm()->GetRealmHeight()
-               ||	m_position.z < -ms_sOffScreenDist
-               ||	m_position.x > ms_sOffScreenDist + realm()->GetRealmWidth()
-               ||	m_position.x < -ms_sOffScreenDist)
+            if (	position.z > ms_sOffScreenDist + realm()->GetRealmHeight()
+               ||	position.z < -ms_sOffScreenDist
+               ||	position.x > ms_sOffScreenDist + realm()->GetRealmWidth()
+               ||	position.x < -ms_sOffScreenDist)
 					{
 					// Blow Up
 					m_eState = CWeapon::State_Explode;
@@ -315,15 +315,15 @@ void CDeathWad::Update(void)
 					// Traverse the path until we hit the newest position.
 					while (TraversePath(		// Returns true, when destination reached; false,
 													// if terrain change.                            
-                  m_position.x,						// In:  Starting position.
-                  m_position.y,						// In:  Starting position.
-                  m_position.z,						// In:  Starting position.
+                  position.x,						// In:  Starting position.
+                  position.y,						// In:  Starting position.
+                  position.z,						// In:  Starting position.
 						&m_bInsideTerrain,	// In:  true, if starting in terrain.            
 													// Out: true, if ending in terrain.              
 						dNewX,					// In:  Destination position.                    
 						dNewZ,					// In:  Destination position.                    
-                  &m_position.x,					// Out: Position of inside terrain status change.
-                  &m_position.z)					// Out: Position of inside terrain status change.
+                  &position.x,					// Out: Position of inside terrain status change.
+                  &position.z)					// Out: Position of inside terrain status change.
 						== false)
 						{
 						// Explosion at this point.
@@ -369,7 +369,7 @@ void CDeathWad::Update(void)
 					sVolumeHalfLife	/= 4;
 					}
 
-            SetInstanceVolume(m_siThrust, DistanceToVolume(m_position.x, m_position.y, m_position.z, sVolumeHalfLife) );
+            SetInstanceVolume(m_siThrust, DistanceToVolume(position.x, position.y, position.z, sVolumeHalfLife) );
 
 				// If no rocket or napalm canister . . .
 				if (m_stockpile.m_sNumMissiles < 0 || m_stockpile.m_sNumNapalms < 0)
@@ -397,8 +397,8 @@ void CDeathWad::Update(void)
 						Explosion();
 
 						// Stagger.
-                  m_position.x	+= RAND_SWAY(ms_sFinalExplosionStagger);
-                  m_position.z	+= RAND_SWAY(ms_sFinalExplosionStagger);
+                  position.x	+= RAND_SWAY(ms_sFinalExplosionStagger);
+                  position.z	+= RAND_SWAY(ms_sFinalExplosionStagger);
 
 						m_stockpile.m_sNumGrenades--;
 						m_stockpile.m_sNumMissiles--;
@@ -419,16 +419,16 @@ void CDeathWad::Update(void)
 						m_stockpile.Zero();
 
 						// Place powerup at our current location.
-                  ppowerup->Setup(m_position.x, m_position.y, m_position.z);
+                  ppowerup->Setup(position.x, position.y, position.z);
 
 						// Blow it up.
 						GameMessage	msg;
 						msg.msg_Explosion.eType				= typeExplosion;
 						msg.msg_Explosion.sPriority		= 0;
 						msg.msg_Explosion.sDamage			= 0;
-                  msg.msg_Explosion.sX					= m_position.x;
-                  msg.msg_Explosion.sY					= m_position.y;
-                  msg.msg_Explosion.sZ					= m_position.z;
+                  msg.msg_Explosion.sX					= position.x;
+                  msg.msg_Explosion.sY					= position.y;
+                  msg.msg_Explosion.sZ					= position.z;
 						msg.msg_Explosion.sVelocity		= 130;
                   msg.msg_Explosion.shooter	= m_shooter;
 
@@ -445,9 +445,9 @@ void CDeathWad::Update(void)
 		}
 
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y			= position.y;
+      m_smash.m_sphere.sphere.Z			= position.z;
       m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
@@ -475,7 +475,7 @@ void CDeathWad::Render(void)
    m_trans.makeIdentity();
 
 	// Set its pointing direction
-   m_trans.Ry(rspMod360(m_rotation.y));
+   m_trans.Ry(rspMod360(rotation.y));
 
 	// Eventually this should be channel driven also
    m_sRadius = ms_sCollisionRadius;
@@ -486,13 +486,13 @@ void CDeathWad::Render(void)
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+     realm()->Map3Dto2D(position.x, position.y, position.z,
                         m_sX2, m_sY2);
 		// Priority is based on Z.
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
 		// Layer should be based on info we get from the attribute map
-      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
       m_ptrans		= &m_trans;
 
@@ -520,9 +520,9 @@ int16_t CDeathWad::Setup(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 	m_dHorizVel = 0.0;
 
 	// Load resources
@@ -634,8 +634,8 @@ bool CDeathWad::TraversePath(	// Returns true, when destination reached; false,
 	ASSERT(pbInTerrain);
 	ASSERT(pdCurX);
 	ASSERT(pdCurZ);
-   ASSERT(m_rotation.y >= 0);
-   ASSERT(m_rotation.y < 360);
+   ASSERT(rotation.y >= 0);
+   ASSERT(rotation.y < 360);
 
 	// Determine distance on X/Z plane to destination.
 	double	dDistance	= rspSqrt(ABS2(float(sSrcX - sDstX), float(sSrcZ - sDstZ) ) );
@@ -644,8 +644,8 @@ bool CDeathWad::TraversePath(	// Returns true, when destination reached; false,
 	double	dX	= sSrcX;
 	double	dZ	= sSrcZ;
 	// Determine iteration rate on X and Z.
-   double	dRateX	= COSQ[(int16_t)m_rotation.y] * ms_dTraversalRate;
-   double	dRateZ	= -SINQ[(int16_t)m_rotation.y] * ms_dTraversalRate;
+   double	dRateX	= COSQ[(int16_t)rotation.y] * ms_dTraversalRate;
+   double	dRateZ	= -SINQ[(int16_t)rotation.y] * ms_dTraversalRate;
 	// Store original status.
 	bool	bInitiallyInTerrain	= *pbInTerrain;
 
@@ -700,12 +700,12 @@ void CDeathWad::Explosion(void)
 		// Don't blow us up.
       pExplosion->m_except = m_shooter;
 
-      pExplosion->Setup(m_position.x, MAX(m_position.y-30, 0.0), m_position.z, m_shooter);
+      pExplosion->Setup(position.x, MAX(position.y-30, 0.0), position.z, m_shooter);
 		PlaySample(										// Returns nothing.
 															// Does not fail.
 			g_smidDeathWadExplode,					// In:  Identifier of sample you want played.
 			SampleMaster::Destruction,				// In:  Sound Volume Category for user adjustment
-         DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+         DistanceToVolume(position.x, position.y, position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 		}
 	
    int16_t a;
@@ -714,7 +714,7 @@ void CDeathWad::Explosion(void)
      managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
       if (pSmoke)
 			{
-         pSmoke->Setup(m_position.x - 4 + GetRandom() % 9, m_position.y-20, m_position.z - 4 + GetRandom() % 9, ms_lSmokeTimeToLive, true, CFire::Smoke);
+         pSmoke->Setup(position.x - 4 + GetRandom() % 9, position.y-20, position.z - 4 + GetRandom() % 9, ms_lSmokeTimeToLive, true, CFire::Smoke);
          pSmoke->m_shooter = m_shooter;
 			}
 		}
@@ -742,7 +742,7 @@ void CDeathWad::Thrust(void)
 			{
 			// This needs to be fixed by calculating the position of the back end of
 			// the deathwad in 3D based on the rotation.  
-         pSmoke->Setup(m_position.x, m_position.y, m_position.z, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
+         pSmoke->Setup(position.x, position.y, position.z, ms_lSmokeTimeToLive, true, CFire::SmallSmoke);
          pSmoke->m_shooter = m_shooter;
 			}
 
@@ -750,7 +750,7 @@ void CDeathWad::Thrust(void)
       managed_ptr<CFireball> pfireball = realm()->AddThing<CFireball>();
       if (pfireball)
 			{
-         pfireball->Setup(m_position.x, m_position.y, m_position.z, m_rotation.y, ms_lFireBallTimeToLive, m_shooter);
+         pfireball->Setup(position.x, position.y, position.z, rotation.y, ms_lFireBallTimeToLive, m_shooter);
 			pfireball->m_dHorizVel	= m_dHorizVel / 4.0;
 			pfireball->m_eState		= State_Fire;
 			}
@@ -767,14 +767,14 @@ void CDeathWad::Launch(void)
 														// Does not fail.
 		g_smidDeathWadLaunch,					// In:  Identifier of sample you want played.
 		SampleMaster::Weapon,					// In:  Sound Volume Category for user adjustment
-      DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+      DistanceToVolume(position.x, position.y, position.z, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 	
 	// The looping thrust sound.
 	PlaySample(										// Returns nothing.
 														// Does not fail.
 		g_smidDeathWadThrust,					// In:  Identifier of sample you want played.
 		SampleMaster::Weapon,					// In:  Sound Volume Category for user adjustment
-      DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife),	// In:  Initial Sound Volume (0 - 255)
+      DistanceToVolume(position.x, position.y, position.z, LaunchSndHalfLife),	// In:  Initial Sound Volume (0 - 255)
 		&m_siThrust,								// Out: Handle for adjusting sound volume
 		nullptr,											// Out: Sample duration in ms, if not nullptr.
 		100,											// In:  Where to loop back to in milliseconds.
@@ -793,7 +793,7 @@ void CDeathWad::Launch(void)
       if (m_shooter->type() == CDudeID)
          {
 			// Add force vector for kick.  See ya.
-         managed_ptr<CDude>(m_shooter)->AddForceVector(ms_dKickVelocity, m_rotation.y - 180);
+         managed_ptr<CDude>(m_shooter)->AddForceVector(ms_dKickVelocity, rotation.y - 180);
 			}
 		}
 	}

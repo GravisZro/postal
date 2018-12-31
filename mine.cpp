@@ -424,7 +424,7 @@ void CMine::Update(void)
 	int16_t sShotX;
 	int16_t sShotY;
 	int16_t sShotZ;
-   managed_ptr<CThing> pShotThing;
+   managed_ptr<sprite_base_t> pShotThing;
 	GameMessage msg;
 
 	if (!m_sSuspend)
@@ -464,7 +464,7 @@ void CMine::Update(void)
 							PlaySample(
 								g_smidMineSet,				// Sample to play
 								SampleMaster::Weapon,	// Category for user sound adjustment
-                        DistanceToVolume(m_position.x, m_position.y, m_position.z, MineSndHalfLife) ); //Pos
+                        DistanceToVolume(position.x, position.y, position.z, MineSndHalfLife) ); //Pos
 							break;
 
 						case CRemoteControlMineID:
@@ -474,9 +474,9 @@ void CMine::Update(void)
 				}
 				else
 				{
-               int16_t	sX	= m_position.x;
-               int16_t	sY	= m_position.y;
-               int16_t	sZ	= m_position.z;
+               int16_t	sX	= position.x;
+               int16_t	sY	= position.y;
+               int16_t	sZ	= position.z;
 
                // If we have a parent . . .
                if (parent())
@@ -544,14 +544,14 @@ void CMine::Update(void)
 					PlaySample(
 						g_smidBounceLaunch,
 						SampleMaster::Weapon,
-                  DistanceToVolume(m_position.x, m_position.y, m_position.z, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(position.x, position.y, position.z, LaunchSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					// Do motion
 					///////////////////////// Vertical Velocity /////////////////////////////////
 					UpdateVelocity(&m_dVertVel, &m_dVertDeltaVel, g_dAccelerationDueToGravity, dSeconds);
 					
 					// Apply external vertical velocity.
 					dDistance	= (m_dVertVel - m_dVertDeltaVel / 2) * dSeconds;
-               m_position.y = m_position.y + dDistance;
+               position.y = position.y + dDistance;
 
 					// If velocity is negative, then explode and shoot in 
 					// several directions using deluxe shot or something.
@@ -561,23 +561,23 @@ void CMine::Update(void)
 						PlaySample(
 							g_smidBounceExplode,
 							SampleMaster::Weapon,
-                     DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(position.x, position.y, position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 
 						// Draw some kind of flash on the mine
-                  m_bulletfest.Impact(0, m_position.x, m_position.y, m_position.z, realm());
-                  m_bulletfest.Impact(0, m_position.x + 5, m_position.y, m_position.z, realm());
-                  m_bulletfest.Impact(0, m_position.x - 5, m_position.y, m_position.z, realm());
-                  m_bulletfest.Impact(0, m_position.x, m_position.y + 5, m_position.z, realm());
-                  m_bulletfest.Impact(0, m_position.x, m_position.y - 5, m_position.z, realm());
+                  m_bulletfest.Impact(0, position.x, position.y, position.z, realm());
+                  m_bulletfest.Impact(0, position.x + 5, position.y, position.z, realm());
+                  m_bulletfest.Impact(0, position.x - 5, position.y, position.z, realm());
+                  m_bulletfest.Impact(0, position.x, position.y + 5, position.z, realm());
+                  m_bulletfest.Impact(0, position.x, position.y - 5, position.z, realm());
 
 						// Shoot in all directions
 						for (sShootAngle = 0; sShootAngle < 360; sShootAngle += 20)
 						{
 							m_bulletfest.Fire(sShootAngle,
 													0,
-                                       (int16_t) m_position.x,
-                                       (int16_t) m_position.y,
-                                       (int16_t) m_position.z,
+                                       (int16_t) position.x,
+                                       (int16_t) position.y,
+                                       (int16_t) position.z,
 													ms_sBettyRange,
 													realm(),
 													CSmash::Character,
@@ -592,7 +592,7 @@ void CMine::Update(void)
 								msg.msg_Shot.eType = typeShot;
 								msg.msg_Shot.sPriority = 0;
 								msg.msg_Shot.sDamage = 50;
-                        msg.msg_Shot.sAngle = rspATan(m_position.z - sShotZ, sShotX - m_position.x);
+                        msg.msg_Shot.sAngle = rspATan(position.z - sShotZ, sShotX - position.x);
 								msg.msg_Shot.shooter = m_shooter;
 								// Tell this thing that it got shot
 								SendThingMessage(msg, pShotThing);
@@ -618,11 +618,11 @@ void CMine::Update(void)
               managed_ptr<CExplode> pExplosion = realm()->AddThing<CExplode>();
               if (pExplosion)
 					{
-                  pExplosion->Setup(m_position.x, m_position.y, m_position.z, m_shooter);
+                  pExplosion->Setup(position.x, position.y, position.z, m_shooter);
 						PlaySample(
 							g_smidGrenadeExplode,
 							SampleMaster::Destruction,
-                     DistanceToVolume(m_position.x, m_position.y, m_position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                     DistanceToVolume(position.x, position.y, position.z, ExplosionSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 					}
 
                Object::enqueue(SelfDestruct);
@@ -635,9 +635,9 @@ void CMine::Update(void)
 		m_lPrevTime = lThisTime;
 
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y			= position.y;
+      m_smash.m_sphere.sphere.Z			= position.z;
 		m_smash.m_sphere.sphere.lRadius	= m_sCurRadius;
 
 		// Update the smash.
@@ -660,7 +660,7 @@ void CMine::Render(void)
       flags.Hidden = m_eState == State_Hide;
 
 		// Map from 3d to 2d coords
-      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+      realm()->Map3Dto2D(position.x, position.y, position.z,
                          m_sX2, m_sY2);
 
 		// Center on image.
@@ -668,10 +668,10 @@ void CMine::Render(void)
       m_sY2	-= m_pImage->m_sHeight / 2;
 
 		// Priority is based on bottom edge of sprite
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
 		// Layer should be based on info we get from attribute map.
-      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
       Object::enqueue(SpriteUpdate); // Update sprite in scene
 	}
@@ -838,7 +838,7 @@ void CMine::EditRect(RRect* pRect)
    if (m_pImage != nullptr)
    {
       // Map from 3d to 2d coords
-     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+     realm()->Map3Dto2D(position.x, position.y, position.z,
                         pRect->sX, pRect->sY);
 
       // Center on image.

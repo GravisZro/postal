@@ -89,7 +89,7 @@
 //							to check each time, but it was checking only when changing
 //							alpha levels which was too long.
 //
-//		03/05/97	JMI	Render()'s mapping from 3D to 2D had a typo (was adding m_position.y
+//		03/05/97	JMI	Render()'s mapping from 3D to 2D had a typo (was adding position.y
 //							instead of subtracting).  Now uses Map3Dto2D().
 //
 //		03/13/97	JMI	Load now takes a version number.
@@ -488,15 +488,15 @@ void CFire::Update(void)
 				dSeconds = ((double) lThisTime - (double) m_lPrevTime) / 1000.0;
 				// Apply internal velocity.
 				dDistance	= ms_dWindVelocity * dSeconds;
-            dNewX	= m_position.x + COSQ[(int16_t) m_sRot] * dDistance;
-            dNewZ	= m_position.z - SINQ[(int16_t) m_sRot] * dDistance;
+            dNewX	= position.x + COSQ[(int16_t) m_sRot] * dDistance;
+            dNewZ	= position.z - SINQ[(int16_t) m_sRot] * dDistance;
 
 				// Check attribute map for walls, and if you hit a wall, 
 				// set the timer so you will die off next time around.
 				int16_t sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 				// If it hits a wall taller than itself, then it will rotate in the
 				// predetermined direction until it is free to move.
-            if ((int16_t) m_position.y < sHeight)
+            if ((int16_t) position.y < sHeight)
 				{
 					if (m_bTurnRight)
 						m_sRot = rspMod360(m_sRot - 20);
@@ -506,16 +506,16 @@ void CFire::Update(void)
 				else
 				// else it is ok, so update its new position
 				{
-               m_position.x = dNewX;
-               m_position.z = dNewZ;
+               position.x = dNewX;
+               position.z = dNewZ;
 				}
 			}
 			else
 			{
 				// Update our smashatorium location.
-            m_smash.m_sphere.sphere.X = m_position.x;
-            m_smash.m_sphere.sphere.Y = m_position.y;
-            m_smash.m_sphere.sphere.Z = m_position.z;
+            m_smash.m_sphere.sphere.X = position.x;
+            m_smash.m_sphere.sphere.Y = position.y;
+            m_smash.m_sphere.sphere.Z = position.z;
 				// Update the smash.
 				realm()->m_smashatorium.Update(&m_smash);
 			}
@@ -554,17 +554,17 @@ void CFire::Render(void)
 	if (pAnim)
 	{
 		// Map from 3d to 2d coords
-     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+     realm()->Map3Dto2D(position.x, position.y, position.z,
                         m_sX2, m_sY2);
 		// Offset by animations 2D offsets.
       m_sX2	+= pAnim->m_sX;
       m_sY2	+= pAnim->m_sY;
 
 		// Priority is based on our Z position.
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
 		// Layer should be based on info we get from attribute map.
-      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
       m_pImage = &(pAnim->m_imColor);
@@ -612,9 +612,9 @@ int16_t CFire::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lCollisionTimer = m_lPrevTime + ms_lCollisionTime;
 
@@ -669,9 +669,9 @@ int16_t CFire::Init(void)
 	{
 		case LargeFire:
 			// Update sphere
-         m_smash.m_sphere.sphere.X = m_position.x;
-         m_smash.m_sphere.sphere.Y = m_position.y;
-         m_smash.m_sphere.sphere.Z = m_position.z;
+         m_smash.m_sphere.sphere.X = position.x;
+         m_smash.m_sphere.sphere.Y = position.y;
+         m_smash.m_sphere.sphere.Z = position.z;
 			m_smash.m_sphere.sphere.lRadius = ms_sLargeRadius;
 			m_smash.m_bits = CSmash::Fire;
          m_smash.m_pThing = this;
@@ -681,9 +681,9 @@ int16_t CFire::Init(void)
 
 		case SmallFire:
 			// Update sphere
-         m_smash.m_sphere.sphere.X = m_position.x;
-         m_smash.m_sphere.sphere.Y = m_position.y;
-         m_smash.m_sphere.sphere.Z = m_position.z;
+         m_smash.m_sphere.sphere.X = position.x;
+         m_smash.m_sphere.sphere.Y = position.y;
+         m_smash.m_sphere.sphere.Z = position.z;
 			m_smash.m_sphere.sphere.lRadius = ms_sSmallRadius;
 			m_smash.m_bits = CSmash::Fire;
          m_smash.m_pThing = this;
@@ -775,9 +775,9 @@ int16_t CFire::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 	m_lTimer = GetRandom(); //realm()->m_time.GetGameTime() + 1000;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 
@@ -805,9 +805,9 @@ int16_t CFire::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
    return SUCCESS;
 }

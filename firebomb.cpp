@@ -312,10 +312,10 @@ void CFirebomb::Update(void)
 				// Make sure we start in a valid position.  If we are staring
 				// inside a wall, just delete this object now.
 #ifdef UNUSED_VARIABLE
-          usAttrib = realm()->GetFloorAttribute((int16_t) m_position.x, (int16_t) m_position.z);
+          usAttrib = realm()->GetFloorAttribute((int16_t) position.x, (int16_t) position.z);
 #endif
-            sHeight = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
-            if (m_position.y < sHeight)
+            sHeight = realm()->GetHeight((int16_t) position.x, (int16_t) position.z);
+            if (position.y < sHeight)
 				{
                Object::enqueue(SelfDestruct);
 					return;
@@ -330,20 +330,20 @@ void CFirebomb::Update(void)
 //-----------------------------------------------------------------------
 			case CFirebomb::State_Go:
 				// Do horizontal velocity
-            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
-            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewX = position.x + COSQ[(int16_t)rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = position.z - SINQ[(int16_t)rotation.y] * (m_dHorizVel * dSeconds);
 
 				// Do vertical velocity
-            dNewY = m_position.y;
+            dNewY = position.y;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 				// Check the height to see if it hit the ground
 				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
-            if (dNewY < sHeight && m_position.y >= sHeight)
+            if (dNewY < sHeight && position.y >= sHeight)
 				{
-               m_position.y = sHeight;
+               position.y = sHeight;
 					m_eState = CFirebomb::State_Explode;	
 				}
 				else
@@ -351,19 +351,19 @@ void CFirebomb::Update(void)
 					// If it is above the last known ground and is now lower
 					// than the height at its new position, assume it hit
 					// a wall and should fall (this is where it used to bounce)
-               if (dNewY < sHeight && m_position.y < sHeight)
+               if (dNewY < sHeight && position.y < sHeight)
 					{
-                  dNewX = m_position.x;	// Restore last x position
-                  dNewZ = m_position.z;	// Restore last z position
-						m_rotation.y = BounceAngle(m_rotation.y);	// Change directions
+                  dNewX = position.x;	// Restore last x position
+                  dNewZ = position.z;	// Restore last z position
+						rotation.y = BounceAngle(rotation.y);	// Change directions
 						m_dHorizVel = 0.5;
 					}
 					else
-                  m_position.y = dNewY;
+                  position.y = dNewY;
 				}
 
-            m_position.x = dNewX;
-            m_position.z = dNewZ;
+            position.x = dNewX;
+            position.z = dNewZ;
 				break;
 
 //-----------------------------------------------------------------------
@@ -375,17 +375,17 @@ void CFirebomb::Update(void)
             managed_ptr<CFire> pFire = realm()->AddThing<CFire>();
             if (pFire)
 				{
-               pFire->Setup(m_position.x, m_position.y, m_position.z, PRIMARY_BURN_TIME, true, CFire::LargeFire);
+               pFire->Setup(position.x, position.y, position.z, PRIMARY_BURN_TIME, true, CFire::LargeFire);
                pFire->m_shooter = m_shooter;
 					PlaySample(
 						g_smidFirebomb, 
 						SampleMaster::Destruction,
-                  DistanceToVolume(m_position.x, m_position.y, m_position.z, FireBombSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(position.x, position.y, position.z, FireBombSndHalfLife) );	// In:  Initial Sound Volume (0 - 255)
 
 					PlaySample(
 						g_smidFireLarge,
 						SampleMaster::Destruction,
-                  DistanceToVolume(m_position.x, m_position.y, m_position.z, FireBombSndHalfLife) );
+                  DistanceToVolume(position.x, position.y, position.z, FireBombSndHalfLife) );
             }
 
             // Loop to create 8 fragments in a circular pattern
@@ -395,11 +395,11 @@ void CFirebomb::Update(void)
               if (pFrag)
 					{
                   pFrag->m_shooter = m_shooter;
-                  pFrag->Setup(m_position.x, m_position.y, m_position.z);
+                  pFrag->Setup(position.x, position.y, position.z);
 						pFrag->m_dVertVel = m_dVertVel * -0.5;
 						pFrag->m_dHorizVel = 60.0;
-//						pFrag->m_rotation.y = (i * (360/8)) - 25 + (GetRandom() % 50);
-						pFrag->m_rotation.y = (i * (360/8)) + (GetRandom() % (360 / 8));
+//						pFrag->rotation.y = (i * (360/8)) - 25 + (GetRandom() % 50);
+						pFrag->rotation.y = (i * (360/8)) + (GetRandom() % (360 / 8));
 						pFrag->m_eState = CWeapon::State_Go;												
 					}
 				}
@@ -441,13 +441,13 @@ void CFirebomb::Render(void)
    if (!parent())
 	{
 		// Map from 3d to 2d coords
-     realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+     realm()->Map3Dto2D(position.x, position.y, position.z,
                         m_sX2, m_sY2);
 		// Priority is based on our Z position.
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
 		// Layer should be based on info we get from attribute map
-      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
       m_ptrans		= &m_trans;
 
@@ -476,9 +476,9 @@ int16_t CFirebomb::Setup(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 	m_dHorizVel = ms_dThrowHorizVel;
 	m_dVertVel = ms_dThrowVertVel;
 
@@ -713,23 +713,23 @@ void CFirefrag::Update(void)
 //-----------------------------------------------------------------------
 			case CWeapon::State_Go:
 				// Do horizontal velocity
-            dNewX = m_position.x + COSQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
-            dNewZ = m_position.z - SINQ[(int16_t)m_rotation.y] * (m_dHorizVel * dSeconds);
+            dNewX = position.x + COSQ[(int16_t)rotation.y] * (m_dHorizVel * dSeconds);
+            dNewZ = position.z - SINQ[(int16_t)rotation.y] * (m_dHorizVel * dSeconds);
 				// Do vertical velocity
 //				m_dVertVel += ms_dGravity;
-//				m_position.y += m_dVertVel * dSeconds;
+//				position.y += m_dVertVel * dSeconds;
 				dPrevVertVel = m_dVertVel;
-            dNewY = m_position.y;
+            dNewY = position.y;
 				AdjustPosVel(&dNewY, &m_dVertVel, dSeconds);
 				// Check the height to see if it hit the ground
 				sHeight = realm()->GetHeight(int16_t(dNewX), int16_t(dNewZ));
 
 				// If its lower than the last and current height, assume it
 				// hit the ground.
-//				if (m_position.y <= m_sPrevHeight && m_position.y <= sHeight)
-            if (dNewY < sHeight && m_position.y >= sHeight)
+//				if (position.y <= m_sPrevHeight && position.y <= sHeight)
+            if (dNewY < sHeight && position.y >= sHeight)
 				{
-               m_position.y = sHeight;
+               position.y = sHeight;
 					m_eState = CWeapon::State_Explode;	
 					m_dVertVel = dPrevVertVel;
 				}
@@ -738,19 +738,19 @@ void CFirefrag::Update(void)
 					// If it is above the last known ground and is now lower
 					// than the height at its new position, assume it hit
 					// a wall and should bounce.
-               if (dNewY < sHeight && m_position.y < sHeight)
+               if (dNewY < sHeight && position.y < sHeight)
 					{
-                  dNewX = m_position.x;	// Restore last x position
-                  dNewZ = m_position.z;	// Restore last z position
-						m_rotation.y = BounceAngle(m_rotation.y);	// Change directions
-						ASSERT(m_rotation.y >= 0.0 && m_rotation.y < 360.0);
+                  dNewX = position.x;	// Restore last x position
+                  dNewZ = position.z;	// Restore last z position
+						rotation.y = BounceAngle(rotation.y);	// Change directions
+						ASSERT(rotation.y >= 0.0 && rotation.y < 360.0);
 					}
 					else
-                  m_position.y = dNewY;
+                  position.y = dNewY;
 				}
 
-            m_position.x = dNewX;
-            m_position.z = dNewZ;
+            position.x = dNewX;
+            position.z = dNewZ;
 				break;
 
 //-----------------------------------------------------------------------
@@ -762,7 +762,7 @@ void CFirefrag::Update(void)
           m_fire = realm()->AddThing<CFire>();
             if (m_fire)
 				{
-               m_fire->Setup(m_position.x, m_position.y, m_position.z, SECONDARY_BURN_TIME, true, CFire::SmallFire);
+               m_fire->Setup(position.x, position.y, position.z, SECONDARY_BURN_TIME, true, CFire::SmallFire);
                m_fire->m_shooter = m_shooter;
 //							PlaySample(g_smidGrenadeExplode);
 				}
@@ -788,9 +788,9 @@ void CFirefrag::Update(void)
 
       if (m_fire)
 		{
-         m_fire->m_position.x = m_position.x;
-         m_fire->m_position.y = m_position.y;
-         m_fire->m_position.z = m_position.z;
+         m_fire->position.x = position.x;
+         m_fire->position.y = position.y;
+         m_fire->position.z = position.z;
 		}
 
 		// Save height for next time
@@ -814,9 +814,9 @@ int16_t CFirefrag::Setup(									// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 	m_dVertVel = ms_dThrowVertVel;
 	m_dHorizVel = ms_dThrowHorizVel;
@@ -827,7 +827,7 @@ int16_t CFirefrag::Setup(									// Returns 0 if successfull, non-zero otherwis
    m_fire = realm()->AddThing<CFire>();
    if (m_fire)
 	{
-      m_fire->Setup(m_position.x, m_position.y, m_position.z, SECONDARY_BURN_TIME, true, CFire::SmallFire);
+      m_fire->Setup(position.x, position.y, position.z, SECONDARY_BURN_TIME, true, CFire::SmallFire);
       m_fire->m_shooter = m_shooter;
 	}
 

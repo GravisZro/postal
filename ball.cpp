@@ -178,9 +178,9 @@ int16_t CBall::Load(										// Returns 0 if successfull, non-zero otherwise
 			{
 			default:
 			case 1:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				pFile->Read(&m_dDX);
 				pFile->Read(&m_dDY);
 				pFile->Read(&m_dDZ);
@@ -230,9 +230,9 @@ int16_t CBall::Save(										// Returns 0 if successfull, non-zero otherwise
 			}
 
 		// Save object data
-      pFile->Write(&m_position.x);
-      pFile->Write(&m_position.y);
-      pFile->Write(&m_position.z);
+      pFile->Write(&position.x);
+      pFile->Write(&position.y);
+      pFile->Write(&position.z);
 		pFile->Write(&m_dDX);
 		pFile->Write(&m_dDY);
 		pFile->Write(&m_dDZ);
@@ -254,7 +254,7 @@ int16_t CBall::Save(										// Returns 0 if successfull, non-zero otherwise
 void CBall::Startup(void)								// Returns 0 if successfull, non-zero otherwise
    {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_sPrevHeight = realm()->GetHeight(m_position.x, m_position.z);
+   m_sPrevHeight = realm()->GetHeight(position.x, position.z);
 
 	// HARD-WIRED CODE ALERT!
 	// Eventually, this should be set via the bounding sphere radius.
@@ -292,13 +292,13 @@ void CBall::Update(void)
 		double dDeltaSeconds		= (lCurTime - m_lPrevTime) / 1000.0;
 
 		// Adjust vertical velocity and calculate new position.
-      double	dNewY		= m_position.y;
+      double	dNewY		= position.y;
 		double	dNewDY	= m_dDY;
 		AdjustPosVel(&dNewY, &dNewDY, dDeltaSeconds);
 
 		// Calculate new position.
-      double dNewX = m_position.x + m_dDX;
-      double dNewZ = m_position.z + m_dDZ;
+      double dNewX = position.x + m_dDX;
+      double dNewZ = position.z + m_dDZ;
 
 		// Bounce off edges of world.
 
@@ -318,8 +318,8 @@ void CBall::Update(void)
 				m_dDZ = -m_dDZ;
 
 				// Restore previous position to avoid getting embedded in anything
-            dNewX = m_position.x;
-            dNewZ = m_position.z;
+            dNewX = position.x;
+            dNewZ = position.z;
 				}
 			else
 				{
@@ -329,7 +329,7 @@ void CBall::Update(void)
 				dNewDY = -m_dDY;
 
 				// Restore previous position to avoid getting embedded in anything
-            dNewY	= m_position.y;
+            dNewY	= position.y;
 				}
 			}
 
@@ -337,9 +337,9 @@ void CBall::Update(void)
 		m_sPrevHeight = sHeight;
 
 		// Update position
-      m_position.x = dNewX;
-      m_position.y = dNewY;
-      m_position.z = dNewZ;
+      position.x = dNewX;
+      position.y = dNewY;
+      position.z = dNewZ;
 
 		// Update velocities.
 		m_dDY	= dNewDY;
@@ -357,14 +357,14 @@ void CBall::Render(void)
 {
   flags.clear();
   // Map from 3d to 2d coords
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      m_sX2, m_sY2);
 
   // Priority is based on 3D hotspot which is where we're drawn.
-  m_sPriority = m_position.z;
+  m_sPriority = position.z;
 
   m_sLayer = CRealm::GetLayerViaAttrib(
-                        realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+                        realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
 
   // Cheese festival rotation.
@@ -397,9 +397,9 @@ int16_t CBall::EditNew(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	// Load resources.
 	sResult = GetResources();
@@ -527,9 +527,9 @@ int16_t CBall::EditMove(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
    return SUCCESS;
 	}
@@ -562,7 +562,7 @@ void CBall::EditRender(void)
 void CBall::EditRect(	// Returns nothiing.
 	RRect*	prc)			// Out: Clickable pos/area of object.
 {
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      prc->sX, prc->sY);
 
   prc->sX -= m_sCurRadius;

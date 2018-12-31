@@ -8,6 +8,7 @@
 #include "3dtypes.h"
 #include "3dmath.h"
 
+static constexpr space3d_t<double> invalid_position = { UINT32_MAX, UINT32_MAX, UINT32_MAX };
 
 class sprite_base_t
     : public CThing,
@@ -19,13 +20,17 @@ public:
 
   virtual CSprite* GetSprite(void) final { return this; }
 
-  virtual double GetX(void) const final { return m_position.x; }
-  virtual double GetY(void) const final { return m_position.y; }
-  virtual double GetZ(void) const final { return m_position.z; }
+  virtual double GetX(void) const final { return position.x; }
+  virtual double GetY(void) const final { return position.y; }
+  virtual double GetZ(void) const final { return position.z; }
 
-  space3d_t<double> m_position;
-  space3d_t<double> m_rotation;
-  space2d_t<int16_t> m_2dposition;
+  space3d_t<double> position;     // 3d position
+  space3d_t<double> rotation;     // 3d sprite rotation
+  space2d_t<int16_t> position2d;  // 2d position
+
+  uint16_t priority;              // sprite priority
+  uint16_t layer;                 // sprite layer
+
 /*
   struct flags_t
   {

@@ -50,7 +50,8 @@
 // (protected).
 ////////////////////////////////////////////////////////////////////////////////
 CTrigger::CTrigger(void)
-	{
+   {
+  position = invalid_position;
 	// Insert a default instance into the realm:
 	m_pmgi = nullptr;
    realm()->m_pTriggerMapHolder = this;

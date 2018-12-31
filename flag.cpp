@@ -141,8 +141,8 @@ static const char* ms_apszBlueResNames[] =
 CFlag::CFlag(void)
    {
    m_sSuspend = 0;
-   m_rotation.y = 0;
-   m_position.x = m_position.y = m_position.z = m_dVel = m_dAcc = 0;
+   rotation.y = 0;
+   position.x = position.y = position.z = m_dVel = m_dAcc = 0;
    m_panimCur = nullptr;
 //			m_sprite.m_pthing	= this;
    m_u16FlagID = 1;
@@ -323,7 +323,7 @@ int16_t CFlag::Init(void)
 
 	// Init other stuff
 	m_dVel = 0.0;
-   m_rotation.y = 0.0;
+   rotation.y = 0.0;
 	// Set to different starting state based on the design of the animation, but
 	// for now, ok.  Then also set his current animation.
 	m_state = CFlag::State_Wait;
@@ -419,7 +419,7 @@ void CFlag::Update(void)
 						PlaySample(
 							g_smidDemonYes2, 
 							SampleMaster::Demon, 
-                     DistanceToVolume(m_position.x, m_position.y, m_position.z, 250) );
+                     DistanceToVolume(position.x, position.y, position.z, 250) );
 					}
 				}
 
@@ -467,9 +467,9 @@ void CFlag::Update(void)
 //-----------------------------------------------------------------------
 
 				case CFlag::State_Die:
-               m_position.x = m_sSavedX;
-               m_position.y = m_sSavedY;
-               m_position.z = m_sSavedZ;
+               position.x = m_sSavedX;
+               position.y = m_sSavedY;
+               position.z = m_sSavedZ;
 					m_smash.m_bits = 0;
 					m_state = State_Dead;
 					break;
@@ -540,9 +540,9 @@ void CFlag::Update(void)
 
 	
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y			= position.y;
+      m_smash.m_sphere.sphere.Z			= position.z;
 		m_smash.m_sphere.sphere.lRadius	= 30; //m_spriteBase.m_sRadius;
 
 		// Update the smash.
@@ -620,7 +620,7 @@ void CFlag::EditHotSpot(			// Returns nothiing.
 	// Get 2D hotspot.
 	int16_t	sX;
 	int16_t	sY;
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       sX, sY);
 
 	// Get relation.

@@ -134,7 +134,7 @@ class CSmash;
 class CSmashatoriumList;
 class CSmashatorium;
 class CFatSmash;
-class CThing;
+class sprite_base_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 //	 CSmashLink -> the node used in all the Smashatorium lists:
@@ -246,7 +246,7 @@ class CSmash
 
 	public:
 		Bits m_bits;						// Bits indicating CSmash's classification
-      managed_ptr<CThing> m_pThing;					// Pointer to parental thing
+      managed_ptr<sprite_base_t> m_pThing;					// Pointer to parental thing
 		RSphericalRegion m_sphere;		// Will eventually be a base class like "CRegion"
 		int16_t	m_sInGrid;					// short cut to tell if in a grid...
 

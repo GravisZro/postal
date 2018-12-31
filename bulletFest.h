@@ -142,7 +142,7 @@ class CBulletFest
 			int16_t* psX,						// Out: Hit position.
 			int16_t* psY,						// Out: Hit position.
 			int16_t* psZ,						// Out: Hit position.
-         managed_ptr<CThing>& ppthing,				// Out: Ptr to thing hit or nullptr.
+         managed_ptr<sprite_base_t>& ppthing,				// Out: Ptr to thing hit or nullptr.
 			bool	bTracer = true,		// In:  Draw a tracer at random point along path.
 			SampleMasterID	smid	= g_smidBulletFire);	// In:  Use ammo sample.
 
@@ -162,7 +162,7 @@ class CBulletFest
 			int16_t* psX,						// Out: Hit position.
 			int16_t* psY,						// Out: Hit position.
 			int16_t* psZ,						// Out: Hit position.
-         managed_ptr<CThing>& ppthing,				// Out: Ptr to thing hit or nullptr.
+         managed_ptr<sprite_base_t>& ppthing,				// Out: Ptr to thing hit or nullptr.
 			bool	bTracer = true);		// In:  Draw a tracer at random point along path.
 
 		// Create a muzzle flare effect.

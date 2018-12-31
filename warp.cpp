@@ -211,15 +211,15 @@ int16_t CWarp::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 3:
 			case 2:
 			case 1:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				break;
 			}
 
 		// If the file version is earlier than the change to real 3D coords . . .
       if (ulFileVersion < 24)
-        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
+        realm()->MapY2DtoZ3D(position.z, position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -261,9 +261,9 @@ int16_t CWarp::Save(										// Returns 0 if successfull, non-zero otherwise
 			}
 
 		pFile->Write(&m_sRotY);
-      pFile->Write(&m_position.x);
-      pFile->Write(&m_position.y);
-      pFile->Write(&m_position.z);
+      pFile->Write(&position.x);
+      pFile->Write(&position.y);
+      pFile->Write(&position.z);
 
 		// Make sure there were no file errors
 		sResult	= pFile->Error();
@@ -319,9 +319,9 @@ int16_t CWarp::EditNew(								// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
 	sResult	= Init();
 
@@ -375,9 +375,9 @@ int16_t CWarp::EditMove(								// Returns 0 if successfull, non-zero otherwise
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
    return SUCCESS;
 	}
@@ -389,7 +389,7 @@ int16_t CWarp::EditMove(								// Returns 0 if successfull, non-zero otherwise
 void CWarp::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 	{
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       prc->sX, prc->sY);
 
 	prc->sW	= 10;	// Safety.
@@ -439,18 +439,18 @@ void CWarp::EditUpdate(void)
 void CWarp::EditRender(void)
 {
   // Map from 3d to 2d coords
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      m_sX2, m_sY2);
 
   // Priority is based on bottom edge of sprite on viewing plane.
-  m_sPriority = m_position.z;
+  m_sPriority = position.z;
 
   // Center on image.
   m_sX2	-= m_pImage->m_sWidth / 2;
   m_sY2	-= m_pImage->m_sHeight;
 
   // Layer should be based on info we get from attribute map.
-  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
   // Update sprite in scene
   Object::enqueue(SpriteUpdate);
@@ -587,9 +587,9 @@ int16_t CWarp::WarpIn(	// Returns 0 on success.
 			}
 
 		// Place.
-      ppdude->SetPosition(m_position.x, m_position.y, m_position.z);
+      ppdude->SetPosition(position.x, position.y, position.z);
 		// Orient.
-      ppdude->m_rotation.y	= m_sRotY;
+      ppdude->rotation.y	= m_sRotY;
 		}
 
 	return sResult;
@@ -661,10 +661,10 @@ int16_t CWarp::CreateWarpFromDude(	// Returns 0 on success.
    if (ppwarp)
 		{
 		// Copy dude's position and orientation.
-      ppwarp->m_position.x		= pdude->m_position.x;
-      ppwarp->m_position.y		= pdude->m_position.y;
-      ppwarp->m_position.z		= pdude->m_position.z;
-      ppwarp->m_sRotY	= pdude->m_rotation.y;
+      ppwarp->position.x		= pdude->position.x;
+      ppwarp->position.y		= pdude->position.y;
+      ppwarp->position.z		= pdude->position.z;
+      ppwarp->m_sRotY	= pdude->rotation.y;
 
 		if (bCopyStockPile == true)
 			{

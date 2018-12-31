@@ -315,9 +315,9 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 			default:
 			case 35:
 				pFile->Read(&m_sMaxDispensees);
-            pFile->Read(&x); m_position.x = x;
-            pFile->Read(&y); m_position.y = y;
-            pFile->Read(&z); m_position.z = z;
+            pFile->Read(&x); position.x = x;
+            pFile->Read(&y); position.y = y;
+            pFile->Read(&z); position.z = z;
             pFile->Read(reinterpret_cast<uint8_t*>(&m_idDispenseeType));
 				uint16_t	u16LogicType;
 				pFile->Read(&u16LogicType);
@@ -384,9 +384,9 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 			case 2:
 			case 1:
 				{
-            pFile->Read(&x); m_position.x = x;
-            pFile->Read(&y); m_position.y = y;
-            pFile->Read(&z); m_position.z = z;
+            pFile->Read(&x); position.x = x;
+            pFile->Read(&y); position.y = y;
+            pFile->Read(&z); position.z = z;
             pFile->Read(reinterpret_cast<uint8_t*>(&m_idDispenseeType));
 				uint16_t	u16LogicType;
 				pFile->Read(&u16LogicType);
@@ -418,7 +418,7 @@ int16_t CDispenser::Load(		// Returns 0 if successfull, non-zero otherwise
 		
 		// If the file version is earlier than the change to real 3D coords . . .
       if (ulFileVersion < 24)
-        realm()->MapY2DtoZ3D(m_position.z, m_position.z); // Convert to 3D.
+        realm()->MapY2DtoZ3D(position.z, position.z); // Convert to 3D.
 
 		// Make sure there were no file errors or format errors . . .
 		if (!pFile->Error() && sResult == SUCCESS)
@@ -463,9 +463,9 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 			}
 
       pFile->Write(m_sMaxDispensees);
-      pFile->Write(uint16_t(m_position.x));
-      pFile->Write(uint16_t(m_position.y));
-      pFile->Write(uint16_t(m_position.z));
+      pFile->Write(uint16_t(position.x));
+      pFile->Write(uint16_t(position.y));
+      pFile->Write(uint16_t(position.z));
       pFile->Write(uint8_t(m_idDispenseeType));
 		pFile->Write((uint16_t)m_logictype);
 		pFile->Write(m_alLogicParms, 4);
@@ -474,7 +474,7 @@ int16_t CDispenser::Save(		// Returns 0 if successfull, non-zero otherwise
 		// be slow when on every iteration, it allocates a CWhatever,
 		// loads it, sets the new position, saves it and deletes it.
 		// Update position . . .
-      managed_ptr<CThing> pthing;
+      managed_ptr<sprite_base_t> pthing;
       if (InstantiateDispensee(pthing, false) == SUCCESS)
          {
 			// Resave.
@@ -568,7 +568,7 @@ void CDispenser::Update(void)
 					if (lCurTime >= m_lNextUpdate)
 						{
 						// Create a thing . . .
-                  managed_ptr<CThing> pthing;
+                  managed_ptr<sprite_base_t> pthing;
                   if (InstantiateDispensee(pthing, false) == SUCCESS)
 							{
 							// Wahoo.
@@ -595,7 +595,7 @@ void CDispenser::Update(void)
 						if (lCurTime >= m_lNextUpdate)
 							{
 							// Create a thing . . .
-                     managed_ptr<CThing> pthing;
+                     managed_ptr<sprite_base_t> pthing;
                      if (InstantiateDispensee(pthing, false) == SUCCESS)
 								{
 								// Wahoo.
@@ -637,7 +637,7 @@ void CDispenser::Update(void)
 							if ( (lDudeDist >= m_alLogicParms[0] || m_alLogicParms[0] == 0) && (lDudeDist <= m_alLogicParms[1] || m_alLogicParms[1] == 0) )
 								{
 								// Create a thing . . .
-                        managed_ptr<CThing> pthing;
+                        managed_ptr<sprite_base_t> pthing;
                         if (InstantiateDispensee(pthing, false) == SUCCESS)
 									{
 									// Wahoo.
@@ -1012,7 +1012,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
 	if (sResult == SUCCESS)
 		{
 		// If we have a dispensee . . .
-      managed_ptr<CThing> pthing;
+      managed_ptr<sprite_base_t> pthing;
 		// Instantiate it so we get its current settings . . . 
       if (InstantiateDispensee(pthing, true) == SUCCESS)
 			{
@@ -1035,7 +1035,7 @@ int16_t CDispenser::EditModify(void)					// Returns 0 if successfull, non-zero o
          if (pthing)
 				{
 				// New it in the correct location.
-            sResult	= pthing->EditNew(m_position.x, m_position.y, m_position.z);
+            sResult	= pthing->EditNew(position.x, position.y, position.z);
 				if (sResult == SUCCESS)
 					{
 					// Success.
@@ -1092,9 +1092,9 @@ int16_t CDispenser::EditMove(							// Returns 0 if successfull, non-zero otherw
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	return sResult;
 	}
@@ -1106,18 +1106,18 @@ int16_t CDispenser::EditMove(							// Returns 0 if successfull, non-zero otherw
 void CDispenser::EditRender(void)
 	{
 	// Map from 3d to 2d coords
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      m_sX2, m_sY2);
 
 	// Priority is based on hotspot of sprite
-   m_sPriority = m_position.z;
+   m_sPriority = position.z;
 
 	// Center on dispensee's hotspot.
    m_sX2	-= m_sDispenseeHotSpotX;
    m_sY2	-= m_sDispenseeHotSpotY;
 
 	// Layer should be based on info we get from attribute map.
-   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(m_position.x, m_position.x));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer(position.x, position.x));
 
 	// Image would normally animate, but doesn't for now
    m_pImage = &m_imRender;
@@ -1132,7 +1132,7 @@ void CDispenser::EditRender(void)
 void CDispenser::EditRect(RRect* prc)
 	{
 	// Map from 3d to 2d coords
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      prc->sX, prc->sY);
 
 #if 0
@@ -1190,7 +1190,7 @@ int16_t CDispenser::Init(	// Returns 0 if successfull, non-zero otherwise
 		// NOTE:  We MUST do this in both edit mode and non-edit mode
 		// b/c it affects the dispensee's ms_sFileCount which can affect
 		// the load process; therefore, we must be consistent.
-      managed_ptr<CThing> pthing;
+      managed_ptr<sprite_base_t> pthing;
       InstantiateDispensee(pthing, false);
 
 		// If in edit mode . . .
@@ -1252,7 +1252,7 @@ void CDispenser::FreeResources(void)
 // Create a dispensee from the memfile, if open.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
-   managed_ptr<CThing>& ppthing,								// Out: New thing loaded from m_fileDispensee.
+   managed_ptr<sprite_base_t>& ppthing,								// Out: New thing loaded from m_fileDispensee.
 	bool		bEditMode)							// In:  true if in edit mode.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
@@ -1322,7 +1322,7 @@ int16_t CDispenser::InstantiateDispensee(	// Returns 0 on success.
 // Write dispensee to the memfile.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDispenser::SaveDispensee(		// Returns 0 on success.
-   managed_ptr<CThing> pthing)						// In:  Instance of Dispensee to save.
+   managed_ptr<sprite_base_t> pthing)						// In:  Instance of Dispensee to save.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
@@ -1358,7 +1358,7 @@ int16_t CDispenser::SaveDispensee(		// Returns 0 on success.
 // Render dispensee to m_imRender.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
-   managed_ptr<CThing> pthing)						// In:  Instance of Dispensee to render.
+   managed_ptr<sprite_base_t> pthing)						// In:  Instance of Dispensee to render.
 	{
 	int16_t sResult = SUCCESS;	// Assume success.
 
@@ -1390,7 +1390,7 @@ int16_t CDispenser::RenderDispensee(	// Returns 0 on success.
 		else
 			{
 			// Map from 3d to 2d coords
-        realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+        realm()->Map3Dto2D(position.x, position.y, position.z,
                            m_rcDispensee.sX, m_rcDispensee.sY);
 
 			m_rcDispensee.sW	= WIDTH_IF_NO_THING;
@@ -1495,8 +1495,8 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 		if (pdude->m_state != CThing3d::State_Dead)
 			{
 			// Determine square distance on X/Z plane.
-         ulDistX	= pdude->m_position.x - m_position.x;
-         ulDistZ	= pdude->m_position.z - m_position.z;
+         ulDistX	= pdude->position.x - position.x;
+         ulDistZ	= pdude->position.z - position.z;
 			ulSqrDistance	= ulDistX * ulDistX + ulDistZ * ulDistZ;
 			// If closer than the last guy . . .
 			if (ulSqrDistance < ulCurSqrDistance)
@@ -1526,7 +1526,7 @@ int16_t CDispenser::GetClosestDudeDistance(	// Returns 0 on success.  Fails, if 
 // Destroy an instantiated dispensee.
 ////////////////////////////////////////////////////////////////////////////////
 void CDispenser::DestroyDispensee(	// Returns nothing.
-   managed_ptr<CThing>& ppthing)						// In:  Ptr to the instance.
+   managed_ptr<sprite_base_t>& ppthing)						// In:  Ptr to the instance.
 	{
 	ASSERT(ppthing);
 

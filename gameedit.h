@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes.
 ////////////////////////////////////////////////////////////////////////////////
-#include "thing.h"
+#include "sprite_base.h"
 
 extern void NavNetListPressedCall(RGuiItem* pgui);
 
@@ -48,7 +48,7 @@ extern void NavNetListPressedCall(RGuiItem* pgui);
 
 // One of these classes is created by the editor for each Realm.  This class can
 // then store and retrieve the editor settings for a Realm on Load and Save.
-class CGameEditThing : public CThing
+class CGameEditThing : public sprite_base_t
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.

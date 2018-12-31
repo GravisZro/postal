@@ -349,9 +349,6 @@ class CThing : public Object
 	{
 	// Make CRealm a friend so it can access private stuff
    friend class CRealm;
-public:
-   enum { InvalidPosition = -5770321 };
-
 	//---------------------------------------------------------------------------
 	// Protected static member variables
 	//---------------------------------------------------------------------------
@@ -572,20 +569,6 @@ private:
 			{
 			}
 #endif // !defined(EDITOR_REMOVED)
-
-		// Get the sprite for this thing.  If there's more than one, pick one
-		// or none to return.
-		virtual	// If you override this, do NOT call this base class.
-      CSprite* GetSprite(void) // Returns the sprite for this thing or nullptr.
-			{ return nullptr; }
-
-		// Get the coordinates of this thing.  This implementation returns 
-		// InvalidPosition to indicate that it is not implemented for this 
-		// class type.  Override these functions for your class type to 
-		// enable this feature.
-      virtual double GetX(void) const { return InvalidPosition; }
-      virtual double GetY(void) const { return InvalidPosition; }
-      virtual double GetZ(void) const { return InvalidPosition; }
 
 		// Get the smash - for normal CThings that don't have a smash, it
 		// will return nullptr, CThing3d's though always have a smash.

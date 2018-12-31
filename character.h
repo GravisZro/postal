@@ -401,7 +401,7 @@ protected:
 			int16_t* psX,						// Out: Last clear point on path.
 			int16_t* psY,						// Out: Last clear point on path.
 			int16_t* psZ,						// Out: Last clear point on path.
-         managed_ptr<CThing>& ppthing,				// Out: Thing that intercepted us or nullptr, if none.
+         managed_ptr<sprite_base_t>& ppthing,				// Out: Thing that intercepted us or nullptr, if none.
 			CSmash*	psmashExclude = nullptr);// In:  Optional CSmash to exclude or nullptr, if none.
 
 			// Show a target sprite on whoever you would hit when aiming in the given
@@ -418,13 +418,13 @@ protected:
 			CSmash::Bits bitsInclude,	// In:  Mask of CSmash bits that would count as a hit
 			CSmash::Bits bitsDontCare,	// In:  Mask of CSmash bits that would not affect path
 			CSmash::Bits bitsExclude,	// In:  Mask of CSmash bits that cannot affect path
-         managed_ptr<CThing>& hThing,				// Out: Handle to thing that is the Target or nullptr if none
+         managed_ptr<sprite_base_t>& hThing,				// Out: Handle to thing that is the Target or nullptr if none
 			CSmash* psmashExclude = nullptr);// In: Optional CSmash to exclude or nullptr, if none. 
 
 		// Give the angle from yourself to this x,z position
 		inline int16_t FindAngleTo(double dX, double dZ)
 		{
-         return rspATan((m_position.z - dZ), (dX - m_position.x));
+         return rspATan((position.z - dZ), (dX - position.x));
 		}
 
 	};

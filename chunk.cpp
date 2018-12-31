@@ -37,7 +37,7 @@
 //							arguments to Setup() so the caller can still control the
 //							the randomization.
 //
-//		08/25/97	JMI	Setup() was mod'ing m_rotation.y before adding in the random
+//		08/25/97	JMI	Setup() was mod'ing rotation.y before adding in the random
 //							sway value causing it to sometimes exceed 359.  Fixed.
 //
 //		09/08/97	JMI	Added Kevlar type for pieces of kevlar vest that 
@@ -98,7 +98,7 @@ CChunk::TypeInfo	CChunk::ms_atiChunks[CChunk::NumTypes]	=
 CChunk::CChunk(void)
 {
   m_sSuspend = 0;
-  m_rotation.y = 0.0;
+  rotation.y = 0.0;
   m_dVel = 0.0;
   m_dVertVel = 0.0;
   m_sLen = 0;
@@ -142,20 +142,20 @@ void CChunk::Update(void)
 
 	double	dDist		= m_dVel	* dSeconds;
 
-   m_position.x					+= COSQ[(int16_t)m_rotation.y] * dDist;
-   m_position.z					-= SINQ[(int16_t)m_rotation.y] * dDist;
+   position.x					+= COSQ[(int16_t)rotation.y] * dDist;
+   position.z					-= SINQ[(int16_t)rotation.y] * dDist;
 
 	double dVertDeltaVel	= g_dAccelerationDueToGravity * dSeconds;
 	m_dVertVel			+= dVertDeltaVel;
 
-   m_position.y					+= (m_dVertVel - dVertDeltaVel / 2) * dSeconds;
+   position.y					+= (m_dVertVel - dVertDeltaVel / 2) * dSeconds;
 
 	// If we have hit terrain . . .
-   if (realm()->GetHeight(m_position.x, m_position.z) >= m_position.y)
+   if (realm()->GetHeight(position.x, position.z) >= position.y)
 		{
 		int16_t	sX2d, sY2d;
 		// Map from 3d to 2d coords.
-      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+      realm()->Map3Dto2D(position.x, position.y, position.z,
                          sX2d, sY2d);
 
 		switch (m_type)
@@ -214,17 +214,17 @@ void CChunk::Update(void)
 void CChunk::Render(void)
 {
   // Map from 3d to 2d coords
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      m_sX2, m_sY2);
 
   m_sX2End	= m_sX2 + RAND_SWAY(m_sLen);
   m_sY2End	= m_sY2 + RAND_SWAY(m_sLen);
 
   // Priority is based on bottom edge of sprite on X/Z plane.
-  m_sPriority = m_position.z;
+  m_sPriority = position.z;
 
   // Layer should be based on info we get from attribute map.
-  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+  m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
   Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
@@ -248,9 +248,9 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	m_dVel		= dVel;
 	m_dVertVel	= dVertVel;
@@ -258,11 +258,11 @@ int16_t CChunk::Setup(			// Returns 0 if successfull, non-zero otherwise
 	// Apply randomizations.
 	if (sRandRotSway)
 		{
-      m_rotation.y	= rspMod360(dRot + RAND_SWAY(sRandRotSway) );
+      rotation.y	= rspMod360(dRot + RAND_SWAY(sRandRotSway) );
 		}
 	else
 		{
-      m_rotation.y		= rspMod360(dRot);
+      rotation.y		= rspMod360(dRot);
 		}
 
 	if (sRandVelSway)

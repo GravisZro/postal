@@ -260,9 +260,9 @@ int16_t CPowerUp::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 19:
 			case 18:
 			case 17:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				sResult	= m_stockpile.Load(pFile, ulFileVersion);
 				break;
 			case 16:
@@ -282,9 +282,9 @@ int16_t CPowerUp::Load(								// Returns 0 if successfull, non-zero otherwise
 			case 2:
 			case 1:
 				{
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				uint8_t	u8Type	= (uint8_t)CStockPile::Bullets; 
 				pFile->Read(&u8Type);
 				int32_t	lPowerVal;
@@ -395,7 +395,7 @@ void CPowerUp::Update(void)
 					// Restore powerup cheese spin.
 					m_dExtRotVelY	= Y_AXIS_ROTATION_RATE;
 					m_dExtRotVelZ	= 0.0;
-               m_rotation.z			= 0.0;
+               rotation.z			= 0.0;
 					}
 				break;
 			default:
@@ -411,9 +411,9 @@ void CPowerUp::Update(void)
 			}
 
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y			= position.y;
+      m_smash.m_sphere.sphere.Z			= position.z;
       m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 
 		// Update the smash.
@@ -446,9 +446,9 @@ int16_t CPowerUp::Setup(									// Returns 0 if successfull, non-zero otherwise
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	// Load resources and initialize.
 	sResult = Init();
@@ -471,9 +471,9 @@ int16_t CPowerUp::EditNew(								// Returns 0 if successfull, non-zero otherwis
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	sResult	= EditModify();
 
@@ -617,9 +617,9 @@ int16_t CPowerUp::Grab(		// Returns 0 on success..
 	// If we are not already grabbed . . .
    if (m_psprParent == nullptr)
 		{
-      m_position.x	= 0.0;
-      m_position.y	= 0.0;
-      m_position.z	= 0.0;
+      position.x	= 0.0;
+      position.y	= 0.0;
+      position.z	= 0.0;
 
       psprParent->AddChild(this);
 
@@ -648,9 +648,9 @@ void CPowerUp::Drop(			// Returns nothing.
 	int16_t sY,					// In:  Position from which to release.
 	int16_t sZ)					// In:  Position from which to release.
 	{
-   m_position.x	= sX;
-   m_position.y	= sY;
-   m_position.z	= sZ;
+   position.x	= sX;
+   position.y	= sY;
+   position.z	= sZ;
 
 	// If we have a parent . . .
    if (m_psprParent != nullptr)
@@ -725,7 +725,7 @@ void CPowerUp::OnExplosionMsg(			// Returns nothing.
 					// Clear local item.
 					m_stockpile.GetItem(sTypeIndex)				= 0;
 					// Prepare for the cold, cruel, fire-infested realm.
-               ppowerup->Setup(m_position.x, m_position.y, m_position.z);
+               ppowerup->Setup(position.x, position.y, position.z);
 					// Slap it some (bypass this function, though..that'd be a waste to 
 					// do again).
 					ppowerup->CItem3d::OnExplosionMsg(pexplosionmsg);

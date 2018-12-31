@@ -41,12 +41,12 @@
 //		03/18/97	JMI	Now Render() does only the necessities, if there is a
 //							parent.  Also, added DetachChild().
 //
-//		03/19/97	JMI	Added m_dExtRotVelY, m_dExtRotVelZ, and m_rotation.z.
-//							GetNewPosition() now updates m_rotation.y and m_rotation.z using
+//		03/19/97	JMI	Added m_dExtRotVelY, m_dExtRotVelZ, and rotation.z.
+//							GetNewPosition() now updates rotation.y and rotation.z using
 //							velocities m_dExtRotVelY and m_dExtRotVelZ.
 //							Also, DetachChild() now returns a pointer to the detached
 //							child.
-//							Render() now uses m_rotation.z through m_trans.Rz().
+//							Render() now uses rotation.z through m_trans.Rz().
 //							WhileBlownUp() now sets the m_dExtHorzDrag to 0 when it
 //							detects a horizontal collision with terrain.
 //
@@ -422,8 +422,8 @@ CThing3d::CThing3d(void)
   m_dExtRotVelZ		= 0.0;
   m_dVel				= 0.0;
   m_dAcc				= 0.0;
-  m_rotation.y				= 0.0;
-  m_rotation.z				= 0.0;
+  rotation.y				= 0.0;
+  rotation.z				= 0.0;
   m_dDrag				= 0.0;
   m_sSuspend			= 0;
   m_sBaseBrightness		= 0;
@@ -471,10 +471,10 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 			{
 			default:
 			case 16:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
-            pFile->Read(&m_rotation.y);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
+            pFile->Read(&rotation.y);
 				sResult	= m_stockpile.Load(pFile, ulFileVersion);
 				break;
 
@@ -491,18 +491,18 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 			case 5:
 			case 4:
 			case 3:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				pFile->Read(&m_stockpile.m_sHitPoints);
-            pFile->Read(&m_rotation.y);
+            pFile->Read(&rotation.y);
 				break;
 
 			case 2:
 			case 1:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				// PATCH:  To make the CCharacter continue to work.  We need to
 				// read the space that is occupied by the weapon type for CCharacter.
 				// In file format versions 3 and above, this is written later in
@@ -511,7 +511,7 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 				pFile->Read(&idWeaponDummy);
 				// END PATCH.
 				pFile->Read(&m_stockpile.m_sHitPoints);
-            pFile->Read(&m_rotation.y);
+            pFile->Read(&rotation.y);
 				break;
 			}
 
@@ -520,8 +520,8 @@ int16_t CThing3d::Load(									// Returns 0 if successfull, non-zero otherwise
 			{
 			// Convert to 3D.
 			realm()->MapY2DtoZ3D(
-            m_position.z,
-            m_position.z);
+            position.z,
+            position.z);
 			}
 
 		// Make sure there were no file errors or format errors . . .
@@ -552,10 +552,10 @@ int16_t CThing3d::Save(									// Returns 0 if successfull, non-zero otherwise
    if (sResult == SUCCESS)
 		{
 		// Save object data
-      pFile->Write(&m_position.x);
-      pFile->Write(&m_position.y);
-      pFile->Write(&m_position.z);
-      pFile->Write(&m_rotation.y);
+      pFile->Write(&position.x);
+      pFile->Write(&position.y);
+      pFile->Write(&position.z);
+      pFile->Write(&rotation.y);
 		sResult	= m_stockpile.Save(pFile);
 		}
 
@@ -615,7 +615,7 @@ void CThing3d::Render(void)
 	{
 	uint16_t	u16CombinedAttributes;
 	int16_t	sLightTally;
-   GetEffectAttributes(m_position.x, m_position.z, u16CombinedAttributes, sLightTally);
+   GetEffectAttributes(position.x, position.z, u16CombinedAttributes, sLightTally);
 
 	// Brightness.
    m_sBrightness = m_sBaseBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
@@ -627,17 +627,17 @@ void CThing3d::Render(void)
 		m_trans.makeIdentity();
 
       //m_trans.Scale(m_dScaleX,m_dScaleY,m_dScaleZ);
-      m_trans.Ry(rspMod360(m_rotation.y) );
-      m_trans.Rz(rspMod360(m_rotation.z) );
+      m_trans.Ry(rspMod360(rotation.y) );
+      m_trans.Rz(rspMod360(rotation.z) );
 
 		// Map from 3d to 2d coords
-      realm()->Map3Dto2D((int16_t) m_position.x, (int16_t) m_position.y, (int16_t) m_position.z, m_sX2, m_sY2);
+      realm()->Map3Dto2D((int16_t) position.x, (int16_t) position.y, (int16_t) position.z, m_sX2, m_sY2);
 
 		// If no layer override . . .
 		if (m_sLayerOverride < 0)
 			{
 			// Layer should be based on info from attribute map.
-         GetLayer(m_position.x, m_position.z, m_sLayer);
+         GetLayer(position.x, position.z, m_sLayer);
 			}
 		else
 			{
@@ -646,7 +646,7 @@ void CThing3d::Render(void)
 			}
 
 		// Priority is based on our Z position.
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
       Object::enqueue(SpriteUpdate); // Update sprite in scene
 		
@@ -660,9 +660,9 @@ void CThing3d::Render(void)
       if (!m_spriteShadow.flags.Hidden && m_spriteShadow.m_pImage != nullptr)
 			{
 			// Get the height of the terrain from the attribute map
-         int16_t sY = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+         int16_t sY = realm()->GetHeight((int16_t) position.x, (int16_t) position.z);
 			// Map from 3d to 2d coords
-         realm()->Map3Dto2D(m_position.x, double(sY), m_position.z,
+         realm()->Map3Dto2D(position.x, double(sY), position.z,
                             m_spriteShadow.m_sX2, m_spriteShadow.m_sY2);
 
 			// Offset hotspot to center of image.
@@ -670,13 +670,13 @@ void CThing3d::Render(void)
 			m_spriteShadow.m_sY2 -= m_spriteShadow.m_pImage->m_sHeight / 2;
 
 			// Priority is based on bottom edge of sprite on X/Z plane!
-         m_spriteShadow.m_sPriority = MAX(m_sPriority - 1, 0);//m_position.z;
+         m_spriteShadow.m_sPriority = MAX(m_sPriority - 1, 0);//position.z;
 
 			// Layer should be based on info we get from attribute map.
-         m_spriteShadow.m_sLayer = m_sLayer; //CRealm::GetLayerViaAttrib(realm()->GetLayer((short) m_position.x, (short) m_position.z));
+         m_spriteShadow.m_sLayer = m_sLayer; //CRealm::GetLayerViaAttrib(realm()->GetLayer((short) position.x, (short) position.z));
 
 			// Set the alpha level based on the height difference
-         m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) m_position.y - sY);
+         m_spriteShadow.m_sAlphaLevel = 200 - ((int16_t) position.y - sY);
 			// Check bounds . . .
 			if (m_spriteShadow.m_sAlphaLevel < 0)
 				{
@@ -723,9 +723,9 @@ int16_t CThing3d::EditNew(								// Returns 0 if successfull, non-zero otherwis
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	return sResult;
 	}
@@ -748,9 +748,9 @@ int16_t CThing3d::EditMove(							// Returns 0 if successfull, non-zero otherwis
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
    return SUCCESS;
 	}
@@ -781,15 +781,15 @@ void CThing3d::EditRect(RRect* pRect)
          m_sRadius = (apt3dDst[1] - apt3dDst[0]).magnatude();
 
          realm()->Map3Dto2D(
-            m_position.x + apt3dDst[0].x(),
-            m_position.y + apt3dDst[0].y(),
-            m_position.z + apt3dDst[0].z(),
+            position.x + apt3dDst[0].x(),
+            position.y + apt3dDst[0].y(),
+            position.z + apt3dDst[0].z(),
             pRect->sX, pRect->sY);
 			}
 		}
 	else
 		{
-      realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+      realm()->Map3Dto2D(position.x, position.y, position.z,
                          pRect->sX, pRect->sY);
 
       m_sRadius	= 10;	// **FUDGE.
@@ -816,7 +816,7 @@ void CThing3d::EditHotSpot(		// Returns nothiing.
 	EditRect(&rc);
 	// Get 2D hotspot.
    int16_t sX, sY;
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       sX, sY);
 
 	// Get relation.
@@ -881,7 +881,7 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 
 	// If it was above the ground last time and is now below the ground, it must have
 	// hit the ground and the blown up state is complete
-   if (dNewY < sHeight && m_position.y >= sHeight)
+   if (dNewY < sHeight && position.y >= sHeight)
 	{
 		dNewY = sHeight;
 		// Make sure its done with current animation also
@@ -900,11 +900,11 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 		// have hit a wall and should continue to fall against the wall (update Y but not
 		// X or Z - which is kind of cheating since it may be free to move in X or Z unless
 		// it is in a corner
-      if (usAttrib & REALM_ATTR_NOT_WALKABLE || (dNewY < sHeight && m_position.y < sHeight))
+      if (usAttrib & REALM_ATTR_NOT_WALKABLE || (dNewY < sHeight && position.y < sHeight))
 		{
 			// Reset x and z to previous positiion
-         dNewX = m_position.x;
-         dNewZ = m_position.z;
+         dNewX = position.x;
+         dNewZ = position.z;
 			// Stop moving horizontally.
 			m_dVel			= 0.0;
 			m_dAcc			= 0.0;
@@ -924,9 +924,9 @@ bool CThing3d::WhileBlownUp(void)	// Returns true until state is complete.
 		}
 	}
 
-   m_position.x = dNewX;
-   m_position.y = dNewY;
-   m_position.z = dNewZ;
+   position.x = dNewX;
+   position.y = dNewY;
+   position.z = dNewZ;
 
 	return bStatePersists;
 	}
@@ -1118,14 +1118,14 @@ void CThing3d::GetNewPosition(	// Returns nothing.
 	// Couldn't decide whether this should be in UpdateVelocities() or
 	// GetNewPosition().
 	///////////////////////////// Rotations /////////////////////////////////////
-   m_rotation.y	= rspMod360(m_rotation.y + m_dExtRotVelY * dSeconds);
-   m_rotation.z	= rspMod360(m_rotation.z + m_dExtRotVelZ * dSeconds);
+   rotation.y	= rspMod360(rotation.y + m_dExtRotVelY * dSeconds);
+   rotation.z	= rspMod360(rotation.z + m_dExtRotVelZ * dSeconds);
 
 	// Make sure rotation is w/i bounds for COSQ and SINQ arrays.
-   // Note:  If we keep the above adjustments on m_rotation.y, we won't
+   // Note:  If we keep the above adjustments on rotation.y, we won't
 	// need this rspMod360().
-   int16_t	sRot	= rspMod360(m_rotation.y);
-   m_rotation.y		= sRot;
+   int16_t	sRot	= rspMod360(rotation.y);
+   rotation.y		= sRot;
 
 	// Make sure external force rotation is w/i bounds for COSQ and SINQ arrays.
 	int16_t	sExtHorzRot	= rspMod360(m_dExtHorzRot);
@@ -1135,15 +1135,15 @@ void CThing3d::GetNewPosition(	// Returns nothing.
 
 	// Apply internal velocity.
 	dDistance	= (m_dVel - m_dDeltaVel / 2) * dSeconds;
-   *pdNewX	= m_position.x + COSQ[sRot] * dDistance;
-   *pdNewZ	= m_position.z - SINQ[sRot] * dDistance;
+   *pdNewX	= position.x + COSQ[sRot] * dDistance;
+   *pdNewZ	= position.z - SINQ[sRot] * dDistance;
 	// Apply external velocity.
 	dDistance	= (m_dExtHorzVel - m_dExtHorzDeltaVel / 2) * dSeconds;
 	*pdNewX	+= COSQ[sExtHorzRot] * dDistance;
 	*pdNewZ	+= -SINQ[sExtHorzRot] * dDistance;
 	// Apply external vertical velocity.
 	dDistance	= (m_dExtVertVel - m_dExtVertDeltaVel / 2) * dSeconds;
-   *pdNewY	= m_position.y + dDistance;
+   *pdNewY	= position.y + dDistance;
 	}
 
 //#if defined(__ANDROID__)
@@ -1162,14 +1162,14 @@ void CThing3d::GetNewPositionAngle(				// Returns nothing.
 		// GetNewPosition().
 		///////////////////////////// Rotations /////////////////////////////////////
 	    //dAngle	= rspMod360(dAngle + m_dExtRotVelY * dSeconds);
-      m_rotation.y	= rspMod360(m_rotation.y + m_dExtRotVelY * dSeconds);
-      m_rotation.z	= rspMod360(m_rotation.z + m_dExtRotVelZ * dSeconds);
+      rotation.y	= rspMod360(rotation.y + m_dExtRotVelY * dSeconds);
+      rotation.z	= rspMod360(rotation.z + m_dExtRotVelZ * dSeconds);
 
 		// Make sure rotation is w/i bounds for COSQ and SINQ arrays.
-      // Note:  If we keep the above adjustments on m_rotation.y, we won't
+      // Note:  If we keep the above adjustments on rotation.y, we won't
 		// need this rspMod360().
-      int16_t	sRot	= rspMod360(m_rotation.y);
-      m_rotation.y		= sRot;
+      int16_t	sRot	= rspMod360(rotation.y);
+      rotation.y		= sRot;
 
 
 		sRot	= rspMod360(dAngle);
@@ -1182,15 +1182,15 @@ void CThing3d::GetNewPositionAngle(				// Returns nothing.
 
 		// Apply internal velocity.
 		dDistance	= (m_dVel - m_dDeltaVel / 2) * dSeconds;
-      *pdNewX	= m_position.x + COSQ[sRot] * dDistance;
-      *pdNewZ	= m_position.z - SINQ[sRot] * dDistance;
+      *pdNewX	= position.x + COSQ[sRot] * dDistance;
+      *pdNewZ	= position.z - SINQ[sRot] * dDistance;
 		// Apply external velocity.
 		dDistance	= (m_dExtHorzVel - m_dExtHorzDeltaVel / 2) * dSeconds;
 		*pdNewX	+= COSQ[sExtHorzRot] * dDistance;
 		*pdNewZ	+= -SINQ[sExtHorzRot] * dDistance;
 		// Apply external vertical velocity.
 		dDistance	= (m_dExtVertVel - m_dExtVertDeltaVel / 2) * dSeconds;
-      *pdNewY	= m_position.y + dDistance;
+      *pdNewY	= position.y + dDistance;
 }
 //#endif
 
@@ -1221,8 +1221,8 @@ bool CThing3d::MakeValidPosition(	// Returns true, if new position was valid.
 		|| (sHeight - *pdNewY > sVertTolerance) )// && m_bAboveTerrain == false && m_dExtHorzVel == 0.0))
 		{
 		// Restore previous X/Z position.
-      *pdNewX	= m_position.x;
-      *pdNewZ	= m_position.z;
+      *pdNewX	= position.x;
+      *pdNewZ	= position.z;
 		bValidatedPosition	= true;
 
 		// Get height in that spot.
@@ -1277,9 +1277,9 @@ void CThing3d::DeluxeUpdatePosVel(	// Returns nothing.
 		{
 		// Update Values /////////////////////////////////////////////////////////
 
-      m_position.x	= dNewX;
-      m_position.y	= dNewY;
-      m_position.z	= dNewZ;
+      position.x	= dNewX;
+      position.y	= dNewY;
+      position.z	= dNewZ;
 
 		UpdateFirePosition();
 		}
@@ -1370,15 +1370,15 @@ void CThing3d::OnExplosionMsg(			// Returns nothing.
 	Explosion_Message* pexplosionmsg)	// In:  Message to handle.
 	{
 	m_dAcc = 0;
-   double dX = m_position.x - pexplosionmsg->sX;
-   double dZ = m_position.z - pexplosionmsg->sZ;
+   double dX = position.x - pexplosionmsg->sX;
+   double dZ = position.z - pexplosionmsg->sZ;
 	double dSqDist = (dX*dX) + (dZ*dZ);
 	double dMulVert = 0.7;
 	double dMulHorz = 0.2;
 	if (dSqDist < 1.0)
 		dSqDist = 1.0;
 
-   m_dExtHorzRot = rspATan(pexplosionmsg->sZ - m_position.z, m_position.x - pexplosionmsg->sX);
+   m_dExtHorzRot = rspATan(pexplosionmsg->sZ - position.z, position.x - pexplosionmsg->sX);
 	if (dSqDist <= 900)
 	{
 		dMulVert = 0.8;
@@ -1422,9 +1422,9 @@ void CThing3d::OnBurnMsg(	// Returns nothing.
 
 			// Put it in the thing3d's midsection.
          m_fire->Setup(
-            m_position.x, 							// In:  New x coord
-            m_position.y + m_sRadius, // In:  New y coord
-            m_position.z, 							// In:  New z coord
+            position.x, 							// In:  New x coord
+            position.y + m_sRadius, // In:  New y coord
+            position.z, 							// In:  New z coord
 				BURN_DURATION, 				// In:  Number of milliseconds to burn, default 1sec
 				false, 							// In:  Use thick fire (more opaque) default = true
 				CFire::SmallFire);			// In:  Animation type to use default = LargeFire
@@ -1472,11 +1472,11 @@ void CThing3d::UpdateFirePosition(void)
    if (m_fire)
 		{
 		// Update its position.
-      m_fire->m_position.x	= m_position.x;
-      m_fire->m_position.y	= m_position.y;
+      m_fire->position.x	= position.x;
+      m_fire->position.y	= position.y;
 		// Always put fire slightly in front of thing3d so we can see alpha
 		// effect.
-      m_fire->m_position.z	= m_position.z + 1.0;
+      m_fire->position.z	= position.z + 1.0;
 		// If dead or dying . . .
       if (m_state == State_Die || m_state == State_Dead)
          m_sBaseBrightness	= BURNT_BRIGHTNESS; // Char the guy.
@@ -1618,9 +1618,9 @@ void CThing3d::DetachChild(	// Returns ptr to the child or nullptr, if none.
 		DetachChild(
          static_cast<CSprite*>(childThing.pointer()),		// In:  Child sprite to detach.
          trans,							// In:  Transform for positioning child.
-         childThing->m_position.x,			// Out: Position of child.
-         childThing->m_position.y,			// Out: Position of child.
-         childThing->m_position.z);			// Out: Position of child.
+         childThing->position.x,			// Out: Position of child.
+         childThing->position.y,			// Out: Position of child.
+         childThing->position.z);			// Out: Position of child.
 
 		// Child is done with us.
       childThing->parent().reset();
@@ -1642,9 +1642,9 @@ void CThing3d::DetachChild(	// Returns nothing.
    GetLinkPoint(trans, dX, dY, dZ);
 
 	// Set child position to character's position offset by rigid body's realm offset.
-   dX += m_position.x;
-   dY += m_position.y;
-   dZ += m_position.z;
+   dX += position.x;
+   dY += position.y;
+   dZ += position.z;
 	
 	// Detatch child's sprite
    RemoveChild(psprite);
@@ -1801,7 +1801,7 @@ void CThing3d::PlaySample(									// Returns nothing.
 	if (sInitialVolume < 0)
 		{
 		// Determine volume based on distance to ear.
-      sInitialVolume	= DistanceToVolume(m_position.x, m_position.y, m_position.z, SoundHalfLife);
+      sInitialVolume	= DistanceToVolume(position.x, position.y, position.z, SoundHalfLife);
 		}
 
 	::PlaySample(				// Returns nothing.

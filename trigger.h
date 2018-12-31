@@ -69,13 +69,13 @@
 #include <Spry/spry.h>
 #include <ORANGE/MultiGrid/MultiGridIndirect.h>
 
-#include "thing.h"
+#include "sprite_base.h"
 
 // A fake declaration for CRealm pointers...
 class CRealm; 
 
 // This is the hood object
-class CTrigger : public CThing
+class CTrigger : public sprite_base_t
 	{
 	//---------------------------------------------------------------------------
 	// Types, enums, etc.

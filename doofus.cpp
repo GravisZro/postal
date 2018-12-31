@@ -169,7 +169,7 @@
 //							previously backwards because I thought the search
 //							animation was done from a standing position.
 //
-//		06/13/97	JMI	Changed FindDirection() to return m_rotation.y if we cannot find
+//		06/13/97	JMI	Changed FindDirection() to return rotation.y if we cannot find
 //							a CDude.
 //							Also, changed Logic_Shoot() over to using events.
 //
@@ -982,9 +982,9 @@ void CDoofus::Startup(void)								// Returns 0 if successfull, non-zero otherwi
 
 	// Init other stuff
 	m_dVel = 0.0;
-   m_rotation.y = 0.0;
+   rotation.y = 0.0;
 	m_dAnimRot = 0.0;
-   m_sPrevHeight = (int16_t) m_position.y;
+   m_sPrevHeight = (int16_t) position.y;
 	m_sRotateDir = 0;
 
 	// Set up the detection smash
@@ -993,9 +993,9 @@ void CDoofus::Startup(void)								// Returns 0 if successfull, non-zero otherwi
 	m_smashDetect.m_sphere.sphere.lRadius = ms_lDetectionRadius;
 
 	// Set up the fire avoidance smash
-   m_smashAvoid.m_sphere.sphere.X = m_position.x + (rspCos(m_rotation.y) * ms_lAvoidRadius);
-   m_smashAvoid.m_sphere.sphere.Y = m_position.y;
-   m_smashAvoid.m_sphere.sphere.Z = m_position.z - (rspSin(m_rotation.y) * ms_lAvoidRadius);
+   m_smashAvoid.m_sphere.sphere.X = position.x + (rspCos(rotation.y) * ms_lAvoidRadius);
+   m_smashAvoid.m_sphere.sphere.Y = position.y;
+   m_smashAvoid.m_sphere.sphere.Z = position.z - (rspSin(rotation.y) * ms_lAvoidRadius);
 	m_smashAvoid.m_sphere.sphere.lRadius = ms_lAvoidRadius;
 	m_smashAvoid.m_bits = 0;
    m_smashAvoid.m_pThing = this;
@@ -1041,19 +1041,19 @@ int16_t CDoofus::EditNew(									// Returns 0 if successfull, non-zero otherwis
 #endif // !defined(EDITOR_REMOVED)
 
 ////////////////////////////////////////////////////////////////////////////////
-// Render - This override version temporarily replaces the m_rotation.y with the
+// Render - This override version temporarily replaces the rotation.y with the
 //				m_dAnimRot so that it draws the person in the desired facing 
 //				direction.
 ////////////////////////////////////////////////////////////////////////////////
 
 void CDoofus::Render(void)
 {
-   double dSaveRotation = m_rotation.y;
-   m_rotation.y = m_dAnimRot;
+   double dSaveRotation = rotation.y;
+   rotation.y = m_dAnimRot;
 
 	CCharacter::Render();
 	
-   m_rotation.y = dSaveRotation;
+   rotation.y = dSaveRotation;
 
 	CAnim3D*		panimWeapon	= nullptr;
 
@@ -1207,8 +1207,8 @@ int16_t CDoofus::SelectDude(void)
 		// If this dude is not dead . . .
 		if (pdude->m_state != State_Dead)
 		{
-         ulDistX	= pdude->m_position.x - m_position.x;
-         ulDistZ	= pdude->m_position.z - m_position.z;
+         ulDistX	= pdude->position.x - position.x;
+         ulDistZ	= pdude->position.z - position.z;
 			ulSqrDistance	= ulDistX * ulDistX + ulDistZ * ulDistZ;
 			if (ulSqrDistance < ulCurSqrDistance)
 			{
@@ -1241,12 +1241,12 @@ int16_t CDoofus::FindDirection()
    {
          dDudeX = m_dude->GetX();
          dDudeZ = m_dude->GetZ();
-         dX = dDudeX - m_position.x;
-         dZ = m_position.z - dDudeZ;
+         dX = dDudeX - position.x;
+         dZ = position.z - dDudeZ;
          sAngle = rspATan(dZ, dX);
 	}
 	else
-      sAngle = m_rotation.y;
+      sAngle = rotation.y;
 
 	return sAngle;
 }
@@ -1266,8 +1266,8 @@ double CDoofus::SQDistanceToDude()
 
    if (m_dude)
    {
-         dX = m_dude->GetX() - m_position.x;
-         dZ = m_dude->GetZ() - m_position.z;
+         dX = m_dude->GetX() - position.x;
+         dZ = m_dude->GetZ() - position.z;
          dSquareDistance = (dX * dX) + (dZ * dZ);
 	}
 
@@ -1288,7 +1288,7 @@ void CDoofus::AlignToBouy(void)
 		if (m_bRecentlyStuck)
 		{
 			m_bRecentlyStuck = false;
-         m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+         m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 
 			if (m_ucNextBouyID > 0)
 			{
@@ -1301,7 +1301,7 @@ void CDoofus::AlignToBouy(void)
 			}
 		}
 		m_lAlignTimer = lThisTime + ms_lDefaultAlignTime;
-      m_dAnimRot = m_rotation.y = rspATan(m_position.z - m_sNextZ, m_sNextX - m_position.x);
+      m_dAnimRot = rotation.y = rspATan(position.z - m_sNextZ, m_sNextX - position.x);
 	}
 }
 
@@ -1323,7 +1323,7 @@ bool CDoofus::TryClearDirection(double* pdRot, int16_t sVariance)
 	int16_t sTries = 0;
 	int16_t sX, sY, sZ;
 	double dRotAttempt = *pdRot;
-   managed_ptr<CThing> pthing;
+   managed_ptr<sprite_base_t> pthing;
 
 	while (!bFoundPath && sTries < 2)
 	{
@@ -1331,9 +1331,9 @@ bool CDoofus::TryClearDirection(double* pdRot, int16_t sVariance)
 		if (IsPathClear(							// Returns true, if the entire path is clear.
 														// Returns false, if only a portion of the path is clear.
 														// (see *psX, *psY, *psZ, *ppthing).
-         m_position.x,										// In:  Starting X.
-         m_position.y,										// In:  Starting Y.
-         m_position.z,										// In:  Starting Z.
+         position.x,										// In:  Starting X.
+         position.y,										// In:  Starting Y.
+         position.z,										// In:  Starting Z.
 			dRotAttempt,							// In:  Rotation around y axis (direction on X/Z plane).
 			10,										// In:  Rate at which to scan ('crawl') path in pixels per
 														// iteration.
@@ -1410,9 +1410,9 @@ bool CDoofus::TryClearShot(double dRot, int16_t sVariance)
 /*
 				// This one checks terrain and for people in the way
 				if (IsPathClear(
-               (short) (m_position.x + dMuzzleX),			// Start x position
-               (short) (m_position.y + dMuzzleY),			// Start y position
-               (short) (m_position.z + dMuzzleZ),			// Start z position
+               (short) (position.x + dMuzzleX),			// Start x position
+               (short) (position.y + dMuzzleY),			// Start y position
+               (short) (position.z + dMuzzleZ),			// Start z position
 					(short) dRotAttempt,					// Angle of shot
 					4,											// Crawl rate
 					rspSqrt(CDoofus::SQDistanceToDude()),
@@ -1430,9 +1430,9 @@ bool CDoofus::TryClearShot(double dRot, int16_t sVariance)
 */
 				// This one only checks terrain
             if (realm()->IsPathClear(
-                m_position.x + dMuzzleX,
-                m_position.y + dMuzzleY,
-                m_position.z + dMuzzleZ,
+                position.x + dMuzzleX,
+                position.y + dMuzzleY,
+                position.z + dMuzzleZ,
 					 (int16_t) dRotAttempt,
 					 3,
 					 rspSqrt(CDoofus::SQDistanceToDude()),
@@ -1585,9 +1585,9 @@ void CDoofus::Logic_Shot(void)
 			//	m_state = State_Retreat;
 			//	m_panimCur = &m_animRun;
 			//	m_lAnimTime = 0;
-         //	m_rotation.y = rspMod360(CDoofus::FindDirection() + 180);
-         //	if (CDoofus::TryClearDirection(&m_rotation.y, 90) == false)
-         //		m_rotation.y = rspMod360(GetRandom());
+         //	rotation.y = rspMod360(CDoofus::FindDirection() + 180);
+         //	if (CDoofus::TryClearDirection(&rotation.y, 90) == false)
+         //		rotation.y = rspMod360(GetRandom());
 			//}
 			// 
 			// else // go back to previous state
@@ -1701,7 +1701,7 @@ void CDoofus::Logic_Die(void)
 			else
          {
             m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = m_weapon->m_rotation.y = GetRandom() % 360;
+            m_dShootAngle = m_weapon->rotation.y = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -1716,10 +1716,10 @@ void CDoofus::Logic_Die(void)
 			if (sRot & 0x01)
 				sRot++;
 
-         if (((short) m_rotation.y) & 0x01)
-            m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y + sRot);
+         if (((short) rotation.y) & 0x01)
+            m_dAnimRot = rotation.y = rspMod360(rotation.y + sRot);
 			else
-            m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y - sRot);
+            m_dAnimRot = rotation.y = rspMod360(rotation.y - sRot);
 		}
 #endif
 	}
@@ -1781,7 +1781,7 @@ void CDoofus::Logic_Writhing(void)
 			else
          {
             m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = m_weapon->m_rotation.y = GetRandom() % 360;
+            m_dShootAngle = m_weapon->rotation.y = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -1815,7 +1815,7 @@ void CDoofus::Logic_Guard(void)
 //		m_panimCur = &m_animStand;
 //		m_lAnimTime = 0;
 //	}
-   m_rotation.y = m_dAnimRot = m_dShootAngle = FindDirection();
+   rotation.y = m_dAnimRot = m_dShootAngle = FindDirection();
 	RunIdleAnimation();
 
 	// We assume at first that nothing much is going on in the area, so he
@@ -1827,7 +1827,7 @@ void CDoofus::Logic_Guard(void)
 		m_lTimer = lThisTime + m_lGuardTimeout;
 		if (SelectDude() == SUCCESS && SQDistanceToDude() < ms_dGuardDistance)
 		{	
-         if (CDoofus::TryClearShot(m_rotation.y, 20) == true)
+         if (CDoofus::TryClearShot(rotation.y, 20) == true)
 			{
             PrepareWeapon();
             if (m_weapon)
@@ -1839,7 +1839,7 @@ void CDoofus::Logic_Guard(void)
 				m_panimCur = &m_animShoot;
 				m_lAnimTime = 0;
 				SelectDude();
-            m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+            m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 				m_state = State_Shoot;
 				m_eNextState = State_Guard;
 				m_lTimer = lThisTime + m_lShootTimeout;
@@ -1861,7 +1861,7 @@ void CDoofus::Logic_Guard(void)
 void CDoofus::Logic_Patrol(void)
 {
 	// Turn to face dude but do not attack yet
-   m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+   m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1873,7 +1873,7 @@ void CDoofus::Logic_Hunt(void)
 	// Find the destination bouy (one closest to the Dude)
 	m_eDestinationState = State_HuntHold;
 	SelectDudeBouy();
-   m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+   m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 	if (m_ucNextBouyID > 0)
 	{
 		m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
@@ -1921,7 +1921,7 @@ void CDoofus::Logic_HuntHold(void)
 		{
 			m_lTimer = lThisTime + 1000;
 			SelectDudeBouy();
-         m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+         m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 			// See if he should move closer.
 			if (m_ucNextBouyID != m_ucDestBouyID)
 			{
@@ -1950,7 +1950,7 @@ void CDoofus::Logic_HuntHold(void)
 					m_panimCur = &m_animShoot;
 					m_lAnimTime = 0;
 					SelectDude();
-               m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+               m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 					m_state = State_Shoot;
 					m_eNextState = State_HuntHold;
 					m_lTimer = lThisTime + m_lGuardTimeout;
@@ -1971,8 +1971,8 @@ void CDoofus::Logic_MoveNext(void)
    milliseconds_t lThisTime = realm()->m_time.GetGameTime();
    milliseconds_t lElapsedTime = lThisTime - m_lPrevTime;
 	double dSeconds = lElapsedTime / 1000.0;
-   double dStartX = m_position.x;
-   double dStartZ = m_position.z;
+   double dStartX = position.x;
+   double dStartZ = position.z;
 
 	if (!ReevaluateState())
 	{
@@ -2009,12 +2009,12 @@ void CDoofus::Logic_MoveNext(void)
 		DeluxeUpdatePosVel(dSeconds);
 
 		// If not moving when you are trying to, rotate 
-      if (m_position.x == dStartX && m_position.z == dStartZ)
+      if (position.x == dStartX && position.z == dStartZ)
 		{
 			if (m_sRotateDir)
-            m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y + 20);
+            m_dAnimRot = rotation.y = rspMod360(rotation.y + 20);
 			else
-            m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y - 20);
+            m_dAnimRot = rotation.y = rspMod360(rotation.y - 20);
 			// Reset alignment timer so he doesn't reseek the bouy direction immediately
 			m_lAlignTimer = lThisTime + ms_lDefaultAlignTime;
 			// Set a flag indicating that you were stuck, so we know what bouy to look
@@ -2027,8 +2027,8 @@ void CDoofus::Logic_MoveNext(void)
 		}
 
 		// See if we are at the next bouy yet
-      double dX = m_position.x - m_sNextX;
-      double dZ = m_position.z - m_sNextZ;
+      double dX = position.x - m_sNextX;
+      double dZ = position.z - m_sNextZ;
 		double dsq = (dX * dX) + (dZ * dZ);
 		if (dsq < 5*5) // Was 10*10 for a long time, trying smaller to see if it keeps guys from getting stuck
 		{
@@ -2108,50 +2108,50 @@ void CDoofus::Logic_PositionSet(void)
 			{
 				case 0:
 					if (sVarRot & 0x01)
-                  dTestAngle = rspMod360(m_rotation.y + 40 + sVarRot);
+                  dTestAngle = rspMod360(rotation.y + 40 + sVarRot);
 					else
-                  dTestAngle = rspMod360(m_rotation.y - 40 - sVarRot);
+                  dTestAngle = rspMod360(rotation.y - 40 - sVarRot);
 					dAngleTurn = 40 + sVarRot;
 					break;
 					
 				case 1:
 					if (sVarRot & 0x01)
-                  dTestAngle = rspMod360(m_rotation.y - 40 - sVarRot);
+                  dTestAngle = rspMod360(rotation.y - 40 - sVarRot);
 					else
-                  dTestAngle = rspMod360(m_rotation.y + 40 + sVarRot);
+                  dTestAngle = rspMod360(rotation.y + 40 + sVarRot);
 					// Same dAngleTurn as last time
 					break;
 					
 				case 2:
 					if (sVarRot & 0x01)
-                  dTestAngle = rspMod360(m_rotation.y + 20 + sVarRot);
+                  dTestAngle = rspMod360(rotation.y + 20 + sVarRot);
 					else
-                  dTestAngle = rspMod360(m_rotation.y - 20 - sVarRot);
+                  dTestAngle = rspMod360(rotation.y - 20 - sVarRot);
 					dAngleTurn = 20 + sVarRot;
 					break;
 					
 				case 3:
 					if (sVarRot & 0x01)
-                  dTestAngle = rspMod360(m_rotation.y - 20 - sVarRot);
+                  dTestAngle = rspMod360(rotation.y - 20 - sVarRot);
 					else
-                  dTestAngle = rspMod360(m_rotation.y + 20 + sVarRot);
+                  dTestAngle = rspMod360(rotation.y + 20 + sVarRot);
 					// Same dAngleTurn as last time
 					break;
 					
 				case 4:
-               dTestAngle = rspMod360(m_rotation.y + 95);
+               dTestAngle = rspMod360(rotation.y + 95);
 					break;
 					
 				case 5:
-               dTestAngle = rspMod360(m_rotation.y - 95);
+               dTestAngle = rspMod360(rotation.y - 95);
 					break;
 
 				case 6:
-               dTestAngle = m_rotation.y;
+               dTestAngle = rotation.y;
 					break;
 
 				case 7:
-               dTestAngle = rspMod360(m_rotation.y + 180);
+               dTestAngle = rspMod360(rotation.y + 180);
 					break;
 			}
 
@@ -2177,7 +2177,7 @@ void CDoofus::Logic_PositionSet(void)
 		// If you found a clear direction, take it
 		if (bFoundDirection)
 		{
-            m_dAnimRot = m_rotation.y = dTestAngle;
+            m_dAnimRot = rotation.y = dTestAngle;
 				// Set new animation
 				m_dAcc = ms_dAccUser;
 				m_state = State_PositionMove;
@@ -2187,7 +2187,7 @@ void CDoofus::Logic_PositionSet(void)
 		else
 		// else stay where you are.
 		{
-         m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+         m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
          if (m_dude)
 			{
 				m_state = State_DelayShoot;
@@ -2217,7 +2217,7 @@ void CDoofus::Logic_DelayShoot(void)
 	// See if its time to shoot yet
 	if (lThisTime > m_lTimer)
 	{
-      if (TryClearShot(m_rotation.y, 20) == true && SelectDude() == SUCCESS)
+      if (TryClearShot(rotation.y, 20) == true && SelectDude() == SUCCESS)
 		{
          PrepareWeapon();
          if (m_weapon)
@@ -2249,9 +2249,9 @@ void CDoofus::Logic_PositionMove(void)
 
 	if (lThisTime > m_lTimer)
 	{
-      m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+      m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 		// Check for clear shot before shooting.  If not clear, go back to moving
-      if (CDoofus::TryClearShot(m_rotation.y, 20) == true && SelectDude() == SUCCESS)
+      if (CDoofus::TryClearShot(rotation.y, 20) == true && SelectDude() == SUCCESS)
 		{
          PrepareWeapon();
          if (m_weapon)
@@ -2273,20 +2273,20 @@ void CDoofus::Logic_PositionMove(void)
 	}
 	else
 	{
-      double dLastPosX = m_position.x;
-      double dLastPosZ = m_position.z;
+      double dLastPosX = position.x;
+      double dLastPosZ = position.z;
 
 		DeluxeUpdatePosVel(dSeconds);
 		m_lAnimTime += lTimeDifference;
 
 		// If not moving when intending to, rotate one way or the other
 		// to try to avoid the obstacle
-      if (m_dVel != 0.0 && dLastPosX == m_position.x && dLastPosZ == m_position.z)
+      if (m_dVel != 0.0 && dLastPosX == position.x && dLastPosZ == position.z)
 		{
-         if (((int16_t) m_rotation.y) & 0x01)
-            m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y + 20);
+         if (((int16_t) rotation.y) & 0x01)
+            m_dAnimRot = rotation.y = rspMod360(rotation.y + 20);
 			else
-            m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y - 20);
+            m_dAnimRot = rotation.y = rspMod360(rotation.y - 20);
 		}
 		// Avoid fire in your path
 		AvoidFire();
@@ -2299,7 +2299,7 @@ void CDoofus::Logic_PositionMove(void)
 
 void CDoofus::Logic_Engage(void)
 {
-   m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+   m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 	m_state = State_PositionSet;
 	m_sStuckCounter = 0;
 }
@@ -2341,9 +2341,9 @@ void CDoofus::Logic_PylonDetect(void)
 	m_bPylonRunShootAvailable = false;
 
 	// Update the detection smash.
-   m_smashDetect.m_sphere.sphere.X = m_position.x;
-   m_smashDetect.m_sphere.sphere.Y = m_position.y;
-   m_smashDetect.m_sphere.sphere.Z = m_position.z;
+   m_smashDetect.m_sphere.sphere.X = position.x;
+   m_smashDetect.m_sphere.sphere.Y = position.y;
+   m_smashDetect.m_sphere.sphere.Z = position.z;
 
 	// For now when we detect a pylon we are assuming that this
 	// character should use that logic.  Later we will have to 
@@ -2366,9 +2366,9 @@ void CDoofus::Logic_PylonDetect(void)
          if (realm()->IsPathClear(	// Returns true, if the entire path is clear.
 													// Returns false, if only a portion of the path is clear.     
 													// (see *psX, *psY, *psZ).                                    
-               (int16_t) m_position.x, 				// In:  Starting X.
-               (int16_t) m_position.y, 				// In:  Starting Y.
-               (int16_t) m_position.z, 				// In:  Starting Z.
+               (int16_t) position.x, 				// In:  Starting X.
+               (int16_t) position.y, 				// In:  Starting Y.
+               (int16_t) position.z, 				// In:  Starting Z.
 					3.0, 							// In:  Rate at which to scan ('crawl') path in pixels per    
 													// iteration.                                                 
 													// NOTE: Values less than 1.0 are inefficient.                
@@ -2447,7 +2447,7 @@ void CDoofus::Logic_HideBegin(void)
 		m_lAnimTime += lThisTime - m_lPrevTime;
 
 	// Set angle to pylon.
-   m_dAnimRot = m_rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
+   m_dAnimRot = rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
 	m_dAcc = ms_dAccUser;
 
    int32_t lElapsedTime = realm()->m_time.GetGameTime() - m_lPrevTime;
@@ -2457,8 +2457,8 @@ void CDoofus::Logic_HideBegin(void)
 	//	if close to pylon, go to next state
 	// for now just check the square distance, but later, probably use
 	// QuickCheckCloses in smash to see if you are there yet.
-   double dX = m_position.x - m_sNextX;
-   double dZ = m_position.z - m_sNextZ;
+   double dX = position.x - m_sNextX;
+   double dZ = position.z - m_sNextZ;
 	double dsq = (dX * dX) + (dZ * dZ);
 	if (dsq < 300)
 	{
@@ -2485,8 +2485,8 @@ void CDoofus::Logic_Hide(void)
 void CDoofus::Logic_PopBegin(void)
 {
    milliseconds_t lThisTime = realm()->m_time.GetGameTime();
-   double dStartX = m_position.x;
-   double dStartZ = m_position.z;
+   double dStartX = position.x;
+   double dStartZ = position.z;
 
 	// If we're not using the run animation yet then switch to it
 	if (m_panimCur != &m_animRun)
@@ -2501,7 +2501,7 @@ void CDoofus::Logic_PopBegin(void)
 	// Set angle to pylon.
 	if (lThisTime > m_lAlignTimer)
 	{
-      m_dAnimRot = m_rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
+      m_dAnimRot = rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
 		m_lAlignTimer = lThisTime + 100;
 		m_sRotateDir = GetRandom() % 2;
 	}
@@ -2515,20 +2515,20 @@ void CDoofus::Logic_PopBegin(void)
 	AvoidFire();
 
 	// If not moving when meaning to, rotate to avoid obstacle
-   if (m_position.x == dStartX && m_position.z == dStartZ)
+   if (position.x == dStartX && position.z == dStartZ)
 	{
 		if (m_sRotateDir)
-         m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y + 20);
+         m_dAnimRot = rotation.y = rspMod360(rotation.y + 20);
 		else
-         m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y - 20);
+         m_dAnimRot = rotation.y = rspMod360(rotation.y - 20);
 		m_lAlignTimer = lThisTime + 100;
 	}
 
 	//	if close to pylon, go to next state
 	// for now just check the square distance, but later, probably use
 	// QuickCheckCloses in smash to see if you are there yet.
-   double dX = m_position.x - m_sNextX;
-   double dZ = m_position.z - m_sNextZ;
+   double dX = position.x - m_sNextX;
+   double dZ = position.z - m_sNextZ;
 	double dsq = (dX * dX) + (dZ * dZ);
 	if (dsq < 300)
 	{
@@ -2586,7 +2586,7 @@ void CDoofus::Logic_Popout(void)
 	m_eCurrentAction = Action_Popout;
 
 	// Go to next pylon
-   m_dAnimRot = m_rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
+   m_dAnimRot = rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
 	m_dAcc = ms_dAccUser;
 	DeluxeUpdatePosVel(dSeconds);
 
@@ -2597,8 +2597,8 @@ void CDoofus::Logic_Popout(void)
 	//	if close to pylon, go to next state
 	// for now just check the square distance, but later, probably use
 	// QuickCheckCloses in smash to see if you are there yet.
-   double dX = m_position.x - m_sNextX;
-   double dZ = m_position.z - m_sNextZ;
+   double dX = position.x - m_sNextX;
+   double dZ = position.z - m_sNextZ;
 	double dsq;
 	dsq = (dX * dX) + (dZ * dZ);
 	if (dsq < 300)
@@ -2618,7 +2618,7 @@ void CDoofus::Logic_Popout(void)
 		m_panimCur = &m_animShoot;
 		m_lAnimTime = 0;
 		SelectDude();
-      m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+      m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 	}
 }
 
@@ -2742,8 +2742,8 @@ void CDoofus::Logic_RunShootBegin(void)
 {
    milliseconds_t lThisTime = realm()->m_time.GetGameTime();
    milliseconds_t lElapsedTime = lThisTime - m_lPrevTime;
-   double dStartX = m_position.x;
-   double dStartZ = m_position.z;
+   double dStartX = position.x;
+   double dStartZ = position.z;
 
 	// If we're not using the run animation yet, then switch to it
 	if (m_panimCur != &m_animRun)
@@ -2757,7 +2757,7 @@ void CDoofus::Logic_RunShootBegin(void)
 	// Set angle to pylon.
 	if (lThisTime > m_lAlignTimer)
 	{
-      m_dAnimRot = m_rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
+      m_dAnimRot = rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
 		m_lAlignTimer = lThisTime + 100;
 		m_sRotateDir = GetRandom() % 2;
 	}
@@ -2770,25 +2770,25 @@ void CDoofus::Logic_RunShootBegin(void)
 	AvoidFire();
 
 	// If not moving when you meant to, start to rotate to avoid obstacles
-   if (m_position.x == dStartX && m_position.z == dStartZ)
+   if (position.x == dStartX && position.z == dStartZ)
 	{
 		if (m_sRotateDir)
-         m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y + 20);
+         m_dAnimRot = rotation.y = rspMod360(rotation.y + 20);
 		else
-         m_dAnimRot = m_rotation.y = rspMod360(m_rotation.y - 20);
+         m_dAnimRot = rotation.y = rspMod360(rotation.y - 20);
 		m_lAlignTimer = lThisTime + 100;
 	}
 
 	// If close to pylon, go to nex state
-   double dX = m_position.x - m_sNextX;
-   double dZ = m_position.z - m_sNextZ;
+   double dX = position.x - m_sNextX;
+   double dZ = position.z - m_sNextZ;
 	double dsq = (dX * dX) + (dZ * dZ);
 	if (dsq < 300)
 	{
 		// Find position of destinaiton pylon
 		m_sNextX = m_pPylonEnd->GetX();
 		m_sNextZ = m_pPylonEnd->GetZ();
-      m_dAnimRot = m_rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
+      m_dAnimRot = rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
 		m_lTimer = lThisTime + m_lRunShootInterval;
 //		m_state = State_RunShoot;
 		m_state = State_RunShootWait;
@@ -2811,7 +2811,7 @@ void CDoofus::Logic_RunShoot(void)
 	{
 		m_panimCur = &m_animRun;
 //		m_lAnimTime = 0;
-      m_dAnimRot = m_rotation.y;
+      m_dAnimRot = rotation.y;
 	}
 
 	if (!ReevaluateState())
@@ -2835,8 +2835,8 @@ void CDoofus::Logic_RunShoot(void)
 
 			int16_t sTargetAngle = FindDirection();
 			m_dShootAngle = sTargetAngle;
-         int16_t sAngleCCL = rspMod360(sTargetAngle - m_rotation.y);
-         int16_t sAngleCL  = rspMod360((360 - sTargetAngle) + m_rotation.y);
+         int16_t sAngleCCL = rspMod360(sTargetAngle - rotation.y);
+         int16_t sAngleCL  = rspMod360((360 - sTargetAngle) + rotation.y);
 			int16_t sAngleDistance = MIN(sAngleCCL, sAngleCL);
 			if (sAngleCCL < sAngleCL)
 			// Rotate Counter Clockwise - Use left animations
@@ -2844,26 +2844,26 @@ void CDoofus::Logic_RunShoot(void)
 				if (sAngleDistance > 150)
 				{
 					m_panimCur = &m_animShootRunBack;
-               m_dAnimRot = rspMod360(m_rotation.y + (sAngleDistance - 180));
+               m_dAnimRot = rspMod360(rotation.y + (sAngleDistance - 180));
 				}
 				else
 				{
 					if (sAngleDistance > 68)
 					{
 						m_panimCur = &m_animShootRunL1;
-                  m_dAnimRot = rspMod360(m_rotation.y + (sAngleDistance - 90));
+                  m_dAnimRot = rspMod360(rotation.y + (sAngleDistance - 90));
 					}
 					else
 					{
 						if (sAngleDistance > 23)
 						{
 							m_panimCur = &m_animShootRunL0;
-                     m_dAnimRot = rspMod360(m_rotation.y + (sAngleDistance - 45));
+                     m_dAnimRot = rspMod360(rotation.y + (sAngleDistance - 45));
 						}
 						else
 						{
 							m_panimCur = &m_animShootRun;
-                     m_dAnimRot = rspMod360(m_rotation.y + sAngleDistance);
+                     m_dAnimRot = rspMod360(rotation.y + sAngleDistance);
 						}
 					}
 				}
@@ -2874,26 +2874,26 @@ void CDoofus::Logic_RunShoot(void)
 				if (sAngleDistance > 150)
 				{
 					m_panimCur = &m_animShootRunBack;
-               m_dAnimRot = rspMod360(m_rotation.y - (sAngleDistance - 180));
+               m_dAnimRot = rspMod360(rotation.y - (sAngleDistance - 180));
 				}
 				else
 				{
 					if (sAngleDistance > 68)
 					{
 						m_panimCur = &m_animShootRunR1;
-                  m_dAnimRot = rspMod360(m_rotation.y - (sAngleDistance - 90));
+                  m_dAnimRot = rspMod360(rotation.y - (sAngleDistance - 90));
 					}
 					else
 					{
 						if (sAngleDistance > 23)
 						{
 							m_panimCur = &m_animShootRunR0;
-                     m_dAnimRot = rspMod360(m_rotation.y - (sAngleDistance - 45));
+                     m_dAnimRot = rspMod360(rotation.y - (sAngleDistance - 45));
 						}
 						else
 						{
 							m_panimCur = &m_animShootRun;
-                     m_dAnimRot = rspMod360(m_rotation.y - sAngleDistance);
+                     m_dAnimRot = rspMod360(rotation.y - sAngleDistance);
 						}
 					}
 				}
@@ -2905,7 +2905,7 @@ void CDoofus::Logic_RunShoot(void)
 		else
 		{
 			// Set angle to pylon.
-         m_dAnimRot = m_rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
+         m_dAnimRot = rotation.y = FindAngleTo(m_sNextX, m_sNextZ);
 			m_dAcc = ms_dAccUser;
 
 			double dSeconds = lElapsedTime / 1000.0;
@@ -2917,15 +2917,15 @@ void CDoofus::Logic_RunShoot(void)
 			//	if close to pylon, go to next state
 			// for now just check the square distance, but later, probably use
 			// QuickCheckCloses in smash to see if you are there yet.
-         double dX = m_position.x - m_sNextX;
-         double dZ = m_position.z - m_sNextZ;
+         double dX = position.x - m_sNextX;
+         double dZ = position.z - m_sNextZ;
 			double dsq = (dX * dX) + (dZ * dZ);
 			if (dsq < 300)
 			{
 				m_state = State_RunShootWait;
 				m_lTimer = lThisTime + m_lGuardTimeout;
 				// Make him face the other way.
-            m_dAnimRot = m_rotation.y = FindAngleTo(m_pPylonEnd->GetX(), m_pPylonEnd->GetZ());
+            m_dAnimRot = rotation.y = FindAngleTo(m_pPylonEnd->GetX(), m_pPylonEnd->GetZ());
 			}
 		}
 	}
@@ -2971,7 +2971,7 @@ void CDoofus::Logic_Retreat(void)
 
 	m_eDestinationState = State_Guard;
 	m_ucDestBouyID = SelectRandomBouy();
-   m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+   m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 	if (m_ucNextBouyID > 0)
 	{
 		m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
@@ -3015,7 +3015,7 @@ void CDoofus::Logic_PanicBegin(void)
 	m_eDestinationState = State_PanicContinue;
 	m_bPanic = true;
 	m_ucDestBouyID = SelectRandomBouy();
-   m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+   m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 	if (m_ucNextBouyID > 0)
 	{
 		m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
@@ -3071,7 +3071,7 @@ void CDoofus::Logic_MarchBegin(void)
 	else
 		m_ucDestBouyID = m_ucSpecialBouy0ID;
 
-   m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+   m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 	if (m_ucNextBouyID > 0)
 	{
 		m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
@@ -3107,7 +3107,7 @@ void CDoofus::Logic_WalkBegin(void)
 	SelectDude();
 	m_eDestinationState = State_WalkContinue;
 	m_ucDestBouyID = SelectRandomBouy();
-   m_ucNextBouyID = m_pNavNet->FindNearestBouy(m_position.x, m_position.z);
+   m_ucNextBouyID = m_pNavNet->FindNearestBouy(position.x, position.z);
 	if (m_ucNextBouyID > 0)
 	{
 		m_pNextBouy = m_pNavNet->GetBouy(m_ucNextBouyID);
@@ -3154,7 +3154,7 @@ void CDoofus::Logic_Helping(void)
 		m_lTimer = lThisTime + ms_lHelpingTimeout;
 		if (SelectDude() == SUCCESS && SQDistanceToDude() <= ms_lYellRadius)
 		{	
-         if (CDoofus::TryClearShot(m_rotation.y, 20) == true)
+         if (CDoofus::TryClearShot(rotation.y, 20) == true)
 			{
             PrepareWeapon();
             if (m_weapon)
@@ -3166,7 +3166,7 @@ void CDoofus::Logic_Helping(void)
 				m_panimCur = &m_animShoot;
 				m_lAnimTime = 0;
 				SelectDude();
-            m_dShootAngle = m_dAnimRot = m_rotation.y = FindDirection();
+            m_dShootAngle = m_dAnimRot = rotation.y = FindDirection();
 				m_state = State_Shoot;
 				m_eNextState = State_Helping;
 				m_lTimer = lThisTime + ms_lHelpingTimeout;
@@ -3255,9 +3255,9 @@ void CDoofus::YellForHelp(void)
 	msg.msg_Help.sPriority = 0;
 
 	// Set up the yell smash
-   smashYell.m_sphere.sphere.X = m_position.x;
-   smashYell.m_sphere.sphere.Y = m_position.y;
-   smashYell.m_sphere.sphere.Z = m_position.z;
+   smashYell.m_sphere.sphere.X = position.x;
+   smashYell.m_sphere.sphere.Y = position.y;
+   smashYell.m_sphere.sphere.Z = position.z;
 	smashYell.m_sphere.sphere.lRadius = ms_lYellRadius;
 	smashYell.m_bits = 0;
    smashYell.m_pThing = this;
@@ -3277,9 +3277,9 @@ void CDoofus::YellForHelp(void)
          if (realm()->IsPathClear(	// Returns true, if the entire path is clear.
 													// Returns false, if only a portion of the path is clear.     
 													// (see *psX, *psY, *psZ).                                    
-               (int16_t) m_position.x, 				// In:  Starting X.
-               (int16_t) m_position.y, 				// In:  Starting Y.
-               (int16_t) m_position.z, 				// In:  Starting Z.
+               (int16_t) position.x, 				// In:  Starting X.
+               (int16_t) position.y, 				// In:  Starting Y.
+               (int16_t) position.z, 				// In:  Starting Z.
 					3.0, 							// In:  Rate at which to scan ('crawl') path in pixels per    
 													// iteration.                                                 
 													// NOTE: Values less than 1.0 are inefficient.                
@@ -3540,7 +3540,7 @@ void CDoofus::OnExplosionMsg(Explosion_Message* pMessage)
 			else
          {
             m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = m_weapon->m_rotation.y = GetRandom() % 360;
+            m_dShootAngle = m_weapon->rotation.y = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -3602,7 +3602,7 @@ void CDoofus::OnBurnMsg(Burn_Message* pMessage)
 			else
          {
             m_weapon->m_dHorizVel = (GetRandom() % (int16_t) CGrenade::ms_dThrowHorizVel);
-            m_dShootAngle = m_weapon->m_rotation.y = GetRandom() % 360;
+            m_dShootAngle = m_weapon->rotation.y = GetRandom() % 360;
 				ShootWeapon();
 			}
 		}
@@ -3653,7 +3653,7 @@ void CDoofus::ShootWeapon(CSmash::Bits bitsInclude,
 										CSmash::Bits bitsDontcare,
 										CSmash::Bits bitsExclude)
 {
-   double dSaveDirection = m_rotation.y;
+   double dSaveDirection = rotation.y;
 
 	// Don't adjust shooting angle if shooting on the run
 	if (m_state != State_ShootRun)
@@ -3669,54 +3669,54 @@ void CDoofus::ShootWeapon(CSmash::Bits bitsInclude,
 		{
 			case 0:
 			case 1:
-            m_rotation.y = rspMod360(m_dShootAngle - 8 + (GetRandom() % 17));
+            rotation.y = rspMod360(m_dShootAngle - 8 + (GetRandom() % 17));
 				break;
 
 			case 2:
-            m_rotation.y = rspMod360(m_dShootAngle - 7 + (GetRandom() % 15));
+            rotation.y = rspMod360(m_dShootAngle - 7 + (GetRandom() % 15));
 				break;
 
 			case 3:
-            m_rotation.y = rspMod360(m_dShootAngle - 6 + (GetRandom() % 13));
+            rotation.y = rspMod360(m_dShootAngle - 6 + (GetRandom() % 13));
 				break;
 
 			case 4:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 6 + (GetRandom() % 13));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 6 + (GetRandom() % 13));
 				break;
 
 			case 5:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 5 + (GetRandom() % 11));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 5 + (GetRandom() % 11));
 				break;
 
 			case 6:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 4 + (GetRandom() % 9));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 4 + (GetRandom() % 9));
 				break;
 
 			case 7:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 6 + (GetRandom() % 13));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 6 + (GetRandom() % 13));
 				break;
 
 			case 8:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 5 + (GetRandom() % 11));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 5 + (GetRandom() % 11));
 				break;
 
 			case 9:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 4 + (GetRandom() % 9));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 4 + (GetRandom() % 9));
 				break;
 
 			case 10:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 3 + (GetRandom() % 7));
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = rspMod360(FindDirection() - 3 + (GetRandom() % 7));
 				break;
 
 			case 11:
 			default:
-            m_rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = FindDirection();
+            rotation.y = m_dAnimRot = m_dShootAngle = dSaveDirection = FindDirection();
 				break;
 		}
 	}
 	else
 	{
-      m_rotation.y = m_dShootAngle;
+      rotation.y = m_dShootAngle;
 	}
 /*
 	// Allow rockets to hit other enemies, but still not the special barrel type
@@ -3731,7 +3731,7 @@ void CDoofus::ShootWeapon(CSmash::Bits bitsInclude,
 									  0,
 									  CSmash::Bad | CSmash::Ducking | CSmash::AlmostDead);
 
-   m_rotation.y = dSaveDirection;
+   rotation.y = dSaveDirection;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3862,9 +3862,9 @@ void CDoofus::PositionSmash(void)
 	if (m_state != State_Writhing)
 		{
 		// Update sphere.
-      m_smash.m_sphere.sphere.X			= m_position.x;
-      m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
-      m_smash.m_sphere.sphere.Z			= m_position.z;
+      m_smash.m_sphere.sphere.X			= position.x;
+      m_smash.m_sphere.sphere.Y			= position.y + m_sRadius;
+      m_smash.m_sphere.sphere.Z			= position.z;
       m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 		}
 	else
@@ -3883,23 +3883,23 @@ void CDoofus::PositionSmash(void)
             dVitalOrganZ);												// Out: Point speicfied.			// Update execution point via link point.
 
 			// Offset from hotspot to set collision sphere position.
-         m_smash.m_sphere.sphere.X			= m_position.x + dVitalOrganX;
-         m_smash.m_sphere.sphere.Y			= m_position.y + dVitalOrganY;
-         m_smash.m_sphere.sphere.Z			= m_position.z + dVitalOrganZ;
+         m_smash.m_sphere.sphere.X			= position.x + dVitalOrganX;
+         m_smash.m_sphere.sphere.Y			= position.y + dVitalOrganY;
+         m_smash.m_sphere.sphere.Z			= position.z + dVitalOrganZ;
          m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 			}
 		else
 			{
-         ASSERT(m_rotation.y >= 0);
-         ASSERT(m_rotation.y < 360);
+         ASSERT(rotation.y >= 0);
+         ASSERT(rotation.y < 360);
 			// Try to find center.
 			// Let's go a radius up their torso.  Say... .
-         // This only looks decent if m_rotation.y is the direction they fell which is
+         // This only looks decent if rotation.y is the direction they fell which is
 			// not always the case.
          int16_t	sPseudoCenter	= m_sRadius;
-         m_smash.m_sphere.sphere.X			= m_position.x + COSQ[int16_t(m_rotation.y)] * sPseudoCenter;
-         m_smash.m_sphere.sphere.Y			= m_position.y + m_sRadius;
-         m_smash.m_sphere.sphere.Z			= m_position.z - SINQ[int16_t(m_rotation.y)] * sPseudoCenter;
+         m_smash.m_sphere.sphere.X			= position.x + COSQ[int16_t(rotation.y)] * sPseudoCenter;
+         m_smash.m_sphere.sphere.Y			= position.y + m_sRadius;
+         m_smash.m_sphere.sphere.Z			= position.z - SINQ[int16_t(rotation.y)] * sPseudoCenter;
          m_smash.m_sphere.sphere.lRadius	= m_sRadius;
 			}
 		}
@@ -3956,7 +3956,7 @@ bool CDoofus::WhileHoldingWeapon(	// Returns true when weapon is released.
 				case 10:
 				case 11:
 				default:
-               m_rotation.y = m_dAnimRot = m_dShootAngle = rspMod360(FindDirection());
+               rotation.y = m_dAnimRot = m_dShootAngle = rspMod360(FindDirection());
 					break;
 			}
 		}

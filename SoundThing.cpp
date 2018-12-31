@@ -236,9 +236,9 @@ int16_t CSoundThing::Load(								// Returns 0 if successfull, non-zero otherwis
 			case 36:
 			case 35:
 			case 34:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 			case 33:
 			case 32:
 			case 31:
@@ -317,9 +317,9 @@ int16_t CSoundThing::Save(										// Returns 0 if successfull, non-zero otherw
 		pFile->Write(m_lNumLoopBacks			);
 		pFile->Write(m_lLoopBackTo				);
 		pFile->Write(m_lLoopBackFrom			);
-      pFile->Write(m_position.x);
-      pFile->Write(m_position.y);
-      pFile->Write(m_position.z);
+      pFile->Write(position.x);
+      pFile->Write(position.y);
+      pFile->Write(position.z);
 		pFile->Write(m_lVolumeHalfLife);
 		pFile->Write((int32_t)m_bInitiallyEnabled);
 		pFile->Write((int32_t)m_bInitiallyRepeats);
@@ -423,7 +423,7 @@ void CSoundThing::Update(void)
 																									// Does not fail.
 						m_id,																		// In:  Identifier of sample you want played.
 						SampleMaster::Ambient,												// In:  Sound Volume Category for user adjustment
-                  DistanceToVolume(m_position.x, m_position.y, m_position.z, m_lVolumeHalfLife),	// In:  Initial Sound Volume (0 - 255)
+                  DistanceToVolume(position.x, position.y, position.z, m_lVolumeHalfLife),	// In:  Initial Sound Volume (0 - 255)
 						&m_siChannel,															// Out: Handle for adjusting sound volume
 						&lSampleDuration,														// Out: Sample duration in ms, if not nullptr.
 						lLoopStartTime,														// In:  Where to loop back to in milliseconds.                
@@ -496,7 +496,7 @@ void CSoundThing::Update(void)
 				}
 			
 			// Relay our volume (we act as just another satellite).
-         RelayVolume(DistanceToVolume(m_position.x, m_position.y, m_position.z, m_lVolumeHalfLife) );
+         RelayVolume(DistanceToVolume(position.x, position.y, position.z, m_lVolumeHalfLife) );
 			}
 
 		// If time to stop looping . . .
@@ -542,9 +542,9 @@ int16_t CSoundThing::EditNew(									// Returns 0 if successfull, non-zero othe
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
 	sResult	= EditModify();
 
@@ -837,9 +837,9 @@ int16_t CSoundThing::EditMove(									// Returns 0 if successfull, non-zero oth
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 	{
-   m_position.x = sX;
-   m_position.y = sY;
-   m_position.z = sZ;
+   position.x = sX;
+   position.y = sY;
+   position.z = sZ;
 
    return SUCCESS;
 	}
@@ -851,7 +851,7 @@ int16_t CSoundThing::EditMove(									// Returns 0 if successfull, non-zero oth
 void CSoundThing::EditRect(	// Returns nothiing.
 	RRect*	prc)				// Out: Clickable pos/area of object.
 	{
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      prc->sX, prc->sY);
 
 	prc->sW	= 10;	// Safety.
@@ -903,17 +903,17 @@ void CSoundThing::EditRender(void)
    // Setup simple, non-animating sprite
   flags.clear();
 
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       m_sX2, m_sY2);
 
 	// Priority is based on bottom edge of sprite
-   m_sPriority = m_position.z;
+   m_sPriority = position.z;
 
 	// Center on image.
    m_sX2	-= m_pImage->m_sWidth / 2;
    m_sY2	-= m_pImage->m_sHeight;
 
-   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
    Object::enqueue(SpriteUpdate); // Update sprite in scene
 	}

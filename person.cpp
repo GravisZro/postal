@@ -317,8 +317,8 @@ extern bool demoCompat;
 CPerson::CPerson(void)
 {
   m_sSuspend = 0;
-  m_rotation.y = 0;
-  m_position.x = m_position.y = m_position.z = m_dVel = m_dAcc = 0;
+  rotation.y = 0;
+  position.x = position.y = position.z = m_dVel = m_dAcc = 0;
   m_ePersonType = Personatorium::Grenader;
   m_eWeaponType = CGrenadeID;
   m_panimCur = m_panimPrev = nullptr;
@@ -498,7 +498,7 @@ int16_t CPerson::Init(void)
 
 	// Init other stuff
 	m_dVel = 0.0;						 
-   m_rotation.y = 0.0;
+   rotation.y = 0.0;
 	// Set to different starting state based on the design of the animation, but
 	// for now, ok.  Then also set his current animation.
 	m_state = CCharacter::State_Guard;
@@ -797,9 +797,9 @@ void CPerson::Update(void)
 		}	
 
 		// Update the avoidance smash
-      m_smashAvoid.m_sphere.sphere.X = m_position.x + (rspCos(m_rotation.y) * ms_lAvoidRadius);
-      m_smashAvoid.m_sphere.sphere.Y = m_position.y;
-      m_smashAvoid.m_sphere.sphere.Z = m_position.z - (rspSin(m_rotation.y) * ms_lAvoidRadius);
+      m_smashAvoid.m_sphere.sphere.X = position.x + (rspCos(rotation.y) * ms_lAvoidRadius);
+      m_smashAvoid.m_sphere.sphere.Y = position.y;
+      m_smashAvoid.m_sphere.sphere.Z = position.z - (rspSin(rotation.y) * ms_lAvoidRadius);
 
 		// Determine appropriate position for main smash.
 		PositionSmash();
@@ -870,15 +870,15 @@ void CPerson::EditRender(void)
 
 void CPerson::Logic_Writhing(void)
 {
-//	m_dAnimRot = m_rotation.y;
+//	m_dAnimRot = rotation.y;
 
 	CDoofus::Logic_Writhing();
 
 //	if (m_ePersonType == Personatorium::Cop || m_ePersonType == Personatorium::Gunner)
 	if (g_apersons[m_ePersonType].eWrithingMotion != Personatorium::Still)
 	{
-      double dX = m_position.x;
-      double dZ = m_position.z;
+      double dX = position.x;
+      double dZ = position.z;
 		double dNewX;
 		double dNewY;
 		double dNewZ;
@@ -891,9 +891,9 @@ void CPerson::Logic_Writhing(void)
 		{
 		// Update Values /////////////////////////////////////////////////////////
 
-         m_position.x	= dNewX;
-         m_position.y	= dNewY;
-         m_position.z	= dNewZ;
+         position.x	= dNewX;
+         position.y	= dNewY;
+         position.z	= dNewZ;
 
 			UpdateFirePosition();
 		}
@@ -909,14 +909,14 @@ void CPerson::Logic_Writhing(void)
       int16_t	sRadius			= m_sRadius;
 		// Determine pseudo-head point.
 		int16_t	sRot				= rspMod360(m_dAnimRot);
-      int16_t	sPseudoHeadX	= m_position.x + COSQ[sRot] * sRadius;
-      int16_t	sPseudoHeadY	= m_position.z - SINQ[sRot] * sRadius;
+      int16_t	sPseudoHeadX	= position.x + COSQ[sRot] * sRadius;
+      int16_t	sPseudoHeadY	= position.z - SINQ[sRot] * sRadius;
 		// Check pseudo-head point.
 		uint16_t	u16Attrib	= 0;	// Safety.
 		int16_t	sHeight		= 0;	// Safety.
       GetFloorAttributes(sPseudoHeadX, sPseudoHeadY, u16Attrib, sHeight);
-      if ( (u16Attrib & REALM_ATTR_NOT_WALKABLE) || sHeight > m_position.y + WRITHING_VERTICAL_TOLERANCE
-         || (dX == m_position.x && dZ == m_position.z) )
+      if ( (u16Attrib & REALM_ATTR_NOT_WALKABLE) || sHeight > position.y + WRITHING_VERTICAL_TOLERANCE
+         || (dX == position.x && dZ == position.z) )
 		{
 			// Die real soon.
 			m_stockpile.m_sHitPoints	= 0;
@@ -928,8 +928,8 @@ void CPerson::Logic_Writhing(void)
 				// If they are supposed to push themselves on their back, then the
 				// animation angle and the direction angle need to be 180 degrees
 				// apart.
-            if (m_rotation.y != rspMod360(m_dAnimRot + 180))
-               m_rotation.y = rspMod360(m_dAnimRot + 180);
+            if (rotation.y != rspMod360(m_dAnimRot + 180))
+               rotation.y = rspMod360(m_dAnimRot + 180);
 			}	
 		}
 #else
@@ -942,18 +942,18 @@ void CPerson::Logic_Writhing(void)
 			// and it looks weird.
 			m_stockpile.m_sHitPoints = 0;
 	
-         if (m_rotation.y != rspMod360(m_dAnimRot + 180))
-            m_rotation.y = rspMod360(m_dAnimRot + 180);
+         if (rotation.y != rspMod360(m_dAnimRot + 180))
+            rotation.y = rspMod360(m_dAnimRot + 180);
 	#else
-         if (dX == m_position.x && dZ == m_position.z)
+         if (dX == position.x && dZ == position.z)
 			{
 				// This is a sort of randomness that will make some turn left and
 				// others turn right depending on if their rotation is even or odd.
-            if (((int16_t) m_rotation.y) & 0x01)
-               m_rotation.y = rspMod360(m_rotation.y - 20);
+            if (((int16_t) rotation.y) & 0x01)
+               rotation.y = rspMod360(rotation.y - 20);
 				else
-               m_rotation.y = rspMod360(m_rotation.y + 20);
-            m_dAnimRot = rspMod360(m_rotation.y + 180);
+               rotation.y = rspMod360(rotation.y + 20);
+            m_dAnimRot = rspMod360(rotation.y + 180);
 			}
 	#endif
 		}
@@ -961,7 +961,7 @@ void CPerson::Logic_Writhing(void)
 		{
 			// If he didn't move at all, then turn him so he will
 			// avoid the wall
-         if (dX == m_position.x && dZ == m_position.z)
+         if (dX == position.x && dZ == position.z)
 			{
 	#if 1
 				// If he hits something, just make him die since his hotspot
@@ -971,10 +971,10 @@ void CPerson::Logic_Writhing(void)
 	#else
 				// This is a sort of randomness that will make some turn left and
 				// others turn right depending on if their rotation is even or odd.
-            if (((int16_t) m_rotation.y) & 0x01)
-               m_dAnimRot = m_dShootAngle = m_rotation.y = rspMod360(m_rotation.y - 20);
+            if (((int16_t) rotation.y) & 0x01)
+               m_dAnimRot = m_dShootAngle = rotation.y = rspMod360(rotation.y - 20);
 				else
-               m_dAnimRot = m_dShootAngle = m_rotation.y = rspMod360(m_rotation.y + 20);
+               m_dAnimRot = m_dShootAngle = rotation.y = rspMod360(rotation.y + 20);
 	#endif
 			}
 		}

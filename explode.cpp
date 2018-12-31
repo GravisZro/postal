@@ -296,7 +296,7 @@ void CExplode::Update(void)
 			{
            managed_ptr<CFire> pSmoke = realm()->AddThing<CFire>();
             if (pSmoke)
-               pSmoke->Setup(m_position.x - 4 + GetRandom() % 9, MAX(m_position.y-20, 0.0), m_position.z - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
+               pSmoke->Setup(position.x - 4 + GetRandom() % 9, MAX(position.y-20, 0.0), position.z - 4 + GetRandom() % 9, 4000, true, CFire::Smoke);
 			}
 
          Object::enqueue(SelfDestruct);
@@ -316,16 +316,16 @@ void CExplode::Render(void)
 	if (pAnim)
    {
 		// Map from 3d to 2d coords
-//		m_sX2 = m_position.x + pAnim->m_sX;
-//		m_sY2 = m_position.z + pAnim->m_sY;
-      realm()->Map3Dto2D(m_position.x + pAnim->m_sX, m_position.y, m_position.z + pAnim->m_sY,
+//		m_sX2 = position.x + pAnim->m_sX;
+//		m_sY2 = position.z + pAnim->m_sY;
+      realm()->Map3Dto2D(position.x + pAnim->m_sX, position.y, position.z + pAnim->m_sY,
                          m_sX2, m_sY2);
 
 		// Priority is based on our Z position.
-      m_sPriority = m_position.z;
+      m_sPriority = position.z;
 
 		// Layer should be based on info we get from attribute map.
-      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+      m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
 		// Copy the color info and the alpha channel to the Alpha Sprite
       m_pImage = &(pAnim->m_imColor);
@@ -350,9 +350,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
    m_lPrevTime = realm()->m_time.GetGameTime();
 	m_lTimer = 0;
    m_shooter = shooter;
@@ -361,9 +361,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	sResult = GetResources(sAnim);
 
 		// Update sphere.
-   m_smash.m_sphere.sphere.X			= m_position.x;
-   m_smash.m_sphere.sphere.Y			= m_position.y;
-   m_smash.m_sphere.sphere.Z			= m_position.z;
+   m_smash.m_sphere.sphere.X			= position.x;
+   m_smash.m_sphere.sphere.Y			= position.y;
+   m_smash.m_sphere.sphere.Z			= position.z;
 	m_smash.m_sphere.sphere.lRadius	= ms_sBlastRadius;
 
 	// Update the smash.
@@ -379,9 +379,9 @@ int16_t CExplode::Setup(									// Returns 0 if successfull, non-zero otherwise
 	msg.msg_Explosion.eType = typeExplosion;
 	msg.msg_Explosion.sPriority = 0;
 	msg.msg_Explosion.sDamage = 100;
-   msg.msg_Explosion.sX = (int16_t) m_position.x;
-   msg.msg_Explosion.sY = (int16_t) m_position.y;
-   msg.msg_Explosion.sZ = (int16_t) m_position.z;
+   msg.msg_Explosion.sX = (int16_t) position.x;
+   msg.msg_Explosion.sY = (int16_t) position.y;
+   msg.msg_Explosion.sZ = (int16_t) position.z;
 	msg.msg_Explosion.sVelocity = ms_sProjectVelocity;
    msg.msg_Explosion.shooter = m_shooter;
 	realm()->m_smashatorium.QuickCheckReset(
@@ -414,9 +414,9 @@ int16_t CExplode::EditNew(									// Returns 0 if successfull, non-zero otherwi
 	int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 	m_lTimer = realm()->m_time.GetGameTime() + 1000;
 	m_lPrevTime = realm()->m_time.GetGameTime();
 
@@ -444,9 +444,9 @@ int16_t CExplode::EditMove(									// Returns 0 if successfull, non-zero otherw
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
 	return SUCCESS;
 }

@@ -106,9 +106,9 @@ int16_t CGoalTimer::Load(							// Returns 0 if successfull, non-zero otherwise
 		{
 			default:
 			case 1:
-            pFile->Read(&m_position.x);
-            pFile->Read(&m_position.y);
-            pFile->Read(&m_position.z);
+            pFile->Read(&position.x);
+            pFile->Read(&position.y);
+            pFile->Read(&position.z);
 				pFile->Read(&m_lTimerMS);
 				pFile->Read(&m_sKillGoal);
 				pFile->Read(&m_sUpDown);
@@ -155,9 +155,9 @@ int16_t CGoalTimer::Save(										// Returns 0 if successfull, non-zero otherwi
 	}
 
 	// Save object data
-   pFile->Write(&m_position.x);
-   pFile->Write(&m_position.y);
-   pFile->Write(&m_position.z);
+   pFile->Write(&position.x);
+   pFile->Write(&position.y);
+   pFile->Write(&position.z);
 	pFile->Write(&m_lTimerMS);
 	pFile->Write(&m_sKillGoal);
 	pFile->Write(&m_sUpDown);
@@ -172,7 +172,7 @@ int16_t CGoalTimer::Save(										// Returns 0 if successfull, non-zero otherwi
 void CGoalTimer::Startup(void)								// Returns 0 if successfull, non-zero otherwise
 {
 	// At this point we can assume the CHood was loaded, so we init our height
-   m_position.y = realm()->GetHeight((int16_t) m_position.x, (int16_t) m_position.z);
+   position.y = realm()->GetHeight((int16_t) position.x, (int16_t) position.z);
 }
 
 
@@ -225,9 +225,9 @@ int16_t CGoalTimer::EditNew(									// Returns 0 if successfull, non-zero other
    int16_t sResult = SUCCESS;
 	
 	// Use specified position
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
 	// Load resources
 	sResult = GetResources();
@@ -348,9 +348,9 @@ int16_t CGoalTimer::EditMove(									// Returns 0 if successfull, non-zero othe
 	int16_t sY,												// In:  New y coord
 	int16_t sZ)												// In:  New z coord
 {
-   m_position.x = (double)sX;
-   m_position.y = (double)sY;
-   m_position.z = (double)sZ;
+   position.x = (double)sX;
+   position.y = (double)sY;
+   position.z = (double)sZ;
 
    return SUCCESS;
 }
@@ -373,18 +373,18 @@ void CGoalTimer::EditRender(void)
    flags.clear();
 
 	// Map from 3d to 2d coords
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       m_sX2, m_sY2);
 
 	// Priority is based on bottom edge of sprite
-   m_sPriority = m_position.z;
+   m_sPriority = position.z;
 
 	// Center on image.
    m_sX2	-= m_pImage->m_sWidth / 2;
    m_sY2	-= m_pImage->m_sHeight;
 
 	// Layer should be based on info we get from attribute map.
-   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) m_position.x, (int16_t) m_position.z));
+   m_sLayer = CRealm::GetLayerViaAttrib(realm()->GetLayer((int16_t) position.x, (int16_t) position.z));
 
    Object::enqueue(SpriteUpdate); // Update sprite in scene
 }
@@ -394,7 +394,7 @@ void CGoalTimer::EditRender(void)
 ////////////////////////////////////////////////////////////////////////////////
 void CGoalTimer::EditRect(RRect* pRect)
 {
-  realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+  realm()->Map3Dto2D(position.x, position.y, position.z,
                      pRect->sX, pRect->sY);
 
 	pRect->sW	= 10;	// Safety.

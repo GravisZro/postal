@@ -19,6 +19,8 @@
 #include "smash.h" 
 #include "realm.h"
 
+#include <newpix/sprite_base.h>
+
 //#define SMASH_DEBUG
 
 #ifdef	SMASH_DEBUG

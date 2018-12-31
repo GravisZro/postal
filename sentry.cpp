@@ -227,8 +227,8 @@ static RP3d ms_apt3dAttribCheck[] =
 CSentry::CSentry(void)
 {
   m_sSuspend = 0;
-  m_rotation.y = 0;
-  m_position.x = m_position.y = m_position.z = m_dVel = m_dAcc = 0;
+  rotation.y = 0;
+  position.x = position.y = position.z = m_dVel = m_dAcc = 0;
   m_panimCur = m_panimPrev = nullptr;
   m_panimCurBase	= nullptr;
   m_sNumRounds = 0;
@@ -334,12 +334,12 @@ int16_t CSentry::Save(										// Returns 0 if successfull, non-zero otherwise
 	int16_t sFileCount)										// In:  File count (unique per file, never 0)
 {
 	// Swap the hotspot we want to save in.
-   double dTempX = m_position.x;
-   double dTempY = m_position.y;
-   double dTempZ = m_position.z;
-   m_position.x = m_base.x;
-   m_position.y = m_base.y;
-   m_position.z = m_base.z;
+   double dTempX = position.x;
+   double dTempY = position.y;
+   double dTempZ = position.z;
+   position.x = m_base.x;
+   position.y = m_base.y;
+   position.z = m_base.z;
 
 	int16_t sResult;
 
@@ -380,9 +380,9 @@ int16_t CSentry::Save(										// Returns 0 if successfull, non-zero otherwise
 		sResult = FAILURE;
 	}
 
-   m_position.x = dTempX;
-   m_position.y = dTempY;
-   m_position.z = dTempZ;
+   position.x = dTempX;
+   position.y = dTempY;
+   position.z = dTempZ;
 
 	return sResult;
 }
@@ -409,8 +409,8 @@ void CSentry::Render(void)
       m_trans.makeIdentity();
 //		m_transBase.makeIdentity(); Not currently needed since the base does not change its transform.
 
-      m_trans.Ry(rspMod360(m_rotation.y) );
-      m_trans.Rz(rspMod360(m_rotation.z) );
+      m_trans.Ry(rspMod360(rotation.y) );
+      m_trans.Rz(rspMod360(rotation.z) );
 
 		// Map from 3d to 2d coords
       realm()->Map3Dto2D(m_base.x, m_base.y, m_base.z,
@@ -459,7 +459,7 @@ int16_t CSentry::Init(void)
 
 	// Init other stuff
 	m_dVel = 0.0;
-   m_rotation.y = 0.0;
+   rotation.y = 0.0;
 	m_dShootAngle = 0.0;
 	// Set to different starting state based on the design of the animation, but
 	// for now, ok.  Then also set his current animation.
@@ -484,7 +484,7 @@ int16_t CSentry::Init(void)
    m_spriteBase.m_psphere = & m_panimCurBase->m_pbounds->atTime(m_lAnimTime);
    m_spriteBase.m_ptrans = & m_panimCurBase->m_ptransRigid->atTime(m_lAnimTime);
 
-   // Update base and turret position via m_position.x, Y, & Z.
+   // Update base and turret position via position.x, Y, & Z.
 	UpdatePosition();
 
 	m_stockpile.m_sHitPoints = ms_sHitLimit;
@@ -499,14 +499,14 @@ int16_t CSentry::Init(void)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Position the base and turret based on m_position.x, Y, & Z.
+// Position the base and turret based on position.x, Y, & Z.
 ////////////////////////////////////////////////////////////////////////////////
 void CSentry::UpdatePosition(void)
 	{
 	// Move Base and Turret into position
-   m_base.x = m_position.x;
-   m_base.y = m_position.y;
-   m_base.z = m_position.z;
+   m_base.x = position.x;
+   m_base.y = position.y;
+   m_base.z = position.z;
 
 	if (m_panimCurBase != nullptr)
 		{
@@ -525,9 +525,9 @@ void CSentry::UpdatePosition(void)
 		// Get last transition position by mapping origin.
       realm()->Scene()->TransformPtsToRealm(&transChildAbsolute, &pt3Src, &pt3Dst, 1);
 		// Set child position to character's position offset by rigid body's realm offset.
-      m_position.x = m_base.x + pt3Dst.x();
-      m_position.y = m_base.y + pt3Dst.y();
-      m_position.z = m_base.z + pt3Dst.z();
+      position.x = m_base.x + pt3Dst.x();
+      position.y = m_base.y + pt3Dst.y();
+      position.z = m_base.z + pt3Dst.z();
 		}
 	}
 
@@ -623,8 +623,8 @@ void CSentry::Update(void)
 				SelectDude();
 
 				sTargetAngle = CDoofus::FindDirection();
-            sAngleCCL = rspMod360(sTargetAngle - m_rotation.y);
-            sAngleCL  = rspMod360((360 - sTargetAngle) + m_rotation.y);
+            sAngleCCL = rspMod360(sTargetAngle - rotation.y);
+            sAngleCL  = rspMod360((360 - sTargetAngle) + rotation.y);
 				sAngleDistance = MIN(sAngleCCL, sAngleCL);
 				// Calculate the amount it can turn this time.
 				dRotDistance = dSeconds * m_dAngularVelocity;
@@ -638,17 +638,17 @@ void CSentry::Update(void)
 				// Rotate Counter Clockwise
 				{
 					m_dShootAngle = rspMod360(m_dShootAngle + dRotDistance);
-               m_rotation.y = m_dAnimRot = m_dShootAngle;
+               rotation.y = m_dAnimRot = m_dShootAngle;
 				}
 				else
 				// Rotate Clockwise
 				{
 					m_dShootAngle = rspMod360(m_dShootAngle - dRotDistance);
-               m_rotation.y = m_dAnimRot = m_dShootAngle;
+               rotation.y = m_dAnimRot = m_dShootAngle;
 				}
 
 				// Turn to him directly for now.
-//				m_rotation.y = m_dAnimRot = m_dShootAngle = CDoofus::FindDirection();
+//				rotation.y = m_dAnimRot = m_dShootAngle = CDoofus::FindDirection();
 				lSqDistanceToDude = CDoofus::SQDistanceToDude();
 
 				if (bShootThisTime && 
@@ -691,7 +691,7 @@ void CSentry::Update(void)
 					{
 						if (lThisTime > m_lTimer && m_sNumRounds > 0)
 						{
-                     m_dShootAngle = m_rotation.y;
+                     m_dShootAngle = rotation.y;
 							PrepareWeapon();
 							ShootWeapon(ms_u32WeaponIncludeBits, ms_u32WeaponDontcareBits, ms_u32WeaponExcludeBits);
 							m_sNumRounds--;
@@ -790,13 +790,13 @@ int16_t CSentry::EditMove(int16_t sX, int16_t sY, int16_t sZ)
 void CSentry::EditRect(RRect* pRect)
 	{
 	// Swap the hotspot and anim we want to get the rect of in.
-   double dTempX = m_position.x;
-   double dTempY = m_position.y;
-   double dTempZ = m_position.z;
+   double dTempX = position.x;
+   double dTempY = position.y;
+   double dTempZ = position.z;
 	
-   m_position.x = m_base.x;
-   m_position.y = m_base.y;
-   m_position.z = m_base.z;
+   position.x = m_base.x;
+   position.y = m_base.y;
+   position.z = m_base.z;
 
 	CAnim3D*	panimTemp	= m_panimCur;
 
@@ -806,9 +806,9 @@ void CSentry::EditRect(RRect* pRect)
 	CDoofus::EditRect(pRect);
 
 	// Restore.
-   m_position.x	= dTempX;
-   m_position.y	= dTempY;
-   m_position.z	= dTempZ;
+   position.x	= dTempX;
+   position.y	= dTempY;
+   position.z	= dTempZ;
 
 	m_panimCur	= panimTemp;
 	}
@@ -829,7 +829,7 @@ void CSentry::EditHotSpot(			// Returns nothiing.
 	// Get 2D hotspot.
 	int16_t	sX;
 	int16_t	sY;
-   realm()->Map3Dto2D(m_position.x, m_position.y, m_position.z,
+   realm()->Map3Dto2D(position.x, position.y, position.z,
                       sX, sY);
 
 	// Get relation.
@@ -1043,12 +1043,12 @@ void CSentry::OnShotMsg(Shot_Message* pMessage)
 
 	// X/Z position depends on angle of shot (it is opposite).
 	int16_t	sDeflectionAngle	= rspMod360(pMessage->sAngle + 180);
-   double	dHitX	= m_position.x + COSQ[sDeflectionAngle] * HULL_RADIUS + RAND_SWAY(4);
-   double	dHitZ	= m_position.z - SINQ[sDeflectionAngle] * HULL_RADIUS + RAND_SWAY(4);
+   double	dHitX	= position.x + COSQ[sDeflectionAngle] * HULL_RADIUS + RAND_SWAY(4);
+   double	dHitZ	= position.z - SINQ[sDeflectionAngle] * HULL_RADIUS + RAND_SWAY(4);
 	StartAnim(
 		SENTRY_HIT_RES_NAME, 
 		dHitX, 
-      m_position.y + RAND_SWAY(10),
+      position.y + RAND_SWAY(10),
 		dHitZ,
 		false);
 

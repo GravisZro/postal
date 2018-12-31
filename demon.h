@@ -32,7 +32,7 @@
 //
 //		07/21/97	JMI	Added GetX(), GetY(), and GetZ().	
 //
-//		08/01/97	JMI	Demon would set his position (m_position.x, Y, Z) when first
+//		08/01/97	JMI	Demon would set his position (position.x, Y, Z) when first
 //							created but, since he never Save()d or Load()ed it, he
 //							was in an unitialized position when loaded into a level.
 //
