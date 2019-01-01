@@ -174,20 +174,6 @@ double CFirebomb::ms_dThrowHorizVel = 250;				// Throw out at this velocity
 // Let this auto-init to 0
 int16_t CFirebomb::ms_sFileCount;
 
-/// Grenade Animation Files
-// An array of pointers to res names (one for each animatino component)
-static const char* ms_apszResNames[] =
-{
-	"3d/grenade.sop",
-	"3d/grenade.mesh",
-	"3d/grenade.tex",
-	"3d/grenade.hot",
-	"3d/grenade.bounds",
-	"3d/grenade.floor",
-	nullptr,
-	nullptr
-};
-
 
 CFirebomb::CFirebomb(void)
 {
@@ -438,7 +424,7 @@ void CFirebomb::Render(void)
    flags.Hidden = m_eState == State_Hide;
 
 	// If we're not a child of someone else...
-   if (!parent())
+   if (!isChild())
 	{
 		// Map from 3d to 2d coords
      realm()->Map3Dto2D(position.x, position.y, position.z,
@@ -500,26 +486,9 @@ int16_t CFirebomb::Setup(									// Returns 0 if successfull, non-zero otherwis
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFirebomb::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
-	sResult = m_anim.Get(ms_apszResNames);
-	if (sResult == SUCCESS)
-	{
-		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
-		if (sResult == SUCCESS)
-		{
-			// add more gets
-		}
-		else
-		{
-			TRACE("CGrenade::GetResources - Failed to open 2D shadow image\n");
-		}
-	}
-	else
-	{
-		TRACE("CFirebomb::GetResources - Failed to open 3D animation for firebomb\n");
-	}
-	return sResult;
+  bool bResult = m_anim.Get("grenade");
+  bResult &= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian) == SUCCESS;
+  return bResult ? SUCCESS : FAILURE;
 }
 
 
@@ -542,15 +511,15 @@ int16_t CFirebomb::FreeResources(void)						// Returns 0 if successfull, non-zer
 int16_t CFirebomb::Preload(
 	CRealm* prealm)				// In:  Calling realm.
 {
-	CAnim3D anim;	
-	RImage* pimage;
-	int16_t sResult = anim.Get(ms_apszResNames);
-	anim.Release();
-	rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian);
-	rspReleaseResource(&g_resmgrGame, &pimage);
-	CacheSample(g_smidFirebomb);
-	CacheSample(g_smidFireLarge);
-	return sResult;	
+  CAnim3D anim;
+  RImage* pimage;
+  bool bResult = anim.Get("grenade");
+  anim.Release();
+  bResult &= rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian) == SUCCESS;
+  rspReleaseResource(&g_resmgrGame, &pimage);
+  CacheSample(g_smidFirebomb);
+  CacheSample(g_smidFireLarge);
+  return bResult ? SUCCESS : FAILURE;
 }
 
 

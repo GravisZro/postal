@@ -69,8 +69,6 @@
 
 #define SMALL_SHADOW_FILE	"smallshadow.img"
 
-#define RES_BASE_NAME		"3d/missile"
-
 // Define this if you want the empty missile casing (when there's no final 
 // explosive power) to become a powerup flung through the air from the point
 // at which it runs out of fuel.
@@ -483,7 +481,7 @@ void CDeathWad::Render(void)
    flags.Hidden = m_eState == State_Hide || m_bInsideTerrain;
 
 	// If we're not a child of someone else...
-   if (!parent())
+   if (!isChild())
 	{
 		// Map from 3d to 2d coords
      realm()->Map3Dto2D(position.x, position.y, position.z,
@@ -546,29 +544,11 @@ int16_t CDeathWad::Setup(									// Returns 0 if successfull, non-zero otherwis
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDeathWad::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-	
-	sResult = m_anim.Get(RES_BASE_NAME, nullptr, nullptr, nullptr, 0);
-	if (sResult == SUCCESS)
-		{
-		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
-		if (sResult == SUCCESS)
-			{
-			// add more gets
-			}
-		else
-			{
-			TRACE("CGrenade::GetResources - Failed to open 2D shadow image\n");
-			}
-		}
-	else
-		{
-		TRACE("CDeathWad::GetResources - Failed to open 3D animation for deathwad projectile\n");
-		}
-	
-	return sResult;
-	}
+{
+  bool bResult = m_anim.Get("missile");
+  bResult &= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian) == SUCCESS;
+  return bResult ? SUCCESS : FAILURE;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -590,27 +570,21 @@ int16_t CDeathWad::FreeResources(void)						// Returns 0 if successfull, non-zer
 int16_t CDeathWad::Preload(
 	CRealm* prealm)				// In:  Calling realm.
 {
-	CAnim3D anim;	
-	RImage* pimage;
-	int16_t sResult = anim.Get(RES_BASE_NAME, nullptr, nullptr, nullptr, 0);
-	if (sResult == SUCCESS)
-		{
-		anim.Release();
-		}
-	
-	if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian) == SUCCESS)
-		{
-		rspReleaseResource(&g_resmgrGame, &pimage);
-		}
-	else
-		{
-		sResult = FAILURE;
-		}
+  CAnim3D anim;
+  RImage* pimage;
+  int16_t sResult = SUCCESS;
+  if (anim.Get("missile"))
+    anim.Release();
 
-	CacheSample(g_smidDeathWadLaunch);
-	CacheSample(g_smidDeathWadThrust);
-	CacheSample(g_smidDeathWadExplode);
-	return sResult;	
+  if (rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian) == SUCCESS)
+    rspReleaseResource(&g_resmgrGame, &pimage);
+  else
+    sResult = FAILURE;
+
+  CacheSample(g_smidDeathWadLaunch);
+  CacheSample(g_smidDeathWadThrust);
+  CacheSample(g_smidDeathWadExplode);
+  return sResult;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

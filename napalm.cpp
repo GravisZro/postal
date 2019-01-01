@@ -161,20 +161,6 @@ int32_t CNapalm::ms_lGrenadeFuseTime = 1500;			// Time from throw to blow
 // Let this auto-init to 0
 int16_t CNapalm::ms_sFileCount;
 
-/// Napalm Canister Animation Files
-// An array of pointers to res names (one for each animation component)
-static const char* ms_apszResNames[] =
-{
-	"3d/napalmcan.sop",
-	"3d/napalmcan.mesh",
-	"3d/napalmcan.tex",
-	"3d/napalmcan.hot",
-	"3d/napalmcan.bounds",
-	"3d/napalmcan.floor",
-	nullptr,
-	nullptr
-};
-
 
 CNapalm::CNapalm(void)
 {
@@ -489,7 +475,7 @@ void CNapalm::Render(void)
    flags.Hidden = m_eState == State_Hide;
 
 	// If we're not a child of someone else...
-   if (!parent())
+   if (!isChild())
 	{
 		// Map from 3d to 2d coords
      realm()->Map3Dto2D(position.x, position.y, position.z,
@@ -557,29 +543,11 @@ int16_t CNapalm::Setup(									// Returns 0 if successfull, non-zero otherwise
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CNapalm::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-
-	sResult = m_anim.Get(ms_apszResNames);
-	if (sResult == SUCCESS)
-	{
-		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
-		if (sResult == SUCCESS)
-		{
-			// add more gets
-		}
-		else
-		{
-			TRACE("CGrenade::GetResources - Failed to open 2D shadow image\n");
-		}
-	}										  
-	else
-	{
-		TRACE("CNapalm::GetResources - Failed to open 3D animation for napalm\n");
-	}
-
-	return sResult;
-	}
+{
+  bool bResult = m_anim.Get("napalmcan");
+  bResult &= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian) == SUCCESS;
+  return bResult ? SUCCESS : FAILURE;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -602,16 +570,16 @@ int16_t CNapalm::Preload(
 	CRealm* prealm)				// In:  Calling realm.
 	{
 	CAnim3D anim;
-	RImage* pimage;
-	int16_t sResult = anim.Get(ms_apszResNames);
+   RImage* pimage;
+   bool bResult = anim.Get("napalmcan");
 	anim.Release();
-	rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian);
+   bResult &= rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian) == SUCCESS;
 	rspReleaseResource(&g_resmgrGame, &pimage);
 	CacheSample(g_smidNapalmShot);
 	CacheSample(g_smidNapalmHit);
 	CacheSample(g_smidNapalmFire);
 	CacheSample(g_smidFireLarge);
-	return sResult;	
+   return bResult ? SUCCESS : FAILURE;
 	}
 
 

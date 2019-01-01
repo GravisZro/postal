@@ -93,11 +93,6 @@
 // Macros/types/etc.
 ////////////////////////////////////////////////////////////////////////////////
 
-#define BALL_SOP_FILE			"3d/ball.sop"
-#define BALL_MSH_FILE			"3d/ball.msh"
-#define BALL_TEX_FILE			"3d/ball.tex"
-
-#define BALL_3D_FILE				"3d/ball.dat"
 
 #define BALL_GUI_FILE			"res/editor/ball.gui"
 
@@ -114,20 +109,6 @@
 
 int16_t CBall::ms_sFileCount;
 
-/// Standing Animation Files ////////////////////////////////////////////////////
-// An array of pointers to res names (one for each animation component).
-static const char*	ms_apszAnimNames[]	=
-	{
-	"3d/main_bobbing.sop",
-	"3d/main_bobbing.mesh",
-	"3d/main_bobbing.tex",
-	"3d/main_bobbing.hot",
-	"3d/main_bobbing.bounds",
-	"3d/main_bobbing.floor",
-	nullptr,						// No rigid body for this anim.
-	nullptr						// For safety, this should ensure a crash if referenced
-								// beyond useful portion of array.
-	};
 
 CBall::CBall(void)
 {
@@ -590,15 +571,14 @@ void CBall::EditHotSpot(			// Returns nothiing.
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CBall::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-
-	sResult	= m_anim.Get(
-		ms_apszAnimNames, 
-		RChannel_LoopAtStart | RChannel_LoopAtEnd);
-
-	return sResult;
-	}
+{
+  if(m_anim.Get("main_bobbing"))
+  {
+    m_anim.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+    return SUCCESS;
+  }
+  return FAILURE;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

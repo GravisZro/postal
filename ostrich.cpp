@@ -124,118 +124,6 @@ int16_t COstrich::ms_sStartingHitPoints = 100;
 // Let this auto-init to 0
 int16_t COstrich::ms_sFileCount;
 
-/// Standing Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszStandResNames[] =
-{
-	"3d/ostrich_stand.sop",
-	"3d/ostrich_stand.mesh",
-	"3d/ostrich_stand.tex",
-	"3d/ostrich_stand.hot",
-	"3d/ostrich_stand.bounds",
-	"3d/ostrich_stand.floor",
-	nullptr,
-	nullptr	
-};
-
-/// Running Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszRunResNames[] =
-{
-	"3d/ostrich_run.sop",
-	"3d/ostrich_run.mesh",
-	"3d/ostrich_run.tex",
-	"3d/ostrich_run.hot",
-	"3d/ostrich_run.bounds",
-	"3d/ostrich_run.floor",
-	nullptr,
-	nullptr
-};
-
-/// Throwing Animation Files 
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszWalkResNames[] =
-{
-	"3d/ostrich_walk.sop",
-	"3d/ostrich_walk.mesh",
-	"3d/ostrich_walk.tex",
-	"3d/ostrich_walk.hot",
-	"3d/ostrich_walk.bounds",
-	"3d/ostrich_walk.floor",
-	nullptr,
-	nullptr
-};
-
-// Shot Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszShotResNames[] =
-{
-	"3d/ostrich_shot.sop",
-	"3d/ostrich_shot.mesh",
-	"3d/ostrich_shot.tex",
-	"3d/ostrich_shot.hot",
-	"3d/ostrich_shot.bounds",
-	"3d/ostrich_shot.floor",
-	nullptr,
-	nullptr
-};
-
-/// Blown up Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszBlownupResNames[] =
-{
-	"3d/ostrich_blownup.sop",
-	"3d/ostrich_blownup.mesh",
-	"3d/ostrich_blownup.tex",
-	"3d/ostrich_blownup.hot",
-	"3d/ostrich_blownup.bounds",
-	"3d/ostrich_blownup.floor",
-	nullptr,
-	nullptr
-};
-
-/// Hide Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszHideResNames[] =
-{
-	"3d/ostrich_hide.sop",
-	"3d/ostrich_hide.mesh",
-	"3d/ostrich_hide.tex",
-	"3d/ostrich_hide.hot",
-	"3d/ostrich_hide.bounds",
-	"3d/ostrich_hide.floor",
-	nullptr,
-	nullptr
-};
-
-/// Die Animation files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszDieResNames[] =
-{
-	"3d/ostrich_die.sop",
-	"3d/ostrich_die.mesh",
-	"3d/ostrich_die.tex",
-	"3d/ostrich_die.hot",
-	"3d/ostrich_die.bounds",
-	"3d/ostrich_die.floor",
-	nullptr,
-	nullptr
-};
-
-#ifdef UNUSED_VARIABLES
-// These are the points that are checked on the attribute map relative to his origin
-static RP3d ms_apt3dAttribCheck[] =
-{
-	{-6, 0, -6},
-	{ 0, 0, -6},
-	{ 6, 0, -6},
-	{-6, 0,  6},
-	{ 0, 0,  6},
-	{ 6, 0,  6},
-};
-#endif
-
-
 COstrich::COstrich(void)
 {
   m_sRotDirection = 0;
@@ -706,67 +594,23 @@ int16_t COstrich::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t COstrich::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
+  bool bResult = true;
 
-	sResult = m_animRun.Get(ms_apszRunResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sResult == SUCCESS)
-	{
-		sResult = m_animStand.Get(ms_apszStandResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-		if (sResult == SUCCESS)
-		{
-			sResult = m_animWalk.Get(ms_apszWalkResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-			if (sResult == SUCCESS)
-			{
-				sResult = m_animShot.Get(ms_apszShotResNames);
-				if (sResult == SUCCESS)
-				{
-					sResult = m_animBlownup.Get(ms_apszBlownupResNames);
-					if (sResult == SUCCESS)
-					{
-						sResult = m_animHide.Get(ms_apszHideResNames);
-						if (sResult == SUCCESS)
-						{
-							sResult = m_animDie.Get(ms_apszDieResNames);
-							if (sResult == SUCCESS)
-							{
-								// Add more anim gets here if necessary
-							}
-							else
-							{
-								TRACE("COstrich::GetResources - Failed to open 3D die animation\n");
-							}
-						}
-						else
-						{
-							TRACE("COstrich::GetResources - Failed to open 3D hide animation\n");
-						}
-					}
-					else
-					{
-						TRACE("COstrich::GetResources - Failed to open 3D blownup animation\n");
-					}
-				}
-				else
-				{
-					TRACE("COstrich::GetResources - Failed to open 3D shot animation\n");
-				}	
-			}
-			else
-			{
-				TRACE("COstrich::GetResources - Failed to open 3D walk animation\n");
-			}
-		}
-		else
-		{
-			TRACE("COstrich::GetResources - Failed to open 3D stand animation\n");
-		}
-	}
-	else
-	{
-		TRACE("COstrich::GetResources - Failed to open 3D run animation\n");
-	}	
+  if(bResult &= m_animRun.Get("ostrich_run"))
+    m_animRun.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
 
-	return sResult;
+  if(bResult &= m_animStand.Get("ostrich_stand"))
+    m_animStand.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+
+  if(bResult &= m_animWalk.Get("ostrich_walk"))
+    m_animWalk.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+
+  bResult &= m_animShot.Get("ostrich_shot");
+  bResult &= m_animBlownup.Get("ostrich_blownup");
+  bResult &= m_animHide.Get("ostrich_hide");
+  bResult &= m_animDie.Get("ostrich_die");
+
+  return bResult ? SUCCESS : FAILURE;;
 }
 
 

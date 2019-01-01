@@ -606,7 +606,7 @@ bool CCharacter::WhileBurning(void)	// Returns true until state is complete.
    if(m_fire)
 		{
 		// If the fire is still burning . . .
-      if (m_fire->IsBurning() != FALSE)
+      if (m_fire->IsBurning())
 			{
 			// Brightness is the ratio of the amount of time expired to the
 			// total time multiplied by the destination brightness.

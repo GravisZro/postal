@@ -13,7 +13,7 @@ class anyfile : public filedata_t
 public:
   using filedata_t::filedata_t;
   using filedata_t::data;
-  void load (void){}
+  virtual void load (void) noexcept { }
 };
 
 bool path_exists(const char* path)

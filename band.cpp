@@ -214,104 +214,6 @@ int16_t CBand::ms_sFileCount;
 // This value indicates whether the marchers have stopped playing in this level.
 bool	CBand::ms_bDonePlaying	= false;
 
-/// Standing Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszStandResNames[] =
-{
-	"3d/bandg_stand.sop",
-	"3d/bandg_stand.mesh",
-	"3d/bandg_stand.tex",
-	"3d/bandg_stand.hot",
-	"3d/bandg_stand.bounds",
-	"3d/bandg_stand.floor",
-	"3d/bandg_stand_instrument.trans",
-	nullptr	
-};
-
-/// Running Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszRunResNames[] =
-{
-	"3d/bandg_run.sop",
-	"3d/bandg_run.mesh",
-	"3d/bandg_run.tex",
-	"3d/bandg_run.hot",
-	"3d/bandg_run.bounds",
-	"3d/bandg_run.floor",
-	"3d/bandg_run_instrument.trans",
-	nullptr
-};
-
-/// Throwing Animation Files 
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszMarchResNames[] =
-{
-	"3d/bandg_march.sop",
-	"3d/bandg_march.mesh",
-	"3d/bandg_march.tex",
-	"3d/bandg_march.hot",
-	"3d/bandg_march.bounds",
-	"3d/bandg_march.floor",
-	"3d/bandg_march_instrument.trans",
-	nullptr
-};
-
-// Shot Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszShotResNames[] =
-{
-	"3d/bandg_shot.sop",
-	"3d/bandg_shot.mesh",
-	"3d/bandg_shot.tex",
-	"3d/bandg_shot.hot",
-	"3d/bandg_shot.bounds",
-	"3d/bandg_shot.floor",
-	"3d/bandg_shot_instrument.trans",
-	nullptr
-};
-
-/// Blown up Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszBlownupResNames[] =
-{
-	"3d/bandg_blownup.sop",
-	"3d/bandg_blownup.mesh",
-	"3d/bandg_blownup.tex",
-	"3d/bandg_blownup.hot",
-	"3d/bandg_blownup.bounds",
-	"3d/bandg_blownup.floor",
-	"3d/bandg_blownup_instrument.trans",
-	nullptr
-};
-
-/// OnFire Animation Files
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszOnFireResNames[] =
-{
-	"3d/bandg_onfire.sop",
-	"3d/bandg_onfire.mesh",
-	"3d/bandg_onfire.tex",
-	"3d/bandg_onfire.hot",
-	"3d/bandg_onfire.bounds",
-	"3d/bandg_onfire.floor",
-	"3d/bandg_onfire_instrument.trans",
-	nullptr
-};
-
-#ifdef UNUSED_VARIABLES
-// These are the points that are checked on the attribute map relative to his origin
-static RP3d ms_apt3dAttribCheck[] =
-{
-	{-6, 0, -6},
-	{ 0, 0, -6},
-	{ 6, 0, -6},
-	{-6, 0,  6},
-	{ 0, 0,  6},
-	{ 6, 0,  6},
-};
-#endif
-
-
 CBand::CBand(void)
 {
   m_ucNextBouyID = 1;
@@ -1229,59 +1131,14 @@ int16_t CBand::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CBand::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
-	sResult = m_animRun.Get(ms_apszRunResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sResult == SUCCESS)
-	{
-		sResult = m_animStand.Get(ms_apszStandResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-		if (sResult == SUCCESS)
-		{
-			sResult = m_animMarch.Get(ms_apszMarchResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-			if (sResult == SUCCESS)
-			{
-				sResult = m_animShot.Get(ms_apszShotResNames);
-				if (sResult == SUCCESS)
-				{
-					sResult = m_animBlownup.Get(ms_apszBlownupResNames);
-					if (sResult == SUCCESS)
-					{
-						sResult = m_animOnFire.Get(ms_apszOnFireResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-						if (sResult == SUCCESS)
-						{
-							// Add more anim gets here if necessary
-						}
-						else
-						{
-							TRACE("CBand::GetResources - Failed to open 3D on fire animation\n");
-						}
-					}
-					else
-					{
-						TRACE("CBand::GetResources - Failed to open 3D blownup animation\n");
-					}
-				}
-				else
-				{
-					TRACE("CBand::GetResources - Failed to open 3D shot animation\n");
-				}	
-			}
-			else
-			{
-				TRACE("CBand::GetResources - Failed to open 3D march animation\n");
-			}
-		}
-		else
-		{
-			TRACE("CBand::GetResources - Failed to open 3D stand animation\n");
-		}
-	}
-	else
-	{
-		TRACE("CBand::GetResources - Failed to open 3D run animation\n");
-	}	
-
-	return sResult;
+  bool bResult = true;
+  bResult &= m_animRun.Get("bandg_run", 0, "instrument");
+  bResult &= m_animStand.Get("bandg_stand", 0, "instrument");
+  bResult &= m_animMarch.Get("bandg_march", 0, "instrument");
+  bResult &= m_animShot.Get("bandg_shot", 0, "instrument");
+  bResult &= m_animShot.Get("bandg_blownup", 0, "instrument");
+  bResult &= m_animOnFire.Get("bandg_onfire", 0, "instrument");
+  return bResult ? SUCCESS : FAILURE;
 }
 
 

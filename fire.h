@@ -265,7 +265,7 @@ class CFire
 			m_bSendMessages = false;
 		}
 
-		inline int16_t IsBurning(void)
+      bool IsBurning(void) const
 		{
 			return m_eFireAnim != Smoke && m_eFireAnim != SmallSmoke;
 		}

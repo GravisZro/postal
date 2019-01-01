@@ -209,20 +209,6 @@ int32_t CRocket::ms_lSmokeTimeToLive = 1000;				// Time for smoke to stick aroun
 // Let this auto-init to 0
 int16_t CRocket::ms_sFileCount;
 
-/// Rocket Animation Files
-static const char* ms_apszResNames[] =
-{
-	"3d/missile.sop",
-	"3d/missile.mesh",
-	"3d/missile.tex",
-	"3d/missile.hot",
-	"3d/missile.bounds",
-	"3d/missile.floor",
-	nullptr,
-	nullptr
-};
-
-
 CRocket::CRocket(void)
 {
   m_lSmokeTimer		= 0;
@@ -658,7 +644,7 @@ void CRocket::Render(void)
    flags.Hidden = m_eState == State_Hide;
 
 	// If we're not a child of someone else...
-   if (!parent())
+   if (!isChild())
 	{
 		// Map from 3d to 2d coords
      realm()->Map3Dto2D(position.x, position.y, position.z,
@@ -731,27 +717,9 @@ int16_t CRocket::Setup(									// Returns 0 if successfull, non-zero otherwise
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CRocket::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
-	sResult = m_anim.Get(ms_apszResNames);
-	if (sResult == SUCCESS)
-	{
-		sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
-		if (sResult == SUCCESS)
-		{
-			// add more gets
-		}
-		else
-		{
-			TRACE("CGrenade::GetResources - Failed to open 2D shadow image\n");
-		}
-	}
-	else
-	{
-		TRACE("CRocket::GetResources - Failed to open 3D animation for rocket\n");
-	}
-
-	return sResult;
+  bool bResult = m_anim.Get("missile");
+  bResult &= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian) == SUCCESS;
+  return bResult ? SUCCESS : FAILURE;
 }
 
 
@@ -776,13 +744,13 @@ int16_t CRocket::Preload(
 {
 	CAnim3D anim;	
 	RImage* pimage;
-	int16_t sResult = anim.Get(ms_apszResNames);
+   bool bResult = anim.Get("missile");
 	anim.Release();
-	rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian);
-	rspReleaseResource(&g_resmgrGame, &pimage);
+   bResult &= rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian) == SUCCESS;
+   rspReleaseResource(&g_resmgrGame, &pimage);
 	CacheSample(g_smidRocketFire);
 	CacheSample(g_smidRocketExplode);
-	return sResult;	
+   return bResult ? SUCCESS : FAILURE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

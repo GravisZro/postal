@@ -170,33 +170,33 @@
 // Animations.
 const char*	CPowerUp::ms_apszPowerUpResNames[CStockPile::NumStockPileItems + 2]	=
 	{
-	"3d/ammo",							// Bullets.
-	"3d/grenadeicon",					// Grenades.
-	"3d/cocktail",						// Cocktails.
-	"3d/missileicon",					// Rockets.
-	"3d/napalmicon",					// Napalm.
-	"3d/shotshells",					// Shells.
-	"3d/fuel",							// Fuel.
-	"3d/minecrate",					// Mines.
-	"3d/health",						// Health.
-	"3d/gmissileicon",				// Heatseekers.
+   "ammo",							// Bullets.
+   "grenadeicon",					// Grenades.
+   "cocktail",						// Cocktails.
+   "missileicon",					// Rockets.
+   "napalmicon",					// Napalm.
+   "shotshells",					// Shells.
+   "fuel",							// Fuel.
+   "minecrate",					// Mines.
+   "health",						// Health.
+   "gmissileicon",				// Heatseekers.
 
-	"3d/machinegun",					//	MachineGun.
-	"3d/launcher",						// MissileLauncher.
-	"3d/shotgun",						// ShotGun.
-	"3d/spraygun",						// SprayCannon.
-	"3d/flmthrower",					// FlameThrower.
-	"3d/napalmer",						// NapalmLauncher.
-	"3d/napalmer",						// DeathWadLauncher.
-	"3d/shotgun",						// DoubleBarrel.
+   "machinegun",					//	MachineGun.
+   "launcher",						// MissileLauncher.
+   "shotgun",						// ShotGun.
+   "spraygun",						// SprayCannon.
+   "flmthrower",					// FlameThrower.
+   "napalmer",						// NapalmLauncher.
+   "napalmer",						// DeathWadLauncher.
+   "shotgun",						// DoubleBarrel.
 
-	"3d/kevlarvest",					// KevlarVest.
+   "kevlarvest",					// KevlarVest.
 
-	"3d/backpackicon",				// Backpack.
+   "backpackicon",				// Backpack.
 
 	// Insert new items above this item.
-	"3d/minecrate",					// Multiple items.
-	"3d/minecrate",					// No items.
+   "minecrate",					// Multiple items.
+   "minecrate",					// No items.
 	};
 
 
@@ -399,7 +399,7 @@ void CPowerUp::Update(void)
 					}
 				break;
 			default:
-            if (!parent())
+            if (!isChild())
 					{
 					// Get time from last call in seconds.
 					double	dSeconds	= double(lThisTime - m_lPrevTime) / 1000.0;
@@ -551,24 +551,20 @@ void CPowerUp::GetResName(	// Returns nothing.
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPowerUp::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-   int16_t sResult = SUCCESS;
+{
+  // Safe to call even if no resource.
+  FreeResources();
 
-	// Safe to call even if no resource.
-	FreeResources();
+  char szResName[PATH_MAX];
+  GetResName(szResName);
 
-	char	szResName[PATH_MAX];
-	GetResName(szResName);
-
-	sResult	= m_anim.Get(
-		szResName, 
-      nullptr,
-      nullptr,
-      nullptr,
-		RChannel_LoopAtStart | RChannel_LoopAtEnd);
-
-	return sResult;
-	}
+  if(m_anim.Get(szResName))
+  {
+    m_anim.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+    return SUCCESS;
+  }
+  return FAILURE;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Free all resources
@@ -592,18 +588,15 @@ int16_t CPowerUp::FreeResources(void)						// Returns 0 if successfull, non-zero
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPowerUp::Preload(CRealm* /*prealm*/)
 {
-   int16_t sResult = SUCCESS;
+  bool bResult = true;
+  CAnim3D anim;
 
-	int16_t i;
-	CAnim3D anim;
-
-	for (i = 0; i < CStockPile::NumStockPileItems + 2; i++)
-	{
-      sResult |= anim.Get(ms_apszPowerUpResNames[i], nullptr, nullptr, nullptr, 0);
-		anim.Release();			
-	}	
-
-	return sResult;
+  for (int16_t i = 0; i < CStockPile::NumStockPileItems + 2; i++)
+  {
+    bResult &= anim.Get(ms_apszPowerUpResNames[i]);
+    anim.Release();
+  }
+  return bResult ? SUCCESS : FAILURE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

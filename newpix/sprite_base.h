@@ -10,19 +10,9 @@
 
 static constexpr space3d_t<double> invalid_position = { UINT32_MAX, UINT32_MAX, UINT32_MAX };
 
-class sprite_base_t
-    : public CThing,
-      virtual public CSprite
+struct sprite_data_t
 {
-public:
-  sprite_base_t(void) noexcept;
-  virtual ~sprite_base_t(void) noexcept;
-
-  virtual CSprite* GetSprite(void) final { return this; }
-
-  virtual double GetX(void) const final { return position.x; }
-  virtual double GetY(void) const final { return position.y; }
-  virtual double GetZ(void) const final { return position.z; }
+  bool is_child;
 
   space3d_t<double> position;     // 3d position
   space3d_t<double> rotation;     // 3d sprite rotation
@@ -46,10 +36,42 @@ public:
     inline void clear(void) { *reinterpret_cast<uint32_t*>(this) = 0;}
   } flags;
 */
+};
+
+struct render_cache_t
+{
+  int16_t            Brightness;      // Indicates the brightness with which the object will be fogged (0 .. 255).
+  space3d_t<int16_t> DirectRender;    // Location to Render() directly to composite buffer.
+  space2d_t<int16_t> IndirectRender;  // Location to Render() indirectly to clip buffer.
+  space2d_t<int16_t> RenderOffset;    // Offset to Render() to account for bounding sphere.
+};
+
+class sprite_base_t
+    : public CThing,
+      public sprite_data_t,
+      protected render_cache_t,
+      virtual public CSprite
+{
+public:
+  sprite_base_t(void) noexcept;
+  virtual ~sprite_base_t(void) noexcept;
+
+  CSprite* GetSprite(void) { return this; }
+
+  double GetX(void) const { return position.x; }
+  double GetY(void) const { return position.y; }
+  double GetZ(void) const { return position.z; }
+
+  bool isChild(void) const { return m_IsChild; }
+  void addChild(managed_ptr<sprite_base_t>& _child);
+  void removeChild(managed_ptr<sprite_base_t>& _child);
+
   signal<> SpriteUpdate;
 private:
-//  bool m_InScene;
   sprite_base_t* m_self;
+  std::set<managed_ptr<sprite_base_t>> m_children;
+//  bool m_InScene;
+  bool m_IsChild;
 };
 
 #endif // FORCES_H

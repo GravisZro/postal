@@ -453,18 +453,13 @@ class CDude : public CCharacter
 
 				// Get the various components of this animation from the resource names
 				// specified in the provided array of pointers to strings.
-				virtual								// Overridden here.
-				int16_t Get(							// Returns 0 on success.
+                                    // Overridden here.
+            bool Get(							// Returns 0 on success.
                const char*		pszBaseFileName,	// In:  Base string for resource filenames.
-               const char*		pszRigidName,		// In:  String to add for rigid transform channel
-														// or nullptr for none.
-               const char*		pszEventName,		// In:  String to add for event states channel
-														// or nullptr for none.
-					int16_t		sLoopFlags);		// In:  Looping flags to apply to all channels
-														// in this anim.
+               const char*		pszRigidName,		// In:  String to add for rigid transform channel or nullptr for none.
+               const char*		pszEventName,		// In:  String to add for event states channel or nullptr for none.
+               int16_t		sLoopFlags);		// In:  Looping flags to apply to all channels in this anim.
 
-				// Release all resources.
-				virtual						// Overridden here.
 				void Release(void);		// Returns nothing.
 			};
 

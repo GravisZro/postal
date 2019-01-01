@@ -621,7 +621,7 @@ void CThing3d::Render(void)
    m_sBrightness = m_sBaseBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
 
 	// If no parent . . .
-   if (!parent())
+   if (!isChild())
 		{
 		// Reset transform back to start to set absolute rather than cummulative rotation
 		m_trans.makeIdentity();
@@ -1474,9 +1474,7 @@ void CThing3d::UpdateFirePosition(void)
 		// Update its position.
       m_fire->position.x	= position.x;
       m_fire->position.y	= position.y;
-		// Always put fire slightly in front of thing3d so we can see alpha
-		// effect.
-      m_fire->position.z	= position.z + 1.0;
+      m_fire->position.z	= position.z + 1.0; // Always put fire slightly in front of thing3d so we can see alpha effect.
 		// If dead or dying . . .
       if (m_state == State_Die || m_state == State_Dead)
          m_sBaseBrightness	= BURNT_BRIGHTNESS; // Char the guy.

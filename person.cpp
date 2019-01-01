@@ -1257,380 +1257,95 @@ void CPerson::ResetLogAI(void)
   ms_u16IdLogAI = invalid_id;
 }
 
+bool Loader(CAnim3D& animation, const Personatorium& data, const char* verb)
+{
+  return animation.Get(data.Anim.pszBaseName,
+                       data.Anim.sTextureScheme,
+                       verb,
+                       data.Anim.pszObjectName,
+                       data.Anim.pszHandName,
+                       data.Anim.pszEventName);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CPerson::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-	int16_t sLoadResult = 0;
+   Personatorium& data = g_apersons[m_ePersonType];
 
-	
-	// Load Stand animation
-	sResult = m_animStand.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									 g_apersons[m_ePersonType].Anim.sTextureScheme,
-									 "stand",
-									 g_apersons[m_ePersonType].Anim.pszObjectName,
-									 g_apersons[m_ePersonType].Anim.pszEventName,
-									 g_apersons[m_ePersonType].Anim.pszHandName,
-									 RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(Loader(m_animStand, data, "stand")) // Load Stand animation
+     m_animStand.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
 
-	// Load Run animation, or load stand in its place if that fails
-	sLoadResult = m_animRun.Get(g_apersons[m_ePersonType].Anim.pszBaseName, 
-									 g_apersons[m_ePersonType].Anim.sTextureScheme,
-	                        "run",
-					   			 g_apersons[m_ePersonType].Anim.pszObjectName,
-										g_apersons[m_ePersonType].Anim.pszEventName,
-								    g_apersons[m_ePersonType].Anim.pszHandName,
-									 RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animRun.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-										 g_apersons[m_ePersonType].Anim.sTextureScheme,
-										 "stand",
-										 g_apersons[m_ePersonType].Anim.pszObjectName,
-		  								 g_apersons[m_ePersonType].Anim.pszEventName,
-									    g_apersons[m_ePersonType].Anim.pszHandName,
-										 RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(Loader(m_animRun, data, "run")) // Load Run animation, or load stand in its place if that fails
+     m_animRun.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   else
+     m_animRun = m_animStand;
 
-	// Load Shoot animation or load stand in its place if that fails
-	sLoadResult = m_animShoot.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									   g_apersons[m_ePersonType].Anim.sTextureScheme,
-										"shoot",
-										g_apersons[m_ePersonType].Anim.pszObjectName,
-										g_apersons[m_ePersonType].Anim.pszEventName,
-									   g_apersons[m_ePersonType].Anim.pszHandName,
-										0);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animShoot.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									    g_apersons[m_ePersonType].Anim.sTextureScheme,
-										 "stand",
-										 g_apersons[m_ePersonType].Anim.pszObjectName,
-										 g_apersons[m_ePersonType].Anim.pszEventName,
-									    g_apersons[m_ePersonType].Anim.pszHandName,
-										 RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(!Loader(m_animShoot, data, "shoot")) // Load Shoot animation or load stand in its place if that fails
+     m_animShoot = m_animStand;
 
+   if(!Loader(m_animShot, data, "shot")) // Load Shot animation or load stand in its place if that fails
+     m_animShot = m_animStand;
 
-	// Load Shot animation or load stand in its place if that fails
-	sLoadResult = m_animShot.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									     g_apersons[m_ePersonType].Anim.sTextureScheme,
-									     "shot",
-									     g_apersons[m_ePersonType].Anim.pszObjectName,
-									     g_apersons[m_ePersonType].Anim.pszEventName,
-									     g_apersons[m_ePersonType].Anim.pszHandName,
-									     0);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animShot.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									     g_apersons[m_ePersonType].Anim.sTextureScheme,
-										  "stand",
-										  g_apersons[m_ePersonType].Anim.pszObjectName,
-										  g_apersons[m_ePersonType].Anim.pszEventName,
-									     g_apersons[m_ePersonType].Anim.pszHandName,
-										  RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(!Loader(m_animDie, data, "die")) // Load Die animation or load stand in its place if that fails
+     m_animDie = m_animStand;
 
-	// Load Die animation or load stand in its place if that fails										
-	sLoadResult = m_animDie.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									    g_apersons[m_ePersonType].Anim.sTextureScheme,
-									    "die",
-									    g_apersons[m_ePersonType].Anim.pszObjectName,
-										 g_apersons[m_ePersonType].Anim.pszEventName,
-									    g_apersons[m_ePersonType].Anim.pszHandName,
-									    0);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animDie.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									    g_apersons[m_ePersonType].Anim.sTextureScheme,
-										 "stand",
-										 g_apersons[m_ePersonType].Anim.pszObjectName,
-										 g_apersons[m_ePersonType].Anim.pszEventName,
-									    g_apersons[m_ePersonType].Anim.pszHandName,
-										 RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(Loader(m_animWrithing, data, "writhing")) // Load Writhing animation or load stand in its place if that fails
+     m_animWrithing.SetLooping(RChannel_LoopAtEnd);
+   else
+     m_animWrithing = m_animStand;
 
-	// Load Writhing animation or load stand in its place if that fails
-	sLoadResult = m_animWrithing.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									         g_apersons[m_ePersonType].Anim.sTextureScheme,
-									         "writhing",
-									         g_apersons[m_ePersonType].Anim.pszObjectName,
-											   g_apersons[m_ePersonType].Anim.pszEventName,
-											   g_apersons[m_ePersonType].Anim.pszHandName,
-									         RChannel_LoopAtEnd);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animWrithing.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-									         g_apersons[m_ePersonType].Anim.sTextureScheme,
-										      "stand",
-										      g_apersons[m_ePersonType].Anim.pszObjectName,
-										      g_apersons[m_ePersonType].Anim.pszEventName,
-										      g_apersons[m_ePersonType].Anim.pszHandName,
-										      RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(!Loader(m_animExecuted, data, "executed")) // Load Executed animation or load stand in its place if that fails
+     m_animExecuted = m_animStand;
 
-	// Load Executed animation or load stand in its place if that fails
-	sLoadResult = m_animExecuted.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												g_apersons[m_ePersonType].Anim.sTextureScheme,
-												"executed",
-											   g_apersons[m_ePersonType].Anim.pszObjectName,
-												g_apersons[m_ePersonType].Anim.pszEventName,
-												g_apersons[m_ePersonType].Anim.pszHandName,
-												0);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animExecuted.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												g_apersons[m_ePersonType].Anim.sTextureScheme,
-												"stand",
-												g_apersons[m_ePersonType].Anim.pszObjectName,
-												g_apersons[m_ePersonType].Anim.pszEventName,
-												g_apersons[m_ePersonType].Anim.pszHandName,
-												RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   if(Loader(m_animOnfire, data, "onfire")) // Load Onfire animation animation or load stand in its place if that fails
+     m_animOnfire.SetLooping(RChannel_LoopAtEnd);
+   else
+     m_animOnfire = m_animRun;
 
-	// Load Onfire animation animation or load stand in its place if that fails
-	sLoadResult = m_animOnfire.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-											 g_apersons[m_ePersonType].Anim.sTextureScheme,
-											 "onfire",
-											 g_apersons[m_ePersonType].Anim.pszObjectName,
-											 g_apersons[m_ePersonType].Anim.pszEventName,
-											 g_apersons[m_ePersonType].Anim.pszHandName,
-											 RChannel_LoopAtEnd);
-	if (sLoadResult != SUCCESS)
-	{
-		sResult |= m_animOnfire.Get(g_apersons[m_ePersonType].Anim.pszBaseName, 
-											 g_apersons[m_ePersonType].Anim.sTextureScheme,
-											 "run",
-											 g_apersons[m_ePersonType].Anim.pszObjectName,
-											 g_apersons[m_ePersonType].Anim.pszEventName,
-											 g_apersons[m_ePersonType].Anim.pszHandName,
-											 RChannel_LoopAtEnd);
+   if(Loader(m_animWalk, data, "walk")) // Load Walk animation animation or load stand in its place if that fails
+     m_animWalk.SetLooping(RChannel_LoopAtEnd);
+   else
+     m_animWalk = m_animStand;
+
+   if(!Loader(m_animShootRun, data, "runshoot")) // Load ShootRun animation, or try Shoot if there isn't one, or stand as last option
+     m_animShootRun = m_animShoot;
+
+   if(!Loader(m_animShootRunR0, data, "45rt")) // Load ShootRunR0 animation, or try Shoot if there isn't one, or stand as last option
+     m_animShootRunR0 = m_animShoot;
+
+   if(!Loader(m_animShootRunR1, data, "90rt")) // Load ShootRunR1 animation, or try Shoot if there isn't one, or stand as last option
+     m_animShootRunR1 = m_animShoot;
+
+   if(!Loader(m_animShootRunL0, data, "45lft")) // Load ShootRunL0 animation, or try Shoot if there isn't one, or stand as last option
+     m_animShootRunL0 = m_animShoot;
+
+   if(!Loader(m_animShootRunL1, data, "90lft")) // Load ShootRunL1 animation, or try Shoot if there isn't one, or stand as last option
+     m_animShootRunL1 = m_animShoot;
+
+   if(!Loader(m_animShootRunBack, data, "runbackwr")) // Load ShootRunBack animation, or try Shoot if there isn't one, or stand as last option
+     m_animShootRunBack = m_animShoot;
+
+   if(!Loader(m_animCrouch, data, "crouch")) // Load Crouch animation, or load stand in its place if that fails
+     m_animCrouch = m_animStand;
+
+   if(Loader(m_animSearch, data, "search"))
+     m_animSearch.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   else
+     m_animSearch = m_animStand;
 
 
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animOnfire.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												 g_apersons[m_ePersonType].Anim.sTextureScheme,
-												 "stand",
-												 g_apersons[m_ePersonType].Anim.pszObjectName,
-												 g_apersons[m_ePersonType].Anim.pszEventName,
-												 g_apersons[m_ePersonType].Anim.pszHandName,
-												 RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	}
-
-	// Load Walk animation animation or load stand in its place if that fails
-	sLoadResult = m_animWalk.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-										  g_apersons[m_ePersonType].Anim.sTextureScheme,
-										  "walk",
-										  g_apersons[m_ePersonType].Anim.pszObjectName,
-										  g_apersons[m_ePersonType].Anim.pszEventName,
-										  g_apersons[m_ePersonType].Anim.pszHandName,
-										  RChannel_LoopAtEnd);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animWalk.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-										  g_apersons[m_ePersonType].Anim.sTextureScheme,
-										  "stand",
-										  g_apersons[m_ePersonType].Anim.pszObjectName,
-										  g_apersons[m_ePersonType].Anim.pszEventName,
-										  g_apersons[m_ePersonType].Anim.pszHandName,
-										  RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sResult != SUCCESS)
-		TRACE("CPerson::GetResources - Error loading animation resources\n");
-
-	// Load ShootRun animation, or try Shoot if there isn't one, or stand as last option
-	sLoadResult = m_animShootRun.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												g_apersons[m_ePersonType].Anim.sTextureScheme,
-												"runshoot",
-												g_apersons[m_ePersonType].Anim.pszObjectName,
-												g_apersons[m_ePersonType].Anim.pszEventName,
-												g_apersons[m_ePersonType].Anim.pszHandName,
-												0);
-	if (sLoadResult != SUCCESS)
-	{
-		sLoadResult = m_animShootRun.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													g_apersons[m_ePersonType].Anim.sTextureScheme,
-													"shoot",
-													g_apersons[m_ePersonType].Anim.pszObjectName,
-													g_apersons[m_ePersonType].Anim.pszEventName,
-													g_apersons[m_ePersonType].Anim.pszHandName,
-													0);
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animShootRun.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													g_apersons[m_ePersonType].Anim.sTextureScheme,
-													"stand",
-													g_apersons[m_ePersonType].Anim.pszObjectName,
-													g_apersons[m_ePersonType].Anim.pszEventName,
-													g_apersons[m_ePersonType].Anim.pszHandName,
-													0);
-	}
-
-	// Load ShootRunR0 animation, or try Shoot if there isn't one, or stand as last option
-	sLoadResult = m_animShootRunR0.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												  g_apersons[m_ePersonType].Anim.sTextureScheme,
-												  "45rt",
-													g_apersons[m_ePersonType].Anim.pszObjectName,
-													g_apersons[m_ePersonType].Anim.pszEventName,
-													g_apersons[m_ePersonType].Anim.pszHandName,
-													0);
-	if (sLoadResult != SUCCESS)
-	{
-		sLoadResult = m_animShootRunR0.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "shoot",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-												  	  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animShootRunR0.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "stand",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-													  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-	}
-	
-	// Load ShootRunR1 animation, or try Shoot if there isn't one, or stand as last option
-	sLoadResult = m_animShootRunR1.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												  g_apersons[m_ePersonType].Anim.sTextureScheme,
-												  "90rt",
-												  g_apersons[m_ePersonType].Anim.pszObjectName,
-												  g_apersons[m_ePersonType].Anim.pszEventName,
-												  g_apersons[m_ePersonType].Anim.pszHandName,
-												  0);
-	if (sLoadResult != SUCCESS)
-	{
-		sLoadResult = m_animShootRunR1.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "shoot",
-												  	  g_apersons[m_ePersonType].Anim.pszObjectName,
-												 	  g_apersons[m_ePersonType].Anim.pszEventName,
-												 	  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animShootRunR1.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "stand",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-													  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-	}
-
-	// Load ShootRunL0 animation, or try Shoot if there isn't one, or stand as last option
-	sLoadResult = m_animShootRunL0.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												  g_apersons[m_ePersonType].Anim.sTextureScheme,
-												  "45lft",
-												  g_apersons[m_ePersonType].Anim.pszObjectName,
-												  g_apersons[m_ePersonType].Anim.pszEventName,
-												  g_apersons[m_ePersonType].Anim.pszHandName,
-												  0);
-	if (sLoadResult != SUCCESS)
-	{
-		sLoadResult = m_animShootRunL0.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "shoot",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-													  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-												     0);
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animShootRunL0.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "stand",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-													  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-	}
-
-	// Load ShootRunL1 animation, or try Shoot if there isn't one, or stand as last option
-	sLoadResult = m_animShootRunL1.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-												  g_apersons[m_ePersonType].Anim.sTextureScheme,
-												  "90lft",
-												  g_apersons[m_ePersonType].Anim.pszObjectName,
-												  g_apersons[m_ePersonType].Anim.pszEventName,
-											     g_apersons[m_ePersonType].Anim.pszHandName,
-												  0);
-	if (sLoadResult != SUCCESS)
-	{
-		sLoadResult = m_animShootRunL1.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "shoot",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-													  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animShootRunL1.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													  g_apersons[m_ePersonType].Anim.sTextureScheme,
-													  "stand",
-													  g_apersons[m_ePersonType].Anim.pszObjectName,
-													  g_apersons[m_ePersonType].Anim.pszEventName,
-													  g_apersons[m_ePersonType].Anim.pszHandName,
-													  0);
-	}
-
-	// Load ShootRunBack animation, or try Shoot if there isn't one, or stand as last option
-	sLoadResult = m_animShootRunBack.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													 g_apersons[m_ePersonType].Anim.sTextureScheme,
-													 "runbackwr",
-													 g_apersons[m_ePersonType].Anim.pszObjectName,
-													 g_apersons[m_ePersonType].Anim.pszEventName,
-													 g_apersons[m_ePersonType].Anim.pszHandName,
-													 0);
-	if (sLoadResult != SUCCESS)
-	{
-		sLoadResult = m_animShootRunBack.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-													    g_apersons[m_ePersonType].Anim.sTextureScheme,
-														 "shoot",
-														 g_apersons[m_ePersonType].Anim.pszObjectName,
-														 g_apersons[m_ePersonType].Anim.pszEventName,
-														 g_apersons[m_ePersonType].Anim.pszHandName,
-														 0);
-		if (sLoadResult != SUCCESS)
-			sResult |= m_animShootRunBack.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-														 g_apersons[m_ePersonType].Anim.sTextureScheme,
-													    "stand",
-														 g_apersons[m_ePersonType].Anim.pszObjectName,
-														 g_apersons[m_ePersonType].Anim.pszEventName,
-														 g_apersons[m_ePersonType].Anim.pszHandName,
-														 0);
-	}
-
-	// Load Crouch animation, or load stand in its place if that fails
-	sLoadResult = m_animCrouch.Get(g_apersons[m_ePersonType].Anim.pszBaseName, 
-											 g_apersons[m_ePersonType].Anim.sTextureScheme,
-											 "crouch",
-					   					 g_apersons[m_ePersonType].Anim.pszObjectName,
-											 g_apersons[m_ePersonType].Anim.pszEventName,
-											 g_apersons[m_ePersonType].Anim.pszHandName,
-											 0);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animCrouch.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-											 g_apersons[m_ePersonType].Anim.sTextureScheme,
-											 "stand",
-											 g_apersons[m_ePersonType].Anim.pszObjectName,
-											 g_apersons[m_ePersonType].Anim.pszEventName,
-											 g_apersons[m_ePersonType].Anim.pszHandName,
-											 0);
-									
-	// Load Search animation, or load stand in its place if that fails
-	sLoadResult = m_animSearch.Get(g_apersons[m_ePersonType].Anim.pszBaseName, 
-											 g_apersons[m_ePersonType].Anim.sTextureScheme,
-											 "search",
-					   					 g_apersons[m_ePersonType].Anim.pszObjectName,
-											 g_apersons[m_ePersonType].Anim.pszEventName,
-											 g_apersons[m_ePersonType].Anim.pszHandName,
-											 RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sLoadResult != SUCCESS)
-		sResult |= m_animSearch.Get(g_apersons[m_ePersonType].Anim.pszBaseName,
-										    g_apersons[m_ePersonType].Anim.sTextureScheme,
-											 "stand",
-											 g_apersons[m_ePersonType].Anim.pszObjectName,
-											 g_apersons[m_ePersonType].Anim.pszEventName,
-											 g_apersons[m_ePersonType].Anim.pszHandName,
-											 RChannel_LoopAtStart | RChannel_LoopAtEnd);
+   int16_t sResult = SUCCESS;
+   int16_t sLoadResult = SUCCESS;
 
 
 	// Get execution target points -- NOT essential.
 	char	szExeTargetResName[PATH_MAX];
-	sprintf(szExeTargetResName, "%s_writhing_exe.trans", g_apersons[m_ePersonType].Anim.pszBaseName);
-   sLoadResult	= rspGetResource(g_GameSAK, szExeTargetResName, m_ptransExecutionTarget) ? SUCCESS : FAILURE;
-   if (sLoadResult == SUCCESS)
-		{
+   sprintf(szExeTargetResName, "3d/%s_writhing_exe.trans", g_apersons[m_ePersonType].Anim.pszBaseName);
+
+   if (rspGetResource(g_GameSAK, szExeTargetResName, m_ptransExecutionTarget))
       m_ptransExecutionTarget->SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
-		}
 
 	// Get Logic Table
    sResult |= rspGetResource(&g_resmgrRes, m_rstrLogicFile, &m_pLogicTable);

@@ -514,7 +514,7 @@ CDoofus::WeaponDetails	CDoofus::ms_awdWeapons[NumWeaponTypes]	=
 	//////// Rocket
 	{	// pszName, pszResName, CThing ID
 		"Rocket",
-		"3d/launcher",
+      "launcher",
 		CRocketID,
 	},
 
@@ -528,7 +528,7 @@ CDoofus::WeaponDetails	CDoofus::ms_awdWeapons[NumWeaponTypes]	=
 	//////// Napalm
 	{	// pszName, pszResName, CThing ID
 		"Napalm",
-		"3d/napalmer",
+      "napalmer",
 		CNapalmID,
 	},
 
@@ -570,77 +570,77 @@ CDoofus::WeaponDetails	CDoofus::ms_awdWeapons[NumWeaponTypes]	=
 	//////// Flamer
 	{	// pszName, pszResName, CThing ID
 		"Flamer",
-		"3d/flmthrower",
+      "flmthrower",
 		CFirestreamID,
 	},
 
 	//////// Pistol
 	{	// pszName, pszResName, CThing ID
 		"Pistol",		
-		"3d/bigpistol",
+      "bigpistol",
 		CPistolID,
 	},
 
 	//////// MachineGun
 	{	// pszName, pszResName, CThing ID
 		"MachineGun",
-		"3d/submachine",
+      "submachine",
 		CMachineGunID,
 	},
 
 	//////// ShotGun
 	{	// pszName, pszResName, CThing ID
 		"ShotGun",
-      "3d/shotgun",
+      "shotgun",
 		CShotGunID,
 	},
 
 	//////// Heatseeker
 	{	// pszName, pszResName, CThing ID
 		"Heatseeker",
-		"3d/launcher",
+      "launcher",
 		CHeatseekerID,
 	},
 
 	//////// Assault
 	{	// pszName, pszResName, CThing ID
 		"Assault",
-      "3d/spraygun",
+      "spraygun",
 		CAssaultWeaponID,
 	},
 
 	//////// DeathWad
 	{	// pszName, pszResName, CThing ID
 		"DeathWad",
-		"3d/napalmer",
+      "napalmer",
 		CDeathWadID,
 	},
 
 	//////// DoubleBarrel
 	{	// pszName, pszResName, CThing ID
 		"DoubleBarrel",
-		"3d/shotgun",
+      "shotgun",
 		CDoubleBarrelID,
 	},
 
 	//////// Uzi
 	{	// pszName, pszResName, CThing ID
 		"Uzi",
-      "3d/uzi",
+      "uzi",
 		CUziID,
 	},
 
 	//////// AutoRifle
 	{	// pszName, pszResName, CThing ID
 		"AutoRifle",
-      "3d/autorifle",
+      "autorifle",
 		CAutoRifleID,
 	},
 
 	//////// SmallPistol
 	{	// pszName, pszResName, CThing ID
 		"SmallPistol",
-      "3d/pistol",
+      "pistol",
 		CSmallPistolID,
 	},
 
@@ -3971,39 +3971,35 @@ bool CDoofus::WhileHoldingWeapon(	// Returns true when weapon is released.
 // when getting your resources.
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDoofus::GetResources(void)
-	{
-   int16_t sResult = SUCCESS;
+{
+  int16_t sResult = SUCCESS;
 
-	// If the ref count was 0 . . .
-	if (ms_lWeaponResRefCount++ == 0)
-		{
-		// Get the actual resources.
-		int16_t	i;
-		int16_t	sLoadResult;
-		for (i = 0; i < NumWeaponTypes; i++)
-			{
-			// If this weapon has a visible resource . . .
-			if (ms_awdWeapons[i].pszResName)
-				{
-				sLoadResult	= ms_aanimWeapons[i].Get(
-					ms_awdWeapons[i].pszResName, 
-					nullptr, 
-					nullptr, 
-					nullptr, 
-					RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  // If the ref count was 0 . . .
+  if (ms_lWeaponResRefCount++ == 0)
+  {
+    // Get the actual resources.
+    int16_t	i;
+    int16_t	sLoadResult;
+    for (i = 0; i < NumWeaponTypes; i++)
+    {
+      // If this weapon has a visible resource . . .
+      if (ms_awdWeapons[i].pszResName)
+      {
+        sLoadResult	= ms_aanimWeapons[i].Get(ms_awdWeapons[i].pszResName) ? SUCCESS : FAILURE;
+        if(sLoadResult == SUCCESS)
+          ms_aanimWeapons[i].SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+        else
+        {
+          TRACE("GetResources(): Failed to load weapon resource \"%s\".\n",
+                ms_awdWeapons[i].pszResName);
+          sResult = FAILURE;
+        }
+      }
+    }
+  }
 
-            if (sLoadResult != SUCCESS)
-					{
-					TRACE("GetResources(): Failed to load weapon resource \"%s\".\n",
-						ms_awdWeapons[i].pszResName);
-					sResult = FAILURE;
-					}
-				}
-			}
-		}
-
-	return sResult;
-	}
+  return sResult;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // A way for the base class to release resources.  If you are going to use

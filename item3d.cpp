@@ -134,9 +134,9 @@ const char*	CItem3d::ms_apszKnownAnimBaseNames[CItem3d::NumTypes]	=
 	{
    "none",				// None.
    "custom",			// Custom.
-   "3d/trumpet",		// Trumpet.
-   "3d/horn",			// Horn.
-   "3d/sax",			// Sax.
+   "trumpet",		// Trumpet.
+   "horn",			// Horn.
+   "sax",			// Sax.
 	};
 
 // Array of known animation descriptions.
@@ -368,7 +368,7 @@ void CItem3d::Update(void)
 					}
 				break;
 			default:
-            if (!parent())
+            if (!isChild())
 					{
 					// Get time from last call in seconds.
 					double	dSeconds	= double(lThisTime - m_lPrevTime) / 1000.0;
@@ -597,43 +597,41 @@ int16_t CItem3d::Init(void)									// Returns 0 if successfull, non-zero otherw
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CItem3d::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
+{
+  bool bResult = true;
 
-	// Free existing resources, if any.
-	FreeResources();
+  // Free existing resources, if any.
+  FreeResources();
 
-   ASSERT(m_itemType > None && m_itemType < NumTypes);
+  ASSERT(m_itemType > None && m_itemType < NumTypes);
 
-	// If a known type . . .
-   if (m_itemType != Custom)
-		{
-      std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_itemType]);
-		}
+  // If a known type . . .
+  if (m_itemType != Custom)
+  {
+    std::strcpy(m_szAnimBaseName, ms_apszKnownAnimBaseNames[m_itemType]);
+  }
 
-	// Load main anim.
-	sResult	= m_anim.Get(m_szAnimBaseName, m_szAnimRigidName, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  // Load main anim.
+  if(bResult &= m_anim.Get(m_szAnimBaseName, 0, m_szAnimRigidName))
+    m_anim.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
 
-	// If there is a child name . . .
-	if (m_szChildAnimBaseName[0])
-		{
-		// Load child naim.
-		sResult	|= m_animChild.Get(m_szChildAnimBaseName, nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-		}
+  // If there is a child name . . .
+  if (m_szChildAnimBaseName[0])
+  {
+    // Load child naim.
+    if(bResult &= m_animChild.Get(m_szChildAnimBaseName))
+      m_animChild.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  }
 
-	// Get shadow.
-	sResult	|= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SHADOW_RES_NAME), &m_spriteShadow.m_pImage);
+  // Get shadow.
+  bResult &= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SHADOW_RES_NAME), &m_spriteShadow.m_pImage) == SUCCESS;
 
-	// If errors . . .
-	if (sResult)
-		{
-		// Remove just in case we're already in scene.  Can happen in editor after
-		// a failed EditModify().
-      realm()->Scene()->RemoveSprite(this);
-		}
-		
-	return sResult;
-	}
+  // If errors . . .
+  if (!bResult)
+    realm()->Scene()->RemoveSprite(this); // Remove just in case we're already in scene.  Can happen in editor after a failed EditModify().
+
+  return bResult ? SUCCESS : FAILURE;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

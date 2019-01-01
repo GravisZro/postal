@@ -1348,7 +1348,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Machine Gun",										// Weapon name.
 		"Bullets",											// Ammo name.
 		"   Machine Gun",									// Status format.
-		"3d/machinegun",									// Weapon resource name.
+      "machinegun",									// Weapon resource name.
 		1,														// Min ammo required.
 		},														
 																
@@ -1357,7 +1357,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Shotgun",											// Weapon name.
 		"Shells",											// Ammo name.
 		"   Shotgun -- %d Shells",						// Status format.
-		"3d/shotgun",										// Weapon resource name.
+      "shotgun",										// Weapon resource name.
 		1,														// Min ammo required.
 		},														
 																
@@ -1366,7 +1366,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Spray Cannon",									// Weapon name.
 		"Shells",											// Ammo name.
 		"   Spray Cannon -- %d Shells",				// Status format.
-		"3d/spraygun",										// Weapon resource name.
+      "spraygun",										// Weapon resource name.
 		1,														// Min ammo required.
 		},														
 																
@@ -1384,7 +1384,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Missile Launcher",								// Weapon name.
 		"Missiles",											// Ammo name.
 		"   Missile Launcher -- %d Missiles",		// Status format.
-		"3d/launcher",										// Weapon resource name.
+      "launcher",										// Weapon resource name.
 		1,														// Min ammo required.
 		},
 
@@ -1393,7 +1393,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Missile Launcher",								// Weapon name.
 		"Heatseekers",										// Ammo name.
 		"   Missile Launcher -- %d Heatseekers",	// Status format.
-		"3d/launcher",										// Weapon resource name.
+      "launcher",										// Weapon resource name.
 		1,														// Min ammo required.
 		},
 
@@ -1411,7 +1411,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Napalm Launcher",								// Weapon name.
 		"Napalm Canisters",								// Ammo name.
 		"   Napalm Launcher -- %d Canisters",		// Status format.
-		"3d/napalmer",										// Weapon resource name.
+      "napalmer",										// Weapon resource name.
 		1,														// Min ammo required.
 		},
 
@@ -1420,7 +1420,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Flame Thrower",									// Weapon name.
 		"Fuel Canisters",									// Ammo name.
 		"   Flamer -- %d Fuel Canisters",			// Status format.
-		"3d/flmthrower",									// Weapon resource name.
+      "flmthrower",									// Weapon resource name.
 		1,														// Min ammo required.
 		},
 
@@ -1465,7 +1465,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Wad Launcher",									// Weapon name.
 		"Wads",												// Ammo name.
 		"   Wad -- %d missiles, %d napalm canisters, %d fuel canisters, %d grenades",	// Status format.
-		"3d/napalmer",										// Weapon resource name.
+      "napalmer",										// Weapon resource name.
 		1,														// Min ammo required.
 		},
 
@@ -1474,7 +1474,7 @@ CDude::WeaponDetails	CDude::ms_awdWeapons[NumWeaponTypes]	=
 		"Double Barrel",									// Weapon name.
 		"Shells",											// Ammo name.
 		"   Double Barrel -- %d Shells",				// Status format.
-		"3d/shotgun",										// Weapon resource name.
+      "shotgun",										// Weapon resource name.
 		2,														// Min ammo required.
 		},														
 	};
@@ -1538,7 +1538,7 @@ static CCrawler::Nub ms_anubs[] =
 // specified in the provided array of pointers to strings.
 ////////////////////////////////////////////////////////////////////////////////
 // virtual								// Overridden here.
-int16_t CDude::CDudeAnim3D::Get(	// Returns 0 on success.
+bool CDude::CDudeAnim3D::Get(	// Returns 0 on success.
    const char*		pszBaseFileName,		// In:  Base string for resource filenames.
    const char*		pszRigidName,			// In:  String to add for rigid transform channel
 											// or nullptr for none.
@@ -1546,72 +1546,53 @@ int16_t CDude::CDudeAnim3D::Get(	// Returns 0 on success.
 											// or nullptr for none.
 	int16_t		sLoopFlags)				// In:  Looping flags to apply to all channels
 											// in this anim.
-	{
-   int16_t sResult;
-	char	szResName[PATH_MAX];
-	sprintf(szResName, "%s.sop", pszBaseFileName);
-   sResult	=  rspGetResource(g_GameSAK, szResName, m_psops) ? SUCCESS : FAILURE;
-	sprintf(szResName, "%s.mesh", pszBaseFileName);
-   sResult	|= rspGetResource(g_GameSAK, szResName, m_pmeshes) ? SUCCESS : FAILURE;
-	sprintf(szResName, "%s.bounds", pszBaseFileName);
-   sResult	|= rspGetResource(g_GameSAK, szResName, m_pbounds) ? SUCCESS : FAILURE;
-	if (pszRigidName != nullptr)
-		{
-		sprintf(szResName, "%s_%s.trans", pszBaseFileName, pszRigidName);
-      sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransRigid) ? SUCCESS : FAILURE;
-		}
+{
+  std::string base = "3d/";
+  base.append(pszBaseFileName);
 
-	if (pszEventName != nullptr)
-		{
-		sprintf(szResName, "%s_%s.event", pszBaseFileName, pszEventName);
-      sResult	|= rspGetResource(g_GameSAK, szResName, m_pevent) ? SUCCESS : FAILURE;
-		}
+  if(!rspGetResource(g_GameSAK, base + ".sop", m_psops))
+    return false;
 
-	// We always load these transforms.
-	sprintf(szResName, "%s_" LEFT_HAND_RIGID_ANIM_NAME ".trans", pszBaseFileName);
-   sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransLeft) ? SUCCESS : FAILURE;
-	sprintf(szResName, "%s_" RIGHT_HAND_RIGID_ANIM_NAME ".trans", pszBaseFileName);
-   sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransRight) ? SUCCESS : FAILURE;
-	sprintf(szResName, "%s_" BACK_RIGID_ANIM_NAME ".trans", pszBaseFileName);
-   sResult	|= rspGetResource(g_GameSAK, szResName, m_ptransBack) ? SUCCESS : FAILURE;
+  if(!rspGetResource(g_GameSAK, base + ".mesh", m_pmeshes))
+    return false;
 
-	// If successful . . .
-   if (sResult == SUCCESS)
-      {
-     m_psops->SetLooping(sLoopFlags);
-		m_pmeshes->SetLooping(sLoopFlags);
-		m_pbounds->SetLooping(sLoopFlags);
-      if (m_ptransRigid)
-			m_ptransRigid->SetLooping(sLoopFlags);
-      if (m_pevent)
-			m_pevent->SetLooping(sLoopFlags);
+  if(!rspGetResource(g_GameSAK, base + ".bounds", m_pbounds))
+    return false;
 
-		m_ptransLeft->SetLooping(sLoopFlags);
-		m_ptransRight->SetLooping(sLoopFlags);
-		m_ptransBack->SetLooping(sLoopFlags);
-		}
+  base.push_back('_');
 
-   return sResult;
-	}
+  if(pszRigidName && !rspGetResource(g_GameSAK, base + pszRigidName + ".trans", m_ptransRigid))
+    return false;
+
+  if(pszEventName && !rspGetResource(g_GameSAK, base + pszEventName + ".event", m_pevent))
+    return false;
+
+  if(!rspGetResource(g_GameSAK, base + LEFT_HAND_RIGID_ANIM_NAME + ".trans", m_ptransLeft))
+    return false;
+  if(!rspGetResource(g_GameSAK, base + RIGHT_HAND_RIGID_ANIM_NAME + ".trans", m_ptransRight))
+    return false;
+  if(!rspGetResource(g_GameSAK, base + BACK_RIGID_ANIM_NAME + ".trans", m_ptransBack))
+    return false;
+
+  CAnim3D::SetLooping(sLoopFlags);
+  m_ptransLeft->SetLooping(sLoopFlags);
+  m_ptransRight->SetLooping(sLoopFlags);
+  m_ptransBack->SetLooping(sLoopFlags);
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Release all resources.
 ////////////////////////////////////////////////////////////////////////////////
-// virtual										// Overridden here.
 void CDude::CDudeAnim3D::Release(void)	// Returns nothing.
-	{
-   rspReleaseResource(m_psops);
-   rspReleaseResource(m_pmeshes);
-   rspReleaseResource(m_pbounds);
-   if (m_ptransRigid)
-      rspReleaseResource(m_ptransRigid);
-   if (m_pevent)
-      rspReleaseResource(m_pevent);
+{
+  CAnim3D::Release();
 
-   rspReleaseResource(m_ptransLeft);
-   rspReleaseResource(m_ptransRight);
-   rspReleaseResource(m_ptransBack);
-	}
+  rspReleaseResource(m_ptransLeft);
+  rspReleaseResource(m_ptransRight);
+  rspReleaseResource(m_ptransBack);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2283,16 +2264,8 @@ void CDude::Update(void)
 				PlayStep();
 
 				// If the fire's gone . . .
-            if (m_fire)
-            {
-               if (!m_fire->IsBurning())
-                 SetState(State_Stand);
-            }
-					else
-					{
-					// Stand.
-					SetState(State_Stand);
-					}
+            if (!m_fire || !m_fire->IsBurning())
+              SetState(State_Stand);
 				break;
 				}
 			case State_Launch:
@@ -3719,57 +3692,58 @@ int16_t CDude::Init(void)									// Returns 0 if successfull, non-zero otherwis
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CDude::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
+{
+  bool bResult = true;
+  //                                Anim base name    Rigid name     Event name		Loop flags
+  //                                ===============  =============   ===========		===========
+  bResult &= m_animRun         .Get("main_runnogun", nullptr      ,  "mainevent",  RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animThrow       .Get("main_grenade" , "maingrenade",  "mainevent",  0);
+  bResult &= m_animStand       .Get("main_bobbing" , nullptr      ,  nullptr,      RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animDie         .Get("main_die"     , nullptr      ,  "mainevent",  0);
+  bResult &= m_animShoot       .Get("main_shoot"   , "guntip"     ,  nullptr,      RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animRunShoot    .Get("main_runshoot", "guntip"     ,  "mainevent",  RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animDamage      .Get("main_multi"   , nullptr      ,  nullptr,      RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animBurning     .Get("main_onfire"  , nullptr      ,  "mainevent",  RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animStrafe      .Get("main_strafe"  , nullptr      ,  "mainevent",  RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animStrafeShoot .Get("main_strafe"  , "guntip"     ,  "mainevent",  RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= m_animSuicide     .Get("main_suicide" , "bhead"      ,  "mainevent",  0);
+  bResult &= m_animLaunch      .Get("main_missile" , "mainmissile",  "mainevent",  0);
+  bResult &= m_animBlownUp     .Get("main_blownup" , nullptr      ,  nullptr,      0);
+  bResult &= m_animGetUp       .Get("main_getup"   , nullptr      ,  nullptr,      0);
+  bResult &= m_animDuck        .Get("main_duck"    , nullptr      ,  nullptr,      0);
+  bResult &= m_animRise        .Get("main_rise"    , nullptr      ,  nullptr,      0);
+  bResult &= m_animExecute     .Get("main_execute" , "guntip"     ,  nullptr,      0);
+  bResult &= m_animPickPut     .Get("main_pickput" , "lfhand"     ,  "mainevent",  0);
+  bResult &= m_animIdle        .Get("main_idle"    , nullptr      ,  nullptr,      0);
 
-	//											Anim base name					Rigid name		Event name		Loop flags
-	//											===================			=============	===========		===========
-	sResult	= m_animRun.Get			("3d/main_runnogun",			nullptr,				"mainevent",	RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animThrow.Get		("3d/main_grenade",			"maingrenade",	"mainevent",	0);
-	sResult	|= m_animStand.Get		("3d/main_bobbing",			nullptr,				nullptr,				RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animDie.Get			("3d/main_die",				nullptr,				"mainevent",	0);
-	sResult	|= m_animShoot.Get		("3d/main_shoot",				"guntip",		nullptr,				RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animRunShoot.Get	("3d/main_runshoot",			"guntip",		"mainevent",	RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animDamage.Get		("3d/main_multi",				nullptr,				nullptr,				RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animBurning.Get		("3d/main_onfire",			nullptr,				"mainevent",	RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|=	m_animStrafe.Get		("3d/main_strafe",			nullptr,				"mainevent",	RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animStrafeShoot.Get("3d/main_strafe",			"guntip",		"mainevent",	RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animSuicide.Get		("3d/main_suicide",			"bhead",			"mainevent",	0);
-	sResult	|= m_animLaunch.Get		("3d/main_missile",			"mainmissile",	"mainevent",	0);
-	sResult	|= m_animBlownUp.Get		("3d/main_blownup",			nullptr,				nullptr,				0);
-	sResult	|= m_animGetUp.Get		("3d/main_getup",				nullptr,				nullptr,				0);
-	sResult	|= m_animDuck.Get			("3d/main_duck",				nullptr,				nullptr,				0);
-	sResult	|= m_animRise.Get			("3d/main_rise",				nullptr,				nullptr,				0);
-	sResult	|= m_animExecute.Get		("3d/main_execute",			"guntip",		nullptr,				0);
-	sResult	|= m_animPickPut.Get		("3d/main_pickput",			"lfhand",		"mainevent",	0);
-	sResult	|= m_animIdle.Get			("3d/main_idle",				nullptr,				nullptr,				0);
+  int16_t sResult = bResult ? SUCCESS : FAILURE;
 
-	// Get the different textures this dude could have.
-	int16_t i;
-	char	szResName[PATH_MAX];
-	for (i = 0; i < MaxTextures && sResult == SUCCESS; i++)
-		{
-		sprintf(szResName, "3d/main_color%d.tex", i);
-      sResult	|= rspGetResource(g_GameSAK, szResName, m_aptextures[i]) ? SUCCESS : FAILURE;
-		}
+  // Get the different textures this dude could have.
+  int16_t i;
+  char	szResName[PATH_MAX];
+  for (i = 0; i < MaxTextures && sResult == SUCCESS; i++)
+  {
+    sprintf(szResName, "3d/main_color%d.tex", i);
+    sResult	|= rspGetResource(g_GameSAK, szResName, m_aptextures[i]) ? SUCCESS : FAILURE;
+  }
 
-	// Get the different weapons this dude could use.
-	for (i = NoWeapon; i < NumWeaponTypes; i++)
-		{
-		if (ms_awdWeapons[i].pszWeaponResName)
-			{
-			sResult	|= m_aanimWeapons[i].Get(ms_awdWeapons[i].pszWeaponResName, nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-			}
-		}
+  // Get the different weapons this dude could use.
+  for (i = NoWeapon; i < NumWeaponTypes; i++)
+  {
+    if (ms_awdWeapons[i].pszWeaponResName)
+    {
+      sResult |= m_aanimWeapons[i].Get(ms_awdWeapons[i].pszWeaponResName) ? SUCCESS : FAILURE;
+    }
+  }
 
-	// Get the backpack.
-	sResult	|= m_animBackpack.Get(BACKPACK_RES_NAME, nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  // Get the backpack.
+  sResult |= m_animBackpack.Get("backpack") ? SUCCESS : FAILURE;;
 
-	// Get the targeting sprite
-   sResult |= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(TARGETING_FILE), &(m_TargetSprite.m_pImage), RFile::LittleEndian);
-	
-	return sResult;
-	}
+  // Get the targeting sprite
+  sResult |= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(TARGETING_FILE), &(m_TargetSprite.m_pImage), RFile::LittleEndian);
+
+  return sResult;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4057,21 +4031,10 @@ bool CDude::SetState(	// Returns true if new state realized, false otherwise.
 				break;
 			case State_Burning:
 				// If not coming back to this state . . .
-				if (stateOld != m_statePersistent)
-					{
-					// If the new state is die . . .
-					if (state == State_Die)
-						{
-						// Keep the fire.
-						}
-					else
-                  {
-                  if (m_fire)
-							{
-                     Object::enqueue(m_fire->SelfDestruct);
-							}
-						}
-					}
+            if (stateOld != m_statePersistent &&
+                state != State_Die &&
+                m_fire)
+              Object::enqueue(m_fire->SelfDestruct);
 				break;
 			case State_PickUp:
 				{

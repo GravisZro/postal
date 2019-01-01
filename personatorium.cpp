@@ -201,7 +201,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/grnd",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "grnd",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture 0
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -258,7 +258,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/rockt",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "rockt",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"missile",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -315,7 +315,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gnr",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gnr",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -372,7 +372,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -430,7 +430,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/miner",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "miner",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -487,7 +487,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{								
-			"3d/swat",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "swat",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -545,7 +545,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/kid",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "kid",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"boypistol",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -600,7 +600,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/protestor",			// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "protestor",			// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
          nullptr,							// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -657,7 +657,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			1,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -714,7 +714,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/mi",						// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "mi",						// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -772,7 +772,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/con",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "con",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -829,7 +829,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/man",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "man",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -887,7 +887,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -946,7 +946,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/con",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "con",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			1,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1004,7 +1004,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/con",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "con",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			1,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1062,7 +1062,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/grnd",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "grnd",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			2,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1119,7 +1119,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/grnd",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "grnd",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1176,7 +1176,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/rockt",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "rockt",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"missile",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1234,7 +1234,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/rockt",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "rockt",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			1,								// Texture to use
 			"missile",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1291,7 +1291,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gnr",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gnr",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1349,7 +1349,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gnr",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gnr",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1407,7 +1407,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1465,7 +1465,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			2,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1523,7 +1523,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/miner",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "miner",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1581,7 +1581,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/miner",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "miner",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			1,								// Texture to use
 			"grenade",					// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1638,7 +1638,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{								
-			"3d/swat",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "swat",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1695,7 +1695,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{								
-			"3d/swat",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "swat",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			0,								// Texture to use
 			"machinetip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1752,7 +1752,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			1,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1809,7 +1809,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/man",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "man",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			1,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1867,7 +1867,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			1,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1925,7 +1925,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			1,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -1982,7 +1982,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			0,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2039,7 +2039,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			1,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2096,7 +2096,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			2,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2153,7 +2153,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			3,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2210,7 +2210,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			4,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2267,7 +2267,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			5,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2324,7 +2324,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			6,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2381,7 +2381,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+			"emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
 			7,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2438,7 +2438,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			8,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2495,7 +2495,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			9,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2552,7 +2552,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			10,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2609,7 +2609,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			11,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2666,7 +2666,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/nude2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "nude2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			-1,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2723,7 +2723,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			-1,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2780,7 +2780,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			2,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2837,7 +2837,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			3,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2894,7 +2894,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			4,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -2951,7 +2951,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			5,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3010,7 +3010,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			4,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3067,7 +3067,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			5,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3125,7 +3125,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			7,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3182,7 +3182,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			8,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3239,7 +3239,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			9,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3296,7 +3296,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			10,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3355,7 +3355,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/man",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "man",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			2,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3412,7 +3412,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/man",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "man",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			3,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3469,7 +3469,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/man",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "man",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			4,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3527,7 +3527,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			2,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3586,7 +3586,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			3,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3644,7 +3644,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".         
+         "woman",					// Example: "Miner", as in "3d/MINER_shoot.sop".
 			4,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3702,7 +3702,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			12,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3760,7 +3760,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			13,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3818,7 +3818,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			3,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3875,7 +3875,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "cop",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			3,								// Texture to use
 			"pistoltip",				// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3933,7 +3933,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			6,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -3990,7 +3990,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			7,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -4047,7 +4047,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			8,							// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -4104,7 +4104,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "gramps",				// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			9,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".
@@ -4161,7 +4161,7 @@ Personatorium g_apersons[Personatorium::NumPersons]	=
 
 		// Names used to create animation resource filenames.
 			{
-			"3d/emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".         
+         "emp2",					// Example: "Gunner", as in "3d/GUNNER_shoot.sop".
 			15,								// Texture to use
 			"hand",						// Name of channels of transforms for ammo.
 											// Example: "Bullet", as in "3d/gunner_shoot_BULLET.trans".

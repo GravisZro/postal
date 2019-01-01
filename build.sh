@@ -479,7 +479,7 @@ do
 
     --sakmanip)
       echo -n "Building SAK Manipulation Tool... "
-      g++ newpix/sakarchive.cpp newpix/filestream.cpp newpix/sakmanip.cpp -o sakmanip
+      g++ -I. newpix/sakarchive.cpp newpix/filestream.cpp newpix/sakmanip.cpp -o sakmanip
       echo "Done!"
       exit 0
     ;;

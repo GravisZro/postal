@@ -76,32 +76,6 @@ double CFlagbase::ms_dInRange = 30 * 30;			// Sq distance to base
 // Let this auto-init to 0
 int16_t CFlagbase::ms_sFileCount;
 
-/// Throwing Animation Files ////////////////////////////////////////////////////
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszRedResNames[] =
-{
-	"3d/rbase.sop",
-	"3d/rbase.mesh",
-	"3d/rbase.tex",
-	"3d/rbase.hot",
-	"3d/rbase.bounds",
-	"3d/rbase.floor",
-	nullptr,
-	nullptr
-};
-
-static const char* ms_apszBlueResNames[] =
-{
-	"3d/bbase.sop",
-	"3d/bbase.mesh",
-	"3d/bbase.tex",
-	"3d/bbase.hot",
-	"3d/bbase.bounds",
-	"3d/bbase.floor",
-	nullptr,
-	nullptr
-};
-
 #ifdef UNUSED_VARIABLES
 // These are the points that are checked on the attribute map relative to his origin
 static RP3d ms_apt3dAttribCheck[] =
@@ -559,31 +533,12 @@ int16_t CFlagbase::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CFlagbase::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
-	switch (m_u16Color)
-	{
-		default:
-		case CFlag::Red:
-			sResult = m_animFlagWave.Get(ms_apszRedResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-			break;
-
-		case CFlag::Blue:
-			sResult = m_animFlagWave.Get(ms_apszBlueResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-			break;
-
-	}
-
-	if (sResult == SUCCESS)
-	{
-						// Add new animation loads here
-	}
-	else
-	{
-		TRACE("CFlagbase::GetResources - Failed to open 3D flag waving animation\n");
-	}
-
-	return sResult;
+  if(m_animFlagWave.Get(m_u16Color == CFlag::Blue ? "bbase" : "rbase"))
+  {
+    m_animFlagWave.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+    return SUCCESS;
+  }
+  return FAILURE;
 }
 
 

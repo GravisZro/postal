@@ -17,7 +17,7 @@
 //
 // Anim3D.h
 // Project: Postal
-// 
+//
 // History:
 //		05/23/97 JMI	Started.  Moved here from thing.h.
 //							Also, added events.
@@ -26,7 +26,7 @@
 //							weapons.
 //							Also, added SetLooping().
 //
-//		08/12/97 BRH	Added yet another overloaded Get function which 
+//		08/12/97 BRH	Added yet another overloaded Get function which
 //							in addition to the base name and verb, takes a number
 //							of a texture scheme to load.
 //
@@ -40,9 +40,9 @@
 #ifndef ANIM3D_H
 #define ANIM3D_H
 
-#include <newpix/3dtypes.h>
-#include <newpix/animatedresource.h>
-#include <newpix/resourcemanager.h>
+#include <3dtypes.h>
+#include <animatedresource.h>
+#include <resourcemanager.h>
 
 // These are the basic components of any 3D animation.
 typedef std::shared_ptr<AnimatedResource<RSop>> ChanForm;            // Channel of SOPs.
@@ -74,37 +74,13 @@ struct CAnim3D
   ChanEvent     m_pevent;         // Event states.
   ChanTransform m_ptransWeapon;   // Rigid body transforms for weapon position.
 
-
-  // Get the various components of this animation from the resource names specified in the provided array of pointers to strings.
-  virtual int16_t Get(const char** ppszFileNames);      // Pointer to array of pointers to filenames. These filenames should be in the order the members are listed in this class's definition.
-
-  // Get the various components of this animation from the resource names specified in the provided array of pointers to strings.
-  virtual int16_t Get(const char** ppszFileNames,       // Pointer to array of pointers to filenames. These filenames should be in the order the members are listed in this class's definition.
-                      int16_t sLoopFlags);              // Looping flags to apply to all channels in this anim
-
-  // Get the various components of this animation from the resource names specified by base name, optionally, with a rigid name.
-  virtual int16_t Get(const char* pszBaseFileName,      // In:  Base string for resource filenames.
-                      const char* pszRigidName,         // In:  String to add for rigid transform channel, "", or nullptr for none.
-                      const char* pszEventName,         // In:  String to add for event states channel, "", or nullptr for none.
-                      const char* pszWeaponTransName,   // In:  String to add for weapon transforms channel, "", or nullptr for none.
-                      int16_t     sLoopFlags);          // In:  Looping flags to apply to all channels in this anim.
-
-  // Get the various components of this animation from the resource names specified by base name, optionally, with a rigid name.
-  virtual int16_t Get(const char* pszBaseName,          // In:  Base string for resource filenames.
-                      const char* pszVerb,              // In:  Action name to be appended to the base
-                      const char* pszRigidName,         // In:  String to add for rigid transform channel, "", or nullptr for none.
-                      const char* pszEventName,         // In:  String to add for event states channel, "", or nullptr for none.
-                      const char* pszWeaponTransName,   // In:  String to add for weapon transforms channel, "", or nullptr for none.
-                      int16_t     sLoopFlags);          // In:  Looping flags to apply to all channels in this anim.
-
-  // Get the various components of this animation from the resource names specified by base name, optionally, with a rigid name.
-  virtual int16_t Get(const char* pszBaseName,          // In:  Base string for resource filenames.
-                      int16_t     sTextureScheme,       // In:  Number of texture file to be loaded
-                      const char* pszVerb,              // In:  Action name to be appended to the base
-                      const char* pszRigidName,         // In:  String to add for rigid transform channel, "", or nullptr for none.
-                      const char* pszEventName,         // In:  String to add for event states channel, "", or nullptr for none.
-                      const char* pszWeaponTransName,   // In:  String to add for weapon transforms channel, "", or nullptr for none.
-                      int16_t     sLoopFlags);          // In:  Looping flags to apply to all channels in this anim.
+  // Get the various components of this animation from the resource names
+  bool Get(const char* pszBaseFileName,                // In:  Base string for resource filenames.
+           uint8_t     sTextureScheme      = 0,        // In:  Number to append after name for texture file or zero for none.
+           const char* pszVerb             = nullptr,  // In:  Action name to be appended to the base       or nullptr for none.
+           const char* pszRigidName        = nullptr,  // In:  String to add for rigid transform channel or nullptr for none.
+           const char* pszWeaponTransName  = nullptr,  // In:  String to add for weapon transforms channel or nullptr for none.
+           const char* pszEventName        = nullptr); // In:  String to add for event states channel or nullptr for none.
 
   // Release all resources.
   virtual void Release(void);

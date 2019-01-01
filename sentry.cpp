@@ -149,81 +149,6 @@ uint32_t CSentry::ms_u32WeaponExcludeBits = CSmash::SpecialBarrel | CSmash::Duck
 // Let this auto-init to 0
 int16_t CSentry::ms_sFileCount;
 
-/// Throwing Animation Files ////////////////////////////////////////////////////
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszShootResNames[] =
-{
-	"3d/sentry_shoot.sop",
-	"3d/sentry_shoot.mesh",
-	"3d/sentry_shoot.tex",
-	"3d/sentry_shoot.hot",
-	"3d/sentry_shoot.bounds",
-	"3d/sentry_shoot.floor",
-	"3d/sentry_shoot_tip.trans",
-	nullptr
-};
-
-static const char* ms_apszStandResNames[] =
-{
-	"3d/sentry_still.sop",
-	"3d/sentry_still.mesh",
-	"3d/sentry_still.tex",
-	"3d/sentry_still.hot",
-	"3d/sentry_still.bounds",
-	"3d/sentry_still.floor",
-	"3d/sentry_still_tip.trans",
-	nullptr
-};
-
-static const char* ms_apszDieResNames[] =
-{
-	"3d/sentry_damaged.sop",
-	"3d/sentry_damaged.mesh",
-	"3d/sentry_damaged.tex",
-	"3d/sentry_damaged.hot",
-	"3d/sentry_damaged.bounds",
-	"3d/sentry_damaged.floor",
-	"3d/sentry_damaged_tip.trans",
-	nullptr
-};
-
-static const char* ms_apszBaseStandResNames[] =
-{
-	"3d/stand_still.sop",
-	"3d/stand_still.mesh",
-	"3d/stand_still.tex",
-	"3d/stand_still.hot",
-	"3d/stand_still.bounds",
-	"3d/stand_still.floor",
-	"3d/stand_still_stand.trans",
-	nullptr
-};
-
-static const char* ms_apszBaseDieResNames[] =
-{
-	"3d/stand_damaged.sop",
-	"3d/stand_damaged.mesh",
-	"3d/stand_damaged.tex",
-	"3d/stand_damaged.hot",
-	"3d/stand_damaged.bounds",
-	"3d/stand_damaged.floor",
-	"3d/stand_damaged_stand.trans",
-	nullptr
-};
-
-#ifdef UNUSED_VARIABLES
-// These are the points that are checked on the attribute map relative to his origin
-static RP3d ms_apt3dAttribCheck[] =
-{
-	{-6, 0, -6},
-	{ 0, 0, -6},
-	{ 6, 0, -6},
-	{-6, 0,  6},
-	{ 0, 0,  6},
-	{ 6, 0,  6},
-};
-#endif
-
 CSentry::CSentry(void)
 {
   m_sSuspend = 0;
@@ -403,7 +328,7 @@ void CSentry::Render(void)
 	m_spriteBase.m_sBrightness	= m_sBrightness + sLightTally * gsGlobalBrightnessPerLightAttribute;
 
 	// If no parent . . .
-   if (!parent())
+   if (!isChild())
 		{
 		// Reset transform back to start to set absolute rather than cummulative rotation
       m_trans.makeIdentity();
@@ -951,51 +876,13 @@ int16_t CSentry::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CSentry::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
-	sResult = m_animShoot.Get(ms_apszShootResNames);
-	if (sResult == SUCCESS)
-	{
-		sResult = m_animStand.Get(ms_apszStandResNames);
-		if (sResult == SUCCESS)
-		{
-			sResult = m_animDie.Get(ms_apszDieResNames);
-			if (sResult == SUCCESS)
-			{
-				sResult = m_animBaseStand.Get(ms_apszBaseStandResNames);
-				if (sResult == SUCCESS)
-				{
-					sResult = m_animBaseDie.Get(ms_apszBaseDieResNames);
-					if (sResult == SUCCESS)
-					{
-						// Add new animation loads here
-					}
-					else
-					{
-						TRACE("CSentry::GetResources - Failed to load base damaged animation\n");
-					}
-				}
-				else
-				{
-					TRACE("CSentry::GetResources - Failed to load base still animation\n");
-				}
-			}
-			else
-			{
-				TRACE("CSentry::GetResources - Failed to load turret damaged animation\n");
-			}
-		}
-		else
-		{
-			TRACE("CSentry::GetResources - Failed to open 3D turret still animation\n");
-		}
-	}
-	else
-	{
-		TRACE("CSentry::GetResources - Failed to open 3D turret shoot animation\n");
-	}
-
-	return sResult;
+  bool bResult = true;
+  bResult &= m_animShoot.Get("sentry_shoot");
+  bResult &= m_animStand.Get("sentry_still");
+  bResult &= m_animDie.Get("sentry_damaged");
+  bResult &= m_animBaseStand.Get("stand_still");
+  bResult &= m_animBaseDie.Get("stand_damaged");
+  return bResult ? SUCCESS : FAILURE;;
 }
 
 

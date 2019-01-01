@@ -203,8 +203,8 @@ int32_t CUnguidedMissile::ms_lSmokeInterval		= 100;			// Time between smokes.
 
 const char*	CUnguidedMissile::ms_apszResNames[CUnguidedMissile::NumStyles]	= // Res names indexed Style.
 	{
-	"3d/grenade",		// Grenade.
-	"3d/dynamite",		// Dynamite.
+   "grenade",		// Grenade.
+   "dynamite",		// Dynamite.
 	};
 
 // Dimishes velocities once it hits the ground.
@@ -602,7 +602,7 @@ void CUnguidedMissile::Render(void)
    flags.Hidden = m_eState == State_Hide;
 	
 	// If we're not a child of someone else . . .
-   if (!parent())
+   if (!isChild())
 		{
 		// Map from 3d to 2d coords
       realm()->Map3Dto2D(position.x, position.y, position.z,
@@ -673,29 +673,13 @@ int16_t CUnguidedMissile::Setup(									// Returns 0 if successfull, non-zero o
 // Get all required resources
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CUnguidedMissile::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
-	{
-	int16_t sResult = SUCCESS;
-
-	sResult	= m_anim.Get(ms_apszResNames[m_style], nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sResult == SUCCESS)
-		{
-			sResult = rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian);
-			if (sResult == SUCCESS)
-			{
-				// add more gets
-			}
-			else
-			{
-            TRACE("CUnguidedMissile::GetResources - Failed to open 2D shadow image\n");
-			}
-		}
-	else
-		{
-      TRACE("CUnguidedMissile::GetResources - Failed to open 3D stuff file\n");
-		}
-
-	return sResult;
-	}
+{
+  bool bResult = true;
+  if(bResult &= m_anim.Get(ms_apszResNames[m_style]))
+    m_anim.SetLooping(RChannel_LoopAtStart | RChannel_LoopAtEnd);
+  bResult &= rspGetResource(&g_resmgrGame, realm()->Make2dResPath(SMALL_SHADOW_FILE), &(m_spriteShadow.m_pImage), RFile::LittleEndian) == SUCCESS;
+  return bResult ? SUCCESS : FAILURE;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -719,32 +703,27 @@ int16_t CUnguidedMissile::FreeResources(void)						// Returns 0 if successfull, 
 
 int16_t CUnguidedMissile::Preload(
 	CRealm* prealm)				// In:  Calling realm.
-	{
-	int16_t sResult = SUCCESS;
+{
+  int16_t sResult = SUCCESS;
 
-	CAnim3D anim;
-	RImage* pimage;
+  CAnim3D anim;
+  RImage* pimage;
 
-	int16_t	sStyle;
-	for (sStyle = 0; sStyle < NumStyles; sStyle++)
-		{
-		if (anim.Get(ms_apszResNames[sStyle], nullptr, nullptr, nullptr, RChannel_LoopAtStart | RChannel_LoopAtEnd) == SUCCESS)
-			{
-			anim.Release();
-			}
-		else
-			{
-			// Go ahead and overwrite any previous error.
-			sResult = FAILURE;
-			}
-		}
+  int16_t	sStyle;
+  for (sStyle = 0; sStyle < NumStyles; sStyle++)
+  {
+    if (anim.Get(ms_apszResNames[sStyle]))
+      anim.Release();
+    else
+      sResult = FAILURE; // Go ahead and overwrite any previous error.
+  }
 
-	rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian);
-	rspReleaseResource(&g_resmgrGame, &pimage);
-	CacheSample(g_smidGrenadeBounce);
-	CacheSample(g_smidGrenadeExplode);
-	return sResult; 
-	}
+  rspGetResource(&g_resmgrGame, prealm->Make2dResPath(SMALL_SHADOW_FILE), &pimage, RFile::LittleEndian);
+  rspReleaseResource(&g_resmgrGame, &pimage);
+  CacheSample(g_smidGrenadeBounce);
+  CacheSample(g_smidGrenadeExplode);
+  return sResult;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

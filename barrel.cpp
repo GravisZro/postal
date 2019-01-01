@@ -139,36 +139,6 @@ int16_t CBarrel::ms_sNumFires = 6;					// Number of fires to create after explos
 // Let this auto-init to 0
 int16_t CBarrel::ms_sFileCount;
 
-/// Still Animation Files ///////////////////////////////////////////////////////
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszStillResNames[] =
-{
-	"3d/barrel_still.sop",
-	"3d/barrel_still.mesh",
-	"3d/barrel_still.tex",
-	"3d/barrel_still.hot",
-	"3d/barrel_still.bounds",
-	"3d/barrel_still.floor",
-	nullptr,
-	nullptr
-};
-
-/// Spinning Animation Files ///////////////////////////////////////////////////
-// An array of pointers to resource names (one for each channel of the animation)
-static const char* ms_apszSpinResNames[] =
-{
-	"3d/barrel_spin.sop",
-	"3d/barrel_spin.mesh",
-	"3d/barrel_spin.tex",
-	"3d/barrel_spin.hot",
-	"3d/barrel_spin.bounds",
-	"3d/barrel_spin.floor",
-	nullptr,
-	nullptr
-};
-
-
-
 
 CBarrel::CBarrel(void)
    {
@@ -611,20 +581,10 @@ int16_t CBarrel::EditModify(void)
 ////////////////////////////////////////////////////////////////////////////////
 int16_t CBarrel::GetResources(void)						// Returns 0 if successfull, non-zero otherwise
 {
-	int16_t sResult = SUCCESS;
-
-	sResult	= m_animStill.Get(ms_apszStillResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	sResult	|= m_animSpin.Get(ms_apszSpinResNames, RChannel_LoopAtStart | RChannel_LoopAtEnd);
-	if (sResult == SUCCESS)
-	{
-		// Add additional gets here
-	}
-	else
-	{
-		TRACE("CBarrel::GetResources - Failed to open 3D barrel animation(s)\n");
-	}
-
-	return sResult;
+  bool bResult = true;
+  bResult &= m_animStill.Get("barrel_still");
+  bResult &= m_animSpin.Get("barrel_spin");
+  return bResult ? SUCCESS : FAILURE;
 }
 
 

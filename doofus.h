@@ -257,12 +257,12 @@ class CDoofus : public CCharacter
 				NumWeaponTypes
 			} WeaponType;
 
-			typedef struct
+         struct WeaponDetails
 			{
             const char*			pszName;
             const char*			pszResName;
 				ClassIDType	id;
-			} WeaponDetails;
+         };
 
 
 	//---------------------------------------------------------------------------

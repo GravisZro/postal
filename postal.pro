@@ -365,7 +365,6 @@ SOURCES += \
     organ.cpp \
     ostrich.cpp \
     person.cpp \
-    Personatorium.cpp \
     play.cpp \
     PowerUp.cpp \
     ProtoBSDIP.cpp \
@@ -397,7 +396,8 @@ SOURCES += \
     newpix/managedpointer.cpp \
     newpix/collisiondetection.cpp \
     newpix/sprite_base.cpp \
-    newpix/halfapp.cpp
+    newpix/halfapp.cpp \
+    personatorium.cpp
 
 
 HEADERS += \
